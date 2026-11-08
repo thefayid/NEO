@@ -4641,6 +4641,7 @@ class RemoteKeyOverlay(QWidget):
 
 class MainWindow(QMainWindow):
     _log_sig        = pyqtSignal(str)
+    _speech_sig     = pyqtSignal(str, str)   # (speaker, text) - live transcript
     _state_sig      = pyqtSignal(str)
     _content_sig    = pyqtSignal(str, str)   # (title, text) — thread-safe content display
     _reconfig_sig   = pyqtSignal()           # trigger setup overlay from any thread
@@ -4953,6 +4954,7 @@ class MainWindow(QMainWindow):
         self._update_metrics()
 
         self._log_sig.connect(self._log.append_log)
+        self._speech_sig.connect(self._on_live_speech)
         self._state_sig.connect(self._apply_state)
         self._content_sig.connect(self._show_content)
         self._reconfig_sig.connect(self._show_setup)
@@ -7690,6 +7692,10 @@ class MainWindow(QMainWindow):
         if self.on_text_command:
             threading.Thread(target=self.on_text_command, args=(txt,), daemon=True).start()
 
+    def _on_live_speech(self, speaker: str, text: str):
+        if hasattr(self, "hero_stage") and self.hero_stage is not None:
+            self.hero_stage.set_speech(speaker, text)
+
     def _apply_state(self, state: str):
         self.hud.state    = state
         self.hud.speaking = (state == "SPEAKING")
@@ -7931,8 +7937,23 @@ class JarvisUI:
         """Thread-safe: flash an active tactical tool badge on the HUD."""
         self._win._tool_sig.emit(str(tool_name or ""))
 
+    def show_live_speech(self, speaker: str, text: str):
+        """Thread-safe: display live speech subtitle (user=green, assistant=white)."""
+        try:
+            self._win._speech_sig.emit(speaker, text)
+        except Exception:
+            pass
+
     def write_log(self, text: str):
         self._win._log_sig.emit(text)
+        try:
+            if text.startswith("You: "):
+                self._win._speech_sig.emit("user", text[5:].strip())
+            elif ": " in text and not text.startswith("SYS:") and not text.startswith("ERR:"):
+                spk, val = text.split(": ", 1)
+                self._win._speech_sig.emit(spk, val.strip())
+        except Exception:
+            pass
 
     def wait_for_api_key(self):
         while not self._win._ready:

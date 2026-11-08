@@ -192,6 +192,8 @@ class NeoEclipseCanvas(QWidget):
         else:
             self.set_emotion("listening")
 
+
+
     def set_audio_level(self, level: float):
         try:
             lv = float(level)
@@ -1069,7 +1071,66 @@ class NeoNavSidebar(QWidget):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  4. CENTER HERO STAGE
+#  4. LIVE SPEECH TRANSCRIPT WIDGET (YOU IN GREEN, NEO IN WHITE)
+# ─────────────────────────────────────────────────────────────────────────────
+class NeoLiveTranscriptWidget(QFrame):
+    """Clean, high-end live speech subtitle pill with green user text and white assistant text."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(38)
+        self.setFixedWidth(640)
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(14, 20, 32, 0.78);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 19px;
+            }
+        """)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(18, 0, 18, 0)
+        lay.setSpacing(10)
+
+        self.dot = QLabel("●")
+        self.dot.setFont(font_text(9, QFont.Weight.Bold))
+        self.dot.setStyleSheet("color: #4ade80; border: none; background: transparent;")
+        lay.addWidget(self.dot)
+
+        self.text_lbl = QLabel('<span style="color: #64748b;">● Live Transcript Active · Speak to NEO</span>')
+        self.text_lbl.setFont(font_text(10, QFont.Weight.Normal))
+        self.text_lbl.setStyleSheet("border: none; background: transparent;")
+        lay.addWidget(self.text_lbl, stretch=1)
+
+        self._decay_tmr = QTimer(self)
+        self._decay_tmr.setInterval(12000)
+        self._decay_tmr.timeout.connect(self._on_decay)
+
+    def set_speech(self, speaker: str, text: str):
+        t = (text or "").strip()
+        if not t:
+            return
+        self._decay_tmr.stop()
+        if speaker.lower() in ("user", "you", "fayid"):
+            self.dot.setStyleSheet("color: #4ade80; border: none; background: transparent;")
+            self.text_lbl.setText(
+                f'<span style="color: #4ade80; font-weight: 600;">You:</span> '
+                f'<span style="color: #4ade80;">"{t}"</span>'
+            )
+        else:
+            self.dot.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+            self.text_lbl.setText(
+                f'<span style="color: #94a3b8; font-weight: 600;">NEO:</span> '
+                f'<span style="color: #ffffff;">"{t}"</span>'
+            )
+        self._decay_tmr.start()
+
+    def _on_decay(self):
+        self._decay_tmr.stop()
+        self.dot.setStyleSheet("color: #526078; border: none; background: transparent;")
+        self.text_lbl.setText('<span style="color: #526078;">● Live Transcript Active · Speak to NEO</span>')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  5. CENTER HERO STAGE
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoHeroStage(QWidget):
     """Center main hero dashboard with celestial arc, dynamic greeting, search capsule, and quick actions."""
@@ -1114,8 +1175,17 @@ class NeoHeroStage(QWidget):
         sub2.setStyleSheet(f"color: #64748b; border: none; background: transparent;")
         vbox.addWidget(sub2)
 
+        # Live Transcript Subtitle Pill (You in Green, NEO in White)
+        vbox.addSpacing(14)
+        self._trans_box = QHBoxLayout()
+        self._trans_box.addStretch()
+        self.transcript_pill = NeoLiveTranscriptWidget()
+        self._trans_box.addWidget(self.transcript_pill)
+        self._trans_box.addStretch()
+        vbox.addLayout(self._trans_box)
+
         # 3. Omni Prompt Capsule Bar
-        vbox.addSpacing(26)
+        vbox.addSpacing(16)
         bar_container = QHBoxLayout()
         bar_container.addStretch()
 
@@ -1168,6 +1238,16 @@ class NeoHeroStage(QWidget):
         """)
         self.input_edit.returnPressed.connect(self._submit)
         bar_lay.addWidget(self.input_edit, stretch=1)
+
+        self.cc_btn = QPushButton("CC")
+        self.cc_btn.setFixedSize(32, 28)
+        self.cc_btn.setFont(font_text(8, QFont.Weight.Bold))
+        self.cc_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.cc_btn.setToolTip("Toggle Live Subtitles (You in Green, NEO in White)")
+        self._cc_enabled = True
+        self._update_cc_style()
+        self.cc_btn.clicked.connect(self.toggle_subtitles)
+        bar_lay.addWidget(self.cc_btn)
 
         self.mic_btn = QPushButton("🎙")
         self.mic_btn.setFixedSize(30, 30)
@@ -1279,6 +1359,41 @@ class NeoHeroStage(QWidget):
         elif title == "Brainstorm":
             self.input_edit.setText("Brainstorm ideas for ")
             self.input_edit.setFocus()
+
+    def toggle_subtitles(self):
+        self._cc_enabled = not self._cc_enabled
+        self.transcript_pill.setVisible(self._cc_enabled)
+        self._update_cc_style()
+
+    def _update_cc_style(self):
+        if getattr(self, "_cc_enabled", True):
+            self.cc_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(96, 165, 250, 0.18);
+                    color: #60a5fa;
+                    border: 1px solid rgba(96, 165, 250, 0.38);
+                    border-radius: 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(96, 165, 250, 0.28);
+                }
+            """)
+        else:
+            self.cc_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    color: #526078;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 12px;
+                }
+                QPushButton:hover {
+                    color: #8e9eb5;
+                }
+            """)
+
+    def set_speech(self, speaker: str, text: str):
+        if hasattr(self, "transcript_pill") and self.transcript_pill is not None:
+            self.transcript_pill.set_speech(speaker, text)
 
     def _submit(self):
         text = self.input_edit.text().strip()

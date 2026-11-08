@@ -1867,12 +1867,20 @@ class JarvisLive:
                                 # alone cannot show. Pure string work — it adds
                                 # nothing measurable to the response path.
                                 self._visemes.feed_text(txt)
+                                try:
+                                    self.ui.show_live_speech("assistant", " ".join(out_buf).strip())
+                                except Exception:
+                                    pass
 
                         if sc.input_transcription and sc.input_transcription.text:
                             txt = _clean_transcript(sc.input_transcription.text)
                             if txt:
                                 in_buf.append(txt)
                                 self._last_user_speech = time.monotonic()
+                                try:
+                                    self.ui.show_live_speech("user", " ".join(in_buf).strip())
+                                except Exception:
+                                    pass
 
                         if sc.turn_complete:
                             if self._turn_done_event:
