@@ -89,8 +89,8 @@ def _read_full_config() -> dict:
 
 # Single source of truth for the release name — the window title, the header
 # badge and the readme must never disagree again.
-APP_VERSION  = "MARK LVI"
-APP_PROTOCOL = APP_VERSION.split()[-1]
+APP_VERSION  = "NEO"
+APP_PROTOCOL = "NEO"
 
 _DEFAULT_W, _DEFAULT_H = 980, 700
 _MIN_W,     _MIN_H     = 820, 580
@@ -107,7 +107,7 @@ class C:
     BORDER    = "#182236"   # Clean Cybernetic Border
     BORDER_B  = "#00e5ff"   # Glowing Arc Reactor Cyan / Active Highlight
     BORDER_A  = "#1e2a42"   # Card / Section Separator
-    PRI       = "#00e5ff"   # Electric Arc Cyan (Iron Man Mark LVI Theme)
+    PRI       = "#00e5ff"   # Electric Arc Cyan (NEO Theme)
     ACCENT    = "#00e5ff"   # Cyan Highlight
     PRI_DIM   = "#008899"   # Muted Cyan
     PRI_GHO   = "#00232b"   # Subtle Cyan Glow Background
@@ -4674,7 +4674,7 @@ class MainWindow(QMainWindow):
         if _ui_color and _ui_color.lower() != DEFAULT_UI_COLOR:
             apply_ui_accent(_ui_color)
 
-        self.setWindowTitle(f"{_display} — {APP_VERSION}")
+        self.setWindowTitle(_display or "NEO")
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(1200, 780)
 
@@ -7413,7 +7413,7 @@ class MainWindow(QMainWindow):
         """Update all name/theme-dependent UI elements and persist to config."""
         self._assistant_name = name.strip() or "JARVIS"
         display = self._assistant_name.upper()
-        self.setWindowTitle(f"{display} — {APP_VERSION}")
+        self.setWindowTitle(display or "NEO")
         self._title_lbl.setText(display)
         if display in ("JARVIS", "J.A.R.V.I.S"):
             self._sub_lbl.setText("Just A Rather Very Intelligent System")

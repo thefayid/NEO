@@ -1,6 +1,6 @@
 {
-  "name": "F.R.I.D.A.Y. Mark-LVI Mobile",
-  "short_name": "FRIDAY",
+  "name": "NEO Mobile",
+  "short_name": "NEO",
   "description": "Tony Stark's Mobile Companion & AirPods Node",
   "start_url": "/?pwa=1",
   "display": "standalone",

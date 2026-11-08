@@ -1460,7 +1460,7 @@ class NeoTasksView(QWidget):
             ("Review Financial Management exam syllabus and formulas", True),
             ("Smart India Hackathon (SIH) team sync & architecture check", False),
             ("Autonomous desktop Spotify playback visual controller verification", True),
-            ("Backup and archive Mark-LVI local configurations", False),
+            ("Backup and archive NEO local configurations", False),
             ("Check unread VIP emails from GitHub and Stripe", False),
         ]
         for t_text, done in initial_tasks:
@@ -1596,7 +1596,7 @@ class NeoProjectsView(QWidget):
     """Active Workspace Explorer."""
     file_open_requested = pyqtSignal(str)
 
-    def __init__(self, workspace_path: str = "e:/Jarvis/Mark-LVI-main", parent=None):
+    def __init__(self, workspace_path: str = ".", parent=None):
         super().__init__(parent)
         self.workspace_path = Path(workspace_path)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
