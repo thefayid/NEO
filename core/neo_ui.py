@@ -969,6 +969,7 @@ class CalendarSyncDialog(QDialog):
 class UpcomingScheduleWidget(QFrame):
     """
     Clean, pixel-perfect Upcoming schedule card matching user's exact design.
+    Seamlessly synchronizes with Google Calendar / Outlook and shows authentic upcoming events.
     """
     schedule_clicked = pyqtSignal()
     event_selected = pyqtSignal(str)
@@ -1037,12 +1038,21 @@ class UpcomingScheduleWidget(QFrame):
         hdr.addWidget(arr_btn)
         self.root_lay.addLayout(hdr)
 
-        # 2. Subtitle
-        today_str = datetime.now().strftime("Today, %b %d")
-        sub = QLabel(today_str)
-        sub.setFont(QFont("Segoe UI", 8))
-        sub.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
-        self.root_lay.addWidget(sub)
+        # 2. Subtitle Header Row
+        sub_row = QHBoxLayout()
+        self.sub_date_lbl = QLabel("Today, " + datetime.now().strftime("%b %d"))
+        self.sub_date_lbl.setFont(QFont("Segoe UI", 8))
+        self.sub_date_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        sub_row.addWidget(self.sub_date_lbl)
+
+        sub_row.addStretch(1)
+
+        self.sub_count_lbl = QLabel("")
+        self.sub_count_lbl.setFont(QFont("Segoe UI", 8))
+        self.sub_count_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        sub_row.addWidget(self.sub_count_lbl)
+
+        self.root_lay.addLayout(sub_row)
         self.root_lay.addSpacing(2)
 
         # 3. Events Container
@@ -1057,6 +1067,29 @@ class UpcomingScheduleWidget(QFrame):
 
         self._dialog = None
         self.reload_events()
+
+        # Background auto-sync if calendar URL configured
+        QTimer.singleShot(1500, self._auto_sync_calendar)
+
+    def _auto_sync_calendar(self):
+        try:
+            import json as _json
+            cfg_p = os.path.join("config", "api_keys.json")
+            if os.path.exists(cfg_p):
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = _json.load(f)
+                url = cfg.get("calendar_ical_url")
+                if url:
+                    def _worker():
+                        try:
+                            from actions.executive_briefing import _sync_ical_feed
+                            _sync_ical_feed(url)
+                            QTimer.singleShot(0, self.reload_events)
+                        except Exception:
+                            pass
+                    threading.Thread(target=_worker, daemon=True).start()
+        except Exception:
+            pass
 
     def _open_sync_dialog(self):
         if not self._dialog:
@@ -1084,32 +1117,94 @@ class UpcomingScheduleWidget(QFrame):
                     if sub.widget():
                         sub.widget().deleteLater()
 
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        events = []
+        now = datetime.now()
+        today = now.date()
+        today_str = today.strftime("%Y-%m-%d")
+        now_mins = now.hour * 60 + now.minute
+
+        DUMMY_TITLES = {
+            "Financial Management Exam", "SIH Team Sync", "Review & Notes",
+            "Architecture Review & Sprint Sync", "Production Deployment & Telemetry Sign-off",
+            "Executive Client Project Review"
+        }
+
+        all_evs = []
         try:
             from actions.executive_briefing import _load_agenda
             agenda = _load_agenda()
-            all_evs = agenda.get("events", [])
-            for ev in all_evs:
-                ev_date = ev.get("date", "")
-                if ev_date == today_str or not ev_date:
-                    events.append(ev)
+            raw_evs = agenda.get("events", [])
+            for ev in raw_evs:
+                if ev.get("title") not in DUMMY_TITLES:
+                    all_evs.append(ev)
         except Exception:
             pass
 
-        if not events:
-            events = [
-                {"title": "Financial Management Exam", "start_time": "17:00", "end_time": "19:00"},
-                {"title": "SIH Team Sync", "start_time": "20:00", "end_time": "20:30"},
-                {"title": "Review & Notes", "start_time": "21:00", "end_time": "21:30"},
-            ]
+        today_events = []
+        future_events = []
 
-        events.sort(key=lambda ev: _time_to_minutes(ev.get("start_time", "00:00")))
+        for ev in all_evs:
+            ev_date_str = ev.get("date", "")
+            if not ev_date_str:
+                ev_date_str = today_str
+            try:
+                ev_date = datetime.strptime(ev_date_str, "%Y-%m-%d").date()
+            except Exception:
+                continue
 
-        now = datetime.now()
-        now_mins = now.hour * 60 + now.minute
+            if ev_date == today:
+                today_events.append(ev)
+            elif ev_date > today:
+                future_events.append((ev_date, ev))
 
-        for i, ev in enumerate(events):
+        today_events.sort(key=lambda ev: _time_to_minutes(ev.get("start_time", "00:00")))
+        future_events.sort(key=lambda pair: (pair[0], _time_to_minutes(pair[1].get("start_time", "00:00"))))
+
+        # Count active/remaining today
+        remaining_today = 0
+        for ev in today_events:
+            s_mins = _time_to_minutes(ev.get("start_time", "00:00"))
+            e_mins = _time_to_minutes(ev.get("end_time", "00:00"))
+            if e_mins <= s_mins:
+                e_mins = s_mins + 30
+            if now_mins < e_mins:
+                remaining_today += 1
+
+        # Build list of items to show (up to 4 items)
+        display_items = []
+        for ev in today_events:
+            display_items.append(("today", today, ev))
+
+        if len(display_items) < 3:
+            for ev_date, ev in future_events:
+                display_items.append(("future", ev_date, ev))
+                if len(display_items) >= 4:
+                    break
+
+        # Update Subtitle header
+        if today_events:
+            self.sub_date_lbl.setText(today.strftime("Today, %b %d"))
+            if remaining_today > 0:
+                self.sub_count_lbl.setText(f"{remaining_today} remaining")
+            else:
+                self.sub_count_lbl.setText("All caught up")
+        elif future_events:
+            next_date = future_events[0][0]
+            days_away = (next_date - today).days
+            if days_away == 1:
+                self.sub_date_lbl.setText(today.strftime("Today, %b %d"))
+                self.sub_count_lbl.setText("Next: Tomorrow")
+            else:
+                self.sub_date_lbl.setText(today.strftime("Today, %b %d"))
+                self.sub_count_lbl.setText(f"Next: {next_date.strftime('%a, %b %d')}")
+        else:
+            self.sub_date_lbl.setText(today.strftime("Today, %b %d"))
+            self.sub_count_lbl.setText("0 scheduled")
+
+        if not display_items:
+            self._add_empty_row()
+            return
+
+        for i, (kind, ev_date, ev) in enumerate(display_items[:4]):
             title = ev.get("title", "Event")
             s_str = ev.get("start_time", "")
             e_str = ev.get("end_time", "")
@@ -1120,19 +1215,64 @@ class UpcomingScheduleWidget(QFrame):
 
             friendly_s = _format_time_friendly(s_str)
             friendly_e = _format_time_friendly(e_str)
-            time_display = f"{friendly_s} – {friendly_e}"
 
-            # First event or active event gets active dot
-            is_active = (s_mins <= now_mins < e_mins) or (i == 0 and now_mins < e_mins)
-            self._add_event_row(title, time_display, active=is_active)
+            if kind == "today":
+                time_display = f"{friendly_s} – {friendly_e}"
+                if now_mins >= e_mins:
+                    badge_info = ("✓ Done", "rgba(148, 163, 184, 0.15)", "#94a3b8")
+                    is_active = False
+                    is_done = True
+                elif s_mins <= now_mins < e_mins:
+                    badge_info = ("● Now", "rgba(56, 189, 248, 0.2)", "#38bdf8")
+                    is_active = True
+                    is_done = False
+                elif 0 < s_mins - now_mins <= 60:
+                    badge_info = (f"In {s_mins - now_mins}m", "rgba(56, 189, 248, 0.2)", "#38bdf8")
+                    is_active = (i == 0)
+                    is_done = False
+                else:
+                    badge_info = None
+                    is_active = (i == 0)
+                    is_done = False
+            else:
+                days_away = (ev_date - today).days
+                day_prefix = "Tomorrow" if days_away == 1 else ev_date.strftime("%a, %b %d")
+                if s_str == "All Day":
+                    time_display = f"{day_prefix} · All Day"
+                else:
+                    time_display = f"{day_prefix} · {friendly_s} – {friendly_e}"
+                badge_info = ("Tomorrow", "rgba(96, 165, 250, 0.15)", "#60a5fa") if days_away == 1 else None
+                is_active = (i == 0 and len(today_events) == 0)
+                is_done = False
 
-    def _add_event_row(self, title: str, time_str: str, active: bool = False):
+            self._add_event_row(title, time_display, active=is_active, badge_info=badge_info, is_done=is_done)
+
+    def _add_empty_row(self):
+        card = QFrame()
+        card.setStyleSheet("background: transparent;")
+        lay = QVBoxLayout(card)
+        lay.setContentsMargins(4, 10, 4, 10)
+        lay.setSpacing(4)
+
+        t_lbl = QLabel("●  No upcoming events")
+        t_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium))
+        t_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        lay.addWidget(t_lbl)
+
+        sub_lbl = QLabel("Schedule is clear. Tap ⚙ to sync or add events.")
+        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
+        lay.addWidget(sub_lbl)
+
+        self.events_layout.addWidget(card)
+
+    def _add_event_row(self, title: str, time_str: str, active: bool = False, badge_info: tuple[str, str, str] | None = None, is_done: bool = False):
         card = QFrame()
         card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         card.setStyleSheet("""
             QFrame {
                 background: transparent;
-                border-radius: 4px;
+                border-radius: 6px;
             }
             QFrame:hover {
                 background: rgba(255, 255, 255, 0.04);
@@ -1140,12 +1280,17 @@ class UpcomingScheduleWidget(QFrame):
         """)
 
         row = QHBoxLayout(card)
-        row.setContentsMargins(0, 2, 0, 2)
+        row.setContentsMargins(2, 4, 2, 4)
         row.setSpacing(10)
 
         dot = QLabel("●")
         dot.setFont(QFont("Segoe UI", 8))
-        dot_color = ACCENT_BLUE if active else TEXT_DIM
+        if is_done:
+            dot_color = "#526078"
+        elif active:
+            dot_color = ACCENT_BLUE
+        else:
+            dot_color = TEXT_DIM
         dot.setStyleSheet(f"color: {dot_color}; border: none; background: transparent; padding-top: 1px;")
         row.addWidget(dot, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -1155,14 +1300,34 @@ class UpcomingScheduleWidget(QFrame):
 
         t_lbl = QLabel(title)
         t_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
-        t_color = TEXT_WHITE if active else TEXT_MUTED
+        t_color = "#64748b" if is_done else (TEXT_WHITE if active else TEXT_MUTED)
         t_lbl.setStyleSheet(f"color: {t_color}; border: none; background: transparent;")
         vbox.addWidget(t_lbl)
 
+        time_lay = QHBoxLayout()
+        time_lay.setSpacing(6)
         time_lbl = QLabel(time_str)
         time_lbl.setFont(QFont("Segoe UI", 8))
-        time_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
-        vbox.addWidget(time_lbl)
+        time_lbl.setStyleSheet(f"color: {'#475569' if is_done else TEXT_DIM}; border: none; background: transparent;")
+        time_lay.addWidget(time_lbl)
+
+        if badge_info:
+            b_text, b_bg, b_fg = badge_info
+            badge = QLabel(b_text)
+            badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            badge.setStyleSheet(f"""
+                QLabel {{
+                    background: {b_bg};
+                    color: {b_fg};
+                    border-radius: 3px;
+                    padding: 1px 5px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                }}
+            """)
+            time_lay.addWidget(badge)
+
+        time_lay.addStretch()
+        vbox.addLayout(time_lay)
 
         row.addLayout(vbox)
         row.addStretch()
@@ -1173,6 +1338,7 @@ class UpcomingScheduleWidget(QFrame):
     def _on_event_clicked(self, title: str):
         self.event_selected.emit(f"Review and brief me on '{title}'")
         self.schedule_clicked.emit()
+
 
 class MediaTransportWidget(QFrame):
     """Media Transport & Spotify player card in the right sidebar."""

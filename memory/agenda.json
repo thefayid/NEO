@@ -1,23 +1,275 @@
 {
   "events": [
     {
-      "title": "Financial Management Exam",
-      "start_time": "17:00",
-      "end_time": "19:00",
-      "date": "2026-11-08"
-    },
-    {
-      "title": "SIH Team Sync",
+      "id": "ical_289571",
+      "title": "Fayid birtday",
+      "date": "2019-04-28",
       "start_time": "20:00",
-      "end_time": "20:30",
-      "date": "2026-11-08"
+      "end_time": "21:00",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
     },
     {
-      "title": "Review & Notes",
-      "start_time": "21:00",
+      "id": "ical_353685",
+      "title": "Meeting with ollm",
+      "date": "2019-07-07",
+      "start_time": "13:30",
+      "end_time": "14:30",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_308220",
+      "title": "Meeting nmk.llxnmwmmith Fou",
+      "date": "2019-08-23",
+      "start_time": "All Day",
+      "end_time": "All Day",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_672368",
+      "title": "Meeting with Oll",
+      "date": "2019-09-16",
+      "start_time": "23:30",
+      "end_time": "00:30",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_961716",
+      "title": "Rahman fayid's Coding Class with WhiteHat Jr",
+      "date": "2020-11-01",
+      "start_time": "18:00",
+      "end_time": "19:00",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_871915",
+      "title": "Vi App - Recharge now for 9961839164",
+      "date": "2021-01-11",
+      "start_time": "All Day",
+      "end_time": "All Day",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_949819",
+      "title": "birthday",
+      "date": "2021-04-28",
+      "start_time": "08:00",
+      "end_time": "09:00",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_409363",
+      "title": "Vi App - Recharge now for 9961839164",
+      "date": "2021-12-14",
+      "start_time": "All Day",
+      "end_time": "All Day",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_620040",
+      "title": "RedTeam Security Summit 2021",
+      "date": "2021-12-19",
+      "start_time": "10:30",
+      "end_time": "11:15",
+      "duration_minutes": 45,
+      "location": "FLOOR",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_770914",
+      "title": "Thallumaala (U/A)",
+      "date": "2022-08-18",
+      "start_time": "16:30",
+      "end_time": "17:30",
+      "duration_minutes": 60,
+      "location": "Moviemax Circle: Kasaragod(MAX 1)\\, Kasaragod\\, Kerala\\, India",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_299761",
+      "title": "Leo (U/A)",
+      "date": "2023-10-21",
+      "start_time": "16:30",
+      "end_time": "17:30",
+      "duration_minutes": 60,
+      "location": "Moviemax Circle: Kasaragod(MAX 1)\\, Kasaragod\\, Kasaragod",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_641935",
+      "title": "Aavesham (U/A)",
+      "date": "2024-04-12",
+      "start_time": "22:45",
+      "end_time": "23:45",
+      "duration_minutes": 60,
+      "location": "Magic Frames Mehboob Theatre Complex 4K: Kasaragod\\, Kasaragod\\, Kasaragod",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_837649",
+      "title": "Bugs 2 Banks",
+      "date": "2024-11-10",
+      "start_time": "06:00",
+      "end_time": "07:00",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_387186",
+      "title": "Bus to Ernakulam",
+      "date": "2025-01-01",
+      "start_time": "20:10",
+      "end_time": "06:15",
+      "duration_minutes": 60,
+      "location": "Kasaragod",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_188087",
+      "title": "Train to Kozhikkode",
+      "date": "2025-04-19",
+      "start_time": "05:30",
+      "end_time": "06:30",
+      "duration_minutes": 60,
+      "location": "Kasaragod",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_711725",
+      "title": "TDPCL",
+      "date": "2025-05-12",
+      "start_time": "20:30",
       "end_time": "21:30",
-      "date": "2026-11-08"
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_95736",
+      "title": "Bus to Kasaragod",
+      "date": "2025-07-12",
+      "start_time": "20:31",
+      "end_time": "06:40",
+      "duration_minutes": 60,
+      "location": "Kakkanad",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_43915",
+      "title": "Coolie",
+      "date": "2025-08-14",
+      "start_time": "23:59",
+      "end_time": "00:59",
+      "duration_minutes": 60,
+      "location": "Kavitha Theatre 4K 3D Dolby 7.1: Ernakulam(KAVITHA)\\, Kochi\\, Kochi",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_128417",
+      "title": "ISRA Chapter Meetup - CTF Registration",
+      "date": "2025-09-27",
+      "start_time": "09:00",
+      "end_time": "14:30",
+      "duration_minutes": 330,
+      "location": "Jain University Kochi\\, Knowledge Park - Kochi\\, Nirmal Infopark Infopark P.O Kakkanad\\, Infopark Campus\\, Kochi\\, Kakkanad\\, Kerala 682042\\, India",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_837805",
+      "title": "Bus to Kasaragod",
+      "date": "2025-10-01",
+      "start_time": "23:15",
+      "end_time": "03:45",
+      "duration_minutes": 60,
+      "location": "Calicut",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_782480",
+      "title": "Bus to Nileshwar",
+      "date": "2025-11-14",
+      "start_time": "20:31",
+      "end_time": "06:05",
+      "duration_minutes": 60,
+      "location": "Kakkanad",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_396215",
+      "title": "Bus to Kasargode",
+      "date": "2025-11-23",
+      "start_time": "20:31",
+      "end_time": "12:10",
+      "duration_minutes": 60,
+      "location": "Kakkanad",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_833907",
+      "title": "Chatha Pacha: The Ring of Rowdies (UA13+)",
+      "date": "2026-01-22",
+      "start_time": "16:00",
+      "end_time": "17:00",
+      "duration_minutes": 60,
+      "location": "Vanitha Cineplex RGB Laser 4K 3D ATMOS: Edappally\\, Kochi\\, Kochi",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_584255",
+      "title": "Jailer 2 (UA16+)",
+      "date": "2026-10-17",
+      "start_time": "23:15",
+      "end_time": "00:15",
+      "duration_minutes": 60,
+      "location": "Magic Frames Mehboob Theatre Complex 4K: Kasaragod(NARTHAKI(SCREEN 4))\\, KPR Rao Road\\,\\, Kasaragod\\, Kerala 671121",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_81018",
+      "title": "NULL KOCHI MEETUP OCTOBER",
+      "date": "2026-10-18",
+      "start_time": "09:15",
+      "end_time": "13:30",
+      "duration_minutes": 255,
+      "location": "TinkerSpace Kochi\\, CUSAT P O\\, 21/258\\, Seaport - Airport Rd\\, Vidya Nagar Colony\\, Punnekkattumoola\\, Kalamassery\\, Kochi\\, Keralam 682022\\, India",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_33051",
+      "title": "Scene",
+      "date": "2026-11-06",
+      "start_time": "18:05",
+      "end_time": "19:05",
+      "duration_minutes": 60,
+      "location": "Kavitha Theatre 4K 3D Dolby 7.1: Ernakulam (KAVITHA)\\, Paza Hotel\\, Mahatma Gandhi Road\\,\\, Kochi\\, Kerala 682011",
+      "source": "ical_sync"
+    },
+    {
+      "id": "ical_584635",
+      "title": "Start Ey Project",
+      "date": "2026-11-09",
+      "start_time": "21:00",
+      "end_time": "22:00",
+      "duration_minutes": 60,
+      "location": "Google Calendar",
+      "source": "ical_sync"
     }
   ],
-  "last_synced": "2026-10-27T09:48:00"
+  "last_synced": "2026-11-08T21:04:27.038080"
 }

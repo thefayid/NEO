@@ -28,7 +28,7 @@ import sys
 import threading
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -55,6 +55,16 @@ def _read_config() -> dict:
 
 
 # ── 1. Agenda & Calendar Management ──────────────────────────────────────────
+
+DUMMY_EVENT_TITLES = {
+    "Financial Management Exam",
+    "SIH Team Sync",
+    "Review & Notes",
+    "Architecture Review & Sprint Sync",
+    "Production Deployment & Telemetry Sign-off",
+    "Executive Client Project Review",
+}
+
 
 def _default_seed_agenda(today_str: str) -> list[dict]:
     """Generates realistic executive/dev agenda items for a productive day."""
@@ -100,12 +110,14 @@ def _load_agenda() -> dict:
             try:
                 data = json.loads(_AGENDA_FILE.read_text(encoding="utf-8"))
                 if isinstance(data, dict) and "events" in data:
+                    # Filter out any lingering dummy events
+                    data["events"] = [e for e in data.get("events", []) if e.get("title") not in DUMMY_EVENT_TITLES]
                     return data
             except Exception:
                 pass
-        # Initialize default seed
+        # Return empty agenda structure (do not pollute with fake exams)
         data = {
-            "events": _default_seed_agenda(today_str),
+            "events": [],
             "last_synced": datetime.now().isoformat(),
         }
         try:
@@ -157,12 +169,40 @@ def _format_time_friendly(time_str: str) -> str:
         return time_str
 
 
+def _parse_ical_datetime(raw_dt_str: str) -> tuple[str, str]:
+    """
+    Parses an iCal date/datetime string into (date_str 'YYYY-MM-DD', time_str 'HH:MM').
+    Handles UTC 'Z' suffixes by converting to the local system timezone.
+    Handles all-day dates 'YYYYMMDD'.
+    """
+    s = raw_dt_str.strip()
+    if s.endswith("Z") and "T" in s:
+        clean = s.replace("-", "").replace(":", "")
+        try:
+            if len(clean) >= 15:
+                dt_utc = datetime.strptime(clean[:15] + "Z", "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+                dt_local = dt_utc.astimezone()
+                return dt_local.strftime("%Y-%m-%d"), dt_local.strftime("%H:%M")
+        except Exception:
+            pass
+    if "T" in s:
+        parts = s.split("T", 1)
+        d_p = parts[0].replace("-", "")
+        t_p = parts[1].replace(":", "")
+        d_str = f"{d_p[0:4]}-{d_p[4:6]}-{d_p[6:8]}" if len(d_p) >= 8 else ""
+        t_str = f"{t_p[0:2]}:{t_p[2:4]}" if len(t_p) >= 4 else "09:00"
+        return d_str, t_str
+    clean_d = s.replace("-", "")
+    if len(clean_d) >= 8:
+        return f"{clean_d[0:4]}-{clean_d[4:6]}-{clean_d[6:8]}", "All Day"
+    return "", ""
+
+
 def _sync_ical_feed(ical_url: str) -> int:
-    """Fetches and parses iCalendar (.ics) feed from Google Calendar or Outlook."""
-    if not ical_url or not ical_url.startswith(("http://", "https://")):
+    """Fetches and parses iCalendar (.ics) feed from Google Calendar or Outlook with timezone awareness."""
+    if not ical_url or not ical_url.startswith(("http://", "https://", "webcal://")):
         return 0
 
-    # Auto-prefix https if missing
     clean_url = ical_url.strip()
     if clean_url.startswith("webcal://"):
         clean_url = "https://" + clean_url[9:]
@@ -179,7 +219,7 @@ def _sync_ical_feed(ical_url: str) -> int:
             clean_url,
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
         )
-        with urllib.request.urlopen(req, context=ctx, timeout=10) as response:
+        with urllib.request.urlopen(req, context=ctx, timeout=12) as response:
             ics_text = response.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as he:
         if he.code == 404:
@@ -189,14 +229,19 @@ def _sync_ical_feed(ical_url: str) -> int:
         print(f"[Briefing] ⚠️ iCal fetch failed: {e}")
         raise RuntimeError(f"Network error: {e}")
 
-    # Unfold folded iCal lines (lines starting with space or tab)
-    ics_text = re.sub(r"\r?\n[ \t]", "", ics_text)
-
-    events_found = 0
+    # Unfold folded iCal lines
+    ics_text = re.sub(r'\r?\n[ \t]', '', ics_text)
     raw_events = re.findall(r"BEGIN:VEVENT(.*?)END:VEVENT", ics_text, re.DOTALL)
     agenda_data = _load_agenda()
     existing_events = agenda_data.get("events", [])
 
+    # Retain authentic user local manual events only
+    preserved_events = [
+        e for e in existing_events
+        if e.get("source") == "local" and e.get("title") not in DUMMY_EVENT_TITLES
+    ]
+
+    synced_events: list[dict] = []
     for block in raw_events:
         summary_m = re.search(r"SUMMARY:(.*?)(?:\r?\n|$)", block)
         dtstart_m = re.search(r"DTSTART(?:;[^:]+)?:(.*?)(?:\r?\n|$)", block)
@@ -207,60 +252,53 @@ def _sync_ical_feed(ical_url: str) -> int:
             continue
 
         title = summary_m.group(1).strip()
-        dtstart_raw = dtstart_m.group(1).strip()
-        dtend_raw = dtend_m.group(1).strip() if dtend_m else ""
+        if not title or title in DUMMY_EVENT_TITLES:
+            continue
+
+        raw_start = dtstart_m.group(1).strip()
+        raw_end = dtend_m.group(1).strip() if dtend_m else ""
         location = loc_m.group(1).strip() if loc_m else ""
 
-        # Parse date and time from iCal standard: YYYYMMDDTHHMMSSZ or YYYYMMDD
-        date_str = ""
-        start_time_str = "09:00"
-        end_time_str = "09:30"
-
-        if "T" in dtstart_raw:
-            d_part, t_part = dtstart_raw.split("T", 1)
-            if len(d_part) >= 8:
-                date_str = f"{d_part[0:4]}-{d_part[4:6]}-{d_part[6:8]}"
-            if len(t_part) >= 4:
-                start_time_str = f"{t_part[0:2]}:{t_part[2:4]}"
-        elif len(dtstart_raw) >= 8:
-            date_str = f"{dtstart_raw[0:4]}-{dtstart_raw[4:6]}-{dtstart_raw[6:8]}"
-
-        if dtend_raw and "T" in dtend_raw:
-            _, t_part = dtend_raw.split("T", 1)
-            if len(t_part) >= 4:
-                end_time_str = f"{t_part[0:2]}:{t_part[2:4]}"
-        else:
-            # Default +30 min
-            s_min = _time_to_minutes(start_time_str)
-            end_time_str = _minutes_to_time(s_min + 30)
+        date_str, start_time_str = _parse_ical_datetime(raw_start)
+        _, end_time_str = _parse_ical_datetime(raw_end) if raw_end else ("", "")
 
         if not date_str:
             continue
 
-        # Check duplicate
-        exists = any(
-            e.get("title") == title
-            and e.get("date") == date_str
-            and e.get("start_time") == start_time_str
-            for e in existing_events
-        )
-        if not exists:
-            existing_events.append({
-                "id": f"ical_{abs(hash(title + date_str + start_time_str)) % 1000000}",
-                "title": title,
-                "date": date_str,
-                "start_time": start_time_str,
-                "end_time": end_time_str,
-                "duration_minutes": max(15, _time_to_minutes(end_time_str) - _time_to_minutes(start_time_str)),
-                "location": location or "Google / Outlook Sync",
-                "source": "ical_sync",
-            })
-            events_found += 1
+        if not end_time_str or end_time_str == "All Day":
+            if start_time_str != "All Day":
+                s_min = _time_to_minutes(start_time_str)
+                end_time_str = _minutes_to_time(s_min + 60)
+            else:
+                end_time_str = "All Day"
 
-    agenda_data["events"] = existing_events
+        # Avoid duplicates within feed
+        if any(e.get("title") == title and e.get("date") == date_str and e.get("start_time") == start_time_str for e in synced_events):
+            continue
+
+        s_min = _time_to_minutes(start_time_str)
+        e_min = _time_to_minutes(end_time_str)
+        dur = max(15, e_min - s_min) if (start_time_str != "All Day" and e_min > s_min) else 60
+
+        synced_events.append({
+            "id": f"ical_{abs(hash(title + date_str + start_time_str)) % 1000000}",
+            "title": title,
+            "date": date_str,
+            "start_time": start_time_str,
+            "end_time": end_time_str,
+            "duration_minutes": dur,
+            "location": location or "Google Calendar",
+            "source": "ical_sync",
+        })
+
+    # Merge preserved local events + synced events
+    all_events = preserved_events + synced_events
+    all_events.sort(key=lambda e: (e.get("date", ""), _time_to_minutes(e.get("start_time", "00:00"))))
+
+    agenda_data["events"] = all_events
     agenda_data["last_synced"] = datetime.now().isoformat()
     _save_agenda(agenda_data)
-    return events_found
+    return len(synced_events)
 
 
 def _get_agenda_timeline(date_str: str) -> tuple[list[dict], list[str]]:
