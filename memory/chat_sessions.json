@@ -263,6 +263,111 @@
           "role": "neo",
           "content": "Understood, Boss. Camera closed.",
           "timestamp": "11:56 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey, Boss!",
+          "timestamp": "12:05 AM"
+        },
+        {
+          "role": "user",
+          "content": "heyy",
+          "timestamp": "12:05 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey, Fayid! What's going on?",
+          "timestamp": "12:05 AM"
+        },
+        {
+          "role": "user",
+          "content": "Can you",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Sure, Boss, can I help with something?",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "user",
+          "content": "Can you",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Sure, Boss, can I help with something?",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah , just o pen the ca mera and tell me what it is.",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "neo",
+          "content": "I see you, Boss. You're sitting at your desk, looking focused.",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah , just o pen the ca mera and tell me what it is.",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "neo",
+          "content": "It's quite dark, Boss. I can just make you out, reclining comfortably in the dark.",
+          "timestamp": "12:08 AM"
+        },
+        {
+          "role": "user",
+          "content": "No just tell me",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "neo",
+          "content": "I can",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "user",
+          "content": "No just tell me",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "neo",
+          "content": "I can",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Boss, the image is completely dark. I can't see your hand or anything in it.",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Ah, I can see it now,",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "neo",
+          "content": "You're still holding the smartphone, Boss.",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "user",
+          "content": "Thank you.",
+          "timestamp": "12:09 AM"
+        },
+        {
+          "role": "user",
+          "content": "bye",
+          "timestamp": "12:10 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Shutting down now. Goodbye, Boss.",
+          "timestamp": "12:10 AM"
         }
       ]
     }
