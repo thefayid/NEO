@@ -6025,6 +6025,7 @@ class MainWindow(QMainWindow):
         self._widgets_sidebar = NeoWidgetsSidebar()
         self._widgets_sidebar.telemetry_requested.connect(self._toggle_controls)
         self._widgets_sidebar.schedule_requested.connect(lambda: self._on_hero_command("Review today's schedule and upcoming calendar events, Boss"))
+        self._widgets_sidebar.event_briefing_requested.connect(lambda p: self._on_hero_command(p))
         self._widgets_sidebar.focus_mode_toggled.connect(self._on_focus_mode_toggled)
 
         self._bar_cpu = MetricBar("CPU FLUX", C.PRI)
