@@ -218,6 +218,51 @@
           "role": "neo",
           "content": "Got it, Boss. Just let me know when you're ready to log it.",
           "timestamp": "11:46 PM"
+        },
+        {
+          "role": "user",
+          "content": "Can you can he ar me",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Loud and clear, Boss! What's on your mind?",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "user",
+          "content": "Can you can he ar me",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Loud and clear, Boss! What's on your mind?",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "neo",
+          "content": "It's quite dark, Boss. I'm having trouble making out any details or clearly seeing the room.",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "user",
+          "content": "O kay leave it.",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss. Camera closed.",
+          "timestamp": "11:55 PM"
+        },
+        {
+          "role": "user",
+          "content": "O kay leave it.",
+          "timestamp": "11:56 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss. Camera closed.",
+          "timestamp": "11:56 PM"
         }
       ]
     }

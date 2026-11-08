@@ -4886,6 +4886,7 @@ class MainWindow(QMainWindow):
         self.hero_stage.command_submitted.connect(self._on_hero_command)
         self.hero_stage.attach_requested.connect(self._open_file_dialog)
         self.hero_stage.mic_toggled.connect(self._on_hero_mic_toggled)
+        self.hero_stage.camera_close_requested.connect(self.stop_camera_stream)
 
         self._chat_container = self._build_chat_container()
 
@@ -5017,15 +5018,24 @@ class MainWindow(QMainWindow):
     # --- Live camera stream in HUD area ------------------------------------
     def _on_cam_stream(self, start: bool) -> None:
         if start:
-            self._hud_cam_stack.setCurrentIndex(3)
+            # Switch to Home menu and activate camera view inside Home stage
+            if hasattr(self, "_nav_sidebar"):
+                self._nav_sidebar.select_tab("Home")
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "hero_stage"):
+                self._hud_cam_stack.setCurrentWidget(self.hero_stage)
+            if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "show_camera_stream"):
+                self.hero_stage.show_camera_stream(True)
         else:
-            self._hud_cam_stack.setCurrentIndex(0)
+            if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "show_camera_stream"):
+                self.hero_stage.show_camera_stream(False)
             self._cam_live_lbl.clear()
 
     def _on_cam_frame(self, data: bytes) -> None:
+        if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "update_camera_frame"):
+            self.hero_stage.update_camera_frame(data)
         px = QPixmap()
         px.loadFromData(data)
-        if not px.isNull():
+        if not px.isNull() and hasattr(self, "_cam_live_lbl"):
             w, h = self._cam_live_lbl.width(), self._cam_live_lbl.height()
             if w > 1 and h > 1:
                 self._cam_live_lbl.setPixmap(

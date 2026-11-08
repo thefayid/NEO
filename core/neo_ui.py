@@ -1643,6 +1643,9 @@ class NeoNavSidebar(QWidget):
             b.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
         self.tab_changed.emit(name)
 
+    def select_tab(self, name: str):
+        self._on_item_clicked(name)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  4. LIVE SPEECH TRANSCRIPT WIDGET (YOU IN GREEN, NEO IN WHITE)
@@ -1711,6 +1714,7 @@ class NeoHeroStage(QWidget):
     command_submitted = pyqtSignal(str)
     attach_requested = pyqtSignal()
     mic_toggled = pyqtSignal()
+    camera_close_requested = pyqtSignal()
 
     def __init__(self, user_name: str = "Fayid", parent=None):
         super().__init__(parent)
@@ -1736,18 +1740,97 @@ class NeoHeroStage(QWidget):
         vbox.addWidget(self.title_lbl)
 
         vbox.addSpacing(7)
-        sub1 = QLabel("I'm NEO — your personal AI assistant.")
-        sub1.setFont(font_text(10, QFont.Weight.Normal))
-        sub1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sub1.setStyleSheet(f"color: #94a3b8; border: none; background: transparent;")
-        vbox.addWidget(sub1)
+        self.sub1 = QLabel("I'm NEO — your personal AI assistant.")
+        self.sub1.setFont(font_text(10, QFont.Weight.Normal))
+        self.sub1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sub1.setStyleSheet(f"color: #94a3b8; border: none; background: transparent;")
+        vbox.addWidget(self.sub1)
 
         vbox.addSpacing(2)
-        sub2 = QLabel("How can I help you today?")
-        sub2.setFont(font_text(10, QFont.Weight.Normal))
-        sub2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sub2.setStyleSheet(f"color: #64748b; border: none; background: transparent;")
-        vbox.addWidget(sub2)
+        self.sub2 = QLabel("How can I help you today?")
+        self.sub2.setFont(font_text(10, QFont.Weight.Normal))
+        self.sub2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sub2.setStyleSheet(f"color: #64748b; border: none; background: transparent;")
+        vbox.addWidget(self.sub2)
+
+        # Camera Viewport Container (Displayed directly in Home menu when active)
+        self.camera_card = QFrame()
+        self.camera_card.setFixedWidth(640)
+        self.camera_card.setFixedHeight(350)
+        self.camera_card.setStyleSheet("""
+            QFrame {
+                background: rgba(10, 14, 22, 0.95);
+                border: 1px solid rgba(0, 229, 255, 0.35);
+                border-radius: 20px;
+            }
+        """)
+        cam_card_v = QVBoxLayout(self.camera_card)
+        cam_card_v.setContentsMargins(16, 12, 16, 14)
+        cam_card_v.setSpacing(8)
+
+        cam_hdr = QHBoxLayout()
+        cam_hdr.setContentsMargins(0, 0, 0, 0)
+        dot = QLabel("🔴")
+        dot.setFont(QFont("Segoe UI", 9))
+        dot.setStyleSheet("background: transparent; border: none;")
+        cam_hdr.addWidget(dot)
+
+        cam_title = QLabel("NEO OPTICAL SENSOR // LIVE CAMERA FEED")
+        cam_title.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        cam_title.setStyleSheet("color: #00e5ff; letter-spacing: 1px; border: none; background: transparent;")
+        cam_hdr.addWidget(cam_title)
+
+        cam_hdr.addStretch()
+
+        badge = QLabel("720P HD • LIVE")
+        badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        badge.setStyleSheet("""
+            color: #94a3b8; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
+            padding: 2px 8px;
+        """)
+        cam_hdr.addWidget(badge)
+
+        cam_close_btn = QPushButton("✕ Close Camera")
+        cam_close_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        cam_close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        cam_close_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(244, 63, 94, 0.15);
+                color: #fb7185;
+                border: 1px solid rgba(244, 63, 94, 0.3);
+                border-radius: 8px;
+                padding: 3px 10px;
+            }
+            QPushButton:hover {
+                background: rgba(244, 63, 94, 0.3);
+                color: #ffffff;
+            }
+        """)
+        cam_close_btn.clicked.connect(self.camera_close_requested.emit)
+        cam_hdr.addWidget(cam_close_btn)
+        cam_card_v.addLayout(cam_hdr)
+
+        self.cam_live_lbl = QLabel("ACQUIRING OPTICAL FEED...")
+        self.cam_live_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Medium))
+        self.cam_live_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.cam_live_lbl.setStyleSheet("""
+            QLabel {
+                background: #05070a;
+                color: #64748b;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 12px;
+            }
+        """)
+        self.cam_live_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        cam_card_v.addWidget(self.cam_live_lbl, stretch=1)
+
+        self.camera_box = QHBoxLayout()
+        self.camera_box.addStretch()
+        self.camera_box.addWidget(self.camera_card)
+        self.camera_box.addStretch()
+        vbox.addLayout(self.camera_box)
+        self.camera_card.hide()
 
         # Live Transcript Subtitle Pill (You in Green, NEO in White)
         vbox.addSpacing(14)
@@ -1863,7 +1946,10 @@ class NeoHeroStage(QWidget):
         vbox.addLayout(bar_container)
 
         # 4. Quick Action Pill Cards
-        vbox.addSpacing(22)
+        self.cards_widget = QWidget()
+        cards_widget_lay = QVBoxLayout(self.cards_widget)
+        cards_widget_lay.setContentsMargins(0, 0, 0, 0)
+        cards_widget_lay.setSpacing(0)
         cards_row = QHBoxLayout()
         cards_row.setSpacing(12)
         cards_row.addStretch()
@@ -1881,8 +1967,60 @@ class NeoHeroStage(QWidget):
             cards_row.addWidget(card)
 
         cards_row.addStretch()
-        vbox.addLayout(cards_row)
+        cards_widget_lay.addLayout(cards_row)
+        vbox.addSpacing(22)
+        vbox.addWidget(self.cards_widget)
         vbox.addStretch()
+
+    def show_camera_stream(self, active: bool):
+        """Toggle camera view inside the Home menu."""
+        if active:
+            if hasattr(self, "eclipse"):
+                self.eclipse.hide()
+            if hasattr(self, "title_lbl"):
+                self.title_lbl.hide()
+            if hasattr(self, "sub1"):
+                self.sub1.hide()
+            if hasattr(self, "sub2"):
+                self.sub2.hide()
+            if hasattr(self, "cards_widget"):
+                self.cards_widget.hide()
+            if hasattr(self, "camera_card"):
+                self.camera_card.show()
+                self.cam_live_lbl.setText("ACQUIRING OPTICAL FEED...")
+        else:
+            if hasattr(self, "camera_card"):
+                self.camera_card.hide()
+                self.cam_live_lbl.clear()
+            if hasattr(self, "eclipse"):
+                self.eclipse.show()
+            if hasattr(self, "title_lbl"):
+                self.title_lbl.show()
+            if hasattr(self, "sub1"):
+                self.sub1.show()
+            if hasattr(self, "sub2"):
+                self.sub2.show()
+            if hasattr(self, "cards_widget"):
+                self.cards_widget.show()
+
+    def update_camera_frame(self, data: bytes):
+        """Display live JPEG frame on Home menu camera card."""
+        if not hasattr(self, "cam_live_lbl") or not hasattr(self, "camera_card"):
+            return
+        if not self.camera_card.isVisible():
+            return
+        px = QPixmap()
+        px.loadFromData(data)
+        if not px.isNull():
+            w = max(10, self.cam_live_lbl.width())
+            h = max(10, self.cam_live_lbl.height())
+            self.cam_live_lbl.setPixmap(
+                px.scaled(
+                    w, h,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
 
     def _create_action_card(self, icon: str, title: str) -> QFrame:
         card = QFrame()

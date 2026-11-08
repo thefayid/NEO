@@ -993,6 +993,15 @@ class JarvisLive:
                 getattr(self._dashboard, "_bind_error", "") or "")
 
     def _on_text_command(self, text: str):
+        low = text.lower().strip()
+        if low in ("show cam", "show camera", "open camera", "open cam", "start camera", "turn on camera", "camera view", "view camera"):
+            self.ui.start_camera_stream()
+            self.ui.write_log("SYS: Camera feed activated in Home menu.")
+            return
+        if low in ("close camera", "close cam", "stop camera", "stop cam", "hide camera", "hide cam", "turn off camera"):
+            self.ui.stop_camera_stream()
+            self.ui.write_log("SYS: Camera feed closed.")
+            return
         if not self._loop or not self.session:
             return
         # Respect wake-word sleep: a typed command must not be answered while
@@ -1465,6 +1474,11 @@ class JarvisLive:
                     if angle == "camera":
                         img_b, mime_t = await loop.run_in_executor(None, _capture_camera)
                         self.ui.start_camera_stream()
+                        if img_b and hasattr(self.ui, "_win"):
+                            try:
+                                self.ui._win._cam_frame_sig.emit(img_b)
+                            except Exception:
+                                pass
                         self._vision_cam_active = True
                         print(f"[Vision] 📷 Camera: {len(img_b):,} bytes")
                         _stall = "camera"
