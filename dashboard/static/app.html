@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>F.R.I.D.A.Y. Voice Node</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#060911">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FRIDAY">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg: #060911;
+      --card-bg: rgba(14, 21, 37, 0.75);
+      --cyan: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --red: #ff3366;
+      --red-glow: rgba(255, 51, 102, 0.45);
+      --border: rgba(0, 229, 255, 0.18);
+      --text: #e6f7ff;
+      --muted: #648299;
+    }
+    body {
+      height: 100vh;
+      width: 100vw;
+      background: radial-gradient(circle at 50% 35%, #0b1526 0%, #060911 80%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px);
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 4px;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand h1 {
+      font-size: 16px;
+      letter-spacing: 5px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .brand h1 span { color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
+    .node-sub {
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .status-badge.online {
+      color: var(--cyan);
+      border-color: rgba(0, 229, 255, 0.4);
+      background: rgba(0, 229, 255, 0.08);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .status-badge.online .status-dot {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse-dot 1.8s infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+    /* ── CENTER VOICE CORE ── */
+    .voice-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Arc Reactor / Voice Visualizer Ring */
+    .reactor-wrap {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .ring-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px dashed rgba(0, 229, 255, 0.25);
+      animation: rotate-slow 22s linear infinite;
+    }
+    .ring-pulse {
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-glow);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+    .reactor-core {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(7, 18, 38, 0.9));
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 25px var(--cyan-glow), inset 0 0 15px rgba(0, 229, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      z-index: 2;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .reactor-wrap:active .reactor-core {
+      transform: scale(0.94);
+    }
+
+    /* Live Active / Speaking States */
+    .reactor-wrap.live .reactor-core {
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(0, 160, 220, 0.4));
+      border-color: #fff;
+      box-shadow: 0 0 40px rgba(0, 229, 255, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.5);
+      animation: core-throb 1.2s ease-in-out infinite alternate;
+    }
+    .reactor-wrap.live .ring-pulse {
+      opacity: 0.8;
+      animation: pulse-out 1.6s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
+    }
+
+    .mic-icon {
+      font-size: 38px;
+      transition: transform 0.25s;
+    }
+    .tap-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes core-throb { 0% { transform: scale(1); } 100% { transform: scale(1.06); } }
+    @keyframes pulse-out {
+      0% { transform: scale(0.9); opacity: 0.9; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    /* Live Vocal Waveform Indicator */
+    .voice-meter-bar {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 32px;
+    }
+    .wave-line {
+      width: 4px;
+      height: 6px;
+      background: rgba(0, 229, 255, 0.35);
+      border-radius: 99px;
+      transition: height 0.08s ease, background 0.2s;
+    }
+    .reactor-wrap.live ~ .voice-meter-bar .wave-line {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    /* State & Mode Hint */
+    .voice-status-text {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .voice-sub-hint {
+      font-size: 11px;
+      color: rgba(230, 247, 255, 0.45);
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* ── REALTIME CONVERSATION HUD ── */
+    .convo-hud {
+      width: 100%;
+      height: 150px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .convo-hud::-webkit-scrollbar { width: 3px; }
+    .convo-hud::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .hud-msg {
+      padding: 7px 11px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 90%;
+      word-break: break-word;
+      animation: pop 0.2s ease;
+    }
+    .hud-msg.friday {
+      align-self: flex-start;
+      background: rgba(0, 229, 255, 0.08);
+      border-left: 2px solid var(--cyan);
+      color: #fff;
+    }
+    .hud-msg.user {
+      align-self: flex-end;
+      background: rgba(255, 255, 255, 0.06);
+      border-right: 2px solid var(--muted);
+      color: var(--text);
+    }
+    .hud-msg.sys {
+      align-self: center;
+      background: transparent;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    @keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── QUICK ACTION DOCK ── */
+    .quick-dock {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .dock-btn {
+      flex: 1;
+      padding: 11px 0;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .dock-btn:active { transform: scale(0.96); }
+    .dock-btn.cyan-action { border-color: rgba(0, 229, 255, 0.4); color: var(--cyan); }
+    .dock-btn.red-action { border-color: rgba(255, 51, 102, 0.4); color: var(--red); }
+
+    /* Compact text input bar for fallback */
+    .text-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .text-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .text-input:focus { border-color: var(--cyan); }
+    .btn-send-mini {
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: var(--cyan);
+      color: #04101e;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 1px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(0, 229, 255, 0.18);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 7px 20px;
+      border-radius: 99px;
+      opacity: 0;
+      transition: all 0.25s;
+      pointer-events: none;
+      z-index: 100;
+      text-transform: uppercase;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* SSL Setup Card */
+    #ssl-card {
+      position: absolute;
+      inset: 20px;
+      background: rgba(7, 13, 26, 0.98);
+      border: 2px solid var(--cyan);
+      border-radius: 20px;
+      padding: 22px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1000;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    }
+    #ssl-card h2 { font-size: 16px; color: var(--cyan); letter-spacing: 1px; }
+    #ssl-card p, #ssl-card ol { font-size: 13px; line-height: 1.6; color: #bed2e2; }
+    #ssl-card ol { padding-left: 20px; }
+    .btn-close-setup {
+      margin-top: auto;
+      padding: 12px;
+      background: var(--cyan);
+      color: #04101e;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="toast"></div>
+
+  <!-- SSL / Insecure origin setup popup if browser blocks getUserMedia -->
+  <div id="ssl-card">
+    <h2>🔒 Microphone Access Setup</h2>
+    <p>Browsers require either HTTPS or a trusted local origin for microphone streaming.</p>
+    <ol>
+      <li>If using HTTPS: Tap <strong>"Advanced" → "Proceed to site (unsafe)"</strong> to accept the local Stark cert.</li>
+      <li>If using HTTP in Chrome: Open a new tab to <code>chrome://flags</code>, search <code>Insecure origins treated as secure</code>, paste:
+        <br><strong id="flag-url" style="color:var(--cyan);user-select:all;"></strong>
+        <br>Set to <strong>Enabled</strong> and tap <strong>Relaunch</strong>.</li>
+    </ol>
+    <button class="btn-close-setup" onclick="document.getElementById('ssl-card').style.display='none'">GOT IT</button>
+  </div>
+
+  <header>
+    <div class="brand">
+      <h1>F.R.I.D.A.Y. <span>LIVE</span></h1>
+      <div class="node-sub">Mobile Audio Node · Mark-LVI</div>
+    </div>
+    <div class="status-badge" id="net-badge">
+      <div class="status-dot"></div>
+      <span id="net-text">Connecting</span>
+    </div>
+  </header>
+
+  <!-- Arc Reactor / Voice Agent Centerpiece -->
+  <div class="voice-stage">
+    <div class="reactor-wrap" id="core-wrap" onclick="toggleVoice()">
+      <div class="ring-outer"></div>
+      <div class="ring-pulse"></div>
+      <div class="reactor-core">
+        <div class="mic-icon" id="mic-icon">🎙️</div>
+        <div class="tap-label" id="tap-lbl">TAP TO TALK</div>
+      </div>
+    </div>
+
+    <!-- Live Animated Waveform Bars -->
+    <div class="voice-meter-bar" id="wave-bar">
+      <div class="wave-line"></div><div class="wave-line"></div><div class="wave-line"></div>
+      <div class="wave-line"></div><div class="wave-line"></div><div class="wave-line"></div>
+      <div class="wave-line"></div><div class="wave-line"></div><div class="wave-line"></div>
+      <div class="wave-line"></div><div class="wave-line"></div>
+    </div>
+
+    <div class="voice-status-text" id="status-title">STANDBY</div>
+    <div class="voice-sub-hint" id="status-hint">Tap the Arc Core to talk directly with F.R.I.D.A.Y.</div>
+  </div>
+
+  <!-- Live Transcript / Feed HUD -->
+  <div class="convo-hud" id="convo-feed">
+    <div class="hud-msg sys">MOBILE AUDIO NODE INITIALIZED</div>
+  </div>
+
+  <!-- Tactical Quick Dock -->
+  <div class="quick-dock">
+    <button class="dock-btn cyan-action" onclick="doWake()">⚡ WAKE</button>
+    <button class="dock-btn red-action" onclick="doInterrupt()">✋ INTERRUPT</button>
+    <label class="dock-btn" for="file-upload">📎 FILE</label>
+    <input type="file" id="file-upload" multiple style="display:none">
+  </div>
+
+  <!-- Text Input fallback -->
+  <div class="text-bar">
+    <input class="text-input" id="text-in" placeholder="Type command to F.R.I.D.A.Y.…" autocomplete="off">
+    <button class="btn-send-mini" onclick="doSendText()">SEND</button>
+  </div>
+
+  <script>
+    // ── Authentication ────────────────────────────────────────────────────────
+    const _authToken = sessionStorage.getItem('jarvis_token');
+    const _sessionKey = sessionStorage.getItem('jarvis_key');
+    if (!_authToken) {
+      location.replace('/login');
+    }
+
+    const netBadge = document.getElementById('net-badge');
+    const netText = document.getElementById('net-text');
+    const convoFeed = document.getElementById('convo-feed');
+    const coreWrap = document.getElementById('core-wrap');
+    const tapLbl = document.getElementById('tap-lbl');
+    const micIcon = document.getElementById('mic-icon');
+    const statusTitle = document.getElementById('status-title');
+    const statusHint = document.getElementById('status-hint');
+    const waveLines = document.querySelectorAll('.wave-line');
+
+    function toast(text) {
+      const el = document.getElementById('toast');
+      el.textContent = text;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    function addLog(type, text) {
+      const msg = document.createElement('div');
+      msg.className = `hud-msg ${type}`;
+      msg.textContent = text;
+      convoFeed.appendChild(msg);
+      convoFeed.scrollTop = convoFeed.scrollHeight;
+    }
+
+    // ── Main Command & Event WebSocket ───────────────────────────────────────
+    let _cmdWs = null;
+    function connectCmdWs() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      _cmdWs = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(_authToken)}`);
+
+      _cmdWs.onopen = () => {
+        netBadge.className = 'status-badge online';
+        netText.textContent = 'ONLINE';
+        toast('Connected to Main Server');
+      };
+
+      _cmdWs.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.type === 'log') {
+            const role = data.speaker === 'user' ? 'user' : 'friday';
+            addLog(role, data.text);
+          } else if (data.type === 'sys') {
+            addLog('sys', data.text);
+          }
+        } catch (_) {}
+      };
+
+      _cmdWs.onclose = () => {
+        netBadge.className = 'status-badge';
+        netText.textContent = 'RETRYING';
+        setTimeout(connectCmdWs, 2500);
+      };
+    }
+    connectCmdWs();
+
+    // ── Audio Streaming to Gemini Live & AirPods ─────────────────────────────
+    let _voiceWs = null;
+    let _audioCtx = null;
+    let _playCtx = null;
+    let _micStream = null;
+    let _animTimer = null;
+    let _playCursor = 0.0;
+
+    function _initPlayback() {
+      if (!_playCtx || _playCtx.state === 'closed') {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        _playCtx = new AC({ sampleRate: 24000 });
+        _playCursor = _playCtx.currentTime;
+      }
+      if (_playCtx.state === 'suspended') {
+        _playCtx.resume();
+      }
+    }
+
+    function _playServerAudio(arrayBuffer) {
+      try {
+        _initPlayback();
+        const pcm16 = new Int16Array(arrayBuffer);
+        if (!pcm16.length) return;
+        const f32 = new Float32Array(pcm16.length);
+        for (let i = 0; i < pcm16.length; i++) {
+          f32[i] = pcm16[i] / 32768.0;
+        }
+        const buf = _playCtx.createBuffer(1, f32.length, 24000);
+        buf.copyToChannel(f32, 0);
+
+        const src = _playCtx.createBufferSource();
+        src.buffer = buf;
+        src.connect(_playCtx.destination);
+
+        const now = _playCtx.currentTime;
+        if (_playCursor < now) _playCursor = now + 0.03;
+        src.start(_playCursor);
+        _playCursor += buf.duration;
+
+        // Animate visualizer while receiving voice
+        _pulseWave(f32[0] * 50);
+      } catch (err) {
+        console.error('Audio play err:', err);
+      }
+    }
+
+    function _pulseWave(multiplier) {
+      waveLines.forEach((l, i) => {
+        const h = Math.min(32, Math.max(6, Math.abs(multiplier) * (1 + (i % 3)) * 8));
+        l.style.height = `${h}px`;
+      });
+    }
+
+    function _f32toPcm16(f32, srcRate) {
+      let s = f32;
+      if (srcRate !== 16000) {
+        const ratio = srcRate / 16000;
+        const len = Math.round(f32.length / ratio);
+        s = new Float32Array(len);
+        for (let i = 0; i < len; i++) {
+          s[i] = f32[Math.min(Math.round(i * ratio), f32.length - 1)];
+        }
+      }
+      const out = new Int16Array(s.length);
+      for (let i = 0; i < s.length; i++) {
+        out[i] = Math.max(-32768, Math.min(32767, Math.round(s[i] * 32768)));
+      }
+      return out.buffer;
+    }
+
+    async function toggleVoice() {
+      if (_voiceWs) {
+        stopVoice();
+        return;
+      }
+
+      // Check mic capability
+      if (!navigator.mediaDevices?.getUserMedia) {
+        document.getElementById('flag-url').textContent = location.origin;
+        document.getElementById('ssl-card').style.display = 'flex';
+        return;
+      }
+
+      _initPlayback();
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      } catch (err) {
+        toast('Mic Permission Denied');
+        addLog('sys', `Mic access failed: ${err.message}`);
+        return;
+      }
+
+      let ctx;
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 }); }
+      catch (_) { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      if (ctx.state === 'suspended') await ctx.resume();
+
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(`${proto}://${location.host}/ws/phone-audio?token=${encodeURIComponent(_authToken)}`);
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = async () => {
+        const rate = ctx.sampleRate;
+        const src = ctx.createMediaStreamSource(stream);
+
+        // Setup AudioWorklet processor or fallback
+        const workletCode = `class P extends AudioWorkletProcessor{process(i){const c=i[0]?.[0];if(c)this.port.postMessage(c.slice());return true;}}registerProcessor('p',P);`;
+        try {
+          const blobUrl = URL.createObjectURL(new Blob([workletCode], { type: 'application/javascript' }));
+          await ctx.audioWorklet.addModule(blobUrl);
+          URL.revokeObjectURL(blobUrl);
+          const nd = new AudioWorkletNode(ctx, 'p');
+
+          let pbuf = [], plen = 0;
+          nd.port.onmessage = (e) => {
+            const chunk = new Int16Array(_f32toPcm16(e.data, rate));
+            pbuf.push(chunk);
+            plen += chunk.length;
+            if (plen >= 1024) {
+              const out = new Int16Array(plen);
+              let off = 0;
+              for (const c of pbuf) { out.set(c, off); off += c.length; }
+              if (ws.readyState === 1) ws.send(out.buffer);
+              pbuf = [];
+              plen = 0;
+            }
+          };
+          src.connect(nd);
+        } catch (_) {
+          const sp = ctx.createScriptProcessor(4096, 1, 1);
+          sp.onaudioprocess = (e) => {
+            if (ws.readyState === 1) ws.send(_f32toPcm16(e.inputBuffer.getChannelData(0), rate));
+          };
+          src.connect(sp);
+          sp.connect(ctx.destination);
+        }
+
+        // Visual State -> LIVE
+        coreWrap.classList.add('live');
+        micIcon.textContent = '🔊';
+        tapLbl.textContent = 'LISTENING';
+        statusTitle.textContent = 'F.R.I.D.A.Y. LIVE LINK ACTIVE';
+        statusHint.textContent = 'Speak normally with AirPods or Phone Mic';
+        toast('🎙️ Voice Node Live');
+        addLog('sys', 'Mobile Voice Node Active: Mic & AirPods Streaming');
+      };
+
+      ws.onmessage = (e) => {
+        if (e.data instanceof ArrayBuffer) {
+          _playServerAudio(e.data);
+        }
+      };
+
+      ws.onclose = () => stopVoice();
+      ws.onerror = () => {
+        toast('Voice WS Error');
+        stopVoice();
+      };
+
+      _voiceWs = ws;
+      _audioCtx = ctx;
+      _micStream = stream;
+    }
+
+    function stopVoice() {
+      coreWrap.classList.remove('live');
+      micIcon.textContent = '🎙️';
+      tapLbl.textContent = 'TAP TO TALK';
+      statusTitle.textContent = 'STANDBY';
+      statusHint.textContent = 'Tap the Arc Core to talk directly with F.R.I.D.A.Y.';
+      waveLines.forEach(l => l.style.height = '6px');
+
+      if (_micStream) {
+        _micStream.getTracks().forEach(t => t.stop());
+        _micStream = null;
+      }
+      if (_audioCtx) {
+        try { _audioCtx.close(); } catch (_) {}
+        _audioCtx = null;
+      }
+      if (_voiceWs) {
+        const w = _voiceWs;
+        _voiceWs = null;
+        if (w.readyState < 2) w.close();
+      }
+      toast('Voice Link Closed');
+    }
+
+    // ── Command Actions ───────────────────────────────────────────────────────
+    function doWake() {
+      toast('⚡ Sending Wake');
+      fetch('/api/wake', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${_authToken}` }
+      });
+    }
+
+    function doInterrupt() {
+      toast('✋ Interrupted');
+      fetch('/api/command', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${_authToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: '[INTERRUPT]' })
+      });
+    }
+
+    function doSendText() {
+      const inp = document.getElementById('text-in');
+      const val = inp.value.trim();
+      if (!val) return;
+      inp.value = '';
+      addLog('user', val);
+      fetch('/api/command', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${_authToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: val })
+      });
+    }
+
+    document.getElementById('text-in').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSendText();
+    });
+
+    // ── File Upload ───────────────────────────────────────────────────────────
+    document.getElementById('file-upload').addEventListener('change', function () {
+      Array.from(this.files).forEach(file => {
+        toast(`Uploading ${file.name}…`);
+        const fd = new FormData();
+        fd.append('file', file);
+        fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${_authToken}` },
+          body: fd
+        }).then(() => toast('File Uploaded to PC!')).catch(() => toast('Upload failed'));
+      });
+      this.value = '';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+    "coding": {
+        "description": "Developer high-performance mode with IDE, terminal, and focused audio",
+        "launch_apps": ["code", "wt"],
+        "close_apps": ["discord", "slack"],
+        "volume": 25,
+        "mute_system_alerts": false,
+        "power_plan": "high_performance",
+        "voice_feedback": "Coding Protocol initiated, Boss. Visual Studio Code and developer terminal engaged. Power thrusters nominal."
+    },
+    "gaming": {
+        "description": "Maximum GPU/CPU allocation, distraction suppression, immersive audio",
+        "launch_apps": [],
+        "close_apps": ["teams", "outlook", "slack"],
+        "volume": 75,
+        "mute_system_alerts": true,
+        "power_plan": "high_performance",
+        "voice_feedback": "Gaming Protocol engaged, Boss. Non-essential background tasks minimized, thrusters set to maximum output."
+    },
+    "stealth": {
+        "description": "Instant tactical blackout: minimize all apps, mute master audio, dim screen",
+        "launch_apps": [],
+        "close_apps": [],
+        "minimize_all": true,
+        "volume": 0,
+        "mute_system_alerts": true,
+        "voice_feedback": "Stealth Protocol active, Boss. Audio muted and desktop footprint minimized."
+    },
+    "focus": {
+        "description": "Deep work combat mode: suppress distractions, low ambient volume, lock focus",
+        "launch_apps": [],
+        "close_apps": ["discord", "telegram", "spotify"],
+        "minimize_all_except": "code",
+        "volume": 20,
+        "mute_system_alerts": true,
+        "voice_feedback": "Focus Protocol locked, Boss. Distractions suppressed. Full cognitive bandwidth allocated."
+    },
+    "media": {
+        "description": "Cinema and entertainment setup: high-fidelity audio, balanced visuals",
+        "launch_apps": [],
+        "close_apps": [],
+        "volume": 65,
+        "voice_feedback": "Media Protocol ready, Boss. Acoustic levels raised for playback."
+    },
+    "telemetry": {
+        "description": "Live Arc Reactor and suit diagnostics readout",
+        "action": "telemetry",
+        "voice_feedback": "Pulling Stark suit telemetry now, Boss."
+    },
+    "clean_slate": {
+        "description": "Workspace purge, junk cache flush, memory reclamation, and desktop reset",
+        "action": "clean_slate",
+        "minimize_all": true,
+        "voice_feedback": "Clean Slate Protocol executed, Boss. All junk cache flushed, memory reclaimed, and workspace restored to factory baseline."
+    },
+    "house_party": {
+        "description": "Entertainment & music overload: high-energy beats on Spotify, soundwave visualizer, elevated volume",
+        "action": "house_party",
+        "volume": 70,
+        "voice_feedback": "House Party Protocol engaged, Boss. Soundtracks spun up, acoustic levels at 70%, HUD visualizer online. Enjoy the vibe!"
+    },
+    "red_team": {
+        "description": "Cyber security combat mode: arm network radar, launch terminal, engage stealth cybersecurity monitoring",
+        "action": "red_team",
+        "launch_apps": ["wt"],
+        "volume": 20,
+        "mute_system_alerts": true,
+        "voice_feedback": "Red Team Protocol active, Boss. Network defenses armed, threat intel radar scanning, and terminal deployed. We are vigilant."
+    },
+    "sentry": {
+        "description": "Arm perimeter workstation surveillance and presence watchdog",
+        "action": "sentry",
+        "voice_feedback": "Sentry Protocol armed, Boss. Perimeter radar active."
+    },
+    "lockdown": {
+        "description": "Instantly secure and lock the entire workstation",
+        "action": "lockdown",
+        "voice_feedback": "Lockdown Protocol executed, Boss. Workstation secured."
+    }
+}

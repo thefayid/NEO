@@ -1,0 +1,48 @@
+# Secrets
+config/api_keys.json
+config/certs/
+config/certs/*
+config/whatsapp_web/
+config/voiceprint.json
+**/token*.json
+**/client_secret*.json
+*credentials*.json
+.env
+.env.*
+
+# Personal data
+memory/long_term.json
+memory/*.db
+
+# Python build noise
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime output & scratch
+*.log
+logs/
+downloads/
+screenshots/
+scratch/
+*.bak
+*.png

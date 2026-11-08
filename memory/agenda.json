@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "id": "evt_sprint_01",
+      "title": "Architecture Review & Sprint Sync",
+      "date": "2026-10-27",
+      "start_time": "10:00",
+      "end_time": "10:45",
+      "duration_minutes": 45,
+      "location": "Google Meet / Dev Channel",
+      "source": "local"
+    },
+    {
+      "id": "evt_telemetry_02",
+      "title": "Production Deployment & Telemetry Sign-off",
+      "date": "2026-10-27",
+      "start_time": "14:00",
+      "end_time": "14:30",
+      "duration_minutes": 30,
+      "location": "Terminal Workstation",
+      "source": "local"
+    },
+    {
+      "id": "evt_client_03",
+      "title": "Executive Client Project Review",
+      "date": "2026-10-27",
+      "start_time": "16:30",
+      "end_time": "17:15",
+      "duration_minutes": 45,
+      "location": "Main Boardroom / Zoom",
+      "source": "local"
+    }
+  ],
+  "last_synced": "2026-10-27T09:48:00"
+}

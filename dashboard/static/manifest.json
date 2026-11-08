@@ -1,0 +1,25 @@
+{
+  "name": "F.R.I.D.A.Y. Mark-LVI Mobile",
+  "short_name": "FRIDAY",
+  "description": "Tony Stark's Mobile Companion & AirPods Node",
+  "start_url": "/?pwa=1",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#070c12",
+  "theme_color": "#00e5ff",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
