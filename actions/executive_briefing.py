@@ -162,16 +162,32 @@ def _sync_ical_feed(ical_url: str) -> int:
     if not ical_url or not ical_url.startswith(("http://", "https://")):
         return 0
 
+    # Auto-prefix https if missing
+    clean_url = ical_url.strip()
+    if clean_url.startswith("webcal://"):
+        clean_url = "https://" + clean_url[9:]
+    elif not clean_url.startswith(("http://", "https://")):
+        clean_url = "https://" + clean_url
+
     try:
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
         req = urllib.request.Request(
-            ical_url,
-            headers={"User-Agent": "FRIDAY-Briefing-Agent/2.0"},
+            clean_url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
         )
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, context=ctx, timeout=10) as response:
             ics_text = response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as he:
+        if he.code == 404:
+            raise RuntimeError("404: If private, use 'Secret address in iCal format' (ends in /private-.../basic.ics)")
+        raise RuntimeError(f"HTTP {he.code}: {he.reason}")
     except Exception as e:
         print(f"[Briefing] ⚠️ iCal fetch failed: {e}")
-        return 0
+        raise RuntimeError(f"Network error: {e}")
 
     # Unfold folded iCal lines (lines starting with space or tab)
     ics_text = re.sub(r"\r?\n[ \t]", "", ics_text)

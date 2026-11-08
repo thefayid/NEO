@@ -21,6 +21,10 @@ from __future__ import annotations
 import math
 import os
 import time
+import json
+import webbrowser
+import ssl
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Callable
@@ -719,15 +723,21 @@ class CalendarSyncDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setFixedSize(480, 390)
+        self.setFixedSize(500, 410)
+        self.setStyleSheet("""
+            QDialog {
+                background: #0b0f19;
+                border: 1.5px solid rgba(56, 189, 248, 0.38);
+                border-radius: 16px;
+            }
+        """)
 
         frame = QFrame(self)
-        frame.setGeometry(0, 0, 480, 390)
+        frame.setGeometry(0, 0, 500, 410)
         frame.setStyleSheet("""
             QFrame {
-                background: rgba(13, 17, 28, 0.98);
-                border: 1.5px solid rgba(56, 189, 248, 0.35);
+                background: #0b0f19;
+                border: none;
                 border-radius: 16px;
             }
         """)
@@ -898,22 +908,35 @@ class CalendarSyncDialog(QDialog):
         if not url:
             self.status_lbl.setText("⚠️ Enter iCal URL first")
             return
+
+        # Auto-clean common URL paste fragments
+        if url.startswith("webcal://"):
+            url = "https://" + url[9:]
+        if url.startswith("ndar.google.com"):
+            url = "https://cale" + url
+        elif url.startswith("calendar.google.com"):
+            url = "https://" + url
+        elif not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        self.url_input.setText(url)
         self.status_lbl.setText("Syncing feed...")
         try:
+            import json as _json
             cfg_p = os.path.join("config", "api_keys.json")
             if os.path.exists(cfg_p):
                 with open(cfg_p, "r", encoding="utf-8") as f:
-                    cfg = json.load(f)
+                    cfg = _json.load(f)
                 cfg["calendar_ical_url"] = url
                 with open(cfg_p, "w", encoding="utf-8") as f:
-                    json.dump(cfg, f, indent=4)
+                    _json.dump(cfg, f, indent=4)
 
             from actions.executive_briefing import _sync_ical_feed
             count = _sync_ical_feed(url)
-            self.status_lbl.setText(f"✓ Synced {count} events successfully!")
+            self.status_lbl.setText(f"✓ Synced {count} events successfully!" if count else "✓ Connected (0 events in feed)")
             self.feed_synced.emit(count)
         except Exception as e:
-            self.status_lbl.setText(f"⚠️ Sync failed: {e}")
+            self.status_lbl.setText(f"⚠️ {e}")
 
     def _add_event(self):
         title = self.title_input.text().strip()
