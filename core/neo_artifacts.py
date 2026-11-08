@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QCursor, QFont, QGuiApplication, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
@@ -51,6 +51,7 @@ class NeoArtifactCanvas(QFrame):
 
     closed = pyqtSignal()
     saved_to_notes = pyqtSignal(str)
+    execution_output = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -205,6 +206,7 @@ class NeoArtifactCanvas(QFrame):
                 padding: 10px;
             }
         """)
+        self.execution_output.connect(self.console_edit.append)
         con_v.addWidget(self.console_edit)
         self.stack.addWidget(con_w)
 
@@ -338,11 +340,11 @@ class NeoArtifactCanvas(QFrame):
 
                 ts = datetime.now().strftime("%H:%M:%S")
                 final_msg = f"\n=== Process Exited (code {code_exit}) at {ts} ===\n{out}"
-                QTimer.singleShot(0, lambda: self.console_edit.append(final_msg))
+                self.execution_output.emit(final_msg)
             except subprocess.TimeoutExpired:
-                QTimer.singleShot(0, lambda: self.console_edit.append("\n⚠️ Process Timed Out (exceeded 12s limit)"))
+                self.execution_output.emit("\n⚠️ Process Timed Out (exceeded 12s limit)")
             except Exception as e:
-                QTimer.singleShot(0, lambda: self.console_edit.append(f"\nExecution error: {e}"))
+                self.execution_output.emit(f"\nExecution error: {e}")
 
         threading.Thread(target=_run, daemon=True).start()
 
@@ -361,3 +363,4 @@ class NeoArtifactCanvas(QFrame):
     def close_canvas(self):
         self.hide()
         self.closed.emit()
+

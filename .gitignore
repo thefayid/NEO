@@ -46,3 +46,5 @@ screenshots/
 scratch/
 *.bak
 *.png
+
+memory/local_rag_index.json

@@ -170,3 +170,4 @@ class NeoFloatingIsland(QWidget):
 
     def mouseReleaseEvent(self, event):
         self._drag_pos = None
+

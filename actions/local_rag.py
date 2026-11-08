@@ -77,9 +77,13 @@ class LocalRAGIndex:
         self.documents.clear()
         self.doc_freq.clear()
 
+        _SKIP_NAMES = {"api_keys.json", "voiceprint.json", "credentials.json", "client_secret.json"}
         for root, dirs, files in os.walk(base_path):
-            dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("venv", "node_modules", "__pycache__", "dist", "build")]
+            dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("venv", ".venv", "env", "node_modules", "__pycache__", "dist", "build", "certs", "whatsapp_web")]
             for f in files:
+                fl = f.lower()
+                if fl.startswith(".env") or "token" in fl or "secret" in fl or "credential" in fl or fl in _SKIP_NAMES or fl.endswith(".lock"):
+                    continue
                 ext = Path(f).suffix.lower()
                 if ext in _ALLOWED_EXTS:
                     fpath = Path(root) / f
@@ -194,3 +198,4 @@ TOOL = {
     },
     "handler": local_rag,
 }
+

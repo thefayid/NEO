@@ -6274,16 +6274,21 @@ class MainWindow(QMainWindow):
             self._wake_btns_sig.emit()
         threading.Thread(target=work, daemon=True, name="wake-state-warm").start()
 
-    def _toggle_drawer(self, checked: bool):
+    def _toggle_drawer(self, checked: bool | None = None):
+        if checked is None:
+            checked = not (hasattr(self, "_quick_drawer") and self._quick_drawer.isVisible())
         if checked:
             self._close_controls()
             self._position_quick_drawer()
             self._quick_drawer.show()
             self._quick_drawer.raise_()
         else:
-            self._quick_drawer.hide()
+            if hasattr(self, "_quick_drawer"):
+                self._quick_drawer.hide()
 
-    def _toggle_controls(self, checked: bool):
+    def _toggle_controls(self, checked: bool | None = None):
+        if checked is None:
+            checked = not (hasattr(self, "_ctrl_drawer") and self._ctrl_drawer.isVisible())
         if checked:
             self._close_setup()
             self._refresh_wake_btns()   # cheap now: the state was warmed at boot
@@ -6294,7 +6299,8 @@ class MainWindow(QMainWindow):
             self._ctrl_drawer.show()
             self._ctrl_drawer.raise_()
         else:
-            self._ctrl_drawer.hide()
+            if hasattr(self, "_ctrl_drawer"):
+                self._ctrl_drawer.hide()
 
     def _close_setup(self):
         if hasattr(self, "_quick_drawer"):
