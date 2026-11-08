@@ -1,0 +1,35 @@
+{
+  "active_session_id": "sess_1794153547",
+  "sessions": [
+    {
+      "id": "default",
+      "title": "Welcome to NEO",
+      "created_at": "2026-11-08",
+      "messages": []
+    },
+    {
+      "id": "sess_1794153534",
+      "title": "New Conversation",
+      "created_at": "2026-11-08 21:28",
+      "messages": [
+        {
+          "role": "neo",
+          "content": "Here is the official repository: https://github.com/thefayid/NEO\nAnd doc link: https://docs.python.org",
+          "timestamp": "09:28 PM"
+        }
+      ]
+    },
+    {
+      "id": "sess_1794153547",
+      "title": "New Conversation",
+      "created_at": "2026-11-08 21:29",
+      "messages": [
+        {
+          "role": "neo",
+          "content": "Here is the official repository: https://github.com/thefayid/NEO\nAnd doc link: https://docs.python.org",
+          "timestamp": "09:29 PM"
+        }
+      ]
+    }
+  ]
+}

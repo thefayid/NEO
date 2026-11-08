@@ -1,27 +1,33 @@
 """
-core/neo_chat.py — Modern, next-generation AI Chat Stream for NEO.
-Features:
-  - Sleek message bubbles (You in green/cyan, NEO in obsidian/blue).
-  - Markdown parser for bold, italics, inline code, and bullet lists.
-  - Formatted Code Blocks with syntax header & one-click '📋 Copy Code' button.
-  - Interactive Action Footers (Copy response, Speak aloud).
-  - Compact File Attachment chip bar (replacing bulky drop zone) with drag-and-drop.
-  - Quick Prompt Pills (Explain Code, Web Search, Summarize, Telemetry).
-  - High-tech rounded capsule input bar matching NEO hero aesthetic.
-  - Fully backward-compatible append_log() and speech signal listeners.
+core/neo_chat.py — Comprehensive Next-Gen AI Chat Command Center for NEO.
+
+Features included:
+  1. Multi-Chat Sessions & History Drawer (Save, switch, create, and delete conversations).
+  2. Floating Slash Commands (/) popup menu (/code, /research, /spotify, /brief, /notes, /clear).
+  3. Model & Reasoning Mode Switcher (Fast vs Pro vs Local Ollama) + Auto-Voice toggle.
+  4. Live Tool Execution & Thought Process Accordion with expandable inspector.
+  5. "Save to Notes" quick memory pinning & Star bookmarking.
+  6. Rich Web & Media Cards for auto-detected URLs with one-click browser launch.
+  7. Formatted Code Blocks with syntax titles and instant copy buttons.
+  8. Compact File Attachment chip bar with full drag-and-drop support.
+  9. Export conversation to Markdown (.md) report.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QColor, QCursor, QFont, QGuiApplication, QIcon, QPixmap
+from PyQt6.QtCore import Qt, QTimer, QUrl, pyqtSignal
+from PyQt6.QtGui import QColor, QCursor, QDesktopServices, QFont, QGuiApplication, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
+    QComboBox,
     QFileDialog,
     QFrame,
     QHBoxLayout,
@@ -36,7 +42,7 @@ from PyQt6.QtWidgets import (
 
 # Color Palette matching NEO Obsidian Theme
 BG_OBSIDIAN = "#0b0f19"
-CARD_BG = "rgba(18, 24, 38, 0.90)"
+CARD_BG = "rgba(18, 24, 38, 0.92)"
 CARD_BORDER = "rgba(96, 165, 250, 0.22)"
 TEXT_WHITE = "#f8fafc"
 TEXT_MUTED = "#94a3b8"
@@ -44,8 +50,15 @@ TEXT_DIM = "#64748b"
 ACCENT_CYAN = "#00e5ff"
 ACCENT_BLUE = "#60a5fa"
 ACCENT_GREEN = "#4ade80"
+ACCENT_AMBER = "#fbbf24"
+
+_SESSIONS_FILE = Path("memory/chat_sessions.json")
+_EXPORTS_DIR = Path("memory/exports")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  1. CODE BLOCK WIDGET (With syntax title & one-click copy)
+# ─────────────────────────────────────────────────────────────────────────────
 class CodeBlockWidget(QFrame):
     """Sleek syntax-highlighted code block with language title and one-click Copy button."""
 
@@ -66,7 +79,6 @@ class CodeBlockWidget(QFrame):
         lay.setContentsMargins(12, 8, 12, 10)
         lay.setSpacing(6)
 
-        # Header Bar
         hdr = QHBoxLayout()
         hdr.setContentsMargins(0, 0, 0, 0)
         hdr.setSpacing(8)
@@ -101,7 +113,6 @@ class CodeBlockWidget(QFrame):
 
         lay.addLayout(hdr)
 
-        # Code Body
         code_lbl = QLabel(self.code_text)
         code_lbl.setFont(QFont("Consolas", 9))
         code_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -143,23 +154,169 @@ class CodeBlockWidget(QFrame):
         """)
 
 
-def _format_markdown_prose(text: str) -> str:
-    """Transforms markdown bold, italic, inline code, and line breaks into clean HTML."""
-    escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+# ─────────────────────────────────────────────────────────────────────────────
+#  2. WEB & MEDIA CARD WIDGET
+# ─────────────────────────────────────────────────────────────────────────────
+class WebLinkCard(QFrame):
+    """Rich interactive card preview for URLs in assistant messages."""
 
-    # Bold: **text**
+    def __init__(self, url: str, parent=None):
+        super().__init__(parent)
+        self.url = url
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setStyleSheet("""
+            QFrame#WebLinkCard {
+                background: rgba(15, 23, 42, 0.85);
+                border: 1px solid rgba(56, 189, 248, 0.28);
+                border-radius: 8px;
+            }
+            QFrame#WebLinkCard:hover {
+                border-color: #38bdf8;
+                background: rgba(22, 33, 56, 0.95);
+            }
+        """)
+        self.setObjectName("WebLinkCard")
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(10, 6, 12, 6)
+        lay.setSpacing(10)
+
+        icn = QLabel("🌐")
+        icn.setFont(QFont("Segoe UI", 11))
+        lay.addWidget(icn)
+
+        domain = "Web Resource"
+        try:
+            parsed = urlparse(url)
+            domain = parsed.netloc or domain
+        except Exception:
+            pass
+
+        vbox = QVBoxLayout()
+        vbox.setSpacing(1)
+        dom_lbl = QLabel(domain)
+        dom_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        dom_lbl.setStyleSheet(f"color: {ACCENT_CYAN}; border: none; background: transparent;")
+        vbox.addWidget(dom_lbl)
+
+        clean_url = url[:50] + ("..." if len(url) > 50 else "")
+        url_lbl = QLabel(clean_url)
+        url_lbl.setFont(QFont("Segoe UI", 7))
+        url_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        vbox.addWidget(url_lbl)
+        lay.addLayout(vbox)
+
+        lay.addStretch()
+
+        open_lbl = QLabel("Open ↗")
+        open_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        open_lbl.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+        lay.addWidget(open_lbl)
+
+    def mousePressEvent(self, e):
+        QDesktopServices.openUrl(QUrl(self.url))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  3. LIVE TOOL EXECUTION ACCORDION
+# ─────────────────────────────────────────────────────────────────────────────
+class ToolExecutionAccordion(QFrame):
+    """Collapsible Thought & Tool call inspection drawer."""
+
+    def __init__(self, tool_name: str, details: str = "", parent=None):
+        super().__init__(parent)
+        self.tool_name = tool_name
+        self.details = details or f"Backend tool call '{tool_name}' completed."
+        self.is_expanded = False
+
+        self.setStyleSheet("""
+            QFrame#ToolExecutionAccordion {
+                background: rgba(15, 23, 42, 0.65);
+                border: 1px solid rgba(56, 189, 248, 0.20);
+                border-radius: 8px;
+            }
+        """)
+        self.setObjectName("ToolExecutionAccordion")
+
+        self.lay = QVBoxLayout(self)
+        self.lay.setContentsMargins(10, 6, 10, 6)
+        self.lay.setSpacing(4)
+
+        hdr = QHBoxLayout()
+        hdr.setSpacing(6)
+
+        gear = QLabel("⚙️")
+        gear.setFont(QFont("Segoe UI", 9))
+        hdr.addWidget(gear)
+
+        title = QLabel(f"Tool Execution: <span style='color: #38bdf8; font-weight:600;'>{tool_name}</span>")
+        title.setFont(QFont("Segoe UI", 8))
+        title.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        hdr.addWidget(title)
+
+        hdr.addStretch()
+
+        self.toggle_btn = QPushButton("▼ Inspect")
+        self.toggle_btn.setFont(QFont("Segoe UI", 7))
+        self.toggle_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.toggle_btn.setFixedHeight(20)
+        self.toggle_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #64748b;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 3px;
+                padding: 1px 6px;
+            }
+            QPushButton:hover {
+                color: #38bdf8;
+                border-color: #38bdf8;
+            }
+        """)
+        self.toggle_btn.clicked.connect(self._toggle_expand)
+        hdr.addWidget(self.toggle_btn)
+        self.lay.addLayout(hdr)
+
+        self.body = QFrame()
+        self.body.setVisible(False)
+        self.body.setStyleSheet("""
+            QFrame {
+                background: #060911;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 6px;
+                padding: 6px;
+            }
+        """)
+        b_lay = QVBoxLayout(self.body)
+        b_lay.setContentsMargins(8, 6, 8, 6)
+
+        ts_now = datetime.now().strftime("%H:%M:%S")
+        txt = QLabel(f"Status: Complete [OK]\nTimestamp: {ts_now}\nTool: {self.tool_name}\nPayload: {self.details}")
+        txt.setFont(QFont("Consolas", 8))
+        txt.setStyleSheet("color: #cbd5e1; border: none; background: transparent;")
+        b_lay.addWidget(txt)
+
+        self.lay.addWidget(self.body)
+
+    def _toggle_expand(self):
+        self.is_expanded = not self.is_expanded
+        self.body.setVisible(self.is_expanded)
+        self.toggle_btn.setText("▲ Collapse" if self.is_expanded else "▼ Inspect")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  4. CHAT MESSAGE BUBBLE (Prose, Code, Web Cards, Save to Notes)
+# ─────────────────────────────────────────────────────────────────────────────
+def _format_markdown_prose(text: str) -> str:
+    escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escaped)
-    # Italic: *text*
     escaped = re.sub(r"\*(.+?)\*", r"<i>\1</i>", escaped)
-    # Inline code: `text`
     escaped = re.sub(
         r"`([^`]+)`",
         r'<span style="background: rgba(255,255,255,0.08); color: #38bdf8; font-family: Consolas; padding: 1px 4px; border-radius: 3px;">\1</span>',
         escaped,
     )
-    # Bullet lists
     escaped = re.sub(r"(?m)^[\*\-]\s+(.+)$", r"&nbsp;•&nbsp; \1", escaped)
-    # Newlines
     escaped = escaped.replace("\n", "<br/>")
     return escaped
 
@@ -180,15 +337,14 @@ class NeoChatMessageBubble(QFrame):
         self.raw_content = content
         self.on_speak = on_speak_requested
         ts = timestamp or datetime.now().strftime("%I:%M %p")
+        self.is_starred = False
 
         is_user = self.role in ("user", "you")
 
-        # Outer bubble layout
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 4, 0, 4)
         outer.setSpacing(4)
 
-        # Bubble card frame
         card = QFrame()
         if is_user:
             card.setStyleSheet("""
@@ -213,7 +369,6 @@ class NeoChatMessageBubble(QFrame):
         card_lay.setContentsMargins(14, 10, 14, 10)
         card_lay.setSpacing(6)
 
-        # Header: Speaker Name + Timestamp
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
         if is_user:
@@ -284,10 +439,17 @@ class NeoChatMessageBubble(QFrame):
                 txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
                 card_lay.addWidget(txt_lbl)
 
+            # Auto-detect URLs and render rich Web Link Cards
+            urls = re.findall(r"https?://[^\s<>\"']+", content)
+            if urls:
+                # Up to 2 link cards per message to prevent clutter
+                for u in urls[:2]:
+                    card_lay.addWidget(WebLinkCard(u))
+
             # Action Footer for NEO response
             footer = QHBoxLayout()
             footer.setContentsMargins(0, 4, 0, 0)
-            footer.setSpacing(8)
+            footer.setSpacing(6)
 
             def _btn(lbl_text: str, cb):
                 b = QPushButton(lbl_text)
@@ -313,6 +475,12 @@ class NeoChatMessageBubble(QFrame):
             self.copy_btn = _btn("📋 Copy", self._copy_msg)
             footer.addWidget(self.copy_btn)
 
+            self.notes_btn = _btn("📌 Save to Notes", self._save_to_notes)
+            footer.addWidget(self.notes_btn)
+
+            self.star_btn = _btn("⭐ Pin", self._toggle_star)
+            footer.addWidget(self.star_btn)
+
             if self.on_speak:
                 speak_b = _btn("🔊 Speak", lambda: self.on_speak(self.raw_content))
                 footer.addWidget(speak_b)
@@ -320,7 +488,6 @@ class NeoChatMessageBubble(QFrame):
             footer.addStretch()
             card_lay.addLayout(footer)
 
-        # Alignment
         h_row = QHBoxLayout()
         h_row.setContentsMargins(0, 0, 0, 0)
         if is_user:
@@ -338,6 +505,62 @@ class NeoChatMessageBubble(QFrame):
             cb.setText(self.raw_content)
         self.copy_btn.setText("✓ Copied!")
         QTimer.singleShot(1800, lambda: self.copy_btn.setText("📋 Copy"))
+
+    def _save_to_notes(self):
+        try:
+            notes_p = Path("memory/notes.txt")
+            notes_p.parent.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+            entry = f"\n--- Note saved from NEO Chat ({ts}) ---\n{self.raw_content}\n"
+            with open(notes_p, "a", encoding="utf-8") as f:
+                f.write(entry)
+
+            # Also index into memory_manager if present
+            try:
+                from memory.memory_manager import remember
+                key = f"chat_note_{int(time.time())}"
+                remember(key, self.raw_content[:200], category="notes")
+            except Exception:
+                pass
+
+            self.notes_btn.setText("✓ Saved to Notes!")
+            self.notes_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(34, 197, 94, 0.2);
+                    color: #4ade80;
+                    border: 1px solid #22c55e;
+                    border-radius: 3px;
+                    padding: 1px 7px;
+                }
+            """)
+            QTimer.singleShot(2500, lambda: self.notes_btn.setText("📌 Save to Notes"))
+        except Exception as e:
+            self.notes_btn.setText("⚠️ Failed")
+
+    def _toggle_star(self):
+        self.is_starred = not self.is_starred
+        if self.is_starred:
+            self.star_btn.setText("★ Pinned")
+            self.star_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(251, 191, 36, 0.2);
+                    color: #fbbf24;
+                    border: 1px solid #fbbf24;
+                    border-radius: 3px;
+                    padding: 1px 7px;
+                }
+            """)
+        else:
+            self.star_btn.setText("⭐ Pin")
+            self.star_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    color: #8e9eb5;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 3px;
+                    padding: 1px 7px;
+                }
+            """)
 
 
 class SystemPillWidget(QWidget):
@@ -364,12 +587,194 @@ class SystemPillWidget(QWidget):
         lay.addStretch()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  5. FLOATING SLASH COMMAND (/) POPUP MENU
+# ─────────────────────────────────────────────────────────────────────────────
+class SlashCommandPopup(QFrame):
+    """Floating autocomplete popup for quick / commands."""
+
+    command_selected = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QFrame#SlashCommandPopup {
+                background: #0f1626;
+                border: 1.5px solid rgba(56, 189, 248, 0.4);
+                border-radius: 12px;
+            }
+        """)
+        self.setObjectName("SlashCommandPopup")
+        self.setFixedWidth(340)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(8, 8, 8, 8)
+        lay.setSpacing(4)
+
+        hdr = QLabel("⚡ NEO SLASH COMMANDS")
+        hdr.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        hdr.setStyleSheet("color: #38bdf8; padding: 2px 6px; border: none; background: transparent;")
+        lay.addWidget(hdr)
+
+        commands = [
+            ("💻 /code", "Focus on clean coding & debugging", "/code "),
+            ("🔍 /research", "Deep web research with live citations", "/research "),
+            ("🎵 /spotify", "Control music (play, pause, next)", "/spotify "),
+            ("📅 /brief", "Executive agenda & morning briefing", "/brief"),
+            ("📝 /notes", "Save directly to long-term memory notes", "/notes "),
+            ("🗑 /clear", "Clear the current dialogue stream", "/clear"),
+        ]
+
+        for trigger, desc, fill in commands:
+            b = QPushButton()
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b_lay = QHBoxLayout(b)
+            b_lay.setContentsMargins(8, 4, 8, 4)
+            b_lay.setSpacing(6)
+
+            t_lbl = QLabel(trigger)
+            t_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+            t_lbl.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+            b_lay.addWidget(t_lbl)
+
+            d_lbl = QLabel(desc)
+            d_lbl.setFont(QFont("Segoe UI", 7))
+            d_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+            b_lay.addWidget(d_lbl)
+            b_lay.addStretch()
+
+            b.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    border: 1px solid transparent;
+                    border-radius: 6px;
+                }
+                QPushButton:hover {
+                    background: rgba(56, 189, 248, 0.15);
+                    border: 1px solid rgba(56, 189, 248, 0.3);
+                }
+            """)
+            b.clicked.connect(lambda _, f=fill: self.command_selected.emit(f))
+            lay.addWidget(b)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  6. MULTI-CHAT SESSIONS & HISTORY DRAWER
+# ─────────────────────────────────────────────────────────────────────────────
+class ChatHistoryDrawer(QFrame):
+    """Slide-in sidebar for browsing, creating, and switching chat conversations."""
+
+    session_switched = pyqtSignal(str)
+    new_chat_requested = pyqtSignal()
+    session_deleted = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedWidth(220)
+        self.setStyleSheet("""
+            QFrame#ChatHistoryDrawer {
+                background: rgba(11, 15, 25, 0.98);
+                border-right: 1px solid rgba(255, 255, 255, 0.08);
+            }
+        """)
+        self.setObjectName("ChatHistoryDrawer")
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(10, 14, 10, 14)
+        lay.setSpacing(10)
+
+        # Header + New Chat Button
+        new_b = QPushButton("+ New Chat")
+        new_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        new_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        new_b.setFixedHeight(30)
+        new_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.15);
+                color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.35);
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background: rgba(56, 189, 248, 0.3);
+                color: #ffffff;
+            }
+        """)
+        new_b.clicked.connect(self.new_chat_requested.emit)
+        lay.addWidget(new_b)
+
+        hdr_lbl = QLabel("SAVED CONVERSATIONS")
+        hdr_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        hdr_lbl.setStyleSheet("color: #64748b; padding: 4px 2px; border: none; background: transparent;")
+        lay.addWidget(hdr_lbl)
+
+        # Scrollable sessions list
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setStyleSheet("background: transparent; border: none;")
+
+        self.list_container = QWidget()
+        self.list_lay = QVBoxLayout(self.list_container)
+        self.list_lay.setContentsMargins(0, 0, 0, 0)
+        self.list_lay.setSpacing(4)
+        self.list_lay.addStretch()
+
+        self.scroll.setWidget(self.list_container)
+        lay.addWidget(self.scroll, stretch=1)
+
+    def render_sessions(self, sessions: list[dict], active_id: str):
+        # Clear existing items
+        while self.list_lay.count() > 1:
+            item = self.list_lay.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        for s in reversed(sessions):
+            sid = s.get("id", "")
+            title = s.get("title", "New Conversation")
+            is_active = (sid == active_id)
+
+            card = QFrame()
+            card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            bg = "rgba(56, 189, 248, 0.14)" if is_active else "transparent"
+            border = "rgba(56, 189, 248, 0.35)" if is_active else "transparent"
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background: {bg};
+                    border: 1px solid {border};
+                    border-radius: 6px;
+                }}
+                QFrame:hover {{
+                    background: rgba(255, 255, 255, 0.05);
+                }}
+            """)
+
+            c_lay = QHBoxLayout(card)
+            c_lay.setContentsMargins(8, 6, 6, 6)
+            c_lay.setSpacing(6)
+
+            t_lbl = QLabel(title[:22] + ("..." if len(title) > 22 else ""))
+            t_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold if is_active else QFont.Weight.Normal))
+            t_lbl.setStyleSheet(f"color: {'#ffffff' if is_active else '#94a3b8'}; border: none; background: transparent;")
+            c_lay.addWidget(t_lbl, stretch=1)
+
+            del_b = QPushButton("✕")
+            del_b.setFont(QFont("Segoe UI", 7))
+            del_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            del_b.setFixedSize(16, 16)
+            del_b.setStyleSheet("QPushButton { color: #526078; border: none; background: transparent; } QPushButton:hover { color: #f43f5e; }")
+            del_b.clicked.connect(lambda _, _id=sid: self.session_deleted.emit(_id))
+            c_lay.addWidget(del_b)
+
+            card.mousePressEvent = lambda e, _id=sid: self.session_switched.emit(_id)
+            self.list_lay.insertWidget(self.list_lay.count() - 1, card)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  7. MAIN NEO MODERN CHAT WIDGET
+# ─────────────────────────────────────────────────────────────────────────────
 class NeoModernChatWidget(QWidget):
-    """
-    Modern AI Chat Stream replacing the legacy log widget and large drop zone.
-    Provides message bubbles, code copy blocks, compact file attachments, quick prompt pills,
-    and a high-tech prompt bar matching the NEO aesthetic.
-    """
+    """Comprehensive AI Chat Command Center replacing the legacy log widget."""
 
     command_submitted = pyqtSignal(str)
     file_selected = pyqtSignal(str)
@@ -383,45 +788,142 @@ class NeoModernChatWidget(QWidget):
         self.setAcceptDrops(True)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
-        root = QVBoxLayout(self)
-        root.setContentsMargins(20, 14, 20, 16)
-        root.setSpacing(10)
+        self.voice_muted = self._load_voice_muted()
 
-        # 1. Header Bar
+        # Load / Initialize Sessions
+        self.sessions_data = self._load_sessions_data()
+        self.active_session_id = self.sessions_data.get("active_session_id", "default")
+
+        # Top-level layout (Drawer on Left + Chat Area on Right)
+        root_h = QHBoxLayout(self)
+        root_h.setContentsMargins(0, 0, 0, 0)
+        root_h.setSpacing(0)
+
+        # 1. Slide-in Chat History Drawer
+        self.drawer = ChatHistoryDrawer(self)
+        self.drawer.setVisible(False)
+        self.drawer.new_chat_requested.connect(self._create_new_session)
+        self.drawer.session_switched.connect(self._switch_session)
+        self.drawer.session_deleted.connect(self._delete_session)
+        root_h.addWidget(self.drawer)
+
+        # 2. Main Chat Panel Area
+        main_chat = QWidget()
+        main_chat.setStyleSheet(f"background: {BG_OBSIDIAN};")
+        chat_v = QVBoxLayout(main_chat)
+        chat_v.setContentsMargins(18, 12, 18, 14)
+        chat_v.setSpacing(8)
+
+        # Header Bar
         hdr = QHBoxLayout()
-        hdr.setContentsMargins(4, 0, 4, 0)
+        hdr.setContentsMargins(2, 0, 2, 0)
         hdr.setSpacing(8)
 
-        chat_icn = QLabel("💬")
-        chat_icn.setFont(QFont("Segoe UI", 12))
-        hdr.addWidget(chat_icn)
+        # Drawer toggle button
+        self.drawer_btn = QPushButton("📑 Chats")
+        self.drawer_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.drawer_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.drawer_btn.setFixedHeight(26)
+        self.drawer_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05);
+                color: #8e9eb5;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                padding: 2px 10px;
+            }
+            QPushButton:hover {
+                background: rgba(56, 189, 248, 0.2);
+                border-color: #38bdf8;
+                color: #ffffff;
+            }
+        """)
+        self.drawer_btn.clicked.connect(self._toggle_drawer)
+        hdr.addWidget(self.drawer_btn)
 
-        t_vbox = QVBoxLayout()
-        t_vbox.setSpacing(1)
-        ttl = QLabel("NEO Conversation Stream")
-        ttl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        ttl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        t_vbox.addWidget(ttl)
+        hdr_ttl = QLabel("NEO Stream")
+        hdr_ttl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        hdr_ttl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        hdr.addWidget(hdr_ttl)
 
-        sub_m = QLabel("Gemini 1.5 Pro · Interactive Dialogue")
-        sub_m.setFont(QFont("Segoe UI", 7))
-        sub_m.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
-        t_vbox.addWidget(sub_m)
-        hdr.addLayout(t_vbox)
+        # Model Mode Switcher Pill
+        self.model_combo = QComboBox()
+        self.model_combo.addItems(["🧠 Pro (Gemini 1.5 Pro)", "⚡ Fast (Gemini Flash)", "💻 Local (Ollama)"])
+        self.model_combo.setFont(QFont("Segoe UI", 7))
+        self.model_combo.setFixedHeight(24)
+        self.model_combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(18, 24, 38, 0.9);
+                color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.25);
+                border-radius: 6px;
+                padding: 1px 8px;
+            }
+            QComboBox QAbstractItemView {
+                background: #0f1626;
+                color: #f8fafc;
+                selection-background-color: #00e5ff;
+                selection-color: #000;
+            }
+        """)
+        self.model_combo.currentIndexChanged.connect(self._on_model_changed)
+        hdr.addWidget(self.model_combo)
+
+        # Voice auto-speak toggle button
+        self.voice_btn = QPushButton("🔇 Silent" if self.voice_muted else "🔊 Voice: ON")
+        self.voice_btn.setFont(QFont("Segoe UI", 7))
+        self.voice_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.voice_btn.setFixedHeight(24)
+        self.voice_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04);
+                color: #8e9eb5;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                padding: 1px 8px;
+            }
+            QPushButton:hover { color: #ffffff; }
+        """)
+        self.voice_btn.clicked.connect(self._toggle_voice)
+        hdr.addWidget(self.voice_btn)
 
         hdr.addStretch()
 
-        clear_b = QPushButton("🗑 Clear Stream")
-        clear_b.setFont(QFont("Segoe UI", 8))
+        # Export .md report button
+        export_b = QPushButton("📋 Export")
+        export_b.setToolTip("Export active conversation as a Markdown (.md) report")
+        export_b.setFont(QFont("Segoe UI", 7))
+        export_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        export_b.setFixedHeight(24)
+        export_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04);
+                color: #8e9eb5;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 5px;
+                padding: 1px 8px;
+            }
+            QPushButton:hover {
+                background: rgba(96, 165, 250, 0.2);
+                border-color: #60a5fa;
+                color: #ffffff;
+            }
+        """)
+        export_b.clicked.connect(self._export_conversation)
+        hdr.addWidget(export_b)
+
+        # Clear stream button
+        clear_b = QPushButton("🗑 Clear")
+        clear_b.setFont(QFont("Segoe UI", 7))
         clear_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        clear_b.setFixedHeight(26)
+        clear_b.setFixedHeight(24)
         clear_b.setStyleSheet("""
             QPushButton {
                 background: rgba(255, 255, 255, 0.04);
                 color: #8e9eb5;
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 5px;
-                padding: 2px 10px;
+                padding: 1px 8px;
             }
             QPushButton:hover {
                 background: rgba(244, 63, 94, 0.15);
@@ -432,9 +934,9 @@ class NeoModernChatWidget(QWidget):
         clear_b.clicked.connect(self.clear_stream)
         hdr.addWidget(clear_b)
 
-        root.addLayout(hdr)
+        chat_v.addLayout(hdr)
 
-        # 2. Scrollable Messages Area
+        # Scrollable Messages Area
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setStyleSheet("""
@@ -468,9 +970,9 @@ class NeoModernChatWidget(QWidget):
         self.msg_layout.addStretch()
 
         self.scroll_area.setWidget(self.messages_container)
-        root.addWidget(self.scroll_area, stretch=1)
+        chat_v.addWidget(self.scroll_area, stretch=1)
 
-        # 3. Compact Attachment Chip Bar (hidden until file attached)
+        # Compact Attachment Chip Bar
         self.chip_frame = QFrame()
         self.chip_frame.setVisible(False)
         self.chip_frame.setStyleSheet("""
@@ -495,34 +997,29 @@ class NeoModernChatWidget(QWidget):
         remove_chip_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         remove_chip_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         remove_chip_b.setFixedSize(20, 20)
-        remove_chip_b.setStyleSheet("""
-            QPushButton {
-                background: transparent; color: #8e9eb5; border: none;
-            }
-            QPushButton:hover { color: #f43f5e; }
-        """)
+        remove_chip_b.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { color: #f43f5e; }")
         remove_chip_b.clicked.connect(self._clear_attached_file)
         chip_lay.addWidget(remove_chip_b)
 
-        root.addWidget(self.chip_frame)
+        chat_v.addWidget(self.chip_frame)
 
-        # 4. Quick Prompt Pills
+        # Quick Prompt Pills
         pills_row = QHBoxLayout()
-        pills_row.setContentsMargins(4, 0, 4, 0)
-        pills_row.setSpacing(8)
+        pills_row.setContentsMargins(2, 0, 2, 0)
+        pills_row.setSpacing(6)
 
         def _pill(text: str, prompt: str):
             b = QPushButton(text)
-            b.setFont(QFont("Segoe UI", 8))
+            b.setFont(QFont("Segoe UI", 7))
             b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            b.setFixedHeight(24)
+            b.setFixedHeight(22)
             b.setStyleSheet("""
                 QPushButton {
                     background: rgba(255, 255, 255, 0.04);
                     color: #8e9eb5;
                     border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 12px;
-                    padding: 2px 10px;
+                    border-radius: 11px;
+                    padding: 1px 9px;
                 }
                 QPushButton:hover {
                     background: rgba(56, 189, 248, 0.15);
@@ -533,51 +1030,40 @@ class NeoModernChatWidget(QWidget):
             b.clicked.connect(lambda: self._apply_quick_pill(prompt))
             return b
 
-        pills_row.addWidget(_pill("💡 Explain Code", "Explain the following code: "))
-        pills_row.addWidget(_pill("🔍 Web Search", "Search the web for: "))
-        pills_row.addWidget(_pill("📝 Summarize", "Summarize this: "))
-        pills_row.addWidget(_pill("📊 System Health", "Check system status and telemetry."))
-        pills_row.addWidget(_pill("🎯 Plan Day", "Review my upcoming schedule and plan my day."))
+        pills_row.addWidget(_pill("💡 Explain Code", "/code "))
+        pills_row.addWidget(_pill("🔍 Web Search", "/research "))
+        pills_row.addWidget(_pill("🎵 Spotify", "/spotify "))
+        pills_row.addWidget(_pill("📅 Executive Brief", "/brief"))
+        pills_row.addWidget(_pill("📝 Quick Note", "/notes "))
         pills_row.addStretch()
 
-        root.addLayout(pills_row)
+        chat_v.addLayout(pills_row)
 
-        # 5. Bottom Prompt Capsule Input Bar
-        bar_frame = QFrame()
-        bar_frame.setFixedHeight(50)
-        bar_frame.setStyleSheet("""
+        # Bottom Input Capsule Frame
+        self.bar_frame = QFrame()
+        self.bar_frame.setFixedHeight(48)
+        self.bar_frame.setStyleSheet("""
             QFrame {
                 background: rgba(18, 24, 38, 0.95);
                 border: 1.5px solid rgba(120, 160, 255, 0.25);
-                border-radius: 25px;
+                border-radius: 24px;
             }
         """)
-        bar_lay = QHBoxLayout(bar_frame)
+        bar_lay = QHBoxLayout(self.bar_frame)
         bar_lay.setContentsMargins(12, 0, 10, 0)
         bar_lay.setSpacing(8)
 
-        # Paperclip Attachment Button
         attach_btn = QPushButton("📎")
-        attach_btn.setToolTip("Attach file or document (Images, Code, PDFs)")
-        attach_btn.setFixedSize(30, 30)
-        attach_btn.setFont(QFont("Segoe UI", 12))
+        attach_btn.setToolTip("Attach file or document")
+        attach_btn.setFixedSize(28, 28)
+        attach_btn.setFont(QFont("Segoe UI", 11))
         attach_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        attach_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                color: #8e9eb5;
-                border: none;
-            }
-            QPushButton:hover {
-                color: #38bdf8;
-            }
-        """)
+        attach_btn.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { color: #38bdf8; }")
         attach_btn.clicked.connect(self._browse_file)
         bar_lay.addWidget(attach_btn)
 
-        # Input Edit Box
         self.input_edit = QLineEdit()
-        self.input_edit.setPlaceholderText("Send a message to NEO...")
+        self.input_edit.setPlaceholderText("Message NEO or type '/' for slash commands...")
         self.input_edit.setFont(QFont("Segoe UI", 9))
         self.input_edit.setStyleSheet(f"""
             QLineEdit {{
@@ -590,40 +1076,30 @@ class NeoModernChatWidget(QWidget):
                 color: #61728d;
             }}
         """)
+        self.input_edit.textChanged.connect(self._on_input_text_changed)
         self.input_edit.returnPressed.connect(self._submit)
         bar_lay.addWidget(self.input_edit, stretch=1)
 
-        # Mic Button
         self.mic_btn = QPushButton("🎙")
         self.mic_btn.setToolTip("Toggle Voice Mic")
-        self.mic_btn.setFixedSize(30, 30)
+        self.mic_btn.setFixedSize(28, 28)
         self.mic_btn.setFont(QFont("Segoe UI", 11))
         self.mic_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.mic_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                color: #8e9eb5;
-                border: none;
-            }
-            QPushButton:hover {
-                color: #4ade80;
-            }
-        """)
+        self.mic_btn.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { color: #4ade80; }")
         self.mic_btn.clicked.connect(self.mic_toggled.emit)
         bar_lay.addWidget(self.mic_btn)
 
-        # Send Button
         send_btn = QPushButton("➤")
         send_btn.setToolTip("Send message")
-        send_btn.setFixedSize(32, 32)
-        send_btn.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        send_btn.setFixedSize(30, 30)
+        send_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         send_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         send_btn.setStyleSheet("""
             QPushButton {
                 background: #00e5ff;
                 color: #0b0f19;
                 border: none;
-                border-radius: 16px;
+                border-radius: 15px;
             }
             QPushButton:hover {
                 background: #38bdf8;
@@ -632,10 +1108,20 @@ class NeoModernChatWidget(QWidget):
         send_btn.clicked.connect(self._submit)
         bar_lay.addWidget(send_btn)
 
-        root.addWidget(bar_frame)
+        chat_v.addWidget(self.bar_frame)
+        root_h.addWidget(main_chat, stretch=1)
+
+        # 3. Floating Slash Command Popup
+        self.slash_popup = SlashCommandPopup(self)
+        self.slash_popup.setVisible(False)
+        self.slash_popup.command_selected.connect(self._on_slash_command_chosen)
+
+        # Render Active Session
+        self._load_active_session()
+        self._update_drawer_list()
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Public API for DropZone Compatibility & Logging Listeners
+    # Public API for Logging & External Tool Hooks
     # ─────────────────────────────────────────────────────────────────────────
     def current_file(self) -> Optional[str]:
         return self._current_file
@@ -644,7 +1130,7 @@ class NeoModernChatWidget(QWidget):
         self._clear_attached_file()
 
     def append_log(self, text: str):
-        """Thread-safe drop-in handler for all legacy self._log.append_log() calls."""
+        """Thread-safe drop-in handler for legacy self._log.append_log() calls."""
         if not text:
             return
         clean = text.strip()
@@ -664,23 +1150,34 @@ class NeoModernChatWidget(QWidget):
             self.add_message("neo", clean)
 
     def add_message(self, role: str, content: str):
-        """Appends a new message bubble to the stream and auto-scrolls down."""
+        """Appends a message bubble to the stream, saves to active session, and auto-scrolls down."""
         clean = content.strip()
         if not clean:
             return
-        # Deduplicate identical consecutive messages
         if self._last_content == (role.lower(), clean):
             return
         self._last_content = (role.lower(), clean)
 
-        count = self.msg_layout.count()
+        ts = datetime.now().strftime("%I:%M %p")
         bubble = NeoChatMessageBubble(
             role=role,
             content=clean,
-            on_speak_requested=self._on_speak_requested,
+            timestamp=ts,
+            on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
             parent=self.messages_container,
         )
+        count = self.msg_layout.count()
         self.msg_layout.insertWidget(max(0, count - 1), bubble)
+        QTimer.singleShot(50, self._scroll_to_bottom)
+
+        # Save into active session
+        self._save_message_to_active_session(role, clean, ts)
+
+    def add_tool_execution(self, tool_name: str, details: str = ""):
+        """Adds a collapsible tool execution accordion directly to the chat stream."""
+        count = self.msg_layout.count()
+        acc = ToolExecutionAccordion(tool_name, details, parent=self.messages_container)
+        self.msg_layout.insertWidget(max(0, count - 1), acc)
         QTimer.singleShot(50, self._scroll_to_bottom)
 
     def add_system_pill(self, text: str):
@@ -690,7 +1187,7 @@ class NeoModernChatWidget(QWidget):
         QTimer.singleShot(50, self._scroll_to_bottom)
 
     def clear_stream(self):
-        """Clears all conversation bubbles except the bottom stretch."""
+        """Clears all conversation bubbles from the stream."""
         while self.msg_layout.count() > 1:
             item = self.msg_layout.takeAt(0)
             if item.widget():
@@ -698,8 +1195,13 @@ class NeoModernChatWidget(QWidget):
         self._last_content = None
         self.add_system_pill("SYS: Conversation stream cleared.")
 
+        # Update active session in memory
+        curr = self._get_active_session()
+        if curr:
+            curr["messages"] = []
+            self._save_sessions_data()
+
     def set_attached_file(self, file_path: str):
-        """Sets the compact attached file chip."""
         self._current_file = file_path
         p = Path(file_path)
         sz = p.stat().st_size if p.exists() else 0
@@ -707,6 +1209,241 @@ class NeoModernChatWidget(QWidget):
         self.chip_lbl.setText(f"📄  {p.name}  ({sz_str})  ·  Attached")
         self.chip_frame.setVisible(True)
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # Slash Command Autocomplete Handling
+    # ─────────────────────────────────────────────────────────────────────────
+    def _on_input_text_changed(self, text: str):
+        if text.startswith("/"):
+            self._reposition_slash_popup()
+            self.slash_popup.show()
+            self.slash_popup.raise_()
+        else:
+            self.slash_popup.hide()
+
+    def _reposition_slash_popup(self):
+        # Position right above the input capsule
+        p = self.bar_frame.mapTo(self, self.bar_frame.rect().topLeft())
+        self.slash_popup.move(p.x() + 30, max(10, p.y() - self.slash_popup.sizeHint().height() - 10))
+
+    def _on_slash_command_chosen(self, fill_text: str):
+        self.slash_popup.hide()
+        self.input_edit.setText(fill_text)
+        self.input_edit.setFocus()
+        if fill_text in ("/clear", "/brief"):
+            self._submit()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Multi-Chat Sessions Management
+    # ─────────────────────────────────────────────────────────────────────────
+    def _toggle_drawer(self):
+        is_vis = not self.drawer.isVisible()
+        self.drawer.setVisible(is_vis)
+        self.drawer_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: {'rgba(56, 189, 248, 0.25)' if is_vis else 'rgba(255, 255, 255, 0.05)'};
+                color: {'#38bdf8' if is_vis else '#8e9eb5'};
+                border: 1px solid {'#38bdf8' if is_vis else 'rgba(255, 255, 255, 0.08)'};
+                border-radius: 6px;
+                padding: 2px 10px;
+            }}
+        """)
+
+    def _load_sessions_data(self) -> dict:
+        _SESSIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if _SESSIONS_FILE.exists():
+            try:
+                with open(_SESSIONS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and "sessions" in data:
+                        return data
+            except Exception:
+                pass
+        # Default starter session
+        default_data = {
+            "active_session_id": "default",
+            "sessions": [
+                {
+                    "id": "default",
+                    "title": "Main Conversation",
+                    "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "messages": [],
+                }
+            ],
+        }
+        self._write_sessions_file(default_data)
+        return default_data
+
+    def _write_sessions_file(self, data: dict):
+        try:
+            with open(_SESSIONS_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass
+
+    def _save_sessions_data(self):
+        self._write_sessions_file(self.sessions_data)
+
+    def _get_active_session(self) -> Optional[dict]:
+        for s in self.sessions_data.get("sessions", []):
+            if s.get("id") == self.active_session_id:
+                return s
+        return None
+
+    def _save_message_to_active_session(self, role: str, content: str, timestamp: str):
+        curr = self._get_active_session()
+        if not curr:
+            return
+        msgs = curr.setdefault("messages", [])
+        msgs.append({"role": role, "content": content, "timestamp": timestamp})
+
+        # Auto-title session based on first user prompt if still generic
+        if curr.get("title") in ("Main Conversation", "New Conversation") and role == "user":
+            curr["title"] = content[:26] + ("..." if len(content) > 26 else "")
+            self._update_drawer_list()
+
+        self._save_sessions_data()
+
+    def _load_active_session(self):
+        curr = self._get_active_session()
+        if not curr:
+            return
+        # Clear layout bubbles
+        while self.msg_layout.count() > 1:
+            item = self.msg_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self._last_content = None
+
+        for m in curr.get("messages", []):
+            role = m.get("role", "neo")
+            txt = m.get("content", "")
+            ts = m.get("timestamp", "")
+            bubble = NeoChatMessageBubble(
+                role=role,
+                content=txt,
+                timestamp=ts,
+                on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
+                parent=self.messages_container,
+            )
+            count = self.msg_layout.count()
+            self.msg_layout.insertWidget(max(0, count - 1), bubble)
+        QTimer.singleShot(60, self._scroll_to_bottom)
+
+    def _create_new_session(self):
+        new_id = f"sess_{int(time.time())}"
+        new_sess = {
+            "id": new_id,
+            "title": "New Conversation",
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "messages": [],
+        }
+        self.sessions_data.setdefault("sessions", []).append(new_sess)
+        self.active_session_id = new_id
+        self.sessions_data["active_session_id"] = new_id
+        self._save_sessions_data()
+        self._load_active_session()
+        self._update_drawer_list()
+
+    def _switch_session(self, session_id: str):
+        if session_id == self.active_session_id:
+            return
+        self.active_session_id = session_id
+        self.sessions_data["active_session_id"] = session_id
+        self._save_sessions_data()
+        self._load_active_session()
+        self._update_drawer_list()
+
+    def _delete_session(self, session_id: str):
+        sessions = self.sessions_data.get("sessions", [])
+        if len(sessions) <= 1:
+            # Keep at least one
+            self.clear_stream()
+            return
+        self.sessions_data["sessions"] = [s for s in sessions if s.get("id") != session_id]
+        if self.active_session_id == session_id:
+            self.active_session_id = self.sessions_data["sessions"][-1]["id"]
+            self.sessions_data["active_session_id"] = self.active_session_id
+            self._load_active_session()
+        self._save_sessions_data()
+        self._update_drawer_list()
+
+    def _update_drawer_list(self):
+        self.drawer.render_sessions(self.sessions_data.get("sessions", []), self.active_session_id)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Model Mode & Voice Toggle
+    # ─────────────────────────────────────────────────────────────────────────
+    def _on_model_changed(self, idx: int):
+        modes = ["gemini-1.5-pro", "gemini-1.5-flash", "local-ollama"]
+        mode = modes[idx] if idx < len(modes) else "gemini-1.5-pro"
+        try:
+            cfg_p = Path("config/api_keys.json")
+            if cfg_p.exists():
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                cfg["chat_model_mode"] = mode
+                with open(cfg_p, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f, indent=4)
+        except Exception:
+            pass
+        self.add_system_pill(f"SYS: Switched reasoning engine to {self.model_combo.currentText()}.")
+
+    def _load_voice_muted(self) -> bool:
+        try:
+            cfg_p = Path("config/api_keys.json")
+            if cfg_p.exists():
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                return bool(cfg.get("chat_voice_muted", False))
+        except Exception:
+            return False
+        return False
+
+    def _toggle_voice(self):
+        self.voice_muted = not self.voice_muted
+        self.voice_btn.setText("🔇 Silent" if self.voice_muted else "🔊 Voice: ON")
+        try:
+            cfg_p = Path("config/api_keys.json")
+            if cfg_p.exists():
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                cfg["chat_voice_muted"] = self.voice_muted
+                with open(cfg_p, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f, indent=4)
+        except Exception:
+            pass
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Export Conversation (.md)
+    # ─────────────────────────────────────────────────────────────────────────
+    def _export_conversation(self):
+        curr = self._get_active_session()
+        if not curr or not curr.get("messages"):
+            self.add_system_pill("SYS: No messages in active conversation to export.")
+            return
+
+        _EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        ts_slug = datetime.now().strftime("%Y%m%d_%H%M%S")
+        export_file = _EXPORTS_DIR / f"chat_export_{ts_slug}.md"
+
+        lines = [
+            f"# NEO Conversation Export — {curr.get('title')}",
+            f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            "",
+            "---",
+            "",
+        ]
+        for m in curr.get("messages", []):
+            role_title = "User (Fayid)" if m.get("role") in ("user", "you") else "NEO Assistant"
+            lines.append(f"### {role_title} ({m.get('timestamp')})")
+            lines.append(f"{m.get('content')}\n")
+
+        export_file.write_text("\n".join(lines), encoding="utf-8")
+        self.add_system_pill(f"✓ Exported report to: {export_file.name}")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Input Submission & File Actions
+    # ─────────────────────────────────────────────────────────────────────────
     def _clear_attached_file(self):
         self._current_file = None
         self.chip_frame.setVisible(False)
@@ -723,6 +1460,7 @@ class NeoModernChatWidget(QWidget):
 
     def _submit(self):
         txt = self.input_edit.text().strip()
+        self.slash_popup.hide()
         if not txt and not self._current_file:
             return
 
@@ -734,6 +1472,31 @@ class NeoModernChatWidget(QWidget):
             self._clear_attached_file()
 
         self.input_edit.clear()
+
+        # Handle direct local slash commands
+        if full_cmd == "/clear":
+            self.clear_stream()
+            return
+
+        if full_cmd == "/brief":
+            full_cmd = "Run executive morning briefing and upcoming schedule review."
+        elif full_cmd.startswith("/code "):
+            full_cmd = "Write clean, robust code for: " + full_cmd[6:].strip()
+        elif full_cmd.startswith("/research "):
+            full_cmd = "Conduct deep web research and summarize sources for: " + full_cmd[10:].strip()
+        elif full_cmd.startswith("/spotify "):
+            full_cmd = "Spotify control: " + full_cmd[9:].strip()
+        elif full_cmd.startswith("/notes "):
+            note_txt = full_cmd[7:].strip()
+            self.add_message("user", full_cmd)
+            # Save directly
+            p = Path("memory/notes.txt")
+            p.parent.mkdir(parents=True, exist_ok=True)
+            with open(p, "a", encoding="utf-8") as f:
+                f.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M')}] {note_txt}\n")
+            self.add_system_pill(f"✓ Saved note to memory: '{note_txt[:40]}...'")
+            return
+
         self.add_message("user", full_cmd)
         self.command_submitted.emit(full_cmd)
 

@@ -7670,6 +7670,9 @@ class MainWindow(QMainWindow):
         self.hud.update()
         if hasattr(self, "hero_stage") and self.hero_stage is not None:
             self.hero_stage.set_emotion("thinking", duration=3.2)
+        if hasattr(self, "_log") and self._log is not None:
+            if hasattr(self._log, "add_tool_execution"):
+                self._log.add_tool_execution(tool_name)
 
     def _check_config(self) -> bool:
         if not API_FILE.exists(): return False
