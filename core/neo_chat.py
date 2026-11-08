@@ -1396,15 +1396,27 @@ class NeoModernChatWidget(QWidget):
         self.msg_layout.insertWidget(max(0, count - 1), pill)
         QTimer.singleShot(50, self._scroll_to_bottom)
 
+    def _clear_messages_from_layout(self):
+        """Remove all message bubbles and pills, keeping welcome_widget and stretch intact."""
+        welcome = getattr(self, "welcome_widget", None)
+        for i in reversed(range(self.msg_layout.count())):
+            item = self.msg_layout.itemAt(i)
+            if not item:
+                continue
+            w = item.widget()
+            if w and w is not welcome:
+                self.msg_layout.removeWidget(w)
+                w.deleteLater()
+
     def clear_stream(self):
         self._active_stream_bubble = None
-        while self.msg_layout.count() > 1:
-            item = self.msg_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        self._clear_messages_from_layout()
         self._last_content = None
-        if hasattr(self, "welcome_widget"):
-            self.welcome_widget.show()
+        if hasattr(self, "welcome_widget") and self.welcome_widget is not None:
+            try:
+                self.welcome_widget.show()
+            except Exception:
+                pass
         self.add_system_pill("SYS: Conversation stream cleared.")
 
         curr = self._get_active_session()
@@ -1518,19 +1530,22 @@ class NeoModernChatWidget(QWidget):
         curr = self._get_active_session()
         if not curr:
             return
-        while self.msg_layout.count() > 1:
-            item = self.msg_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        self._clear_messages_from_layout()
         self._last_content = None
 
         msgs = curr.get("messages", [])
         if not msgs:
-            if hasattr(self, "welcome_widget"):
-                self.welcome_widget.show()
+            if hasattr(self, "welcome_widget") and self.welcome_widget is not None:
+                try:
+                    self.welcome_widget.show()
+                except Exception:
+                    pass
         else:
-            if hasattr(self, "welcome_widget"):
-                self.welcome_widget.hide()
+            if hasattr(self, "welcome_widget") and self.welcome_widget is not None:
+                try:
+                    self.welcome_widget.hide()
+                except Exception:
+                    pass
         for m in msgs:
             role = m.get("role", "neo")
             txt = m.get("content", "")
