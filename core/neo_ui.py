@@ -32,7 +32,7 @@ from typing import Optional, Callable
 from PyQt6.QtCore import Qt, QTimer, QRectF, QPointF, pyqtSignal
 from PyQt6.QtGui import (
     QPainter, QColor, QRadialGradient, QLinearGradient, QPainterPath,
-    QPen, QBrush, QFont, QCursor
+    QPen, QBrush, QFont, QCursor, QPixmap, QImage
 )
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
