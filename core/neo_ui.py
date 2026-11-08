@@ -33,7 +33,8 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
     QLineEdit, QTextEdit, QProgressBar, QFrame, QScrollArea,
-    QCheckBox, QListWidget, QListWidgetItem, QSizePolicy
+    QCheckBox, QListWidget, QListWidgetItem, QSizePolicy,
+    QStackedWidget, QGridLayout
 )
 import psutil
 import random
@@ -1345,6 +1346,13 @@ class NeoHeroStage(QWidget):
         card.mousePressEvent = lambda e, t=title: self._on_card_clicked(t)
         return card
 
+    def set_user_name(self, name: str):
+        self.user_name = name or "Boss"
+        hr = datetime.now().hour
+        period = "Morning" if hr < 12 else ("Afternoon" if hr < 17 else "Evening")
+        if hasattr(self, "title_lbl"):
+            self.title_lbl.setText(f"Good {period}, {self.user_name}.")
+
     def _on_card_clicked(self, title: str):
         if title == "Plan My Day":
             self.command_submitted.emit("Plan my day and review my schedule, Boss")
@@ -1840,3 +1848,782 @@ class NeoKnowledgeView(QWidget):
                     self.results_edit.setText(f"No direct matches found in local memory for '{q}'. Asking NEO...")
             except Exception:
                 pass
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEO NEURAL ONBOARDING & CALIBRATION OVERLAY (Modern Glassmorphic Setup)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class _PillOption(QPushButton):
+    """Interactive pill button with selected state styling."""
+    def __init__(self, text: str, value: str = None, parent=None):
+        super().__init__(text, parent)
+        self.value = value if value is not None else text
+        self.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setFixedHeight(34)
+        self.setCheckable(True)
+        self._update_style()
+        self.toggled.connect(self._update_style)
+
+    def _update_style(self):
+        if self.isChecked():
+            self.setStyleSheet("""
+                QPushButton {
+                    background: rgba(0, 229, 255, 0.16);
+                    color: #ffffff;
+                    border: 1.5px solid #00e5ff;
+                    border-radius: 17px;
+                    padding: 4px 14px;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.10);
+                    border-radius: 17px;
+                    padding: 4px 14px;
+                }
+                QPushButton:hover {
+                    background: rgba(56, 189, 248, 0.08);
+                    border-color: rgba(56, 189, 248, 0.35);
+                    color: #e2e8f0;
+                }
+            """)
+
+class _PillGroup:
+    """Manages single-selection among a group of _PillOption buttons."""
+    def __init__(self):
+        self.pills: list[_PillOption] = []
+        self._selected_val: str = ""
+
+    def add(self, pill: _PillOption):
+        self.pills.append(pill)
+        pill.clicked.connect(lambda _, p=pill: self._on_clicked(p))
+
+    def _on_clicked(self, clicked_pill: _PillOption):
+        for p in self.pills:
+            p.setChecked(p is clicked_pill)
+        self._selected_val = clicked_pill.value
+
+    def selected_value(self) -> str:
+        for p in self.pills:
+            if p.isChecked():
+                return p.value
+        return self._selected_val
+
+    def set_selected_value(self, val: str):
+        self._selected_val = val
+        matched = False
+        for p in self.pills:
+            is_match = (p.value.lower() == val.lower() or val.lower() in p.value.lower())
+            p.setChecked(is_match)
+            if is_match:
+                matched = True
+        if not matched and self.pills:
+            self.pills[0].setChecked(True)
+            self._selected_val = self.pills[0].value
+
+class _PersonaCard(QFrame):
+    """Clickable personality matrix card with icon, title, badge, and description."""
+    clicked = pyqtSignal(object)
+
+    def __init__(self, key: str, icon: str, title: str, badge: str, desc: str, parent=None):
+        super().__init__(parent)
+        self.key = key
+        self.is_selected = False
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setFixedHeight(120)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(14, 12, 14, 12)
+        lay.setSpacing(6)
+
+        # Header row: icon + title + badge
+        h_row = QHBoxLayout()
+        h_row.setSpacing(8)
+
+        self.title_lbl = QLabel(f"{icon}  {title}")
+        self.title_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        h_row.addWidget(self.title_lbl)
+
+        h_row.addStretch(1)
+
+        self.badge_lbl = QLabel(badge)
+        self.badge_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        h_row.addWidget(self.badge_lbl)
+        lay.addLayout(h_row)
+
+        self.desc_lbl = QLabel(desc)
+        self.desc_lbl.setWordWrap(True)
+        self.desc_lbl.setFont(QFont("Segoe UI", 9))
+        lay.addWidget(self.desc_lbl)
+
+        self._update_style()
+
+    def mousePressEvent(self, event):
+        self.clicked.emit(self)
+        super().mousePressEvent(event)
+
+    def set_selected(self, selected: bool):
+        self.is_selected = selected
+        self._update_style()
+
+    def _update_style(self):
+        if self.is_selected:
+            self.setStyleSheet("""
+                QFrame {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 rgba(0, 229, 255, 0.16),
+                        stop:1 rgba(37, 99, 235, 0.12));
+                    border: 1.5px solid #00e5ff;
+                    border-radius: 12px;
+                }
+            """)
+            self.title_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent;")
+            self.badge_lbl.setStyleSheet("""
+                color: #00e5ff;
+                background: rgba(0, 229, 255, 0.20);
+                border: 1px solid rgba(0, 229, 255, 0.4);
+                border-radius: 4px;
+                padding: 2px 6px;
+            """)
+            self.desc_lbl.setStyleSheet("color: #e2e8f0; border: none; background: transparent;")
+        else:
+            self.setStyleSheet("""
+                QFrame {
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 12px;
+                }
+                QFrame:hover {
+                    background: rgba(56, 189, 248, 0.06);
+                    border-color: rgba(56, 189, 248, 0.3);
+                }
+            """)
+            self.title_lbl.setStyleSheet("color: #cbd5e1; border: none; background: transparent;")
+            self.badge_lbl.setStyleSheet("""
+                color: #64748b;
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 4px;
+                padding: 2px 6px;
+            """)
+            self.desc_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+
+class _PersonaCardGroup:
+    def __init__(self):
+        self.cards: list[_PersonaCard] = []
+        self._selected_key: str = ""
+
+    def add(self, card: _PersonaCard):
+        self.cards.append(card)
+        card.clicked.connect(self._on_clicked)
+
+    def _on_clicked(self, clicked_card: _PersonaCard):
+        for c in self.cards:
+            c.set_selected(c is clicked_card)
+        self._selected_key = clicked_card.key
+
+    def selected_value(self) -> str:
+        for c in self.cards:
+            if c.is_selected:
+                return c.key
+        return self._selected_key or "Tactical JARVIS"
+
+    def set_selected_value(self, val: str):
+        self._selected_key = val
+        matched = False
+        for c in self.cards:
+            is_match = (c.key.lower() == val.lower())
+            c.set_selected(is_match)
+            if is_match:
+                matched = True
+        if not matched and self.cards:
+            self.cards[0].set_selected(True)
+            self._selected_key = self.cards[0].key
+
+class NeoCalibrationOverlay(QFrame):
+    """
+    Modern glassmorphic first-configuration & onboarding popup window for new users.
+    Learns about user identity, craft, peak flow rhythm, behavioral personality directives,
+    feedback preferences, priority goal, and Gemini Neural API key.
+    """
+    _OW = 740
+    _OH = 580
+    done = pyqtSignal(object)  # Emits profile dict
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        import webbrowser
+        self.setObjectName("NeoCalibrationOverlay")
+        self.setFixedSize(self._OW, self._OH)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet("""
+            QFrame#NeoCalibrationOverlay {
+                background: rgba(13, 17, 28, 0.96);
+                border: 1.5px solid rgba(56, 189, 248, 0.32);
+                border-radius: 16px;
+            }
+        """)
+
+        # Main Layout
+        root_lay = QVBoxLayout(self)
+        root_lay.setContentsMargins(28, 20, 28, 20)
+        root_lay.setSpacing(12)
+
+        # 1. Top Header Bar
+        top_bar = QHBoxLayout()
+        top_bar.setSpacing(10)
+
+        icon_lbl = QLabel("⬡")
+        icon_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        icon_lbl.setStyleSheet("color: #00e5ff; background: transparent;")
+        top_bar.addWidget(icon_lbl)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(2)
+        title_lbl = QLabel("NEO // NEURAL ONBOARDING & CALIBRATION")
+        title_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        title_lbl.setStyleSheet("color: #ffffff; background: transparent; letter-spacing: 0.5px;")
+        title_col.addWidget(title_lbl)
+
+        sub_lbl = QLabel("Calibrating your personal AI assistant's memory, persona & behavior directives.")
+        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setStyleSheet("color: #94a3b8; background: transparent;")
+        title_col.addWidget(sub_lbl)
+        top_bar.addLayout(title_col)
+
+        top_bar.addStretch(1)
+
+        close_btn = QPushButton("✕")
+        close_btn.setFont(QFont("Segoe UI", 11))
+        close_btn.setFixedSize(28, 28)
+        close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        close_btn.setStyleSheet("""
+            QPushButton {
+                color: #64748b; background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+            }
+            QPushButton:hover { color: #ffffff; background: rgba(239, 68, 68, 0.25); border-color: #ef4444; }
+        """)
+        close_btn.clicked.connect(self.hide)
+        top_bar.addWidget(close_btn)
+        root_lay.addLayout(top_bar)
+
+        # 2. Step Progress Tabs Bar
+        step_bar = QHBoxLayout()
+        step_bar.setSpacing(8)
+        self.step_btns: list[QPushButton] = []
+        for i, (num, label) in enumerate([("1", "Operator Profile"), ("2", "Behavioral Matrix"), ("3", "Core & Mission")]):
+            s_btn = QPushButton(f"  {num}  {label}  ")
+            s_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            s_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            s_btn.setFixedHeight(28)
+            s_btn.clicked.connect(lambda _, idx=i: self._go_step(idx))
+            step_bar.addWidget(s_btn)
+            self.step_btns.append(s_btn)
+        root_lay.addLayout(step_bar)
+
+        # Separator line
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color: rgba(255, 255, 255, 0.08);")
+        root_lay.addWidget(sep)
+
+        # 3. Stacked Step Pages
+        self.stack = QStackedWidget()
+        root_lay.addWidget(self.stack, stretch=1)
+
+        # Build Pages
+        self._build_page1_profile()
+        self._build_page2_behavior()
+        self._build_page3_mission_core()
+
+        # Load existing config if available
+        self._load_existing_state()
+        self._go_step(0)
+
+    def _go_step(self, idx: int):
+        self.stack.setCurrentIndex(idx)
+        for i, btn in enumerate(self.step_btns):
+            if i == idx:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(0, 229, 255, 0.18);
+                        color: #00e5ff;
+                        border: 1.5px solid #00e5ff;
+                        border-radius: 14px;
+                    }
+                """)
+            elif i < idx:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(34, 197, 94, 0.12);
+                        color: #4ade80;
+                        border: 1px solid rgba(34, 197, 94, 0.35);
+                        border-radius: 14px;
+                    }
+                """)
+            else:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.03);
+                        color: #64748b;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 14px;
+                    }
+                """)
+
+    def _build_page1_profile(self):
+        page = QWidget()
+        lay = QVBoxLayout(page)
+        lay.setContentsMargins(4, 4, 4, 4)
+        lay.setSpacing(12)
+
+        # Q1: Name
+        q1_lbl = QLabel("What should NEO call you?")
+        q1_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        q1_lbl.setStyleSheet("color: #e2e8f0; background: transparent;")
+        lay.addWidget(q1_lbl)
+
+        n_row = QHBoxLayout()
+        n_row.setSpacing(8)
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText("e.g. Fayid, Boss, Commander...")
+        self.name_input.setFont(QFont("Segoe UI", 10))
+        self.name_input.setFixedHeight(34)
+        self.name_input.setStyleSheet("""
+            QLineEdit {
+                background: #111726; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
+            }
+            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+        """)
+        n_row.addWidget(self.name_input, stretch=1)
+
+        # Quick chips
+        for tag in ["Fayid", "Boss", "Chief", "Commander"]:
+            tb = QPushButton(tag)
+            tb.setFont(QFont("Segoe UI", 8))
+            tb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            tb.setFixedHeight(30)
+            tb.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 2px 10px;
+                }
+                QPushButton:hover { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: #00e5ff; }
+            """)
+            tb.clicked.connect(lambda _, t=tag: self.name_input.setText(t))
+            n_row.addWidget(tb)
+        lay.addLayout(n_row)
+
+        lay.addSpacing(4)
+
+        # Q2: Role / Superpower
+        q2_lbl = QLabel("What is your superpower or craft?")
+        q2_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        q2_lbl.setStyleSheet("color: #e2e8f0; background: transparent;")
+        lay.addWidget(q2_lbl)
+
+        r_row = QHBoxLayout()
+        r_row.setSpacing(8)
+        self.role_pills = _PillGroup()
+        for r_name in [
+            "💻 AI / Software Engineer",
+            "🚀 Startup Founder",
+            "🎓 Student / Researcher",
+            "🎨 Designer / Creator",
+            "⚡ Polymath",
+        ]:
+            pill = _PillOption(r_name)
+            r_row.addWidget(pill)
+            self.role_pills.add(pill)
+        lay.addLayout(r_row)
+
+        lay.addSpacing(4)
+
+        # Q3: Peak Flow Rhythm
+        q3_lbl = QLabel("When does your brain hit peak flow?")
+        q3_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        q3_lbl.setStyleSheet("color: #e2e8f0; background: transparent;")
+        lay.addWidget(q3_lbl)
+
+        flow_grid = QGridLayout()
+        flow_grid.setSpacing(8)
+        self.rhythm_pills = _PillGroup()
+        rhythms = [
+            ("🌙 Night Owl", "Midnight code, deep work & coffee"),
+            ("🌅 Dawn Raider", "Early morning clarity before the world wakes"),
+            ("⚡ Hyper-Burst", "Sporadic strikes of intense genius"),
+            ("☕ Steady Flow", "Continuous all-day focus & automation"),
+        ]
+        for idx, (title, sub) in enumerate(rhythms):
+            pill = _PillOption(f"{title}  —  {sub}", value=title)
+            flow_grid.addWidget(pill, idx // 2, idx % 2)
+            self.rhythm_pills.add(pill)
+        lay.addLayout(flow_grid)
+
+        lay.addStretch(1)
+
+        # Bottom Next button
+        b_row = QHBoxLayout()
+        b_row.addStretch(1)
+        next_b = QPushButton("Next: Behavioral Matrix  →")
+        next_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        next_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        next_b.setFixedHeight(36)
+        next_b.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                color: #080c14; font-weight: bold; border: none; border-radius: 8px; padding: 6px 20px;
+            }
+            QPushButton:hover { background: #38bdf8; }
+        """)
+        next_b.clicked.connect(lambda: self._go_step(1))
+        b_row.addWidget(next_b)
+        lay.addLayout(b_row)
+
+        self.stack.addWidget(page)
+
+    def _build_page2_behavior(self):
+        page = QWidget()
+        lay = QVBoxLayout(page)
+        lay.setContentsMargins(4, 4, 4, 4)
+        lay.setSpacing(10)
+
+        top_info = QLabel("Choose how NEO should behave and speak to you:")
+        top_info.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        top_info.setStyleSheet("color: #e2e8f0; background: transparent;")
+        lay.addWidget(top_info)
+
+        # 4 Persona Cards in 2x2 grid
+        card_grid = QGridLayout()
+        card_grid.setSpacing(8)
+        self.persona_group = _PersonaCardGroup()
+
+        personas = [
+            (
+                "Tactical JARVIS", "⚡", "Tactical JARVIS", "DEFAULT // SPEED",
+                "Razor-sharp, ultra-concise (1-2 sentences), zero fluff. Pure speed, immediate action execution."
+            ),
+            (
+                "Brilliant Co-Pilot", "💡", "Brilliant Co-Pilot", "DEEP THINKER",
+                "Senior engineering sparring partner. Proactive architectural advice and deep thinking."
+            ),
+            (
+                "Chill Companion", "☕", "Chill Companion", "WITTY & WARM",
+                "Conversational, clever, supportive tech-savvy best friend with personality and humor."
+            ),
+            (
+                "Hyper-Focus Guardian", "🛡️", "Hyper-Focus Guardian", "DISCIPLINE",
+                "Crushes procrastination, guards your deep work time, keeps you accountable to your daily goals."
+            ),
+        ]
+
+        for i, (k, icon, title, badge, desc) in enumerate(personas):
+            card = _PersonaCard(k, icon, title, badge, desc)
+            card_grid.addWidget(card, i // 2, i % 2)
+            self.persona_group.add(card)
+        lay.addLayout(card_grid)
+
+        # Feedback preference
+        f_lbl = QLabel("How do you prefer your feedback?")
+        f_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        f_lbl.setStyleSheet("color: #cbd5e1; background: transparent;")
+        lay.addWidget(f_lbl)
+
+        f_row = QHBoxLayout()
+        f_row.setSpacing(8)
+        self.feedback_pills = _PillGroup()
+        for f_text in [
+            "🎯 Brutally Honest (Tell me straight)",
+            "🌱 Constructive & Encouraging",
+            "🤔 Socratic (Challenge my assumptions)",
+        ]:
+            pill = _PillOption(f_text)
+            f_row.addWidget(pill)
+            self.feedback_pills.add(pill)
+        lay.addLayout(f_row)
+
+        # Voice Core preference
+        v_lbl = QLabel("Preferred Neural Voice Core:")
+        v_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        v_lbl.setStyleSheet("color: #cbd5e1; background: transparent;")
+        lay.addWidget(v_lbl)
+
+        v_row = QHBoxLayout()
+        v_row.setSpacing(8)
+        self.voice_pills = _PillGroup()
+        for v_name in ["Aoede (Calm & Elegant)", "Puck (Energetic & Sharp)", "Charon (Deep Gravitas)", "Fenrir (Bold & Powerful)"]:
+            pill = _PillOption(v_name, value=v_name.split()[0])
+            v_row.addWidget(pill)
+            self.voice_pills.add(pill)
+        lay.addLayout(v_row)
+
+        lay.addStretch(1)
+
+        # Bottom nav
+        b_row = QHBoxLayout()
+        back_b = QPushButton("← Back")
+        back_b.setFont(QFont("Segoe UI", 9))
+        back_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        back_b.setFixedHeight(34)
+        back_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px 16px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        """)
+        back_b.clicked.connect(lambda: self._go_step(0))
+        b_row.addWidget(back_b)
+
+        b_row.addStretch(1)
+
+        next_b = QPushButton("Next: Core & Mission  →")
+        next_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        next_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        next_b.setFixedHeight(36)
+        next_b.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                color: #080c14; font-weight: bold; border: none; border-radius: 8px; padding: 6px 20px;
+            }
+            QPushButton:hover { background: #38bdf8; }
+        """)
+        next_b.clicked.connect(lambda: self._go_step(2))
+        b_row.addWidget(next_b)
+        lay.addLayout(b_row)
+
+        self.stack.addWidget(page)
+
+    def _build_page3_mission_core(self):
+        page = QWidget()
+        lay = QVBoxLayout(page)
+        lay.setContentsMargins(4, 4, 4, 4)
+        lay.setSpacing(10)
+
+        # Q1: Goal / Mission
+        g_lbl = QLabel("What is your #1 big goal or focus right now?")
+        g_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        g_lbl.setStyleSheet("color: #e2e8f0; background: transparent;")
+        lay.addWidget(g_lbl)
+
+        self.goal_input = QLineEdit()
+        self.goal_input.setPlaceholderText("e.g. Building an autonomous agent, finishing university exams, scaling my startup...")
+        self.goal_input.setFont(QFont("Segoe UI", 10))
+        self.goal_input.setFixedHeight(34)
+        self.goal_input.setStyleSheet("""
+            QLineEdit {
+                background: #111726; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
+            }
+            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+        """)
+        lay.addWidget(self.goal_input)
+
+        # Suggestion chips
+        s_row = QHBoxLayout()
+        s_row.setSpacing(6)
+        for s_text in ["🤖 Build an AI project", "🎓 Ace university exams", "🚀 Launch my startup", "⚡ Automate my workflow"]:
+            sb = QPushButton(s_text)
+            sb.setFont(QFont("Segoe UI", 8))
+            sb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            sb.setFixedHeight(26)
+            sb.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 13px; padding: 2px 8px;
+                }
+                QPushButton:hover { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: #00e5ff; }
+            """)
+            sb.clicked.connect(lambda _, t=s_text: self.goal_input.setText(t))
+            s_row.addWidget(sb)
+        lay.addLayout(s_row)
+
+        lay.addSpacing(6)
+
+        # Q2: Gemini API Key
+        k_header = QHBoxLayout()
+        k_lbl = QLabel("Gemini Neural API Key:")
+        k_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        k_lbl.setStyleSheet("color: #e2e8f0; background: transparent;")
+        k_header.addWidget(k_lbl)
+
+        k_header.addStretch(1)
+
+        import webbrowser
+        get_key_btn = QPushButton("Get Free API Key at Google AI Studio ↗")
+        get_key_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        get_key_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        get_key_btn.setStyleSheet("color: #38bdf8; background: transparent; border: none; text-decoration: underline;")
+        get_key_btn.clicked.connect(lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
+        k_header.addWidget(get_key_btn)
+        lay.addLayout(k_header)
+
+        key_row = QHBoxLayout()
+        key_row.setSpacing(8)
+        self.key_input = QLineEdit()
+        self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.key_input.setPlaceholderText("AIzaSy...")
+        self.key_input.setFont(QFont("Segoe UI", 10))
+        self.key_input.setFixedHeight(34)
+        self.key_input.setStyleSheet("""
+            QLineEdit {
+                background: #111726; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
+            }
+            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+        """)
+        key_row.addWidget(self.key_input, stretch=1)
+
+        self.toggle_eye_btn = QPushButton("👁")
+        self.toggle_eye_btn.setFixedSize(34, 34)
+        self.toggle_eye_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.toggle_eye_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;
+            }
+            QPushButton:hover { color: #ffffff; background: rgba(255, 255, 255, 0.1); }
+        """)
+        self.toggle_eye_btn.clicked.connect(self._toggle_key_vis)
+        key_row.addWidget(self.toggle_eye_btn)
+        lay.addLayout(key_row)
+
+        lay.addSpacing(6)
+
+        # Q3: Host Operating System
+        os_lbl = QLabel("Operating System:")
+        os_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        os_lbl.setStyleSheet("color: #cbd5e1; background: transparent;")
+        lay.addWidget(os_lbl)
+
+        os_row = QHBoxLayout()
+        os_row.setSpacing(8)
+        self.os_pills = _PillGroup()
+        for os_k, os_label in [("windows", "⊞  Windows"), ("mac", "  macOS"), ("linux", "🐧  Linux")]:
+            pill = _PillOption(os_label, value=os_k)
+            os_row.addWidget(pill)
+            self.os_pills.add(pill)
+        lay.addLayout(os_row)
+
+        self.error_lbl = QLabel("")
+        self.error_lbl.setFont(QFont("Segoe UI", 9))
+        self.error_lbl.setStyleSheet("color: #ef4444; background: transparent;")
+        lay.addWidget(self.error_lbl)
+
+        lay.addStretch(1)
+
+        # Bottom Finish Actions
+        b_row = QHBoxLayout()
+        back_b = QPushButton("← Back")
+        back_b.setFont(QFont("Segoe UI", 9))
+        back_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        back_b.setFixedHeight(36)
+        back_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px 16px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        """)
+        back_b.clicked.connect(lambda: self._go_step(1))
+        b_row.addWidget(back_b)
+
+        b_row.addStretch(1)
+
+        finish_b = QPushButton("⚡  ESTABLISH NEURAL LINK & INITIALIZE NEO")
+        finish_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        finish_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        finish_b.setFixedHeight(38)
+        finish_b.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #00e5ff, stop:0.5 #38bdf8, stop:1 #2563eb);
+                color: #060911; font-weight: bold; border: none; border-radius: 8px; padding: 6px 24px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #38bdf8, stop:1 #60a5fa);
+                color: #000000;
+            }
+        """)
+        finish_b.clicked.connect(self._submit)
+        b_row.addWidget(finish_b)
+        lay.addLayout(b_row)
+
+        self.stack.addWidget(page)
+
+    def _toggle_key_vis(self):
+        if self.key_input.echoMode() == QLineEdit.EchoMode.Password:
+            self.key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_eye_btn.setText("🔒")
+        else:
+            self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_eye_btn.setText("👁")
+
+    def _load_existing_state(self):
+        import platform
+        import json
+        det = {"darwin": "mac", "windows": "windows"}.get(platform.system().lower(), "linux")
+        self.os_pills.set_selected_value(det)
+
+        self.role_pills.set_selected_value("💻 AI / Software Engineer")
+        self.rhythm_pills.set_selected_value("🌙 Night Owl")
+        self.persona_group.set_selected_value("Tactical JARVIS")
+        self.feedback_pills.set_selected_value("🎯 Brutally Honest (Tell me straight)")
+        self.voice_pills.set_selected_value("Aoede")
+
+        try:
+            cfg_path = os.path.join("config", "api_keys.json")
+            if os.path.exists(cfg_path):
+                with open(cfg_path, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                if d.get("user_name"):
+                    self.name_input.setText(d["user_name"])
+                else:
+                    self.name_input.setText("Fayid")
+                if d.get("gemini_api_key"):
+                    self.key_input.setText(d["gemini_api_key"])
+                if d.get("personality"):
+                    self.persona_group.set_selected_value(d["personality"])
+                if d.get("user_role"):
+                    self.role_pills.set_selected_value(d["user_role"])
+                if d.get("operating_rhythm"):
+                    self.rhythm_pills.set_selected_value(d["operating_rhythm"])
+                if d.get("feedback_style"):
+                    self.feedback_pills.set_selected_value(d["feedback_style"])
+                if d.get("voice_name"):
+                    self.voice_pills.set_selected_value(d["voice_name"])
+                if d.get("current_goal"):
+                    self.goal_input.setText(d["current_goal"])
+                if d.get("os_system"):
+                    self.os_pills.set_selected_value(d["os_system"])
+        except Exception:
+            self.name_input.setText("Fayid")
+
+    def _submit(self):
+        key = self.key_input.text().strip()
+        if not key:
+            self.error_lbl.setText("⚠️ Please enter a valid Gemini API Key to establish neural link.")
+            return
+
+        payload = {
+            "gemini_api_key": key,
+            "os_system": self.os_pills.selected_value() or "windows",
+            "user_name": self.name_input.text().strip() or "Boss",
+            "role": self.role_pills.selected_value(),
+            "rhythm": self.rhythm_pills.selected_value(),
+            "personality": self.persona_group.selected_value(),
+            "feedback_style": self.feedback_pills.selected_value(),
+            "voice_name": self.voice_pills.selected_value() or "Aoede",
+            "current_goal": self.goal_input.text().strip(),
+            "onboarding_completed": True,
+        }
+        self.done.emit(payload)

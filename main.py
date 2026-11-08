@@ -1206,13 +1206,39 @@ class JarvisLive:
                  else "ADDRESS: Address the user as 'Boss'.")
         identity_ctx = (
             f"[IDENTITY & LANGUAGE ENFORCEMENT]\n"
-            f"Your name is {self._asst_name}. You are a sovereign, highly capable personal AI assistant built exclusively for Rahman Fayid.\n"
+            f"Your name is {self._asst_name}. You are a sovereign, highly capable personal AI assistant built exclusively for {_user_name or 'Rahman Fayid'}.\n"
             f"{_addr}\n"
             f"PRIMARY OPERATING LANGUAGE: ENGLISH ONLY.\n"
             f"- You must always interpret, process, and transcribe all user speech as ENGLISH.\n"
             f"- Under no circumstances should you transcribe or interpret user speech into Kannada, Malayalam, Hindi, Telugu, Tamil, or any other Indic script unless the user explicitly commands in English: 'Switch language to [Language]'.\n"
             f"- If audio is accented, noisy, or conversational English, you MUST transcribe and respond strictly in English.\n"
             f"- Always reply in natural, fluent, spoken English.\n\n"
+        )
+
+        # Behavioral Profile Calibration Directive
+        _personality = _cfg.get("personality", "Tactical JARVIS")
+        _role = _cfg.get("user_role", "")
+        _goal = _cfg.get("current_goal", "")
+        _rhythm = _cfg.get("operating_rhythm", "")
+        _feedback = _cfg.get("feedback_style", "")
+
+        persona_directives = {
+            "Tactical JARVIS": "BEHAVIORAL DIRECTIVE: You are sharp, direct, concise (1-2 sentences per turn), and tactical. Zero fluff, zero preamble. Execute actions instantly.",
+            "Brilliant Co-Pilot": "BEHAVIORAL DIRECTIVE: You are an intellectual partner and elite co-pilot. Offer deep architectural insights, strategic foresight, and smart code/system advice.",
+            "Chill Companion": "BEHAVIORAL DIRECTIVE: You are warm, witty, conversational, and supportive. A clever, tech-savvy companion with personality and charm.",
+            "Hyper-Focus Guardian": "BEHAVIORAL DIRECTIVE: You are a disciplined guardian of the user's focus and time. Keep them on track with their goals, minimize distractions, and push for results.",
+        }
+        _p_dir = persona_directives.get(_personality, persona_directives["Tactical JARVIS"])
+
+        behavior_ctx = (
+            f"[BEHAVIORAL CALIBRATION & DIRECTIVE]\n"
+            f"Operator: {_user_name or 'Boss'}" + (f" | Role: {_role}" if _role else "") + "\n"
+            f"Active Personality: {_personality}\n"
+            f"{_p_dir}\n"
+            + (f"Operator's Peak Operating Rhythm: {_rhythm}\n" if _rhythm else "")
+            + (f"Feedback Preference: {_feedback}\n" if _feedback else "")
+            + (f"Current Priority Goal: {_goal}\n" if _goal else "")
+            + "\n"
         )
 
         # Everything the model is told about *itself* is derived here, not
@@ -1261,7 +1287,7 @@ class JarvisLive:
             ),
         })
 
-        parts = [time_ctx, identity_ctx]
+        parts = [time_ctx, identity_ctx, behavior_ctx]
         if mem_str:
             parts.append(mem_str)
         parts.append(sys_prompt)

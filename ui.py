@@ -60,8 +60,10 @@ from core.neo_ui import (
     NeoEclipseCanvas, FocusSessionWidget, SystemStatusWidget,
     UpcomingScheduleWidget, MediaTransportWidget, NeoWidgetsSidebar,
     NeoNavSidebar, NeoHeroStage, NeoTasksView, NeoNotesView,
-    NeoProjectsView, NeoKnowledgeView
+    NeoProjectsView, NeoKnowledgeView, NeoCalibrationOverlay
 )
+
+SetupOverlay = NeoCalibrationOverlay
 
 try:
     from core.avatar import HoloAvatar
@@ -5578,7 +5580,8 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
         cw = self.centralWidget()
         if self._overlay and self._overlay.isVisible():
-            ow, oh = 460, 390
+            ow = getattr(self._overlay, "_OW", 740)
+            oh = getattr(self._overlay, "_OH", 580)
             self._overlay.setGeometry(
                 (cw.width()  - ow) // 2,
                 (cw.height() - oh) // 2,
@@ -7713,14 +7716,15 @@ class MainWindow(QMainWindow):
         if not API_FILE.exists(): return False
         try:
             d = json.loads(API_FILE.read_text(encoding="utf-8"))
-            return bool(d.get("gemini_api_key")) and bool(d.get("os_system"))
+            return bool(d.get("gemini_api_key")) and bool(d.get("onboarding_completed", False) or d.get("user_name"))
         except Exception:
             return False
 
     def _show_setup(self):
-        ov = SetupOverlay(self.centralWidget())
+        ov = NeoCalibrationOverlay(self.centralWidget())
         cw = self.centralWidget()
-        ow, oh = 460, 390
+        ow = getattr(ov, "_OW", 740)
+        oh = getattr(ov, "_OH", 580)
         ov.setGeometry(
             (cw.width()  - ow) // 2,
             (cw.height() - oh) // 2,
@@ -7728,24 +7732,82 @@ class MainWindow(QMainWindow):
         )
         ov.done.connect(self._on_setup_done)
         ov.show()
+        ov.raise_()
         self._overlay = ov
 
-    def _on_setup_done(self, key: str, os_name: str):
+    def _on_setup_done(self, config_data, os_name: str = None):
+        if not isinstance(config_data, dict):
+            config_data = {
+                "gemini_api_key": str(config_data),
+                "os_system": str(os_name or "windows"),
+                "user_name": "Boss",
+                "personality": "Tactical JARVIS",
+            }
+
+        key = config_data.get("gemini_api_key", "").strip()
+        os_name = config_data.get("os_system", "windows")
+        user_name = config_data.get("user_name", "").strip() or "Boss"
+        role = config_data.get("role", "")
+        rhythm = config_data.get("rhythm", "")
+        personality = config_data.get("personality", "Tactical JARVIS")
+        feedback_style = config_data.get("feedback_style", "")
+        voice_name = config_data.get("voice_name", "Aoede")
+        current_goal = config_data.get("current_goal", "")
+
         os.makedirs(CONFIG_DIR, exist_ok=True)
         data = _read_full_config()
         data["gemini_api_key"] = key
         data["os_system"] = os_name
+        data["user_name"] = user_name
+        data["user_role"] = role
+        data["operating_rhythm"] = rhythm
+        data["personality"] = personality
+        data["feedback_style"] = feedback_style
+        data["voice_name"] = voice_name
+        data["current_goal"] = current_goal
+        data["onboarding_completed"] = True
+
         API_FILE.write_text(
             json.dumps(data, indent=4),
             encoding="utf-8",
         )
+
+        try:
+            from memory.memory_manager import remember
+            remember("name", user_name, "identity")
+            remember("call_me", user_name, "identity")
+            if role:
+                remember("role", role, "identity")
+            remember("personality_mode", personality, "preferences")
+            if rhythm:
+                remember("working_rhythm", rhythm, "preferences")
+            if feedback_style:
+                remember("feedback_style", feedback_style, "preferences")
+            if current_goal:
+                remember("priority_project", current_goal, "projects")
+        except Exception as e:
+            print(f"[Onboarding] Memory persist error: {e}")
+
+        self._user_name = user_name
         self._ready = True
         if self._overlay:
             self._overlay.hide()
             self._overlay = None
+
+        if hasattr(self, "hero_stage") and self.hero_stage is not None:
+            self.hero_stage.set_user_name(user_name)
+            self.hero_stage.set_emotion("happy", duration=3.5)
+
         self._apply_state("LISTENING")
-        self._assistant_name = _read_full_config().get("assistant_name", "JARVIS") or "JARVIS"
-        self._log.append_log(f"SYS: Initialised. OS={os_name.upper()}. {self._assistant_name} online.")
+        self._assistant_name = data.get("assistant_name", "NEO") or "NEO"
+        self._log.append_log(f"SYS: Neural profile calibrated for {user_name} ({role or 'Operator'}). {self._assistant_name} online.")
+        self._on_live_speech(self._assistant_name, f"Neural profile calibrated. Welcome aboard, {user_name}. I'm ready.")
+
+        try:
+            from core.sfx import play_hud_boot
+            play_hud_boot()
+        except Exception:
+            pass
 
     def closeEvent(self, event):
         """Hard and clean exit when the UI window is closed so no background threads linger."""
