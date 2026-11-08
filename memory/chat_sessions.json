@@ -5,7 +5,28 @@
       "id": "default",
       "title": "Welcome to NEO",
       "created_at": "2026-11-08",
-      "messages": []
+      "messages": [
+        {
+          "role": "user",
+          "content": "Look at this on camera and describe what you see",
+          "timestamp": "12:45 AM"
+        },
+        {
+          "role": "neo",
+          "content": "It's a black screen, Boss. I don't see anything.",
+          "timestamp": "12:45 AM"
+        },
+        {
+          "role": "user",
+          "content": "try now",
+          "timestamp": "12:46 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Still a black screen, Fayid. Can't see a thing.",
+          "timestamp": "12:46 AM"
+        }
+      ]
     }
   ]
 }

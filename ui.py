@@ -4678,6 +4678,10 @@ class MainWindow(QMainWindow):
             apply_ui_accent(_ui_color)
 
         self.setWindowTitle(_display or "NEO")
+        _ico_p = Path(__file__).resolve().parent / "config" / "neo.ico"
+        if _ico_p.exists():
+            from PyQt6.QtGui import QIcon
+            self.setWindowIcon(QIcon(str(_ico_p)))
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(1200, 780)
 
@@ -7856,8 +7860,19 @@ class _RootShim:
 
 class JarvisUI:
     def __init__(self, face_path: str, size=None):
+        import platform
+        if platform.system() == "Windows":
+            try:
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("neo.stark.ai.commandcenter")
+            except Exception:
+                pass
         self._app = QApplication.instance() or QApplication(sys.argv)
         self._app.setStyle("Fusion")
+        _ico_p = Path(__file__).resolve().parent / "config" / "neo.ico"
+        if _ico_p.exists():
+            from PyQt6.QtGui import QIcon
+            self._app.setWindowIcon(QIcon(str(_ico_p)))
         self._win = MainWindow(face_path)
         self.root = _RootShim(self._app)
         self._win.show()
