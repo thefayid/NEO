@@ -4984,6 +4984,13 @@ class MainWindow(QMainWindow):
         # Subagent Swarm floating micro-cards overlay (top-left of HUD area)
         self._swarm_cards = SwarmCardsOverlay(self.centralWidget())
 
+        # Desktop Floating Voice Capsule (stays on desktop when minimized or via F9)
+        from core.floating_island import NeoFloatingIsland
+        self._floating_island = NeoFloatingIsland(None)
+        self._floating_island.restore_requested.connect(self._restore_from_floating_island)
+        self._floating_island.mic_toggled.connect(self._toggle_mute)
+        self._floating_island.hide()
+
         # Clipboard panel (child of central widget, bottom-center)
         self._clipboard_panel = ClipboardPanel(self.centralWidget())
         self._clipboard_panel.action_requested.connect(self._on_clipboard_action)
@@ -5002,6 +5009,9 @@ class MainWindow(QMainWindow):
         sc_intr.activated.connect(self._do_interrupt)
         sc_hud = QShortcut(QKeySequence("F8"), self)
         sc_hud.activated.connect(self._cycle_hud_layout)
+
+        sc_capsule = QShortcut(QKeySequence("F9"), self)
+        sc_capsule.activated.connect(self._toggle_floating_island)
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -5890,6 +5900,9 @@ class MainWindow(QMainWindow):
 
         self._layout_mode_btn = _pill_btn("🕶 STEALTH", "Toggle Stealth / Command Mode [F8]", self._cycle_hud_layout)
         t_lay.addWidget(self._layout_mode_btn)
+
+        self._capsule_btn = _pill_btn("☁ CAPSULE", "Desktop Floating Island [F9]", self._toggle_floating_island)
+        t_lay.addWidget(self._capsule_btn)
 
         # Window Controls: Minimize, Maximize, Close
         btn_min = QPushButton("─")
@@ -7785,6 +7798,31 @@ class MainWindow(QMainWindow):
             play_hud_boot()
         except Exception:
             pass
+
+    def _toggle_floating_island(self):
+        if hasattr(self, "_floating_island"):
+            if self._floating_island.isVisible():
+                self._floating_island.hide()
+            else:
+                self._floating_island.show()
+
+    def _restore_from_floating_island(self):
+        self.showNormal()
+        self.activateWindow()
+        self.raise_()
+        if hasattr(self, "_floating_island"):
+            self._floating_island.hide()
+
+    def changeEvent(self, event):
+        from PyQt6.QtCore import QEvent
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self.isMinimized():
+                if hasattr(self, "_floating_island"):
+                    self._floating_island.show()
+            else:
+                if hasattr(self, "_floating_island") and self._floating_island.isVisible():
+                    self._floating_island.hide()
+        super().changeEvent(event)
 
     def closeEvent(self, event):
         """Hard and clean exit when the UI window is closed so no background threads linger."""

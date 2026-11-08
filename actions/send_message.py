@@ -592,12 +592,39 @@ def _list_contacts_summary() -> str:
 
 # ── Main Entry Points ────────────────────────────────────────────────────────
 
+def _send_discord(receiver: str, message: str, media_path: str = "") -> str:
+    """Dispatches message via Discord Webhook API or Discord desktop app."""
+    contact = _resolve_contact(receiver)
+    cfg = _load_config()
+    webhook_url = contact.get("discord_webhook") or cfg.get("discord_webhook_url", "").strip()
+
+    if webhook_url and "discord.com/api/webhooks" in webhook_url:
+        try:
+            payload = json.dumps({
+                "username": "NEO Intelligence Dispatcher",
+                "content": message if not receiver else f"**[To {contact.get('name', receiver)}]:** {message}",
+            }).encode("utf-8")
+            req = urllib.request.Request(
+                webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json", "User-Agent": "NEO-Assistant"},
+            )
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status in (200, 204):
+                    _play_sfx("confirm")
+                    return outcome.done("send_message", platform="Discord", to=contact.get("name", receiver), verified=True)
+        except Exception as e:
+            print(f"[Discord] Webhook send error: {e}")
+
+    return _desktop_send("Discord", contact.get("name", receiver), message, media_path=media_path)
+
+
 _PLATFORM_MAP = [
     ({"whatsapp", "wp", "wapp"}, _send_whatsapp),
     ({"telegram", "tg"},         _send_telegram),
+    ({"discord"},                  _send_discord),
     ({"instagram", "ig", "insta"}, lambda r, m, med="": _desktop_send("Instagram", r, m, med)),
     ({"signal"},                   lambda r, m, med="": _desktop_send("Signal", r, m, med)),
-    ({"discord"},                  lambda r, m, med="": _desktop_send("Discord", r, m, med)),
     ({"messenger", "facebook"},    lambda r, m, med="": _desktop_send("Messenger", r, m, med)),
 ]
 

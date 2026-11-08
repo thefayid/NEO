@@ -62,6 +62,7 @@ _EXPORTS_DIR = Path("memory/exports")
 # ─────────────────────────────────────────────────────────────────────────────
 class CodeBlockWidget(QFrame):
     """Sleek syntax-highlighted code block with macOS-style window dots and copy feedback."""
+    canvas_requested = pyqtSignal(str, str)
 
     def __init__(self, code: str, language: str = "CODE", parent=None):
         super().__init__(parent)
@@ -100,6 +101,27 @@ class CodeBlockWidget(QFrame):
         hdr.addWidget(lang_lbl)
 
         hdr.addStretch()
+
+        self.canvas_btn = QPushButton("✦ Canvas")
+        self.canvas_btn.setToolTip("Open in Interactive Sandbox & Preview Canvas")
+        self.canvas_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        self.canvas_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.canvas_btn.setFixedHeight(22)
+        self.canvas_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(0, 229, 255, 0.12);
+                color: #00e5ff;
+                border: 1px solid rgba(0, 229, 255, 0.3);
+                border-radius: 5px;
+                padding: 1px 8px;
+            }
+            QPushButton:hover {
+                background: rgba(0, 229, 255, 0.25);
+                color: #ffffff;
+            }
+        """)
+        self.canvas_btn.clicked.connect(lambda: self.canvas_requested.emit(self.code_text, lang_label))
+        hdr.addWidget(self.canvas_btn)
 
         self.copy_btn = QPushButton("📋 Copy Code")
         self.copy_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
@@ -420,6 +442,7 @@ class ChatWelcomeView(QWidget):
 
 class NeoChatMessageBubble(QFrame):
     """Interactive individual chat message bubble with in-place streaming re-rendering."""
+    canvas_requested = pyqtSignal(str, str)
 
     def __init__(
         self,
@@ -605,7 +628,9 @@ class NeoChatMessageBubble(QFrame):
                     if i + 2 < len(parts):
                         lang = parts[i + 1].strip() or "CODE"
                         code = parts[i + 2].strip()
-                        self.body_lay.addWidget(CodeBlockWidget(code, lang))
+                        cb_w = CodeBlockWidget(code, lang)
+                        cb_w.canvas_requested.connect(self.canvas_requested.emit)
+                        self.body_lay.addWidget(cb_w)
                         i += 3
                     else:
                         break
@@ -742,6 +767,10 @@ class SlashCommandPopup(QFrame):
         commands = [
             ("💻 /code", "Focus on clean coding & debugging", "/code "),
             ("🔍 /research", "Deep web research with live citations", "/research "),
+            ("🧠 /rag", "Local semantic file search with citations", "/rag "),
+            ("👥 /swarm", "Delegate parallel task to subagent swarm", "/swarm "),
+            ("🚀 /protocol", "Engage Stark macro protocol (dev, focus)", "/protocol "),
+            ("✦ /canvas", "Open interactive code execution sandbox", "/canvas"),
             ("🎵 /spotify", "Control music (play, pause, next)", "/spotify "),
             ("📅 /brief", "Executive agenda & morning briefing", "/brief"),
             ("📝 /notes", "Save directly to long-term memory notes", "/notes "),
@@ -1032,6 +1061,28 @@ class NeoModernChatWidget(QWidget):
         self.voice_btn.clicked.connect(self._toggle_voice)
         hdr.addWidget(self.voice_btn)
 
+        # Interactive Canvas Toggle
+        canvas_tgl = QPushButton("✦ Canvas")
+        canvas_tgl.setToolTip("Toggle Interactive Artifact Canvas Sandbox")
+        canvas_tgl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        canvas_tgl.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        canvas_tgl.setFixedHeight(28)
+        canvas_tgl.setStyleSheet("""
+            QPushButton {
+                background: rgba(0, 229, 255, 0.12);
+                color: #00e5ff;
+                border: 1px solid rgba(0, 229, 255, 0.35);
+                border-radius: 7px;
+                padding: 1px 10px;
+            }
+            QPushButton:hover {
+                background: rgba(0, 229, 255, 0.25);
+                color: #ffffff;
+            }
+        """)
+        canvas_tgl.clicked.connect(lambda: self.artifact_canvas.setVisible(not self.artifact_canvas.isVisible()))
+        hdr.addWidget(canvas_tgl)
+
         # Export .md report button
         export_b = QPushButton("📋 Export")
         export_b.setToolTip("Export conversation as Markdown")
@@ -1287,6 +1338,11 @@ class NeoModernChatWidget(QWidget):
         chat_v.addWidget(self.bar_frame)
         root_h.addWidget(main_chat, stretch=1)
 
+        from core.neo_artifacts import NeoArtifactCanvas
+        self.artifact_canvas = NeoArtifactCanvas(self)
+        self.artifact_canvas.setVisible(False)
+        root_h.addWidget(self.artifact_canvas)
+
         # Floating Slash Command Popup
         self.slash_popup = SlashCommandPopup(self)
         self.slash_popup.setVisible(False)
@@ -1370,6 +1426,7 @@ class NeoModernChatWidget(QWidget):
             on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
             parent=self.messages_container,
         )
+        bubble.canvas_requested.connect(self.open_artifact_canvas)
         self._active_stream_bubble = bubble
         self._last_stream_role = role_lower
         self._last_stream_time = now
@@ -1557,6 +1614,7 @@ class NeoModernChatWidget(QWidget):
                 on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
                 parent=self.messages_container,
             )
+            bubble.canvas_requested.connect(self.open_artifact_canvas)
             count = self.msg_layout.count()
             self.msg_layout.insertWidget(max(0, count - 1), bubble)
         QTimer.singleShot(60, self._scroll_to_bottom)
@@ -1691,6 +1749,10 @@ class NeoModernChatWidget(QWidget):
     def _apply_quick_pill(self, prompt: str):
         self.input_edit.setText(prompt)
         self.input_edit.setFocus()
+
+    def open_artifact_canvas(self, code: str, language: str = "python"):
+        if hasattr(self, "artifact_canvas"):
+            self.artifact_canvas.display_artifact(code, language, title=f"NEO Artifact // {language.upper()}")
 
     def _submit(self):
         self._active_stream_bubble = None
