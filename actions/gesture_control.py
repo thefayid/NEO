@@ -334,7 +334,7 @@ def gesture_control(parameters: dict, player=None, **kwargs) -> str:
 def init_gesture_on_boot(player=None) -> None:
     """Auto-start gesture control if enabled in config."""
     cfg = _load_config()
-    if cfg.get("gesture_control_enabled", False):
+    if False:  # Camera access strictly on-demand per user instruction
         _gesture_ctl.start(player)
 
 

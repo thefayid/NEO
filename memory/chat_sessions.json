@@ -143,6 +143,81 @@
           "role": "neo",
           "content": "Shutting down now. Goodbye, Boss.",
           "timestamp": "11:35 PM"
+        },
+        {
+          "role": "user",
+          "content": "hey",
+          "timestamp": "11:43 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Boss! What's on your mind today?",
+          "timestamp": "11:43 PM"
+        },
+        {
+          "role": "user",
+          "content": "Say aloud: Hey Boss! What's on your mind today?",
+          "timestamp": "11:43 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Boss! What's on your mind today?",
+          "timestamp": "11:43 PM"
+        },
+        {
+          "role": "user",
+          "content": "Spotify control: kunfaya kun",
+          "timestamp": "11:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Playing 'kunfaya kun' on Spotify, Boss.",
+          "timestamp": "11:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "/brief sam altman",
+          "timestamp": "11:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Sam Altman is the CEO of OpenAI, the company behind ChatGPT. He's a notable American entrepreneur and investor, having previously served as the president of Y Combinator and co-founded Loopt. He briefly faced a dramatic ousting from OpenAI in 2023, but was reinstated shortly after.",
+          "timestamp": "11:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "show cam",
+          "timestamp": "11:45 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Sam Altman is the CEO of OpenAI, the company behind ChatGPT. He's a notable American entrepreneur and investor, having previously served as the president of Y Combinator and co-founded Loopt. He briefly faced a dramatic ousting from OpenAI in 2023, but was reinstated shortly after.",
+          "timestamp": "11:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Review today's schedule and upcoming calendar events, Boss",
+          "timestamp": "11:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Review today's schedule and upcoming calendar events, Boss",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I couldn't find any memories or files matching 'Start Ey Project', Boss, and a web search didn't bring up any public details either. Could it be something new you're starting, or perhaps a different name?",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "user",
+          "content": "its new i will tell you tommorow",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Got it, Boss. Just let me know when you're ready to log it.",
+          "timestamp": "11:46 PM"
         }
       ]
     }

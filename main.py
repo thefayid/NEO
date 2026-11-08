@@ -2722,6 +2722,10 @@ class JarvisLive:
                     # Reset transient state that must not carry over from a previous session
                     self._pending_vision       = None
                     self._vision_cam_active    = False
+                    try:
+                        self.ui.stop_camera_stream()
+                    except Exception:
+                        pass
                     self._vision_close_pending = False
                     self._vision_busy          = False
                     self._vision_last_time     = 0.0
@@ -2782,7 +2786,7 @@ class JarvisLive:
                     if self._dashboard:
                         tg.create_task(self._relay_phone_audio())
 
-                    # Auto-start presence sentry or gesture control if enabled in config
+                    # Camera access is strictly on-demand per user instruction (no background boot start)
                     try:
                         from actions.presence_sentry import init_presence_on_boot
                         init_presence_on_boot(self)

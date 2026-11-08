@@ -96,16 +96,31 @@ class CameraService:
             return True
 
     def unregister_consumer(self, consumer_id: str) -> None:
-        """Unregister a consumer. Automatically schedules camera release if no active consumers remain."""
+        """Unregister a consumer. Automatically releases camera immediately if no active consumers remain."""
         with self._lock:
             self._consumers.discard(consumer_id)
             if not self._consumers and self._running:
-                # Schedule camera release after 6s grace period
                 if self._grace_timer:
                     self._grace_timer.cancel()
-                self._grace_timer = threading.Timer(6.0, self._stop_internal)
-                self._grace_timer.daemon = True
-                self._grace_timer.start()
+                    self._grace_timer = None
+                self._running = False
+                print("[CameraService] 💤 No active consumers. Hardware camera released.")
+
+    def stop(self) -> None:
+        """Immediately release hardware camera and terminate all active consumers."""
+        with self._lock:
+            self._consumers.clear()
+            if self._grace_timer:
+                self._grace_timer.cancel()
+                self._grace_timer = None
+            self._running = False
+            if self._cap is not None:
+                try:
+                    self._cap.release()
+                except Exception:
+                    pass
+                self._cap = None
+        print("[CameraService] 🛑 Camera service stopped.")
 
     def _stop_internal(self):
         with self._lock:

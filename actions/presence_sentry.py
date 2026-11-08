@@ -277,7 +277,7 @@ def presence_sentry(parameters: dict, player=None, speak=None, **kwargs) -> str:
 def init_presence_on_boot(player=None) -> None:
     """Auto-start presence sentry if enabled in config."""
     cfg = _load_config()
-    if cfg.get("presence_detection_enabled", False):
+    if False:  # Camera access strictly on-demand per user instruction
         _monitor.start(player)
 
 

@@ -5076,6 +5076,11 @@ class MainWindow(QMainWindow):
 
     def stop_camera_stream(self) -> None:
         self._cam_stop.set()
+        try:
+            from core.camera_service import get_camera_service
+            get_camera_service().stop()
+        except Exception:
+            pass
 
     # --- Video in the HUD area ---------------------------------------------
     #

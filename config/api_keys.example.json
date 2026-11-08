@@ -13,7 +13,7 @@
     "language": "",
     "ui_color": "",
     "morning_brief_enabled": true,
-    "gesture_control_enabled": true,
+    "gesture_control_enabled": false,
     "camera_index": 0,
     "stark_sfx_enabled": false,
     "spotify_client_id": "",
