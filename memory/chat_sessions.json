@@ -25,6 +25,66 @@
           "role": "neo",
           "content": "Still a black screen, Fayid. Can't see a thing.",
           "timestamp": "12:46 AM"
+        },
+        {
+          "role": "user",
+          "content": "Summarize my current notifications, active projects, and latest context, Boss",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Right then, Boss. It's",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "user",
+          "content": "Summarize my current notifications, active projects, and latest context, Boss",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Right then, Boss. It's 12:53 AM on Monday, November 9th. You've got Patchy rain nearby with +25\u00b0C. Your agenda has one item: Start 'Ey Project' at PM, no conflicts. System metrics are cruising nicely: CPU 4%, RAM 83%, and battery is at 74%. All systems nominal.",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Right, Boss, here's your current status. It's 12:53 AM on Monday, November 9th. Weather-wise, we've got some patchy rain nearby at +25\u00b0C. For your agenda, you have one scheduled item: 'Start Ey Project' at 9:00 PM, and there are no conflicts detected. System status is nominal with CPU at 6%, RAM 84%, and battery at 74%. All core protocols nominal.",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "user",
+          "content": "Summarize my current notifications, active projects, and latest context, Boss",
+          "timestamp": "12:53 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Right, Boss, here's your current status. It's 12:53 AM on Monday, November 9th. Weather-wise, we've got some patchy rain nearby at +25\u00b0C. For your agenda, you have one scheduled item: 'Start Ey Project' at 9:00 PM, and there are no conflicts detected. System status is nominal with CPU at 6%, RAM 84%, and battery at 74%. All core protocols nominal.",
+          "timestamp": "12:54 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Still 12:54 AM, Boss. Not much has changed, but your system is holding steady. Still the 'Start Ey Project' at 9 PM on the agenda, and system vitals are nominal.",
+          "timestamp": "12:54 AM"
+        },
+        {
+          "role": "user",
+          "content": "Remember this memory note: Iam A Cyber Security Final Year student At Jain University Kochi",
+          "timestamp": "12:55 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Memory noted, Boss. I'll keep that tucked away for you.",
+          "timestamp": "12:55 AM"
+        },
+        {
+          "role": "user",
+          "content": "which college iam in",
+          "timestamp": "12:55 AM"
+        },
+        {
+          "role": "neo",
+          "content": "Ah, my apologies, Boss. Found it right here. You're a Cyber Security Final Year student at Jain University Kochi.",
+          "timestamp": "12:55 AM"
         }
       ]
     }
