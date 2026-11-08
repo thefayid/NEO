@@ -632,7 +632,7 @@ def _get_download_status(steam_path: Path) -> str:
 
 def _system_shutdown() -> None:
     if is_windows():
-        subprocess.run(["shutdown", "/s", "/t", "10"], **_CNW)
+        subprocess.run(["shutdown", "/s", "/t", "1"], **_CNW)
     elif is_mac():
         subprocess.run(["osascript", "-e", 'tell app "System Events" to shut down'])
     else:

@@ -471,9 +471,9 @@ TOOL_DECLARATIONS = [
     {
         "name": "shutdown_jarvis",
         "description": (
-            "Shuts down the assistant completely. "
+            "Shuts down the NEO assistant application immediately. "
             "Call this when the user expresses intent to end the conversation, "
-            "close the assistant, say goodbye, or stop Jarvis. "
+            "close the assistant, say goodbye, quit, or shut down NEO / Jarvis. "
             "The user can say this in ANY language."
         ),
         "parameters": {
@@ -1491,21 +1491,19 @@ class JarvisLive:
                     result = "Specify action (add/remove/list) and a topic."
 
             elif name == "shutdown_jarvis":
-                self.ui.write_log("SYS: Shutdown requested.")
-                async def _do_shutdown():
-                    await self._save_session_summary()
-                    if self.session:
-                        try:
-                            await self.session.send_client_content(
-                                turns={"role": "user", "parts": [{"text": "Say a brief natural goodbye to the user."}]},
-                                turn_complete=True,
-                            )
-                        except Exception:
-                            pass
-                    await asyncio.sleep(1.5)
+                self.ui.write_log("SYS: Shutting down NEO...")
+                self.ui.show_live_speech("NEO", "Shutting down now. Goodbye, Boss.")
+                self.ui.set_state("SLEEPING")
+                result = "Shutting down NEO now. Goodbye."
+                self._save_session_summary_fast()
+
+                async def _do_fast_shutdown():
+                    # Brief moment to allow UI speech, audio chime, and tool response to dispatch
+                    await asyncio.sleep(0.35)
                     import os as _os
                     _os._exit(0)
-                asyncio.create_task(_do_shutdown())
+
+                asyncio.create_task(_do_fast_shutdown())
 
             elif self._action_registry.has(name):
                 # file_processor: fall back to the currently-uploaded file when none is given
@@ -1547,7 +1545,7 @@ class JarvisLive:
                 pass
             self.ui.write_log(f"ERR: {name} - {str(e)[:120]}")
 
-        if not self.ui.muted:
+        if name != "shutdown_jarvis" and not self.ui.muted:
             self.ui.set_state("LISTENING")
 
         # Subtle MCU Stark chime for feedback
@@ -2247,6 +2245,21 @@ class JarvisLive:
 
     # ── Session memory ──────────────────────────────────────────────────────────
 
+    def _save_session_summary_fast(self) -> None:
+        """Instantly save recent conversation turns into long_term.json without network delay."""
+        log = list(self._session_log)
+        if len(log) < 2:
+            return
+        self._session_log = []
+        try:
+            from memory.memory_manager import save_session_summary
+            recent = [entry for entry in log[-8:] if entry and entry.strip()]
+            if recent:
+                summary_line = " | ".join(recent)[-280:]
+                save_session_summary(summary_line)
+        except Exception as e:
+            print(f"[Memory] Fast session save failed: {e}")
+
     async def _save_session_summary(self) -> None:
         """Summarise the current session in 1-2 sentences and save to long_term.json."""
         log = self._session_log
@@ -2268,12 +2281,15 @@ class JarvisLive:
         try:
             from core import gemini
             summary = await asyncio.to_thread(
-                gemini.text, prompt, gemini.SMART, None, 30_000,
+                gemini.text, prompt, gemini.SMART, None, 3_000,
             )
             if summary:
                 save_session_summary(summary, lang)
+            else:
+                self._save_session_summary_fast()
         except Exception as e:
             print(f"[Memory] ⚠️ Session summary failed: {e}")
+            self._save_session_summary_fast()
 
     # ── System monitor ──────────────────────────────────────────────────────────
 
@@ -2941,7 +2957,7 @@ def main():
     import signal
 
     def _sig_handler(sig, frame):
-        print("\n🔴 Terminating F.R.I.D.A.Y. cleanly...")
+        print("\n🔴 Terminating NEO cleanly...")
         os._exit(0)
 
     try:
