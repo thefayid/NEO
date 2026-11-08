@@ -7972,10 +7972,12 @@ class JarvisUI:
         self._win._log_sig.emit(text)
         try:
             if text.startswith("You: "):
-                self._win._speech_sig.emit("user", text[5:].strip())
+                if hasattr(self._win, "hero_stage") and self._win.hero_stage is not None:
+                    self._win.hero_stage.set_speech("user", text[5:].strip())
             elif ": " in text and not text.startswith("SYS:") and not text.startswith("ERR:"):
                 spk, val = text.split(": ", 1)
-                self._win._speech_sig.emit(spk, val.strip())
+                if hasattr(self._win, "hero_stage") and self._win.hero_stage is not None:
+                    self._win.hero_stage.set_speech(spk, val.strip())
         except Exception:
             pass
 

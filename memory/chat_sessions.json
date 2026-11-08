@@ -26,18 +26,123 @@
       "messages": [
         {
           "role": "neo",
-          "content": "Boss, your RAM is at 90%. We should free memory.",
-          "timestamp": "09:34 PM"
+          "content": "Here is the official repository: https://github.com/thefayid/NEO\nAnd doc link: https://docs.python.org",
+          "timestamp": "09:29 PM"
         },
         {
           "role": "user",
-          "content": "Please free memory",
-          "timestamp": "09:34 PM"
+          "content": "hey",
+          "timestamp": "09:31 PM"
         },
         {
           "role": "neo",
-          "content": "Optimizing... Memory cleared.",
-          "timestamp": "09:34 PM"
+          "content": "Hey Boss, what's on your mind?",
+          "timestamp": "09:31 PM"
+        },
+        {
+          "role": "user",
+          "content": "<noise>",
+          "timestamp": "09:33 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Sure thing, Boss. What video would you like to watch?",
+          "timestamp": "09:33 PM"
+        },
+        {
+          "role": "user",
+          "content": "<noise>",
+          "timestamp": "09:33 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Sure thing, Boss. What video would you like to watch?",
+          "timestamp": "09:33 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Just a moment, Boss. Putting the Dangal trailer on the display now. Putting that on the display for you, Boss.",
+          "timestamp": "09:33 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Just received a system alert, Boss: new Chrome enterprise policies are available for controlling AI agents on Amazon Bedrock.",
+          "timestamp": "09:35 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u9ed1\u725b\u3002",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Boss! Long time, no talk. What's on your mind tonight?",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u9ed1\u725b\u3002",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Boss! Long time, no talk. What's on your mind tonight?",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Are you asking if I've seen \"The Matrix\"? It's a groundbreaking sci-fi film, featuring Keanu Reeves and iconic \"bullet time\" effects. A critical and commercial success back in the day. What did you think of it?",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0e40\u0e2b\u0e19\u0e35\u0e22\u0e27 <noise>",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Yes, Boss?",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0e40\u0e2b\u0e19\u0e35\u0e22\u0e27 <noise>",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Yes, Boss?",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0e19\u0e35\u0e48 \u0e2d\u0e48\u0e30",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I'm here, Boss. What's the command?",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0e19\u0e35\u0e48 \u0e2d\u0e48\u0e30",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I'm here, Boss. What's the command?",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Apologies, Boss, that command was difficult to transcribe. Could you please repeat it in English?",
+          "timestamp": "11:35 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Shutting down now. Goodbye, Boss.",
+          "timestamp": "11:35 PM"
         }
       ]
     }
