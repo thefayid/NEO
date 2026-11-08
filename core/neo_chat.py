@@ -1,7 +1,7 @@
 """
 core/neo_chat.py — Comprehensive Next-Gen AI Chat Command Center for NEO.
 
-Features included:
+Features:
   1. Multi-Chat Sessions & History Drawer (Save, switch, create, and delete conversations).
   2. Floating Slash Commands (/) popup menu (/code, /research, /spotify, /brief, /notes, /clear).
   3. Model & Reasoning Mode Switcher (Fast vs Pro vs Local Ollama) + Auto-Voice toggle.
@@ -11,6 +11,7 @@ Features included:
   7. Formatted Code Blocks with syntax titles and instant copy buttons.
   8. Compact File Attachment chip bar with full drag-and-drop support.
   9. Export conversation to Markdown (.md) report.
+  10. Smart In-Place Streaming Text Updates (avoids creating duplicate bubbles during speech/token stream).
 """
 from __future__ import annotations
 
@@ -40,7 +41,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-# Color Palette matching NEO Obsidian Theme
 BG_OBSIDIAN = "#0b0f19"
 CARD_BG = "rgba(18, 24, 38, 0.92)"
 CARD_BORDER = "rgba(96, 165, 250, 0.22)"
@@ -57,7 +57,7 @@ _EXPORTS_DIR = Path("memory/exports")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  1. CODE BLOCK WIDGET (With syntax title & one-click copy)
+#  1. CODE BLOCK WIDGET
 # ─────────────────────────────────────────────────────────────────────────────
 class CodeBlockWidget(QFrame):
     """Sleek syntax-highlighted code block with language title and one-click Copy button."""
@@ -305,7 +305,7 @@ class ToolExecutionAccordion(QFrame):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  4. CHAT MESSAGE BUBBLE (Prose, Code, Web Cards, Save to Notes)
+#  4. CHAT MESSAGE BUBBLE (Supports in-place streaming updates)
 # ─────────────────────────────────────────────────────────────────────────────
 def _format_markdown_prose(text: str) -> str:
     escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -322,7 +322,7 @@ def _format_markdown_prose(text: str) -> str:
 
 
 class NeoChatMessageBubble(QFrame):
-    """Interactive individual chat message bubble (User or NEO)."""
+    """Interactive individual chat message bubble with in-place streaming re-rendering."""
 
     def __init__(
         self,
@@ -339,14 +339,14 @@ class NeoChatMessageBubble(QFrame):
         ts = timestamp or datetime.now().strftime("%I:%M %p")
         self.is_starred = False
 
-        is_user = self.role in ("user", "you")
+        self.is_user = self.role in ("user", "you")
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 4, 0, 4)
         outer.setSpacing(4)
 
         card = QFrame()
-        if is_user:
+        if self.is_user:
             card.setStyleSheet("""
                 QFrame {
                     background: rgba(16, 185, 129, 0.12);
@@ -365,13 +365,14 @@ class NeoChatMessageBubble(QFrame):
                 }}
             """)
 
-        card_lay = QVBoxLayout(card)
-        card_lay.setContentsMargins(14, 10, 14, 10)
-        card_lay.setSpacing(6)
+        self.card_lay = QVBoxLayout(card)
+        self.card_lay.setContentsMargins(14, 10, 14, 10)
+        self.card_lay.setSpacing(6)
 
+        # Header
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
-        if is_user:
+        if self.is_user:
             hdr.addStretch()
             ts_lbl = QLabel(ts)
             ts_lbl.setFont(QFont("Segoe UI", 7))
@@ -399,54 +400,20 @@ class NeoChatMessageBubble(QFrame):
             hdr.addWidget(ts_lbl)
             hdr.addStretch()
 
-        card_lay.addLayout(hdr)
+        self.card_lay.addLayout(hdr)
 
-        # Content Rendering (Prose & Code Blocks)
-        if is_user:
-            txt_lbl = QLabel(_format_markdown_prose(content))
-            txt_lbl.setFont(QFont("Segoe UI", 9))
-            txt_lbl.setWordWrap(True)
-            txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-            txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; line-height: 140%;")
-            card_lay.addWidget(txt_lbl)
-        else:
-            # Parse code blocks (```lang ... ```)
-            parts = re.split(r"```([a-zA-Z0-9_\-\+]*)\r?\n(.*?)```", content, flags=re.DOTALL)
-            if len(parts) > 1:
-                i = 0
-                while i < len(parts):
-                    prose = parts[i].strip()
-                    if prose:
-                        p_lbl = QLabel(_format_markdown_prose(prose))
-                        p_lbl.setFont(QFont("Segoe UI", 9))
-                        p_lbl.setWordWrap(True)
-                        p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-                        p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-                        card_lay.addWidget(p_lbl)
+        # Body container (can be cleared and re-rendered in-place during speech stream)
+        self.body_container = QWidget()
+        self.body_container.setStyleSheet("background: transparent;")
+        self.body_lay = QVBoxLayout(self.body_container)
+        self.body_lay.setContentsMargins(0, 0, 0, 0)
+        self.body_lay.setSpacing(6)
+        self.card_lay.addWidget(self.body_container)
 
-                    if i + 2 < len(parts):
-                        lang = parts[i + 1].strip() or "CODE"
-                        code = parts[i + 2].strip()
-                        card_lay.addWidget(CodeBlockWidget(code, lang))
-                        i += 3
-                    else:
-                        break
-            else:
-                txt_lbl = QLabel(_format_markdown_prose(content))
-                txt_lbl.setFont(QFont("Segoe UI", 9))
-                txt_lbl.setWordWrap(True)
-                txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-                txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-                card_lay.addWidget(txt_lbl)
+        self._render_body(content)
 
-            # Auto-detect URLs and render rich Web Link Cards
-            urls = re.findall(r"https?://[^\s<>\"']+", content)
-            if urls:
-                # Up to 2 link cards per message to prevent clutter
-                for u in urls[:2]:
-                    card_lay.addWidget(WebLinkCard(u))
-
-            # Action Footer for NEO response
+        # Action Footer for NEO response
+        if not self.is_user:
             footer = QHBoxLayout()
             footer.setContentsMargins(0, 4, 0, 0)
             footer.setSpacing(6)
@@ -486,11 +453,11 @@ class NeoChatMessageBubble(QFrame):
                 footer.addWidget(speak_b)
 
             footer.addStretch()
-            card_lay.addLayout(footer)
+            self.card_lay.addLayout(footer)
 
         h_row = QHBoxLayout()
         h_row.setContentsMargins(0, 0, 0, 0)
-        if is_user:
+        if self.is_user:
             h_row.addStretch()
             h_row.addWidget(card, stretch=0)
         else:
@@ -498,6 +465,59 @@ class NeoChatMessageBubble(QFrame):
             h_row.addStretch()
 
         outer.addLayout(h_row)
+
+    def update_content(self, new_text: str):
+        """In-place update for streaming text chunks."""
+        self.raw_content = new_text
+        while self.body_lay.count():
+            item = self.body_lay.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self._render_body(new_text)
+
+    def _render_body(self, content: str):
+        if self.is_user:
+            txt_lbl = QLabel(_format_markdown_prose(content))
+            txt_lbl.setFont(QFont("Segoe UI", 9))
+            txt_lbl.setWordWrap(True)
+            txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; line-height: 140%;")
+            self.body_lay.addWidget(txt_lbl)
+        else:
+            # Parse code blocks (```lang ... ```)
+            parts = re.split(r"```([a-zA-Z0-9_\-\+]*)\r?\n(.*?)```", content, flags=re.DOTALL)
+            if len(parts) > 1:
+                i = 0
+                while i < len(parts):
+                    prose = parts[i].strip()
+                    if prose:
+                        p_lbl = QLabel(_format_markdown_prose(prose))
+                        p_lbl.setFont(QFont("Segoe UI", 9))
+                        p_lbl.setWordWrap(True)
+                        p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                        p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+                        self.body_lay.addWidget(p_lbl)
+
+                    if i + 2 < len(parts):
+                        lang = parts[i + 1].strip() or "CODE"
+                        code = parts[i + 2].strip()
+                        self.body_lay.addWidget(CodeBlockWidget(code, lang))
+                        i += 3
+                    else:
+                        break
+            else:
+                txt_lbl = QLabel(_format_markdown_prose(content))
+                txt_lbl.setFont(QFont("Segoe UI", 9))
+                txt_lbl.setWordWrap(True)
+                txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+                self.body_lay.addWidget(txt_lbl)
+
+            # Auto-detect URLs and render rich Web Link Cards
+            urls = re.findall(r"https?://[^\s<>\"']+", content)
+            if urls:
+                for u in urls[:2]:
+                    self.body_lay.addWidget(WebLinkCard(u))
 
     def _copy_msg(self):
         cb = QGuiApplication.clipboard()
@@ -515,7 +535,6 @@ class NeoChatMessageBubble(QFrame):
             with open(notes_p, "a", encoding="utf-8") as f:
                 f.write(entry)
 
-            # Also index into memory_manager if present
             try:
                 from memory.memory_manager import remember
                 key = f"chat_note_{int(time.time())}"
@@ -723,7 +742,6 @@ class ChatHistoryDrawer(QFrame):
         lay.addWidget(self.scroll, stretch=1)
 
     def render_sessions(self, sessions: list[dict], active_id: str):
-        # Clear existing items
         while self.list_lay.count() > 1:
             item = self.list_lay.takeAt(0)
             if item.widget():
@@ -788,13 +806,17 @@ class NeoModernChatWidget(QWidget):
         self.setAcceptDrops(True)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
+        # Stream update state trackers
+        self._active_stream_bubble: Optional[NeoChatMessageBubble] = None
+        self._last_stream_role: str = ""
+        self._last_stream_time: float = 0.0
+
         self.voice_muted = self._load_voice_muted()
 
         # Load / Initialize Sessions
         self.sessions_data = self._load_sessions_data()
         self.active_session_id = self.sessions_data.get("active_session_id", "default")
 
-        # Top-level layout (Drawer on Left + Chat Area on Right)
         root_h = QHBoxLayout(self)
         root_h.setContentsMargins(0, 0, 0, 0)
         root_h.setSpacing(0)
@@ -819,7 +841,6 @@ class NeoModernChatWidget(QWidget):
         hdr.setContentsMargins(2, 0, 2, 0)
         hdr.setSpacing(8)
 
-        # Drawer toggle button
         self.drawer_btn = QPushButton("📑 Chats")
         self.drawer_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.drawer_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -1111,7 +1132,7 @@ class NeoModernChatWidget(QWidget):
         chat_v.addWidget(self.bar_frame)
         root_h.addWidget(main_chat, stretch=1)
 
-        # 3. Floating Slash Command Popup
+        # Floating Slash Command Popup
         self.slash_popup = SlashCommandPopup(self)
         self.slash_popup.setVisible(False)
         self.slash_popup.command_selected.connect(self._on_slash_command_chosen)
@@ -1150,14 +1171,42 @@ class NeoModernChatWidget(QWidget):
             self.add_message("neo", clean)
 
     def add_message(self, role: str, content: str):
-        """Appends a message bubble to the stream, saves to active session, and auto-scrolls down."""
+        """
+        Appends or updates a message bubble.
+        Gracefully handles streaming tokens/speech in-place to avoid repeating bubbles.
+        """
         clean = content.strip()
         if not clean:
             return
-        if self._last_content == (role.lower(), clean):
-            return
-        self._last_content = (role.lower(), clean)
 
+        role_lower = role.lower()
+        now = time.time()
+
+        # Check if this is an incremental streaming update from the active speaker
+        is_streaming_chunk = (
+            self._active_stream_bubble is not None
+            and self._last_stream_role == role_lower
+            and (
+                clean.startswith(self._active_stream_bubble.raw_content)
+                or self._active_stream_bubble.raw_content.startswith(clean)
+                or (now - self._last_stream_time < 3.2)
+            )
+        )
+
+        if is_streaming_chunk and self._active_stream_bubble is not None:
+            self._active_stream_bubble.update_content(clean)
+            self._last_stream_time = now
+
+            # Update the last message in the active session
+            curr = self._get_active_session()
+            if curr and curr.get("messages"):
+                curr["messages"][-1]["content"] = clean
+                self._save_sessions_data()
+
+            QTimer.singleShot(20, self._scroll_to_bottom)
+            return
+
+        # New turn starting
         ts = datetime.now().strftime("%I:%M %p")
         bubble = NeoChatMessageBubble(
             role=role,
@@ -1166,28 +1215,32 @@ class NeoModernChatWidget(QWidget):
             on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
             parent=self.messages_container,
         )
+        self._active_stream_bubble = bubble
+        self._last_stream_role = role_lower
+        self._last_stream_time = now
+
         count = self.msg_layout.count()
         self.msg_layout.insertWidget(max(0, count - 1), bubble)
         QTimer.singleShot(50, self._scroll_to_bottom)
 
-        # Save into active session
         self._save_message_to_active_session(role, clean, ts)
 
     def add_tool_execution(self, tool_name: str, details: str = ""):
-        """Adds a collapsible tool execution accordion directly to the chat stream."""
+        self._active_stream_bubble = None
         count = self.msg_layout.count()
         acc = ToolExecutionAccordion(tool_name, details, parent=self.messages_container)
         self.msg_layout.insertWidget(max(0, count - 1), acc)
         QTimer.singleShot(50, self._scroll_to_bottom)
 
     def add_system_pill(self, text: str):
+        self._active_stream_bubble = None
         count = self.msg_layout.count()
         pill = SystemPillWidget(text, parent=self.messages_container)
         self.msg_layout.insertWidget(max(0, count - 1), pill)
         QTimer.singleShot(50, self._scroll_to_bottom)
 
     def clear_stream(self):
-        """Clears all conversation bubbles from the stream."""
+        self._active_stream_bubble = None
         while self.msg_layout.count() > 1:
             item = self.msg_layout.takeAt(0)
             if item.widget():
@@ -1195,7 +1248,6 @@ class NeoModernChatWidget(QWidget):
         self._last_content = None
         self.add_system_pill("SYS: Conversation stream cleared.")
 
-        # Update active session in memory
         curr = self._get_active_session()
         if curr:
             curr["messages"] = []
@@ -1221,7 +1273,6 @@ class NeoModernChatWidget(QWidget):
             self.slash_popup.hide()
 
     def _reposition_slash_popup(self):
-        # Position right above the input capsule
         p = self.bar_frame.mapTo(self, self.bar_frame.rect().topLeft())
         self.slash_popup.move(p.x() + 30, max(10, p.y() - self.slash_popup.sizeHint().height() - 10))
 
@@ -1258,7 +1309,6 @@ class NeoModernChatWidget(QWidget):
                         return data
             except Exception:
                 pass
-        # Default starter session
         default_data = {
             "active_session_id": "default",
             "sessions": [
@@ -1296,7 +1346,6 @@ class NeoModernChatWidget(QWidget):
         msgs = curr.setdefault("messages", [])
         msgs.append({"role": role, "content": content, "timestamp": timestamp})
 
-        # Auto-title session based on first user prompt if still generic
         if curr.get("title") in ("Main Conversation", "New Conversation") and role == "user":
             curr["title"] = content[:26] + ("..." if len(content) > 26 else "")
             self._update_drawer_list()
@@ -1304,10 +1353,10 @@ class NeoModernChatWidget(QWidget):
         self._save_sessions_data()
 
     def _load_active_session(self):
+        self._active_stream_bubble = None
         curr = self._get_active_session()
         if not curr:
             return
-        # Clear layout bubbles
         while self.msg_layout.count() > 1:
             item = self.msg_layout.takeAt(0)
             if item.widget():
@@ -1330,6 +1379,7 @@ class NeoModernChatWidget(QWidget):
         QTimer.singleShot(60, self._scroll_to_bottom)
 
     def _create_new_session(self):
+        self._active_stream_bubble = None
         new_id = f"sess_{int(time.time())}"
         new_sess = {
             "id": new_id,
@@ -1347,6 +1397,7 @@ class NeoModernChatWidget(QWidget):
     def _switch_session(self, session_id: str):
         if session_id == self.active_session_id:
             return
+        self._active_stream_bubble = None
         self.active_session_id = session_id
         self.sessions_data["active_session_id"] = session_id
         self._save_sessions_data()
@@ -1354,9 +1405,9 @@ class NeoModernChatWidget(QWidget):
         self._update_drawer_list()
 
     def _delete_session(self, session_id: str):
+        self._active_stream_bubble = None
         sessions = self.sessions_data.get("sessions", [])
         if len(sessions) <= 1:
-            # Keep at least one
             self.clear_stream()
             return
         self.sessions_data["sessions"] = [s for s in sessions if s.get("id") != session_id]
@@ -1459,6 +1510,7 @@ class NeoModernChatWidget(QWidget):
         self.input_edit.setFocus()
 
     def _submit(self):
+        self._active_stream_bubble = None
         txt = self.input_edit.text().strip()
         self.slash_popup.hide()
         if not txt and not self._current_file:
@@ -1473,7 +1525,6 @@ class NeoModernChatWidget(QWidget):
 
         self.input_edit.clear()
 
-        # Handle direct local slash commands
         if full_cmd == "/clear":
             self.clear_stream()
             return
@@ -1489,7 +1540,6 @@ class NeoModernChatWidget(QWidget):
         elif full_cmd.startswith("/notes "):
             note_txt = full_cmd[7:].strip()
             self.add_message("user", full_cmd)
-            # Save directly
             p = Path("memory/notes.txt")
             p.parent.mkdir(parents=True, exist_ok=True)
             with open(p, "a", encoding="utf-8") as f:

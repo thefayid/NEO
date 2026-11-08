@@ -21,13 +21,23 @@
     },
     {
       "id": "sess_1794153547",
-      "title": "New Conversation",
+      "title": "hey",
       "created_at": "2026-11-08 21:29",
       "messages": [
         {
           "role": "neo",
-          "content": "Here is the official repository: https://github.com/thefayid/NEO\nAnd doc link: https://docs.python.org",
-          "timestamp": "09:29 PM"
+          "content": "Boss, your RAM is at 90%. We should free memory.",
+          "timestamp": "09:34 PM"
+        },
+        {
+          "role": "user",
+          "content": "Please free memory",
+          "timestamp": "09:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Optimizing... Memory cleared.",
+          "timestamp": "09:34 PM"
         }
       ]
     }
