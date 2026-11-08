@@ -5758,70 +5758,24 @@ class MainWindow(QMainWindow):
                 self._hud_cam_stack.setCurrentWidget(self.hero_stage)
                 self.hero_stage.input_edit.setFocus()
     def _build_chat_container(self) -> QWidget:
-        w = QWidget()
-        w.setStyleSheet(f"background: {C.BG};")
-        lay = QVBoxLayout(w)
-        lay.setContentsMargins(16, 16, 16, 16)
-        lay.setSpacing(10)
-
-        hdr = QHBoxLayout()
-        lbl = QLabel("💬  NEO CONVERSATION & TELEMETRY STREAM")
-        lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        lbl.setStyleSheet(f"color: {C.PRI}; border: none; background: transparent;")
-        hdr.addWidget(lbl)
-        hdr.addStretch()
-        lay.addLayout(hdr)
-
-        self._log = LogWidget()
-        lay.addWidget(self._log, stretch=1)
-
-        self._drop_zone = FileDropZone()
-        self._drop_zone.file_selected.connect(self._on_file_selected)
-        lay.addWidget(self._drop_zone)
-
-        self._file_hint = QLabel("Drop files or documents here to ingest into NEO")
-        self._file_hint.setFont(QFont("Segoe UI", 8))
-        self._file_hint.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent;")
-        lay.addWidget(self._file_hint)
-
-        inp_row = QHBoxLayout()
-        self._chat_edit = QLineEdit()
-        self._chat_edit.setPlaceholderText("Send a message to NEO...")
-        self._chat_edit.setFont(QFont("Segoe UI", 10))
-        self._chat_edit.setStyleSheet(f"""
-            QLineEdit {{
-                background: {C.PANEL2};
-                color: {C.TEXT};
-                border: 1px solid {C.BORDER};
-                border-radius: 8px;
-                padding: 8px 12px;
-            }}
-        """)
-        self._chat_edit.returnPressed.connect(self._submit_chat_input)
-        inp_row.addWidget(self._chat_edit, stretch=1)
-
-        send_b = QPushButton("SEND")
-        send_b.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        send_b.setCursor(Qt.CursorShape.PointingHandCursor)
-        send_b.setStyleSheet(f"""
-            QPushButton {{
-                background: {C.PRI_GHO}; color: {C.PRI};
-                border: 1px solid {C.PRI}; border-radius: 8px;
-                padding: 8px 16px;
-            }}
-            QPushButton:hover {{ background: {C.PRI}; color: #000; }}
-        """)
-        send_b.clicked.connect(self._submit_chat_input)
-        inp_row.addWidget(send_b)
-        lay.addLayout(inp_row)
-
-        return w
-
-    def _submit_chat_input(self):
-        txt = self._chat_edit.text().strip()
-        if txt:
-            self._on_hero_command(txt)
-            self._chat_edit.clear()
+        try:
+            from core.neo_chat import NeoModernChatWidget
+            chat_w = NeoModernChatWidget(parent=self)
+            self._log = chat_w
+            self._drop_zone = chat_w
+            chat_w.command_submitted.connect(self._on_hero_command)
+            chat_w.file_selected.connect(self._on_file_selected)
+            chat_w.mic_toggled.connect(self._on_hero_mic_toggled)
+            return chat_w
+        except Exception as e:
+            print(f"[UI] ⚠️ Falling back to legacy log container: {e}")
+            w = QWidget()
+            w.setStyleSheet(f"background: {C.BG};")
+            lay = QVBoxLayout(w)
+            self._log = LogWidget()
+            self._drop_zone = self._log
+            lay.addWidget(self._log, stretch=1)
+            return w
 
     def _build_header(self) -> QWidget:
         top = QWidget()
@@ -7699,6 +7653,10 @@ class MainWindow(QMainWindow):
     def _on_live_speech(self, speaker: str, text: str):
         if hasattr(self, "hero_stage") and self.hero_stage is not None:
             self.hero_stage.set_speech(speaker, text)
+        if hasattr(self, "_log") and self._log is not None:
+            if hasattr(self._log, "add_message"):
+                role = "user" if speaker.lower() in ("user", "you", "fayid") else "neo"
+                self._log.add_message(role, text)
 
     def _apply_state(self, state: str):
         self.hud.state    = state
