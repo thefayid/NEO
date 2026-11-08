@@ -34,7 +34,7 @@ from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
     QLineEdit, QTextEdit, QProgressBar, QFrame, QScrollArea,
     QCheckBox, QListWidget, QListWidgetItem, QSizePolicy,
-    QStackedWidget, QGridLayout
+    QStackedWidget, QGridLayout, QDialog
 )
 import psutil
 import random
@@ -712,18 +712,246 @@ def _format_time_friendly(time_str: str) -> str:
     except Exception:
         return str(time_str or "")
 
+class CalendarSyncDialog(QDialog):
+    """Spacious glassmorphic dialog for configuring Google Calendar / Outlook iCal feed and adding events."""
+    feed_synced = pyqtSignal(int)
+    event_added = pyqtSignal(dict)
+
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setFixedSize(480, 390)
+
+        frame = QFrame(self)
+        frame.setGeometry(0, 0, 480, 390)
+        frame.setStyleSheet("""
+            QFrame {
+                background: rgba(13, 17, 28, 0.98);
+                border: 1.5px solid rgba(56, 189, 248, 0.35);
+                border-radius: 16px;
+            }
+        """)
+
+        lay = QVBoxLayout(frame)
+        lay.setContentsMargins(22, 18, 22, 18)
+        lay.setSpacing(12)
+
+        # 1. Header
+        hdr = QHBoxLayout()
+        icn = QLabel("📅")
+        icn.setFont(QFont("Segoe UI", 12))
+        hdr.addWidget(icn)
+
+        t_lbl = QLabel("CALENDAR & AGENDA SYNC")
+        t_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        t_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent; letter-spacing: 0.5px;")
+        hdr.addWidget(t_lbl)
+
+        hdr.addStretch(1)
+
+        close_btn = QPushButton("✕")
+        close_btn.setFont(QFont("Segoe UI", 10))
+        close_btn.setFixedSize(26, 26)
+        close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        close_btn.setStyleSheet("""
+            QPushButton {
+                color: #64748b; background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 13px;
+            }
+            QPushButton:hover { color: #ffffff; background: rgba(239, 68, 68, 0.25); border-color: #ef4444; }
+        """)
+        close_btn.clicked.connect(self.close)
+        hdr.addWidget(close_btn)
+        lay.addLayout(hdr)
+
+        sub = QLabel("Sync Google Calendar / Outlook via private iCal (.ics) feed or quick-add events.")
+        sub.setFont(QFont("Segoe UI", 8))
+        sub.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        lay.addWidget(sub)
+
+        # 2. Feed URL Section
+        f_lbl = QLabel("GOOGLE CALENDAR / OUTLOOK ICAL FEED URL:")
+        f_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        f_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        lay.addWidget(f_lbl)
+
+        self.url_input = QLineEdit()
+        self.url_input.setPlaceholderText("https://calendar.google.com/calendar/ical/.../basic.ics")
+        self.url_input.setFont(QFont("Segoe UI", 9))
+        self.url_input.setFixedHeight(32)
+        self.url_input.setStyleSheet("""
+            QLineEdit {
+                background: #0f1626; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 8px;
+            }
+            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+        """)
+        lay.addWidget(self.url_input)
+
+        sync_row = QHBoxLayout()
+        self.sync_btn = QPushButton("⚡  Sync Feed Now")
+        self.sync_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        self.sync_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.sync_btn.setFixedHeight(30)
+        self.sync_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                color: #080c14; border: none; border-radius: 6px; padding: 4px 16px;
+            }
+            QPushButton:hover { background: #38bdf8; }
+        """)
+        self.sync_btn.clicked.connect(self._sync_feed)
+        sync_row.addWidget(self.sync_btn)
+
+        self.status_lbl = QLabel("")
+        self.status_lbl.setFont(QFont("Segoe UI", 8))
+        self.status_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        sync_row.addWidget(self.status_lbl)
+        sync_row.addStretch(1)
+        lay.addLayout(sync_row)
+
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color: rgba(255, 255, 255, 0.08);")
+        lay.addWidget(sep)
+
+        # 3. Quick Add Event Section
+        a_lbl = QLabel("QUICK ADD EVENT TO TODAY'S SCHEDULE:")
+        a_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        a_lbl.setStyleSheet("color: #4ade80; border: none; background: transparent;")
+        lay.addWidget(a_lbl)
+
+        self.title_input = QLineEdit()
+        self.title_input.setPlaceholderText("Event title (e.g. AI Architecture Review, Client Call)...")
+        self.title_input.setFont(QFont("Segoe UI", 9))
+        self.title_input.setFixedHeight(30)
+        self.title_input.setStyleSheet("""
+            QLineEdit {
+                background: #0f1626; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 8px;
+            }
+            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+        """)
+        lay.addWidget(self.title_input)
+
+        time_row = QHBoxLayout()
+        t1_lbl = QLabel("Start:")
+        t1_lbl.setFont(QFont("Segoe UI", 8))
+        t1_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        time_row.addWidget(t1_lbl)
+
+        self.start_input = QLineEdit("17:00")
+        self.start_input.setFont(QFont("Segoe UI", 8))
+        self.start_input.setFixedHeight(28)
+        self.start_input.setFixedWidth(64)
+        self.start_input.setStyleSheet("background: #0f1626; color: #ffffff; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 2px 6px;")
+        time_row.addWidget(self.start_input)
+
+        t2_lbl = QLabel("End:")
+        t2_lbl.setFont(QFont("Segoe UI", 8))
+        t2_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        time_row.addWidget(t2_lbl)
+
+        self.end_input = QLineEdit("18:30")
+        self.end_input.setFont(QFont("Segoe UI", 8))
+        self.end_input.setFixedHeight(28)
+        self.end_input.setFixedWidth(64)
+        self.end_input.setStyleSheet("background: #0f1626; color: #ffffff; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 2px 6px;")
+        time_row.addWidget(self.end_input)
+
+        time_row.addStretch(1)
+
+        add_b = QPushButton("+ Add to Schedule")
+        add_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        add_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        add_b.setFixedHeight(28)
+        add_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(34, 197, 94, 0.2);
+                color: #4ade80;
+                border: 1px solid rgba(34, 197, 94, 0.4);
+                border-radius: 5px; padding: 4px 14px;
+            }
+            QPushButton:hover { background: rgba(34, 197, 94, 0.35); color: #ffffff; }
+        """)
+        add_b.clicked.connect(self._add_event)
+        time_row.addWidget(add_b)
+        lay.addLayout(time_row)
+
+        self._load_current_url()
+
+    def _load_current_url(self):
+        try:
+            cfg_p = os.path.join("config", "api_keys.json")
+            if os.path.exists(cfg_p):
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                url = cfg.get("calendar_ical_url", "")
+                if url:
+                    self.url_input.setText(url)
+                    self.status_lbl.setText("● Feed URL loaded")
+        except Exception:
+            pass
+
+    def _sync_feed(self):
+        url = self.url_input.text().strip()
+        if not url:
+            self.status_lbl.setText("⚠️ Enter iCal URL first")
+            return
+        self.status_lbl.setText("Syncing feed...")
+        try:
+            cfg_p = os.path.join("config", "api_keys.json")
+            if os.path.exists(cfg_p):
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                cfg["calendar_ical_url"] = url
+                with open(cfg_p, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f, indent=4)
+
+            from actions.executive_briefing import _sync_ical_feed
+            count = _sync_ical_feed(url)
+            self.status_lbl.setText(f"✓ Synced {count} events successfully!")
+            self.feed_synced.emit(count)
+        except Exception as e:
+            self.status_lbl.setText(f"⚠️ Sync failed: {e}")
+
+    def _add_event(self):
+        title = self.title_input.text().strip()
+        start = self.start_input.text().strip()
+        end = self.end_input.text().strip()
+        if not title:
+            return
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        new_ev = {
+            "id": f"evt_{int(datetime.now().timestamp())}",
+            "title": title,
+            "date": today_str,
+            "start_time": start,
+            "end_time": end,
+            "source": "local",
+        }
+        try:
+            from actions.executive_briefing import _load_agenda, _save_agenda
+            data = _load_agenda()
+            evs = data.get("events", [])
+            evs.append(new_ev)
+            data["events"] = evs
+            _save_agenda(data)
+            self.title_input.clear()
+            self.event_added.emit(new_ev)
+            self.status_lbl.setText(f"✓ Added '{title}' to today's schedule!")
+        except Exception as e:
+            self.status_lbl.setText(f"⚠️ Error adding event: {e}")
+
 class UpcomingScheduleWidget(QFrame):
     """
-    Fully functional, accurate live schedule & calendar widget for NEO.
-    Loads real events from memory/agenda.json, tracks live ongoing/upcoming countdowns,
-    and includes a small toggle button to configure calendar API / iCal feed and quick-add events.
+    Clean, pixel-perfect Upcoming schedule card matching user's exact design.
     """
     schedule_clicked = pyqtSignal()
     event_selected = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._drawer_visible = False
         self.setStyleSheet(f"""
             QFrame#UpcomingScheduleWidget {{
                 background: {CARD_BG};
@@ -737,328 +965,89 @@ class UpcomingScheduleWidget(QFrame):
         self.root_lay.setContentsMargins(18, 14, 18, 14)
         self.root_lay.setSpacing(8)
 
-        # 1. Header Row
+        # 1. Header
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
-
         icn = QLabel("📅")
         icn.setFont(QFont("Segoe UI", 11))
         hdr.addWidget(icn)
-
         hdr_txt = QLabel("Upcoming")
         hdr_txt.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
 
-        self.sync_dot = QLabel("●")
-        self.sync_dot.setFont(QFont("Segoe UI", 6))
-        self.sync_dot.setStyleSheet("color: #64748b; background: transparent; padding-top: 2px;")
-        hdr.addWidget(self.sync_dot)
-
         hdr.addStretch(1)
 
-        # Small toggle button to configure API / connect calendar
-        self.api_btn = QPushButton("🔗 API")
-        self.api_btn.setToolTip("Configure Calendar Feed & API Sync")
-        self.api_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        # Small toggle gear button to connect API
+        self.api_btn = QPushButton("⚙")
+        self.api_btn.setToolTip("Connect Calendar API & Manage Events")
+        self.api_btn.setFont(QFont("Segoe UI", 9))
         self.api_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.api_btn.setFixedHeight(22)
+        self.api_btn.setFixedSize(22, 22)
         self.api_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.12);
-                color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.28);
-                border-radius: 11px;
-                padding: 1px 8px;
-            }
-            QPushButton:hover {
-                background: rgba(0, 229, 255, 0.22);
-                border-color: #00e5ff;
-                color: #ffffff;
-            }
-        """)
-        self.api_btn.clicked.connect(self._toggle_api_drawer)
-        hdr.addWidget(self.api_btn)
-
-        # Quick Add '+' button
-        self.add_btn = QPushButton("+")
-        self.add_btn.setToolTip("Quick add event to today's schedule")
-        self.add_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        self.add_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.add_btn.setFixedSize(22, 22)
-        self.add_btn.setStyleSheet("""
-            QPushButton {
                 background: rgba(255, 255, 255, 0.05);
-                color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                color: #8e9eb5;
+                border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 11px;
             }
             QPushButton:hover {
                 background: rgba(56, 189, 248, 0.2);
-                color: #ffffff;
                 border-color: #38bdf8;
+                color: #ffffff;
             }
         """)
-        self.add_btn.clicked.connect(self._toggle_add_mode)
-        hdr.addWidget(self.add_btn)
+        self.api_btn.clicked.connect(self._open_sync_dialog)
+        hdr.addWidget(self.api_btn)
 
-        # Arrow button for executive voice briefing
-        self.arr_btn = QPushButton("›")
-        self.arr_btn.setToolTip("Ask NEO for schedule briefing")
-        self.arr_btn.setFixedSize(22, 22)
-        self.arr_btn.setFont(QFont("Segoe UI", 13))
-        self.arr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.arr_btn.setStyleSheet("""
+        arr_btn = QPushButton("›")
+        arr_btn.setFixedSize(22, 22)
+        arr_btn.setFont(QFont("Segoe UI", 13))
+        arr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        arr_btn.setStyleSheet("""
             QPushButton {
                 color: #8e9eb5; border: none; background: transparent;
             }
             QPushButton:hover { color: #ffffff; }
         """)
-        self.arr_btn.clicked.connect(self.schedule_clicked.emit)
-        hdr.addWidget(self.arr_btn)
-
+        arr_btn.clicked.connect(self.schedule_clicked.emit)
+        hdr.addWidget(arr_btn)
         self.root_lay.addLayout(hdr)
 
-        # 2. Date Subtitle Row
-        self.sub_row = QHBoxLayout()
-        self.today_lbl = QLabel(datetime.now().strftime("Today, %b %d"))
-        self.today_lbl.setFont(QFont("Segoe UI", 8))
-        self.today_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
-        self.sub_row.addWidget(self.today_lbl)
+        # 2. Subtitle
+        today_str = datetime.now().strftime("Today, %b %d")
+        sub = QLabel(today_str)
+        sub.setFont(QFont("Segoe UI", 8))
+        sub.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        self.root_lay.addWidget(sub)
+        self.root_lay.addSpacing(2)
 
-        self.sub_row.addStretch(1)
-
-        self.count_lbl = QLabel("")
-        self.count_lbl.setFont(QFont("Segoe UI", 8))
-        self.count_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
-        self.sub_row.addWidget(self.count_lbl)
-        self.root_lay.addLayout(self.sub_row)
-
-        # 3. Slide-down / Collapsible API & Quick-Add Drawer
-        self.drawer = QFrame()
-        self.drawer.setStyleSheet("""
-            QFrame {
-                background: rgba(16, 24, 39, 0.98);
-                border: 1px solid rgba(56, 189, 248, 0.35);
-                border-radius: 10px;
-                padding: 4px;
-            }
-        """)
-        d_lay = QVBoxLayout(self.drawer)
-        d_lay.setContentsMargins(8, 8, 8, 8)
-        d_lay.setSpacing(6)
-
-        d_header = QHBoxLayout()
-        d_title = QLabel("CONNECT CALENDAR FEED & QUICK ADD")
-        d_title.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        d_title.setStyleSheet("color: #00e5ff; background: transparent; letter-spacing: 0.5px;")
-        d_header.addWidget(d_title)
-        d_header.addStretch(1)
-
-        d_close = QPushButton("✕")
-        d_close.setFont(QFont("Segoe UI", 8))
-        d_close.setFixedSize(18, 18)
-        d_close.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        d_close.setStyleSheet("color: #94a3b8; background: transparent; border: none;")
-        d_close.clicked.connect(self._close_drawer)
-        d_header.addWidget(d_close)
-        d_lay.addLayout(d_header)
-
-        # iCal Feed URL
-        self.ical_input = QLineEdit()
-        self.ical_input.setPlaceholderText("Paste Google Calendar / iCal .ics URL...")
-        self.ical_input.setFont(QFont("Segoe UI", 8))
-        self.ical_input.setFixedHeight(26)
-        self.ical_input.setStyleSheet("""
-            QLineEdit {
-                background: #0a0e18; color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 4px; padding: 2px 6px;
-            }
-            QLineEdit:focus { border: 1px solid #00e5ff; }
-        """)
-        d_lay.addWidget(self.ical_input)
-
-        sync_btn_row = QHBoxLayout()
-        self.sync_action_btn = QPushButton("⚡ Sync Feed Now")
-        self.sync_action_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.sync_action_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.sync_action_btn.setFixedHeight(24)
-        self.sync_action_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
-                color: #080c14; border: none; border-radius: 4px; padding: 2px 10px;
-            }
-            QPushButton:hover { background: #38bdf8; }
-        """)
-        self.sync_action_btn.clicked.connect(self._sync_feed_now)
-        sync_btn_row.addWidget(self.sync_action_btn)
-
-        self.sync_status_lbl = QLabel("")
-        self.sync_status_lbl.setFont(QFont("Segoe UI", 7))
-        self.sync_status_lbl.setStyleSheet("color: #94a3b8; background: transparent;")
-        sync_btn_row.addWidget(self.sync_status_lbl)
-        sync_btn_row.addStretch(1)
-        d_lay.addLayout(sync_btn_row)
-
-        # Quick Add Event fields
-        q_sep = QFrame()
-        q_sep.setFrameShape(QFrame.Shape.HLine)
-        q_sep.setStyleSheet("color: rgba(255, 255, 255, 0.08);")
-        d_lay.addWidget(q_sep)
-
-        add_row = QHBoxLayout()
-        add_row.setSpacing(4)
-        self.add_title_edit = QLineEdit()
-        self.add_title_edit.setPlaceholderText("New Event Title...")
-        self.add_title_edit.setFont(QFont("Segoe UI", 8))
-        self.add_title_edit.setFixedHeight(24)
-        self.add_title_edit.setStyleSheet("""
-            QLineEdit {
-                background: #0a0e18; color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 4px; padding: 2px 6px;
-            }
-            QLineEdit:focus { border: 1px solid #00e5ff; }
-        """)
-        add_row.addWidget(self.add_title_edit, stretch=2)
-
-        self.add_start_edit = QLineEdit("17:00")
-        self.add_start_edit.setFont(QFont("Segoe UI", 8))
-        self.add_start_edit.setFixedHeight(24)
-        self.add_start_edit.setFixedWidth(50)
-        self.add_start_edit.setToolTip("Start time (e.g. 17:00)")
-        self.add_start_edit.setStyleSheet("""
-            QLineEdit {
-                background: #0a0e18; color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 4px; padding: 2px 4px;
-            }
-        """)
-        add_row.addWidget(self.add_start_edit)
-
-        self.add_end_edit = QLineEdit("18:30")
-        self.add_end_edit.setFont(QFont("Segoe UI", 8))
-        self.add_end_edit.setFixedHeight(24)
-        self.add_end_edit.setFixedWidth(50)
-        self.add_end_edit.setToolTip("End time (e.g. 18:30)")
-        self.add_end_edit.setStyleSheet("""
-            QLineEdit {
-                background: #0a0e18; color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 4px; padding: 2px 4px;
-            }
-        """)
-        add_row.addWidget(self.add_end_edit)
-
-        self.save_event_btn = QPushButton("+ Add")
-        self.save_event_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.save_event_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.save_event_btn.setFixedHeight(24)
-        self.save_event_btn.setStyleSheet("""
-            QPushButton {
-                background: rgba(34, 197, 94, 0.2);
-                color: #4ade80;
-                border: 1px solid rgba(34, 197, 94, 0.4);
-                border-radius: 4px; padding: 2px 8px;
-            }
-            QPushButton:hover { background: rgba(34, 197, 94, 0.35); color: #ffffff; }
-        """)
-        self.save_event_btn.clicked.connect(self._add_event_now)
-        add_row.addWidget(self.save_event_btn)
-        d_lay.addLayout(add_row)
-
-        self.drawer.hide()
-        self.root_lay.addWidget(self.drawer)
-
-        # 4. Events Container
+        # 3. Events Container
         self.events_layout = QVBoxLayout()
-        self.events_layout.setSpacing(6)
+        self.events_layout.setSpacing(8)
         self.root_lay.addLayout(self.events_layout)
 
-        # Timer to auto-update countdowns & statuses every 30s
+        # Timer to auto-update
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.reload_events)
         self.refresh_timer.start(30000)
 
-        # Initial load
-        self._load_config()
+        self._dialog = None
         self.reload_events()
 
-    def _load_config(self):
-        try:
-            cfg_p = os.path.join("config", "api_keys.json")
-            if os.path.exists(cfg_p):
-                with open(cfg_p, "r", encoding="utf-8") as f:
-                    cfg = json.load(f)
-                url = cfg.get("calendar_ical_url", "")
-                if url:
-                    self.ical_input.setText(url)
-                    self.sync_dot.setStyleSheet("color: #4ade80; background: transparent; padding-top: 2px;")
-                    self.sync_dot.setToolTip(f"iCal feed connected: {url[:40]}...")
-        except Exception:
-            pass
-
-    def _toggle_api_drawer(self):
-        self._drawer_visible = not self._drawer_visible
-        self.drawer.setVisible(self._drawer_visible)
-
-    def _close_drawer(self):
-        self._drawer_visible = False
-        self.drawer.hide()
-
-    def _toggle_add_mode(self):
-        self._drawer_visible = True
-        self.drawer.show()
-        self.add_title_edit.setFocus()
-
-    def _sync_feed_now(self):
-        url = self.ical_input.text().strip()
-        if not url:
-            self.sync_status_lbl.setText("Enter URL first")
-            return
-        self.sync_status_lbl.setText("Syncing...")
-        try:
-            cfg_p = os.path.join("config", "api_keys.json")
-            if os.path.exists(cfg_p):
-                with open(cfg_p, "r", encoding="utf-8") as f:
-                    cfg = json.load(f)
-                cfg["calendar_ical_url"] = url
-                with open(cfg_p, "w", encoding="utf-8") as f:
-                    json.dump(cfg, f, indent=4)
-
-            from actions.executive_briefing import _sync_ical_feed
-            count = _sync_ical_feed(url)
-            self.sync_dot.setStyleSheet("color: #4ade80; background: transparent; padding-top: 2px;")
-            self.sync_status_lbl.setText(f"✓ Synced {count} events!")
-            self.reload_events()
-        except Exception as e:
-            self.sync_status_lbl.setText(f"Sync error: {e}")
-
-    def _add_event_now(self):
-        title = self.add_title_edit.text().strip()
-        start = self.add_start_edit.text().strip()
-        end = self.add_end_edit.text().strip()
-        if not title:
-            return
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        new_ev = {
-            "id": f"evt_{int(datetime.now().timestamp())}",
-            "title": title,
-            "date": today_str,
-            "start_time": start,
-            "end_time": end,
-            "duration_minutes": max(15, _time_to_minutes(end) - _time_to_minutes(start)),
-            "source": "local",
-        }
-        try:
-            from actions.executive_briefing import _load_agenda, _save_agenda
-            data = _load_agenda()
-            evs = data.get("events", [])
-            evs.append(new_ev)
-            data["events"] = evs
-            _save_agenda(data)
-            self.add_title_edit.clear()
-            self._close_drawer()
-            self.reload_events()
-        except Exception as e:
-            self.sync_status_lbl.setText(f"Add error: {e}")
+    def _open_sync_dialog(self):
+        if not self._dialog:
+            self._dialog = CalendarSyncDialog(self.window())
+            self._dialog.feed_synced.connect(lambda _: self.reload_events())
+            self._dialog.event_added.connect(lambda _: self.reload_events())
+        win = self.window()
+        if win:
+            self._dialog.move(
+                win.x() + (win.width() - self._dialog.width()) // 2,
+                win.y() + (win.height() - self._dialog.height()) // 2
+            )
+        self._dialog.show()
+        self._dialog.raise_()
 
     def reload_events(self):
         while self.events_layout.count():
@@ -1073,8 +1062,6 @@ class UpcomingScheduleWidget(QFrame):
                         sub.widget().deleteLater()
 
         today_str = datetime.now().strftime("%Y-%m-%d")
-        self.today_lbl.setText(datetime.now().strftime("Today, %b %d"))
-
         events = []
         try:
             from actions.executive_briefing import _load_agenda
@@ -1089,39 +1076,17 @@ class UpcomingScheduleWidget(QFrame):
 
         if not events:
             events = [
-                {
-                    "title": "Financial Management Exam",
-                    "start_time": "17:00",
-                    "end_time": "19:00",
-                },
-                {
-                    "title": "SIH Team Sync",
-                    "start_time": "20:00",
-                    "end_time": "20:30",
-                },
-                {
-                    "title": "Review & Notes",
-                    "start_time": "21:00",
-                    "end_time": "21:30",
-                },
+                {"title": "Financial Management Exam", "start_time": "17:00", "end_time": "19:00"},
+                {"title": "SIH Team Sync", "start_time": "20:00", "end_time": "20:30"},
+                {"title": "Review & Notes", "start_time": "21:00", "end_time": "21:30"},
             ]
-            try:
-                from actions.executive_briefing import _load_agenda, _save_agenda
-                d = _load_agenda()
-                d["events"] = [dict(ev, date=today_str) for ev in events]
-                _save_agenda(d)
-            except Exception:
-                pass
 
         events.sort(key=lambda ev: _time_to_minutes(ev.get("start_time", "00:00")))
 
         now = datetime.now()
         now_mins = now.hour * 60 + now.minute
 
-        active_count = 0
-        first_upcoming_found = False
-
-        for ev in events:
+        for i, ev in enumerate(events):
             title = ev.get("title", "Event")
             s_str = ev.get("start_time", "")
             e_str = ev.get("end_time", "")
@@ -1134,110 +1099,57 @@ class UpcomingScheduleWidget(QFrame):
             friendly_e = _format_time_friendly(e_str)
             time_display = f"{friendly_s} – {friendly_e}"
 
-            is_active = (s_mins <= now_mins < e_mins)
-            is_upcoming = (now_mins < s_mins)
-            is_next = (is_upcoming and not first_upcoming_found)
-            if is_next:
-                first_upcoming_found = True
+            # First event or active event gets active dot
+            is_active = (s_mins <= now_mins < e_mins) or (i == 0 and now_mins < e_mins)
+            self._add_event_row(title, time_display, active=is_active)
 
-            status_badge = ""
-            if is_active:
-                left = e_mins - now_mins
-                status_badge = f"NOW LIVE • {left}m left"
-                active_count += 1
-            elif is_next:
-                diff = s_mins - now_mins
-                if diff < 60:
-                    status_badge = f"In {diff}m"
-                else:
-                    status_badge = f"In {diff // 60}h {diff % 60}m"
-                active_count += 1
-            elif is_upcoming:
-                active_count += 1
-            else:
-                status_badge = "✓ Done"
-
-            self._create_event_row(title, time_display, is_active, is_next, status_badge)
-
-        self.count_lbl.setText(f"{active_count} remaining" if active_count else "All caught up")
-
-    def _create_event_row(self, title: str, time_str: str, is_active: bool, is_next: bool, badge: str):
+    def _add_event_row(self, title: str, time_str: str, active: bool = False):
         card = QFrame()
         card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         card.setStyleSheet("""
             QFrame {
                 background: transparent;
-                border-radius: 6px;
-                padding: 1px 2px;
+                border-radius: 4px;
             }
             QFrame:hover {
                 background: rgba(255, 255, 255, 0.04);
             }
         """)
 
-        r_lay = QHBoxLayout(card)
-        r_lay.setContentsMargins(0, 2, 0, 2)
-        r_lay.setSpacing(10)
+        row = QHBoxLayout(card)
+        row.setContentsMargins(0, 2, 0, 2)
+        row.setSpacing(10)
 
         dot = QLabel("●")
-        dot.setFont(QFont("Segoe UI", 9 if is_active else 8))
-        if is_active:
-            dot.setStyleSheet("color: #00e5ff; background: transparent; padding-top: 1px;")
-        elif is_next:
-            dot.setStyleSheet("color: #38bdf8; background: transparent; padding-top: 1px;")
-        elif "Done" in badge:
-            dot.setStyleSheet("color: #475569; background: transparent; padding-top: 1px;")
-        else:
-            dot.setStyleSheet("color: #64748b; background: transparent; padding-top: 1px;")
-        r_lay.addWidget(dot, alignment=Qt.AlignmentFlag.AlignTop)
+        dot.setFont(QFont("Segoe UI", 8))
+        dot_color = ACCENT_BLUE if active else TEXT_DIM
+        dot.setStyleSheet(f"color: {dot_color}; border: none; background: transparent; padding-top: 1px;")
+        row.addWidget(dot, alignment=Qt.AlignmentFlag.AlignTop)
 
         vbox = QVBoxLayout()
         vbox.setSpacing(2)
         vbox.setContentsMargins(0, 0, 0, 0)
 
         t_lbl = QLabel(title)
-        t_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold if is_active else (QFont.Weight.DemiBold if is_next else QFont.Weight.Normal)))
-        if is_active:
-            t_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent;")
-        elif is_next:
-            t_lbl.setStyleSheet("color: #f1f5f9; border: none; background: transparent;")
-        elif "Done" in badge:
-            t_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; text-decoration: line-through;")
-        else:
-            t_lbl.setStyleSheet("color: #cbd5e1; border: none; background: transparent;")
+        t_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
+        t_color = TEXT_WHITE if active else TEXT_MUTED
+        t_lbl.setStyleSheet(f"color: {t_color}; border: none; background: transparent;")
         vbox.addWidget(t_lbl)
-
-        sub_time_row = QHBoxLayout()
-        sub_time_row.setSpacing(6)
 
         time_lbl = QLabel(time_str)
         time_lbl.setFont(QFont("Segoe UI", 8))
-        time_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
-        sub_time_row.addWidget(time_lbl)
+        time_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
+        vbox.addWidget(time_lbl)
 
-        if badge:
-            b_lbl = QLabel(badge)
-            b_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-            if is_active:
-                b_lbl.setStyleSheet("color: #00e5ff; background: rgba(0, 229, 255, 0.12); border-radius: 3px; padding: 1px 4px;")
-            elif is_next:
-                b_lbl.setStyleSheet("color: #38bdf8; background: rgba(56, 189, 248, 0.12); border-radius: 3px; padding: 1px 4px;")
-            else:
-                b_lbl.setStyleSheet("color: #64748b; background: transparent;")
-            sub_time_row.addWidget(b_lbl)
+        row.addLayout(vbox)
+        row.addStretch()
 
-        sub_time_row.addStretch(1)
-        vbox.addLayout(sub_time_row)
-
-        r_lay.addLayout(vbox, stretch=1)
         card.mousePressEvent = lambda e, t=title: self._on_event_clicked(t)
-
         self.events_layout.addWidget(card)
 
     def _on_event_clicked(self, title: str):
         self.event_selected.emit(f"Review and brief me on '{title}'")
         self.schedule_clicked.emit()
-
 
 class MediaTransportWidget(QFrame):
     """Media Transport & Spotify player card in the right sidebar."""
