@@ -160,7 +160,7 @@ def sounding_board(idea_or_problem: str) -> str:
         "Be sharp, loyal, intellectually challenging, and speak naturally to the Boss."
     )
     try:
-        resp = gemini.call(prompt, tier=gemini.SMART, timeout_ms=35000)
+        resp = gemini.text(prompt, tier=gemini.SMART, timeout_ms=35000)
         return resp if resp else "Idea registered, Boss. Ready to break it down further whenever you are."
     except Exception as e:
         return f"Sounding board deliberation error: {e}"

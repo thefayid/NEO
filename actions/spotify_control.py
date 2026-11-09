@@ -92,8 +92,11 @@ def _get_spotify_client() -> Optional[spotipy.Spotify]:
 #  NATIVE WINDOWS DESKTOP SPOTIFY INSPECTION & CONTROL
 # ─────────────────────────────────────────────────────────────────────────────
 
+_attached = False
+
 def _attach_desktop():
-    if _OS != "Windows" or user32 is None:
+    global _attached
+    if _OS != "Windows" or user32 is None or _attached:
         return
     try:
         hwinsta0 = user32.OpenWindowStationW("WinSta0", False, 0x037F)
@@ -102,6 +105,7 @@ def _attach_desktop():
         hdesk = user32.OpenDesktopW("default", 0, False, 0x01FF)
         if hdesk:
             user32.SetThreadDesktop(hdesk)
+        _attached = True
     except Exception:
         pass
 

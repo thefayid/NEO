@@ -103,28 +103,28 @@ _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
 
 class C:
-    BG        = "#090a0f"   # Deep Professional Zinc-Slate
-    PANEL     = "#0e1017"   # Sleek Frosted Container
-    PANEL2    = "#141721"   # Secondary Elevated Surface
-    BORDER    = "#1b1f2e"   # Clean Modern Micro-Border
-    BORDER_B  = "#818cf8"   # Refined Indigo / Active Highlight
-    BORDER_A  = "#202538"   # Card / Section Separator
-    PRI       = "#6366f1"   # Linear Precision Indigo
-    ACCENT    = "#6366f1"   # Indigo Highlight
-    PRI_DIM   = "#4f46e5"   # Deep Focused Indigo
-    PRI_GHO   = "rgba(99, 102, 241, 0.12)" # Subtle Indigo Surface Glow
-    ACC       = "#818cf8"   # Soft Periwinkle Accent
-    ACC2      = "#f59e0b"   # Warm Amber
-    GREEN     = "#10b981"   # Soft Sage Emerald
-    GREEN_D   = "#059669"
-    RED       = "#f43f5e"   # Precision Rose
-    MUTED_C   = "#f43f5e"   # Muted Rose
-    TEXT      = "#f8fafc"   # Clean Light Slate Text
-    TEXT_DIM  = "#64748b"   # Muted Secondary Slate
-    TEXT_MED  = "#94a3b8"   # Informational Slate
-    WHITE     = "#ffffff"
-    DARK      = "#0a0b10"   # Header & Footer Enclave
-    BAR_BG    = "#141722"   # Telemetry Track
+    BG        = "#0E1013"   # Cool graphite background (avoids harsh contrast on OLED/LCD)
+    PANEL     = "#14171C"   # Surface 1 (panels, sidebar)
+    PANEL2    = "#1B1F26"   # Surface 2 (cards, inputs)
+    BORDER    = "#262B34"   # 1px subtle divider
+    BORDER_B  = "#5B8DEF"   # Steel blue active highlight / focus ring
+    BORDER_A  = "#262B34"   # Card / Section separator
+    PRI       = "#5B8DEF"   # Steel blue signature accent
+    ACCENT    = "#5B8DEF"   # Single signature accent
+    PRI_DIM   = "#4376D6"   # Pressed variant
+    PRI_GHO   = "#1B1F26"   # Surface 2 container
+    ACC       = "#7AA5F5"   # Softer hover variant
+    ACC2      = "#D9A441"   # Semantic warning / amber
+    GREEN     = "#4CAF7D"   # Semantic success (desaturated)
+    GREEN_D   = "#3E9468"
+    RED       = "#D9534F"   # Semantic error (desaturated)
+    MUTED_C   = "#D9534F"   # Muted red
+    TEXT      = "#E6E8EC"   # Primary text (never pure #FFFFFF)
+    TEXT_DIM  = "#5F6672"   # Disabled / hint text
+    TEXT_MED  = "#9AA1AD"   # Secondary text
+    WHITE     = "#E6E8EC"   # High-legibility primary
+    DARK      = "#0E1013"   # Base background
+    BAR_BG    = "#14171C"   # Surface 1 track
 
 
 # Keys tied to the accent colour — only accent highlights, NOT neutral text or dark backgrounds!
@@ -139,7 +139,7 @@ DEFAULT_UI_COLOR = _PALETTE_DEFAULTS["PRI"]
 def apply_ui_accent(accent_hex: str) -> bool:
     """
     Applies the chosen accent colour cleanly to accent highlights without
-    distorting neutral slate backgrounds or crisp typography.
+    distorting neutral graphite backgrounds or crisp typography.
     """
     import colorsys
 
@@ -173,53 +173,53 @@ def apply_ui_accent(accent_hex: str) -> bool:
 
 
 DARK_MODE_PALETTE: dict[str, str] = {
-    "BG":       "#090a0f",
-    "PANEL":    "#0e1017",
-    "PANEL2":   "#141721",
-    "BORDER":   "#1b1f2e",
-    "BORDER_A": "#202538",
-    "BORDER_B": "#818cf8",
-    "PRI":      "#6366f1",
-    "ACCENT":   "#6366f1",
-    "PRI_DIM":  "#4f46e5",
-    "PRI_GHO":  "rgba(99, 102, 241, 0.12)",
-    "ACC":      "#818cf8",
-    "ACC2":     "#f59e0b",
-    "GREEN":    "#10b981",
-    "GREEN_D":  "#059669",
-    "RED":      "#f43f5e",
-    "MUTED_C":  "#f43f5e",
-    "TEXT":     "#f8fafc",
-    "TEXT_DIM": "#64748b",
-    "TEXT_MED": "#94a3b8",
-    "WHITE":    "#ffffff",
-    "DARK":     "#0a0b10",
-    "BAR_BG":   "#141722",
+    "BG":       "#0E1013",
+    "PANEL":    "#14171C",
+    "PANEL2":   "#1B1F26",
+    "BORDER":   "#262B34",
+    "BORDER_A": "#262B34",
+    "BORDER_B": "#5B8DEF",
+    "PRI":      "#5B8DEF",
+    "ACCENT":   "#5B8DEF",
+    "PRI_DIM":  "#4376D6",
+    "PRI_GHO":  "#1B1F26",
+    "ACC":      "#7AA5F5",
+    "ACC2":     "#D9A441",
+    "GREEN":    "#4CAF7D",
+    "GREEN_D":  "#3E9468",
+    "RED":      "#D9534F",
+    "MUTED_C":  "#D9534F",
+    "TEXT":     "#E6E8EC",
+    "TEXT_DIM": "#5F6672",
+    "TEXT_MED": "#9AA1AD",
+    "WHITE":    "#E6E8EC",
+    "DARK":     "#0E1013",
+    "BAR_BG":   "#14171C",
 }
 
 WHITE_MODE_PALETTE: dict[str, str] = {
-    "BG":       "#f3f5f9",
-    "PANEL":    "#ffffff",
-    "PANEL2":   "#e9eef5",
-    "BORDER":   "#cfd8e3",
-    "BORDER_A": "#cbd5e1",
-    "BORDER_B": "#0284c7",
-    "PRI":      "#0284c7",
-    "ACCENT":   "#0284c7",
-    "PRI_DIM":  "#0369a1",
-    "PRI_GHO":  "#e0f2fe",
-    "ACC":      "#0ea5e9",
-    "ACC2":     "#d97706",
-    "GREEN":    "#059669",
-    "GREEN_D":  "#047857",
-    "RED":      "#e11d48",
-    "MUTED_C":  "#e11d48",
-    "TEXT":     "#0f172a",
-    "TEXT_DIM": "#64748b",
-    "TEXT_MED": "#334155",
-    "WHITE":    "#0f172a",
-    "DARK":     "#e2e8f0",
-    "BAR_BG":   "#e2e8f0",
+    "BG":       "#F5F6F8",
+    "PANEL":    "#FFFFFF",
+    "PANEL2":   "#FFFFFF",
+    "BORDER":   "#DFE2E7",
+    "BORDER_A": "#DFE2E7",
+    "BORDER_B": "#3F6FD1",
+    "PRI":      "#3F6FD1",
+    "ACCENT":   "#3F6FD1",
+    "PRI_DIM":  "#325CB0",
+    "PRI_GHO":  "#EAEFF9",
+    "ACC":      "#5B8DEF",
+    "ACC2":     "#D9A441",
+    "GREEN":    "#4CAF7D",
+    "GREEN_D":  "#3E9468",
+    "RED":      "#D9534F",
+    "MUTED_C":  "#D9534F",
+    "TEXT":     "#1A1D23",
+    "TEXT_DIM": "#5F6672",
+    "TEXT_MED": "#4B5563",
+    "WHITE":    "#1A1D23",
+    "DARK":     "#DFE2E7",
+    "BAR_BG":   "#DFE2E7",
 }
 
 _CURRENT_THEME_MODE = "dark"

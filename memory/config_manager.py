@@ -1,6 +1,8 @@
 import json
+import os
 import sys
 from pathlib import Path
+from threading import Lock
 
 def get_base_dir() -> Path:
     if getattr(sys, "frozen", False):
@@ -10,38 +12,33 @@ def get_base_dir() -> Path:
 BASE_DIR    = get_base_dir()
 CONFIG_DIR  = BASE_DIR / "config"
 CONFIG_FILE = CONFIG_DIR / "api_keys.json"
+_CONFIG_LOCK = Lock()
 
 def ensure_config_dir() -> None:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+def _write_config(data: dict) -> None:
+    ensure_config_dir()
+    with _CONFIG_LOCK:
+        CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
 
 def config_exists() -> bool:
     return CONFIG_FILE.exists()
 
 def save_api_keys(gemini_api_key: str) -> None:
-    ensure_config_dir()
-
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-
+    data = load_api_keys()
     data["gemini_api_key"] = gemini_api_key.strip()
-
-    CONFIG_FILE.write_text(
-        json.dumps(data, indent=2),
-        encoding="utf-8"
-    )
+    _write_config(data)
 
 def load_api_keys() -> dict:
     if not CONFIG_FILE.exists():
         return {}
-    try:
-        return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"❌ Failed to load api_keys.json: {e}")
-        return {}
+    with _CONFIG_LOCK:
+        try:
+            return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"❌ Failed to load api_keys.json: {e}")
+            return {}
 
 def get_gemini_key() -> str | None:
     return load_api_keys().get("gemini_api_key")
@@ -63,16 +60,10 @@ def get_user_name() -> str:
 
 def save_assistant_config(assistant_name: str, user_name: str) -> None:
     """Persist assistant name and user name to config."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    data = load_api_keys()
     data["assistant_name"] = assistant_name.strip() or "JARVIS"
     data["user_name"] = user_name.strip()
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 
 # ── Assistant voice ──────────────────────────────────────────────────────────
@@ -97,16 +88,8 @@ def get_language() -> str:
 def save_voice(voice_name: str) -> None:
     """Persist the chosen Live voice. Unknown names collapse to the default so a
     bad value can never reach the API and break the session."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
     v = (voice_name or "").strip()
-    data["voice_name"] = v if v in AVAILABLE_VOICES else DEFAULT_VOICE
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _save_flag("voice_name", v if v in AVAILABLE_VOICES else DEFAULT_VOICE)
 
 
 def get_wake_word_enabled() -> bool:
@@ -115,15 +98,7 @@ def get_wake_word_enabled() -> bool:
 
 
 def save_wake_word_enabled(enabled: bool) -> None:
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-    data["wake_word_enabled"] = bool(enabled)
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _save_flag("wake_word_enabled", enabled)
 
 
 def get_push_to_talk_enabled() -> bool:
@@ -208,18 +183,12 @@ def get_turn_tuning() -> dict:
 
 
 def save_turn_tuning(values: dict) -> None:
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    data = load_api_keys()
     cur = data.get("turn_tuning")
     cur = dict(cur) if isinstance(cur, dict) else {}
     cur.update(values or {})
     data["turn_tuning"] = cur
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 
 def get_proactive_audio_enabled() -> bool:
@@ -260,15 +229,9 @@ def save_media_resolution(value: str) -> None:
 
 def _save_flag(key: str, value) -> None:
     """Read-modify-write one key without disturbing the rest of the config."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    data = load_api_keys()
     data[key] = bool(value) if isinstance(value, bool) else value
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 
 def get_brief_enabled() -> bool:
@@ -276,15 +239,7 @@ def get_brief_enabled() -> bool:
 
 
 def save_brief_enabled(enabled: bool) -> None:
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-    data["morning_brief_enabled"] = enabled
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _save_flag("morning_brief_enabled", enabled)
 
 
 def get_last_briefing_date() -> str:
@@ -294,15 +249,7 @@ def get_last_briefing_date() -> str:
 
 def save_last_briefing_date(date_str: str) -> None:
     """Persist the date of the morning briefing to prevent duplicate briefings on the same day."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-    data["last_briefing_date"] = date_str
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _save_flag("last_briefing_date", date_str)
 
 
 # ── Audio devices ────────────────────────────────────────────────────────────
@@ -313,20 +260,10 @@ def save_last_briefing_date(date_str: str) -> None:
 # so unplugging a headset degrades to the built-in speakers instead of crashing.
 
 def _patch_config(**fields) -> None:
-    """Read-modify-write one or more keys in api_keys.json.
-
-    Every setter in this file open-coded this. Collapsing it here means a new
-    setting is one line, and there is one place where a corrupt config file is
-    handled instead of nine."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    """Read-modify-write one or more keys in api_keys.json."""
+    data = load_api_keys()
     data.update(fields)
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 
 def get_input_device() -> str:
@@ -373,13 +310,7 @@ def get_plugin_setting(namespace: str, key: str, default=None):
 def save_plugin_config(namespace: str, values: dict) -> None:
     """Merge `values` into a namespace's stored config (read-modify-write, like
     every other helper here). Only the provided keys are touched."""
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    data = load_api_keys()
     pc = data.get("plugin_config")
     if not isinstance(pc, dict):
         pc = {}
@@ -389,23 +320,17 @@ def save_plugin_config(namespace: str, values: dict) -> None:
     cur.update(values)
     pc[namespace] = cur
     data["plugin_config"] = pc
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 
 def save_plugin_enabled(plugin_name: str, enabled: bool) -> None:
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
+    data = load_api_keys()
     plugins_cfg = data.get("plugins_enabled")
     if not isinstance(plugins_cfg, dict):
         plugins_cfg = {}
     plugins_cfg[plugin_name] = enabled
     data["plugins_enabled"] = plugins_cfg
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)
 
 # ── Providers: local STT/LLM/TTS and non-Gemini APIs ─────────────────────────
 # Stored here rather than in a file of their own, for the same reason plugin
@@ -538,14 +463,7 @@ def save_providers(mode: str = None, pipeline: dict = None, creds: dict = None,
     `None` leaves a section alone; `creds` is merged per provider so a panel
     that only edited one does not have to send the others.
     """
-    ensure_config_dir()
-    data: dict = {}
-    if CONFIG_FILE.exists():
-        try:
-            data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-
+    data = load_api_keys()
     block = data.get("providers")
     block = dict(block) if isinstance(block, dict) else {}
 
@@ -573,4 +491,4 @@ def save_providers(mode: str = None, pipeline: dict = None, creds: dict = None,
         block["sidecar_first"] = bool(sidecar_first)
 
     data["providers"] = block
-    CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+    _write_config(data)

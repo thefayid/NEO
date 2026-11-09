@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import datetime
 from threading import Lock
@@ -122,10 +123,12 @@ def save_memory(memory: dict) -> None:
     memory = _trim_to_limit(memory)
     MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
     with _lock:
-        MEMORY_PATH.write_text(
+        tmp_file = MEMORY_PATH.with_suffix(".tmp")
+        tmp_file.write_text(
             json.dumps(memory, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        os.replace(tmp_file, MEMORY_PATH)
 
 
 def _truncate_value(val: str) -> str:

@@ -65,7 +65,7 @@ def ghost_research(url: str, objective: str) -> str:
     )
 
     try:
-        resp = gemini.call(prompt, tier=gemini.FAST, timeout_ms=25000)
+        resp = gemini.text(prompt, tier=gemini.FAST, timeout_ms=25000)
         return f"[GHOST OPERATOR: {url}]\n" + (resp if resp else "Target analyzed: No matching data found.")
     except Exception as e:
         return f"Ghost Operator synthesis error: {e}"

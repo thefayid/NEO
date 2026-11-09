@@ -52,7 +52,7 @@ def _run_worker_task(task_id: str, role: str, instruction: str) -> None:
     full_prompt = f"{sp}\n\nTask:\n{instruction}"
 
     try:
-        resp = gemini.call(full_prompt, tier=gemini.FAST, timeout_ms=45000)
+        resp = gemini.text(full_prompt, tier=gemini.FAST, timeout_ms=45000)
         output = resp if resp else "Agent completed task with empty response."
         status = "COMPLETED"
     except Exception as e:

@@ -858,21 +858,21 @@ class JarvisLive:
 
     async def _run_wan_recovery_watch(self) -> None:
         """Background task while in offline fallback mode: monitors for internet recovery and auto-reconnects to Gemini Live."""
-        import urllib.request
+        def _check_wan() -> bool:
+            import socket
+            for host, port in [("1.1.1.1", 443), ("8.8.8.8", 53), ("www.google.com", 443)]:
+                try:
+                    with socket.create_connection((host, port), timeout=1.0):
+                        return True
+                except Exception:
+                    pass
+            return False
+
         while True:
             await asyncio.sleep(10)
             if not getattr(self, "_auto_offline_fallback", False):
                 continue
-            # Probe WAN connectivity
-            is_online = False
-            for test_url in ("https://1.1.1.1", "https://8.8.8.8", "https://www.google.com"):
-                try:
-                    req = urllib.request.Request(test_url, headers={"User-Agent": "NEO"})
-                    with urllib.request.urlopen(req, timeout=1.5):
-                        is_online = True
-                        break
-                except Exception:
-                    pass
+            is_online = await asyncio.to_thread(_check_wan)
             if is_online:
                 self.ui.write_log("🌐 WAN RESTORED: Internet connection back online. Migrating back to Gemini Live...")
                 self._auto_offline_fallback = False
@@ -1058,6 +1058,7 @@ class JarvisLive:
         if self._wake_enabled and not self._awake:
             self.ui.write_log("SYS: I'm asleep — say 'Hey Jarvis' or tap WAKE NOW first.")
             return
+        self._last_user_speech = time.monotonic()
         asyncio.run_coroutine_threadsafe(
             self.session.send_client_content(
                 turns={"role": "user", "parts": [{"text": text}]},
@@ -1486,7 +1487,7 @@ class JarvisLive:
                 response={"result": "ok", "silent": True}
             )
 
-        loop   = asyncio.get_event_loop()
+        loop   = self._loop or asyncio.get_running_loop()
         result = "Done."
 
         try:
@@ -1675,6 +1676,7 @@ class JarvisLive:
         )
 
     async def _send_realtime(self):
+        consecutive_errors = 0
         while True:
             msg = await self.out_queue.get()
             try:
@@ -1685,12 +1687,14 @@ class JarvisLive:
                             mime_type=msg.get("mime_type", "audio/pcm;rate=16000"),
                         )
                     )
+                    consecutive_errors = 0
             except asyncio.CancelledError:
                 break
             except Exception as e:
+                consecutive_errors += 1
                 err_text = str(e).lower()
-                print(f"[JARVIS] ⚠️ Realtime audio send exception: {e}")
-                if "closed" in err_text or "connection" in err_text or "1007" in err_text:
+                print(f"[JARVIS] ⚠️ Realtime audio send exception ({consecutive_errors}): {e}")
+                if "closed" in err_text or "connection" in err_text or "1007" in err_text or consecutive_errors >= 5:
                     self.request_reconnect(keep_context=True, reason=f"send_realtime: {e}")
                     break
                 await asyncio.sleep(0.02)
@@ -1717,7 +1721,7 @@ class JarvisLive:
 
     async def _listen_audio(self):
         print("[JARVIS] 🎤 Mic started")
-        loop = asyncio.get_event_loop()
+        loop = self._loop or asyncio.get_running_loop()
 
         def callback(indata, frames, time_info, status):
             # ── Wake-word gate ───────────────────────────────────────────────
@@ -2226,7 +2230,7 @@ class JarvisLive:
         time_str = datetime.now().strftime("%H:%M")
 
         # Start fetching news immediately — runs in parallel while phase 1 plays
-        loop = asyncio.get_event_loop()
+        loop = self._loop or asyncio.get_running_loop()
         news_future = loop.run_in_executor(None, _fetch_morning_briefing_news_sync)
 
         await asyncio.sleep(0.3)
@@ -2548,13 +2552,20 @@ class JarvisLive:
     # before any of this existed.
     def _probe_local_llm(self) -> dict | None:
         """Scan local ports (Ollama: 11434, LM Studio: 1234, llama.cpp: 8080) for an active offline server."""
+        import socket
         import urllib.request
         endpoints = [
-            ("Ollama", "http://127.0.0.1:11434/v1", "http://127.0.0.1:11434/api/tags"),
-            ("LM Studio", "http://127.0.0.1:1234/v1", "http://127.0.0.1:1234/v1/models"),
-            ("llama.cpp", "http://127.0.0.1:8080/v1", "http://127.0.0.1:8080/v1/models")
+            ("Ollama", 11434, "http://127.0.0.1:11434/v1", "http://127.0.0.1:11434/api/tags"),
+            ("LM Studio", 1234, "http://127.0.0.1:1234/v1", "http://127.0.0.1:1234/v1/models"),
+            ("llama.cpp", 8080, "http://127.0.0.1:8080/v1", "http://127.0.0.1:8080/v1/models")
         ]
-        for name, base_url, test_url in endpoints:
+        for name, port, base_url, test_url in endpoints:
+            # Sub-millisecond TCP check first — closed localhost port returns immediately without blocking
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.08):
+                    pass
+            except Exception:
+                continue
             try:
                 req = urllib.request.Request(test_url, headers={"User-Agent": "NEO"})
                 with urllib.request.urlopen(req, timeout=0.8) as resp:
@@ -2699,7 +2710,7 @@ class JarvisLive:
             await engine.close()
 
     async def run(self):
-        self._loop = asyncio.get_event_loop()
+        self._loop = asyncio.get_running_loop()
         self._reconnect_event = asyncio.Event()
 
         # ── Wire the shared core services to the interface ───────────────────
@@ -3034,8 +3045,8 @@ class JarvisLive:
                     self._conn_backoff = 3
             finally:
                 self.session = None
-                # Only save if there was a real conversation (≥3 turns)
-                if len(self._session_log) >= 3:
+                # Only save if there was a real conversation (≥3 turns) and context is not kept across rebuild
+                if len(self._session_log) >= 3 and not getattr(self, "_reconnect_keep", False):
                     asyncio.create_task(self._save_session_summary())
 
             self.set_speaking(False)

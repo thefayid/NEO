@@ -753,10 +753,16 @@ def as_json(contents, tier: str = FAST, config=None,
     raw = text(contents, tier=tier, config=config, timeout_ms=timeout_ms, key=key)
     if not raw:
         return default
-    if "{" in raw and "}" in raw:
-        raw = raw[raw.find("{"): raw.rfind("}") + 1]
-    elif "[" in raw and "]" in raw:
-        raw = raw[raw.find("["): raw.rfind("]") + 1]
+    first_brace = raw.find("{")
+    first_bracket = raw.find("[")
+    if first_brace != -1 and (first_bracket == -1 or first_brace < first_bracket):
+        last_brace = raw.rfind("}")
+        if last_brace > first_brace:
+            raw = raw[first_brace: last_brace + 1]
+    elif first_bracket != -1:
+        last_bracket = raw.rfind("]")
+        if last_bracket > first_bracket:
+            raw = raw[first_bracket: last_bracket + 1]
     try:
         return json.loads(raw)
     except Exception as e:

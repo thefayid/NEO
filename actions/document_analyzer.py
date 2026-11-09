@@ -176,7 +176,7 @@ def _redline_contract(content: str, img_bytes: Optional[bytes] = None, mime: str
     if not contents:
         return "Could not extract text or image from contract document."
 
-    resp = gemini.call(contents, tier=gemini.SMART, timeout_ms=60000)
+    resp = gemini.text(contents, tier=gemini.SMART, timeout_ms=60000)
     return resp or "Contract redline analysis timed out or could not be completed."
 
 
@@ -196,7 +196,7 @@ def _ocr_receipt_financial(content: str, img_bytes: Optional[bytes] = None, mime
     if not contents:
         return "Could not extract text or image from receipt."
 
-    resp = gemini.call(contents, tier=gemini.SMART, timeout_ms=45000)
+    resp = gemini.text(contents, tier=gemini.SMART, timeout_ms=45000)
     return resp or "Receipt analysis timed out."
 
 
@@ -214,7 +214,7 @@ def _summarize_document(content: str, img_bytes: Optional[bytes] = None, mime: s
     if not contents:
         return "Could not extract text or image from document."
 
-    resp = gemini.call(contents, tier=gemini.SMART, timeout_ms=45000)
+    resp = gemini.text(contents, tier=gemini.SMART, timeout_ms=45000)
     return resp or "Document summary timed out."
 
 
@@ -229,7 +229,7 @@ def _extract_tables_from_doc(content: str, img_bytes: Optional[bytes] = None, mi
     if not contents:
         return "Could not extract text or image to find tables."
 
-    resp = gemini.call(contents, tier=gemini.SMART, timeout_ms=45000)
+    resp = gemini.text(contents, tier=gemini.SMART, timeout_ms=45000)
     return resp or "Table extraction timed out."
 
 

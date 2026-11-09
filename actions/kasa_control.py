@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import socket
+import time
 from typing import Any, Dict, List, Optional
 
 from core import outcome
@@ -21,6 +22,11 @@ KASA_PORT = 9999
 
 # Autodiscovery broadcast encryption/decryption keys for legacy Kasa protocol
 INITIAL_KEY = 0xAB
+
+# Cache discovered devices to eliminate 1.5s UDP scan lag on subsequent actions
+_DEVICE_CACHE: List[Dict[str, Any]] = []
+_CACHE_TIME: float = 0.0
+_CACHE_TTL: float = 300.0  # 5 minutes
 
 
 def _encrypt(data: str) -> bytes:
@@ -117,16 +123,27 @@ def _send_command(ip: str, cmd_dict: dict, timeout: float = 2.0) -> Optional[dic
 
 
 def kasa_control(parameters: dict, player=None, session_memory=None) -> str:
+    global _DEVICE_CACHE, _CACHE_TIME
     params = parameters or {}
     action = str(params.get("action", "scan")).lower().strip()
     target = str(params.get("device_name", "") or params.get("target", "")).lower().strip()
     brightness = params.get("brightness")
 
-    # 1. Discover devices
-    discovery_cmd = '{"system":{"get_sysinfo":{}}}'
-    devices = _udp_broadcast(discovery_cmd, timeout=1.5)
+    now = time.monotonic()
+    is_scan = action in ("scan", "list", "discover")
+    cache_valid = bool(_DEVICE_CACHE) and (now - _CACHE_TIME < _CACHE_TTL)
 
-    if action in ("scan", "list", "discover"):
+    # Use cache if fresh and not explicitly scanning
+    if not is_scan and cache_valid:
+        devices = _DEVICE_CACHE
+    else:
+        discovery_cmd = '{"system":{"get_sysinfo":{}}}'
+        devices = _udp_broadcast(discovery_cmd, timeout=1.5)
+        if devices:
+            _DEVICE_CACHE = devices
+            _CACHE_TIME = now
+
+    if is_scan:
         if not devices:
             msg = "No Kasa smart home devices detected on the local network, Boss."
             if player and hasattr(player, "write_log"):

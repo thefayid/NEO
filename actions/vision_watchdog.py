@@ -58,7 +58,7 @@ def analyze_screen_context(focus_query: str = "", player=None) -> str:
             types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
             prompt,
         ]
-        resp = gemini.call(contents, tier=gemini.FAST, timeout_ms=30000)
+        resp = gemini.text(contents, tier=gemini.FAST, timeout_ms=30000)
         return resp if resp else "[VISION WATCHDOG] Screen analyzed: No critical exceptions or blocking errors detected."
     except Exception as e:
         return f"Watchdog visual analysis failed: {e}"
