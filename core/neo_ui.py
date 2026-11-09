@@ -462,7 +462,8 @@ class NeoEclipseCanvas(QWidget):
 
         # ── 5. 3D HOLOGRAPHIC AVATAR HEAD ────────────────────────────────────
         if self.avatar is not None:
-            self.avatar.paint(p, cx, head_cy, head_r, self.cur_pri, self.cur_acc, QColor(7, 9, 14))
+            avatar_back = QColor(14, 16, 19) if CURRENT_NEO_THEME == "dark" else QColor(245, 246, 248)
+            self.avatar.paint(p, cx, head_cy, head_r, self.cur_pri, self.cur_acc, avatar_back)
 
         for z, px, py, sz, ang in p_list:
             if z > 0:
@@ -1732,12 +1733,12 @@ class NeoLiveTranscriptWidget(QFrame):
         super().__init__(parent)
         self.setFixedHeight(38)
         self.setFixedWidth(640)
-        self.setStyleSheet("""
-            QFrame {
-                background: rgba(14, 20, 32, 0.78);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-            }
+            }}
         """)
         lay = QHBoxLayout(self)
         lay.setContentsMargins(18, 0, 18, 0)
@@ -1927,9 +1928,12 @@ class NeoHeroStage(QWidget):
         self.input_frame.setFixedWidth(640)
         self.input_frame.setStyleSheet(f"""
             QFrame {{
-                background: rgba(18, 24, 38, 0.90);
-                border: 1px solid rgba(120, 160, 255, 0.25);
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 8px;
+            }}
+            QFrame:hover {{
+                border-color: {ACCENT_PRIMARY};
             }}
         """)
         bar_lay = QHBoxLayout(self.input_frame)
@@ -1940,17 +1944,17 @@ class NeoHeroStage(QWidget):
         plus_btn.setFixedSize(30, 30)
         plus_btn.setFont(QFont("Segoe UI", 15))
         plus_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        plus_btn.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.05);
-                color: #8e9eb5;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+        plus_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {TEXT_MUTED};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 15px;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 0.12);
-                color: #ffffff;
-            }
+            }}
+            QPushButton:hover {{
+                background: {CARD_HOVER};
+                color: {TEXT_WHITE};
+            }}
         """)
         plus_btn.clicked.connect(self.attach_requested.emit)
         bar_lay.addWidget(plus_btn)
@@ -2006,12 +2010,12 @@ class NeoHeroStage(QWidget):
         send_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {SEND_BTN_BG};
-                color: #080a10;
+                color: #ffffff;
                 border: none;
                 border-radius: 8px;
             }}
             QPushButton:hover {{
-                background: #a4bde5;
+                background: {ACCENT_HOVER};
             }}
         """)
         send_btn.clicked.connect(self._submit)
@@ -2251,46 +2255,6 @@ class NeoHeroStage(QWidget):
 
     def set_audio_level(self, level: float):
         self.eclipse.set_audio_level(level)
-
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w, h = self.width(), self.height()
-
-        # Layer 1: Back mountain ridge
-        m_back = QPainterPath()
-        m_back.moveTo(0, h)
-        m_back.lineTo(0, h - 110)
-        m_back.cubicTo(w * 0.2, h - 145, w * 0.4, h - 85, w * 0.55, h - 105)
-        m_back.cubicTo(w * 0.7, h - 125, w * 0.85, h - 75, w, h - 95)
-        m_back.lineTo(w, h)
-        m_back.closeSubpath()
-
-        g_back = QLinearGradient(0, h - 150, 0, h)
-        g_back.setColorAt(0.0, QColor(22, 32, 50, 160))
-        g_back.setColorAt(0.6, QColor(14, 20, 32, 220))
-        g_back.setColorAt(1.0, QColor(8, 11, 18, 255))
-        p.setBrush(QBrush(g_back))
-        p.setPen(QPen(QColor(70, 100, 160, 50), 1.0))
-        p.drawPath(m_back)
-
-        # Layer 2: Front dune ridge
-        m_path = QPainterPath()
-        m_path.moveTo(0, h)
-        m_path.lineTo(0, h - 75)
-        m_path.cubicTo(w * 0.22, h - 105, w * 0.35, h - 50, w * 0.5, h - 70)
-        m_path.cubicTo(w * 0.65, h - 90, w * 0.82, h - 40, w, h - 65)
-        m_path.lineTo(w, h)
-        m_path.closeSubpath()
-
-        m_grad = QLinearGradient(0, h - 110, 0, h)
-        m_grad.setColorAt(0.0, QColor(16, 24, 38, 230))
-        m_grad.setColorAt(0.5, QColor(10, 15, 24, 250))
-        m_grad.setColorAt(1.0, QColor(6, 8, 14, 255))
-        p.setBrush(QBrush(m_grad))
-        p.setPen(QPen(QColor(60, 90, 140, 60), 1.0))
-        p.drawPath(m_path)
-        p.end()
 
 
 # ─────────────────────────────────────────────────────────────────────────────

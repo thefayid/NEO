@@ -383,8 +383,48 @@
         },
         {
           "role": "neo",
-          "content": "I'm sorry, Fayid, I can only understand and respond in English. It sounds like you might be trying to speak in Malayalam or another Indic language. Could you please repeat your request",
+          "content": "I'm sorry, Fayid, I can only understand and respond in English. It sounds like you might be trying to speak in Malayalam or another Indic language. Could you please repeat your request in English, Boss?",
           "timestamp": "11:46 PM"
+        },
+        {
+          "role": "user",
+          "content": "I just told you pa ce ini tia te the pro",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "user",
+          "content": "I just told you pa ce ini tia te the pro ces s you told about it.",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss.",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss. I ran a system immune audit, but there were runaway processes memory hogs detected. Your system currently healthy.",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "user",
+          "content": "I just told you pa ce ini tia te the pro ces s you told about it.",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss. I ran a system immune audit, but there were runaway processes memory hogs detected. Your system currently healthy.",
+          "timestamp": "11:46 PM"
+        },
+        {
+          "role": "neo",
+          "content": "How can I help you, Boss?",
+          "timestamp": "11:47 PM"
+        },
+        {
+          "role": "neo",
+          "content": "\u26a0\ufe0f System RAM is critically high at 96%! We should probably free some memory to optimize performance.",
+          "timestamp": "11:52 PM"
         }
       ]
     }

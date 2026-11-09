@@ -5095,6 +5095,9 @@ class MainWindow(QMainWindow):
         sc_theme = QShortcut(QKeySequence("F7"), self)
         sc_theme.activated.connect(self._on_toggle_theme)
 
+        # Enforce dark graphite theme as pristine default
+        set_ui_theme_mode("dark", self)
+
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
         self._cam_preview.show_frame(img_bytes)
@@ -5912,27 +5915,27 @@ class MainWindow(QMainWindow):
         # Tab pill: ( ) NEO   +
         tab = QFrame()
         tab.setFixedHeight(28)
-        tab.setStyleSheet("""
-            QFrame {
-                background: #141a26;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 8px;
-            }
+        tab.setStyleSheet(f"""
+            QFrame {{
+                background: {C.PANEL2};
+                border: 1px solid {C.BORDER};
+                border-radius: 6px;
+            }}
         """)
         tab_l = QHBoxLayout(tab)
         tab_l.setContentsMargins(10, 0, 8, 0)
         tab_l.setSpacing(6)
         t_icn = QLabel("⭘")
         t_icn.setFont(QFont("Segoe UI", 9))
-        t_icn.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+        t_icn.setStyleSheet(f"color: {C.ACCENT}; border: none; background: transparent;")
         tab_l.addWidget(t_icn)
         t_txt = QLabel("NEO")
         t_txt.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        t_txt.setStyleSheet("color: #ffffff; border: none; background: transparent;")
+        t_txt.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent;")
         tab_l.addWidget(t_txt)
         tab_plus = QLabel("+")
         tab_plus.setFont(QFont("Segoe UI", 11))
-        tab_plus.setStyleSheet("color: #8e9eb5; border: none; background: transparent; padding-left: 6px;")
+        tab_plus.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-left: 6px;")
         tab_l.addWidget(tab_plus)
         t_lay.addWidget(tab)
 
@@ -5967,12 +5970,12 @@ class MainWindow(QMainWindow):
         # Digital Clock & Date
         self._clock_lbl = QLabel(time.strftime("%H:%M:%S"))
         self._clock_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        self._clock_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent;")
+        self._clock_lbl.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent;")
         t_lay.addWidget(self._clock_lbl)
 
         self._date_lbl = QLabel(time.strftime("%a %d %b").upper())
         self._date_lbl.setFont(QFont("Segoe UI", 8))
-        self._date_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; padding-right: 6px;")
+        self._date_lbl.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-right: 6px;")
         t_lay.addWidget(self._date_lbl)
 
         def _pill_btn(text: str, tip: str, cb) -> QPushButton:
@@ -5981,13 +5984,13 @@ class MainWindow(QMainWindow):
             b.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
             b.setCursor(Qt.CursorShape.PointingHandCursor)
             b.setToolTip(tip)
-            b.setStyleSheet("""
-                QPushButton {
-                    background: #141a26; color: #8e9eb5;
-                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+            b.setStyleSheet(f"""
+                QPushButton {{
+                    background: {C.PANEL2}; color: {C.TEXT_MED};
+                    border: 1px solid {C.BORDER}; border-radius: 6px;
                     padding: 0 10px;
-                }
-                QPushButton:hover { color: #ffffff; border-color: #60a5fa; background: rgba(96, 165, 250, 0.15); }
+                }}
+                QPushButton:hover {{ color: {C.TEXT}; border-color: {C.ACCENT}; background: {C.PANEL2}; }}
             """)
             b.clicked.connect(cb)
             return b
