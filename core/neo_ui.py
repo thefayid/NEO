@@ -1638,42 +1638,9 @@ class NeoNavSidebar(QWidget):
 
         lay.addStretch()
 
-        # Theme Mode Toggle Button
-        self.btn_theme = QPushButton("  ☀️   Light Mode")
-        self.btn_theme.setFixedHeight(34)
-        self.btn_theme.setFont(QFont("Segoe UI", 9))
-        self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.btn_theme.setToolTip("Toggle between Dark Graphite and Crisp White Theme")
-        self.btn_theme.setStyleSheet(f"""
-            QPushButton {{
-                background: transparent;
-                color: {TEXT_MUTED};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 6px;
-                text-align: left;
-                padding-left: 12px;
-            }}
-            QPushButton:hover {{
-                background: {CARD_HOVER};
-                color: {TEXT_WHITE};
-                border-color: {ACCENT_PRIMARY};
-            }}
-        """)
-        self.btn_theme.clicked.connect(self.theme_toggled.emit)
-        lay.addWidget(self.btn_theme)
-
         self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
         self.btn_settings.clicked.connect(self.settings_requested.emit)
         lay.addWidget(self.btn_settings)
-
-    def update_theme_button(self, is_white: bool):
-        """Update toggle button text and styling based on active theme."""
-        if is_white:
-            self.btn_theme.setText("  🌙   Dark Mode")
-            self.btn_theme.setToolTip("Switch to Dark Graphite Mode")
-        else:
-            self.btn_theme.setText("  ☀️   Light Mode")
-            self.btn_theme.setToolTip("Switch to Crisp White Mode")
 
     def _create_nav_item(self, icon, label, active=False):
         btn = QPushButton(f"  {icon}   {label}")

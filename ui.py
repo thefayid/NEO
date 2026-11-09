@@ -5092,9 +5092,6 @@ class MainWindow(QMainWindow):
         sc_capsule = QShortcut(QKeySequence("F9"), self)
         sc_capsule.activated.connect(self._toggle_floating_island)
 
-        sc_theme = QShortcut(QKeySequence("F7"), self)
-        sc_theme.activated.connect(self._on_toggle_theme)
-
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
 
@@ -6006,14 +6003,6 @@ class MainWindow(QMainWindow):
         self._capsule_btn = _pill_btn("☁ CAPSULE", "Desktop Floating Island [F9]", self._toggle_floating_island)
         t_lay.addWidget(self._capsule_btn)
 
-        # White / Dark Theme Toggle Button
-        self._theme_toggle_btn = _pill_btn(
-            "☀️ LIGHT" if not is_white_mode() else "🌙 DARK",
-            "Switch to Crisp White Theme [F7]" if not is_white_mode() else "Switch to Dark Graphite Theme [F7]",
-            self._on_toggle_theme
-        )
-        t_lay.addWidget(self._theme_toggle_btn)
-
         # Window Controls: Minimize, Maximize, Close
         btn_min = QPushButton("─")
         btn_min.setFixedSize(28, 26)
@@ -6073,13 +6062,7 @@ class MainWindow(QMainWindow):
         self._nav_sidebar = NeoNavSidebar()
         self._nav_sidebar.tab_changed.connect(self._on_nav_tab_changed)
         self._nav_sidebar.settings_requested.connect(self._show_setup)
-        self._nav_sidebar.theme_toggled.connect(self._on_toggle_theme)
         return self._nav_sidebar
-
-    def _on_toggle_theme(self):
-        """Toggle between Dark Graphite Mode and Crisp White Mode."""
-        new_mode = toggle_ui_theme_mode(parent_win=self)
-        return new_mode
 
     def _cycle_hud_layout(self):
         """Cycle through HUD modes from the persistent top-bar button."""
