@@ -4504,6 +4504,713 @@ class NeoNotesView(QWidget):
             self.cards_lay.insertWidget(idx, card)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  7. SENIOR-DEV PROJECT COMMAND CENTER & AUTONOMOUS GENESIS ENGINE
+# ─────────────────────────────────────────────────────────────────────────────
+
+PROJECT_BLUEPRINTS = {
+    "🤖 AI & Autonomous Agent": {
+        "category": "AI/Agent",
+        "description": "Python 3.12+ async autonomous agent with tool registry, LLM client wrappers, SQLite memory, and test harness.",
+        "run_command": "python main.py",
+        "files": {
+            "main.py": '''"""
+Autonomous Agent Entry Point — Built via NEO Project Genesis Engine.
+"""
+import asyncio
+import os
+from dotenv import load_dotenv
+from core.agent import AutonomousAgent
+from core.tools import search_web, read_file
+
+load_dotenv()
+
+async def main():
+    print("🚀 Initializing Autonomous Agent Subsystem...")
+    agent = AutonomousAgent(name="{name}", model="gemini-2.5-flash")
+    agent.register_tool(search_web)
+    agent.register_tool(read_file)
+    
+    print(f"✓ Agent [{agent.name}] online and listening for missions.")
+    result = await agent.run_step("Survey workspace and execute initial diagnostics.")
+    print("Mission Output:", result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+''',
+            "core/agent.py": '''"""
+Autonomous Agent Architecture & State Controller.
+"""
+import os
+from typing import Callable, Any
+
+class AutonomousAgent:
+    def __init__(self, name: str = "Agent", model: str = "gemini-2.5-flash"):
+        self.name = name
+        self.model = model
+        self.tools: dict[str, Callable] = {}
+        self.history: list[dict] = []
+
+    def register_tool(self, func: Callable):
+        self.tools[func.__name__] = func
+
+    async def run_step(self, prompt: str) -> str:
+        self.history.append({"role": "user", "content": prompt})
+        response = f"[{self.name}] Processed: '{prompt}' using model {self.model}. Subsystems operational."
+        self.history.append({"role": "assistant", "content": response})
+        return response
+''',
+            "core/tools.py": '''"""
+Agent Tool Registry & Execution Wrappers.
+"""
+def search_web(query: str) -> str:
+    """Perform a web search query."""
+    return f"Search results for query: {query}"
+
+def read_file(file_path: str) -> str:
+    """Read contents of a local file safely."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading file: {e}"
+''',
+            "config/settings.py": '''"""
+Application Configuration & Secret Schemas.
+"""
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+''',
+            "tests/test_agent.py": '''"""
+Unit Tests for Autonomous Agent Core.
+"""
+import pytest
+import asyncio
+from core.agent import AutonomousAgent
+
+@pytest.mark.asyncio
+async def test_agent_run():
+    agent = AutonomousAgent(name="TestAgent")
+    res = await agent.run_step("ping")
+    assert "TestAgent" in res
+    assert len(agent.history) == 2
+''',
+            ".env.example": '''# Environment Secrets & API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+DEBUG=True
+ENVIRONMENT=development
+''',
+            "requirements.txt": '''pydantic>=2.7.0
+requests>=2.31.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+python-dotenv>=1.0.0
+''',
+            "README.md": '''# {name}
+
+> Autonomous AI Agent Subsystem — Scaffolded by **NEO Project Genesis Engine**.
+
+## 🚀 Quickstart
+```bash
+# 1. Activate virtual environment
+source .venv/bin/activate  # Or on Windows: .venv\\Scripts\\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure secrets
+cp .env.example .env
+
+# 4. Launch agent
+python main.py
+```
+
+## 🏛️ Architecture
+- `core/agent.py`: Agent state machine & memory loop.
+- `core/tools.py`: Extensible tool registry.
+- `config/settings.py`: Validated configuration schema.
+- `tests/`: Automated pytest unit test suite.
+'''
+        }
+    },
+    "⚡ High-Performance FastAPI Backend": {
+        "category": "FastAPI/Web",
+        "description": "Enterprise-ready modular FastAPI 0.111+ service with Pydantic v2 schemas, CORS, Dockerfile, and pytest suite.",
+        "run_command": "uvicorn main:app --reload --port 8000",
+        "files": {
+            "main.py": '''"""
+FastAPI Microservice — Scaffolded via NEO Project Genesis Engine.
+"""
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.v1.endpoints import router as v1_router
+from core.config import settings
+
+app = FastAPI(
+    title="{name} API",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(v1_router, prefix="/api/v1")
+
+@app.get("/")
+def root():
+    return {"service": "{name}", "status": "ONLINE", "docs": "/docs"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
+''',
+            "api/v1/endpoints.py": '''"""
+API Version 1 Endpoint Handlers.
+"""
+from fastapi import APIRouter
+from schemas.payload import HealthResponse, TaskPayload, TaskResult
+
+router = APIRouter()
+
+@router.get("/health", response_model=HealthResponse)
+def health_check():
+    return HealthResponse(status="HEALTHY", version="1.0.0")
+
+@router.post("/execute", response_model=TaskResult)
+def execute_task(payload: TaskPayload):
+    return TaskResult(
+        task_id=payload.task_id,
+        status="COMPLETED",
+        output=f"Processed operation: '{payload.action}' successfully."
+    )
+''',
+            "core/config.py": '''"""
+Application Settings Schema.
+"""
+import os
+from pydantic import BaseModel
+
+class Settings(BaseModel):
+    HOST: str = os.getenv("HOST", "0.0.0.0")
+    PORT: int = int(os.getenv("PORT", 8000))
+    DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "change_me_in_production")
+
+settings = Settings()
+''',
+            "schemas/payload.py": '''"""
+Pydantic v2 Contract Data Schemas.
+"""
+from pydantic import BaseModel
+
+class HealthResponse(BaseModel):
+    status: str
+    version: str
+
+class TaskPayload(BaseModel):
+    task_id: str
+    action: str
+
+class TaskResult(BaseModel):
+    task_id: str
+    status: str
+    output: str
+''',
+            "tests/test_api.py": '''"""
+FastAPI TestClient Verification Suite.
+"""
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_root():
+    res = client.get("/")
+    assert res.status_code == 200
+    assert res.json()["status"] == "ONLINE"
+
+def test_health():
+    res = client.get("/api/v1/health")
+    assert res.status_code == 200
+    assert res.json()["status"] == "HEALTHY"
+''',
+            "Dockerfile": '''FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+''',
+            "docker-compose.yml": '''version: "3.8"
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - PORT=8000
+''',
+            ".env.example": '''HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+SECRET_KEY=supersecretkeyhere
+''',
+            "requirements.txt": '''fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+httpx>=0.27.0
+pytest>=8.0.0
+''',
+            "README.md": '''# {name}
+
+> High-Performance Microservice — Scaffolded via **NEO Project Genesis Engine**.
+
+## 🚀 Quickstart
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run with uvicorn auto-reload
+python main.py
+
+# 3. Interactive Swagger documentation
+# Open http://localhost:8000/docs in your browser
+```
+'''
+        }
+    },
+    "🛡️ Cybersecurity & CTF Toolkit": {
+        "category": "Security/CTF",
+        "description": "Modular security toolkit with socket port scanning, HTTP endpoint fuzzing, and automated vulnerability report generator.",
+        "run_command": "python main.py --help",
+        "files": {
+            "main.py": '''"""
+Cybersecurity & CTF Operational Toolkit — Built via NEO Project Genesis Engine.
+"""
+import argparse
+from modules.scanner import PortScanner
+from modules.fuzzer import HTTPFuzzer
+from modules.reporter import generate_assessment_report
+
+def main():
+    parser = argparse.ArgumentParser(description="{name} — Security Assessment Suite")
+    subparsers = parser.add_subparsers(dest="command", help="Operational Subcommands")
+
+    scan_p = subparsers.add_parser("scan", help="Scan host for open TCP ports")
+    scan_p.add_argument("--host", default="127.0.0.1", help="Target IP or hostname")
+    scan_p.add_argument("--ports", default="21,22,80,443,8000,8080", help="Comma-separated ports")
+
+    fuzz_p = subparsers.add_parser("fuzz", help="Fuzz web endpoint paths")
+    fuzz_p.add_argument("--url", required=True, help="Target URL (e.g. http://target.local)")
+
+    subparsers.add_parser("report", help="Generate executive audit report")
+
+    args = parser.parse_args()
+
+    if args.command == "scan":
+        ports = [int(p.strip()) for p in args.ports.split(",") if p.strip().isdigit()]
+        scanner = PortScanner(args.host)
+        scanner.run_scan(ports)
+    elif args.command == "fuzz":
+        fuzzer = HTTPFuzzer(args.url)
+        fuzzer.fuzz_endpoints()
+    elif args.command == "report":
+        generate_assessment_report("{name}", "Assessment Report")
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()
+''',
+            "modules/scanner.py": '''"""
+Concurrent Port & Socket Banner Scanner.
+"""
+import socket
+
+class PortScanner:
+    def __init__(self, target_host: str):
+        self.host = target_host
+
+    def run_scan(self, ports: list[int]):
+        print(f"[*] Scanning {self.host} across {len(ports)} target ports...")
+        for port in ports:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.4)
+            result = s.connect_ex((self.host, port))
+            if result == 0:
+                print(f"  [+] Port {port:5d} is OPEN")
+            s.close()
+        print("[*] Scan complete.")
+''',
+            "modules/fuzzer.py": '''"""
+HTTP Endpoint & Parameter Fuzzing Engine.
+"""
+import requests
+
+class HTTPFuzzer:
+    def __init__(self, target_url: str):
+        self.url = target_url.rstrip("/")
+
+    def fuzz_endpoints(self):
+        common_paths = ["admin", "api", "login", "config", "backup", "v1", "robots.txt"]
+        print(f"[*] Fuzzing endpoints on {self.url}...")
+        for path in common_paths:
+            target = f"{self.url}/{path}"
+            try:
+                r = requests.get(target, timeout=2.0)
+                if r.status_code in (200, 301, 302, 403):
+                    print(f"  [!] Found: {target} (Status: {r.status_code})")
+            except Exception:
+                pass
+        print("[*] Fuzzing complete.")
+''',
+            "modules/reporter.py": '''"""
+Executive Markdown Security Assessment Report Generator.
+"""
+from datetime import datetime
+
+def generate_assessment_report(target_name: str, out_file: str = "audit_report.md"):
+    report_content = f"""# Security Assessment Report: {target_name}
+Generated: {datetime.now().strftime("%Y-%m-%d %H:%M")} via NEO Security Studio
+
+## 1. Executive Summary
+Brief summary of the security audit, scope, and threat posture.
+
+## 2. Identified Vulnerabilities & Remediation
+- [ ] Implement parameterized input validation
+- [ ] Enforce rate-limiting and WAF rules
+- [ ] Rotate exposed API tokens
+"""
+    with open(out_file, "w", encoding="utf-8") as f:
+        f.write(report_content)
+    print(f"[✓] Generated executive assessment report: {out_file}")
+''',
+            "requirements.txt": '''requests>=2.31.0
+pytest>=8.0.0
+''',
+            "README.md": '''# {name} — Cybersecurity & CTF Toolkit
+
+> Tactical Security & Assessment Toolkit — Scaffolded via **NEO Project Genesis Engine**.
+
+## 🚀 Usage
+```bash
+# Scan target
+python main.py scan --host 127.0.0.1 --ports 22,80,443,8000
+
+# Fuzz web endpoints
+python main.py fuzz --url http://target.local
+
+# Generate executive report
+python main.py report
+```
+'''
+        }
+    },
+    "💻 Executive CLI Tool": {
+        "category": "CLI/Tooling",
+        "description": "Standard PEP 621 command-line tool with argument parser, packaging metadata, and test harness.",
+        "run_command": "python cli.py --help",
+        "files": {
+            "cli.py": '''"""
+CLI Application Entry Point — Scaffolded via NEO Project Genesis Engine.
+"""
+import argparse
+import sys
+from core.engine import execute_operation
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="{name}",
+        description="Executive Command Line Interface — Built with NEO"
+    )
+    parser.add_argument("command", choices=["status", "run", "benchmark"], help="Operation to execute")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose diagnostics")
+    
+    args = parser.parse_args()
+    print(f"[{args.command.upper()}] Initializing {args.command}...")
+    result = execute_operation(args.command, verbose=args.verbose)
+    print("✓ Result:", result)
+
+if __name__ == "__main__":
+    main()
+''',
+            "core/engine.py": '''"""
+CLI Core Logic & Operations Engine.
+"""
+def execute_operation(operation: str, verbose: bool = False) -> str:
+    if verbose:
+        print(f"[DIAGNOSTIC] Executing operation: {operation}")
+    return f"Operation '{operation}' completed successfully."
+''',
+            "pyproject.toml": '''[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{name}"
+version = "0.1.0"
+description = "Executive CLI Tool scaffolded with NEO"
+authors = [{{ name="Rahman Fayid" }}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+{name} = "cli:main"
+''',
+            "tests/test_cli.py": '''"""
+CLI Unit Tests.
+"""
+from core.engine import execute_operation
+
+def test_operation():
+    res = execute_operation("status")
+    assert "status" in res
+''',
+            "README.md": '''# {name}
+
+> Command-Line Tool — Scaffolded via **NEO Project Genesis Engine**.
+
+## 🚀 Installation & Usage
+```bash
+# Run locally
+python cli.py status
+
+# Install in editable mode
+pip install -e .
+{name} run
+```
+'''
+        }
+    }
+}
+
+
+class ProjectGenesisDialog(QDialog):
+    """
+    Executive Autonomous Project Genesis & Scaffolding Wizard.
+    Provisions complete runnable project repositories with Git, .gitignore,
+    virtualenvs, NEO Task Engine milestones, and Notes Architecture RFCs.
+    """
+    def __init__(self, default_parent_dir: str, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("⚡ Autonomous Project Genesis Engine")
+        self.setFixedSize(540, 560)
+        self.setStyleSheet("""
+            QDialog {
+                background: #090e1a;
+                color: #f1f5f9;
+                border: 1px solid rgba(56, 189, 248, 0.3);
+                border-radius: 10px;
+            }
+        """)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(22, 18, 22, 18)
+        lay.setSpacing(12)
+
+        # Title
+        hdr = QHBoxLayout()
+        t_lbl = QLabel("⚡ Autonomous Project Genesis")
+        t_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        t_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        hdr.addWidget(t_lbl)
+        hdr.addStretch()
+        lay.addLayout(hdr)
+
+        sub_l = QLabel("Scaffold a complete production-grade repository in seconds.")
+        sub_l.setFont(QFont("Segoe UI", 8))
+        sub_l.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        lay.addWidget(sub_l)
+
+        # Form: Project Name
+        lay.addWidget(QLabel("PROJECT NAME:"))
+        self.name_in = QLineEdit()
+        self.name_in.setPlaceholderText("e.g. CipherGuard, AutonomousAgent, SIH-Portal")
+        self.name_in.setFont(QFont("Segoe UI", 9))
+        self.name_in.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px; color: #ffffff; padding: 6px 10px;
+            }
+            QLineEdit:focus { border-color: #38bdf8; }
+        """)
+        lay.addWidget(self.name_in)
+
+        # Form: Location
+        lay.addWidget(QLabel("PARENT LOCATION DIRECTORY:"))
+        loc_row = QHBoxLayout()
+        self.loc_in = QLineEdit()
+        self.loc_in.setText(default_parent_dir)
+        self.loc_in.setFont(QFont("Segoe UI", 8))
+        self.loc_in.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px; color: #cbd5e1; padding: 6px 10px;
+            }
+        """)
+        loc_row.addWidget(self.loc_in, stretch=1)
+
+        browse_btn = QPushButton("Browse...")
+        browse_btn.setFont(QFont("Segoe UI", 8))
+        browse_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        browse_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.06); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 6px 12px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        """)
+        browse_btn.clicked.connect(self._browse_location)
+        loc_row.addWidget(browse_btn)
+        lay.addLayout(loc_row)
+
+        # Form: Stack Blueprint
+        lay.addWidget(QLabel("STACK BLUEPRINT:"))
+        self.bp_combo = QComboBox()
+        self.bp_combo.setFont(QFont("Segoe UI", 8))
+        self.bp_combo.addItems(list(PROJECT_BLUEPRINTS.keys()) + ["✨ Custom Prompt Genesis"])
+        self.bp_combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(15, 23, 42, 0.8); color: #f1f5f9;
+                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 4px 8px;
+            }
+            QComboBox QAbstractItemView {
+                background: #0d1322; color: #f1f5f9;
+                selection-background-color: rgba(56, 189, 248, 0.2);
+            }
+        """)
+        self.bp_combo.currentIndexChanged.connect(self._on_blueprint_changed)
+        lay.addWidget(self.bp_combo)
+
+        # Blueprint Description Banner
+        self.desc_lbl = QLabel(list(PROJECT_BLUEPRINTS.values())[0]["description"])
+        self.desc_lbl.setWordWrap(True)
+        self.desc_lbl.setFont(QFont("Segoe UI", 7))
+        self.desc_lbl.setStyleSheet("""
+            QLabel {
+                background: rgba(56, 189, 248, 0.05); color: #94a3b8;
+                border-left: 2px solid #38bdf8; border-radius: 4px; padding: 6px;
+            }
+        """)
+        lay.addWidget(self.desc_lbl)
+
+        # Form: Custom Prompt (Optional)
+        self.prompt_in = QTextEdit()
+        self.prompt_in.setPlaceholderText("Optional: Describe your custom project concept or extra packages (e.g. 'Build Telegram bot with async SQLite')...")
+        self.prompt_in.setFont(QFont("Segoe UI", 8))
+        self.prompt_in.setFixedHeight(48)
+        self.prompt_in.setStyleSheet("""
+            QTextEdit {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px; color: #e2e8f0; padding: 4px 8px;
+            }
+        """)
+        lay.addWidget(self.prompt_in)
+
+        # Automated Provisioning Checkboxes
+        lay.addWidget(QLabel("AUTOMATED PROVISIONING:"))
+        opts_box = QFrame()
+        opts_box.setStyleSheet("background: transparent; border: none;")
+        opts_lay = QVBoxLayout(opts_box)
+        opts_lay.setContentsMargins(0, 0, 0, 0)
+        opts_lay.setSpacing(4)
+
+        self.cb_git = QCheckBox("Initialize Git repository && commit initial genesis")
+        self.cb_git.setChecked(True)
+        self.cb_git.setStyleSheet("color: #cbd5e1; font-size: 11px;")
+        opts_lay.addWidget(self.cb_git)
+
+        self.cb_tasks = QCheckBox("Synchronize Phase 1 milestones to NEO Task Engine")
+        self.cb_tasks.setChecked(True)
+        self.cb_tasks.setStyleSheet("color: #cbd5e1; font-size: 11px;")
+        opts_lay.addWidget(self.cb_tasks)
+
+        self.cb_notes = QCheckBox("Generate Architecture RFC blueprint in NEO Notes Studio")
+        self.cb_notes.setChecked(True)
+        self.cb_notes.setStyleSheet("color: #cbd5e1; font-size: 11px;")
+        opts_lay.addWidget(self.cb_notes)
+        lay.addWidget(opts_box)
+
+        lay.addStretch()
+
+        # Action Buttons
+        btn_r = QHBoxLayout()
+        btn_r.setSpacing(10)
+
+        cancel_b = QPushButton("Cancel")
+        cancel_b.setFont(QFont("Segoe UI", 8))
+        cancel_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        cancel_b.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 6px 14px;
+            }
+            QPushButton:hover { color: #f1f5f9; }
+        """)
+        cancel_b.clicked.connect(self.reject)
+        btn_r.addWidget(cancel_b)
+
+        btn_r.addStretch()
+
+        self.scaffold_btn = QPushButton("🚀 Scaffold && Launch Project")
+        self.scaffold_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        self.scaffold_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.scaffold_btn.setStyleSheet("""
+            QPushButton {
+                background: #38bdf8; color: #070b14;
+                border: none; border-radius: 6px; padding: 6px 18px;
+            }
+            QPushButton:hover { background: #7dd3fc; }
+        """)
+        self.scaffold_btn.clicked.connect(self.accept)
+        btn_r.addWidget(self.scaffold_btn)
+        lay.addLayout(btn_r)
+
+    def _browse_location(self):
+        d = QFileDialog.getExistingDirectory(self, "Select Parent Folder", self.loc_in.text())
+        if d:
+            self.loc_in.setText(d)
+
+    def _on_blueprint_changed(self, idx: int):
+        bp_name = self.bp_combo.currentText()
+        bp = PROJECT_BLUEPRINTS.get(bp_name)
+        if bp:
+            self.desc_lbl.setText(bp["description"])
+        else:
+            self.desc_lbl.setText("Custom AI Genesis: Builds tailored project structure & logic based on your custom prompt.")
+
+    def get_data(self) -> dict:
+        return {
+            "name": re.sub(r'[^a-zA-Z0-9_\-]', '', self.name_in.text().strip()) or "NewProject",
+            "parent_dir": Path(self.loc_in.text().strip()).resolve(),
+            "blueprint": self.bp_combo.currentText(),
+            "custom_prompt": self.prompt_in.toPlainText().strip(),
+            "init_git": self.cb_git.isChecked(),
+            "sync_tasks": self.cb_tasks.isChecked(),
+            "sync_notes": self.cb_notes.isChecked(),
+        }
+
+
 class NeoProjectsView(QWidget):
     """
     Executive Mission Control & Project Command Center for NEO.
@@ -4563,6 +5270,22 @@ class NeoProjectsView(QWidget):
         self._populate_project_selector()
         self.proj_combo.currentIndexChanged.connect(self._on_project_switched)
         hdr.addWidget(self.proj_combo)
+
+        # ⚡ Scaffold Project / Genesis Button
+        scaffold_btn = QPushButton("⚡ New Project")
+        scaffold_btn.setToolTip("Scaffold a complete production repository from scratch with Git, tests, and blueprints")
+        scaffold_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        scaffold_btn.setFixedHeight(28)
+        scaffold_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        scaffold_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.15); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 2px 12px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.28); color: #ffffff; }
+        """)
+        scaffold_btn.clicked.connect(self._open_genesis_wizard)
+        hdr.addWidget(scaffold_btn)
 
         # + Add Project / Open Folder Button
         add_proj_btn = QPushButton("+ Open Folder")
@@ -5041,7 +5764,6 @@ class NeoProjectsView(QWidget):
             except Exception:
                 pass
 
-        # Initialize with current workspace
         init_data = {
             "active_project_id": "proj_current",
             "projects": [
@@ -5114,7 +5836,6 @@ class NeoProjectsView(QWidget):
         if not chosen_dir:
             return
         p_path = Path(chosen_dir).resolve()
-        # Check if already registered
         for p in self.projects_data.get("projects", []):
             if Path(p.get("path", "")).resolve() == p_path:
                 self.projects_data["active_project_id"] = p["id"]
@@ -5138,6 +5859,150 @@ class NeoProjectsView(QWidget):
         self._populate_project_selector()
         self.workspace_path = p_path
         self._show_toast(f"✓ Added project: {p_path.name}")
+        self._refresh_all()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Autonomous Project Genesis & Scaffolding Engine
+    # ─────────────────────────────────────────────────────────────────────────
+    def _open_genesis_wizard(self):
+        parent_loc = str(self.workspace_path.parent) if self.workspace_path else "."
+        dlg = ProjectGenesisDialog(parent_loc, parent=self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        data = dlg.get_data()
+        p_name = data["name"]
+        target_dir = data["parent_dir"] / p_name
+
+        if target_dir.exists() and any(target_dir.iterdir()):
+            self._show_toast(f"⚠️ Directory '{p_name}' already exists!")
+            return
+
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        bp_name = data["blueprint"]
+        bp = PROJECT_BLUEPRINTS.get(bp_name)
+        category = bp["category"] if bp else "AI/Custom"
+        run_cmd = bp["run_command"] if bp else "python main.py"
+        files_dict = bp["files"] if bp else {}
+
+        # Fallback custom files if custom blueprint selected
+        if not files_dict:
+            files_dict = {
+                "main.py": f'''"""\n{p_name} — Generated via NEO Custom Genesis.\n"""\nimport os\n\ndef main():\n    print("🚀 Initializing {p_name}...")\n    print("Concept: {data["custom_prompt"] or "Custom Genesis"}")\n\nif __name__ == "__main__":\n    main()\n''',
+                "requirements.txt": "pydantic>=2.7.0\nrequests>=2.31.0\npytest>=8.0.0\n",
+                "README.md": f'''# {p_name}\n\n> Custom Project — Scaffolded via **NEO Project Genesis Engine**.\n\n## Concept\n{data["custom_prompt"] or "Custom autonomous project."}\n'''
+            }
+
+        # Write files
+        for rel_path, content in files_dict.items():
+            out_file = target_dir / rel_path
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            formatted_content = content.replace("{name}", p_name)
+            with open(out_file, "w", encoding="utf-8") as f:
+                f.write(formatted_content)
+
+        # 1. Git Initialization & Initial Commit
+        if data["init_git"]:
+            try:
+                gi_file = target_dir / ".gitignore"
+                if not gi_file.exists():
+                    with open(gi_file, "w", encoding="utf-8") as f:
+                        f.write(".venv/\nvenv/\n__pycache__/\n*.pyc\n.env\n*.log\n.pytest_cache/\nnode_modules/\n")
+                subprocess.run(["git", "init"], cwd=str(target_dir), capture_output=True, timeout=5)
+                subprocess.run(["git", "add", "."], cwd=str(target_dir), capture_output=True, timeout=5)
+                subprocess.run(["git", "commit", "-m", f"feat: initial genesis of {p_name} via NEO Project Engine"], cwd=str(target_dir), capture_output=True, timeout=5)
+            except Exception:
+                pass
+
+        # 2. Sync Phase 1 Milestones to Task Engine
+        if data["sync_tasks"]:
+            try:
+                current_tasks = []
+                if _TASKS_FILE.exists():
+                    with open(_TASKS_FILE, "r", encoding="utf-8") as f:
+                        tdata = json.load(f)
+                        if isinstance(tdata, dict) and "tasks" in tdata:
+                            current_tasks = tdata.get("tasks", [])
+
+                now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                p1_tasks = [
+                    f"[{p_name}] Configure core architecture & verified dependencies",
+                    f"[{p_name}] Implement primary execution pipeline & test harness",
+                    f"[{p_name}] Run end-to-end integration benchmark & release v0.1.0"
+                ]
+                for idx, t_title in enumerate(p1_tasks):
+                    new_t = {
+                        "id": f"task_{int(datetime.now().timestamp()*1000)}_{idx}",
+                        "title": t_title,
+                        "category": "Dev",
+                        "priority": "High" if idx == 0 else "Medium",
+                        "due_date": "Today" if idx == 0 else "This Week",
+                        "done": False,
+                        "created_at": now_str,
+                        "notes": f"Scaffolded by NEO Project Genesis for {p_name}"
+                    }
+                    current_tasks.insert(0, new_t)
+
+                _TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                tmp_f = _TASKS_FILE.with_suffix(".tmp")
+                with open(tmp_f, "w", encoding="utf-8") as f:
+                    json.dump({"tasks": current_tasks}, f, indent=2, ensure_ascii=False)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_f, _TASKS_FILE)
+            except Exception:
+                pass
+
+        # 3. Sync Architecture RFC Blueprint to Notes Studio
+        if data["sync_notes"]:
+            try:
+                current_notes = []
+                if _NOTES_FILE.exists():
+                    with open(_NOTES_FILE, "r", encoding="utf-8") as f:
+                        ndata = json.load(f)
+                        if isinstance(ndata, dict) and "notes" in ndata:
+                            current_notes = ndata.get("notes", [])
+
+                now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                cat_tag = category.split("/")[0].lower()
+                rfc_note = {
+                    "id": f"note_{int(datetime.now().timestamp()*1000)}",
+                    "title": f"RFC: {p_name} Architecture Blueprint #dev #{cat_tag}",
+                    "category": "Dev",
+                    "pinned": False,
+                    "archived": False,
+                    "created_at": now_str,
+                    "updated_at": now_str,
+                    "content": f"# System Architecture Blueprint: {p_name}\n\n## 1. Executive Summary\nScaffolded using Blueprint: {bp_name}.\nTarget Path: `{target_dir}`\n\n## 2. Core Components\n- Transport / API: `{run_cmd}`\n- Schemas & Verification: `pytest`\n\n## 3. Milestones\n- [ ] Deploy MVP pipeline\n- [ ] Configure CI/CD automated test harness\n"
+                }
+                current_notes.insert(0, rfc_note)
+                _NOTES_FILE.parent.mkdir(parents=True, exist_ok=True)
+                tmp_fn = _NOTES_FILE.with_suffix(".tmp")
+                with open(tmp_fn, "w", encoding="utf-8") as f:
+                    json.dump({"notes": current_notes}, f, indent=2, ensure_ascii=False)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_fn, _NOTES_FILE)
+            except Exception:
+                pass
+
+        # 4. Register Project and Switch to It
+        new_proj_entry = {
+            "id": f"proj_{int(datetime.now().timestamp()*1000)}",
+            "name": p_name,
+            "path": str(target_dir),
+            "category": category,
+            "run_command": run_cmd,
+            "created_at": datetime.now().strftime("%Y-%m-%d"),
+            "last_opened": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        self.projects_data.setdefault("projects", []).append(new_proj_entry)
+        self.projects_data["active_project_id"] = new_proj_entry["id"]
+        self._write_projects(self.projects_data)
+        self._populate_project_selector()
+        self.workspace_path = target_dir
+        self._show_toast(f"✓ Project '{p_name}' scaffolded and active!")
         self._refresh_all()
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -5208,7 +6073,6 @@ class NeoProjectsView(QWidget):
             QMenu::item { padding: 6px 14px; border-radius: 4px; font-size: 11px; }
             QMenu::item:selected { background: rgba(56, 189, 248, 0.18); color: #ffffff; }
         """)
-        # Populate dynamically on aboutToShow
         menu.aboutToShow.connect(lambda: self._populate_git_menu(menu))
         self.git_badge.setMenu(menu)
 
@@ -5328,7 +6192,6 @@ class NeoProjectsView(QWidget):
             if p.is_dir():
                 node = QTreeWidgetItem([f"📁  {p.name}", ""])
                 node.setData(0, Qt.ItemDataRole.UserRole, str(p))
-                # Add dummy child for lazy expansion
                 dummy = QTreeWidgetItem(["loading...", ""])
                 node.addChild(dummy)
                 self.tree_widget.addTopLevelItem(node)
@@ -5351,7 +6214,6 @@ class NeoProjectsView(QWidget):
         if not p_dir.is_dir():
             return
 
-        # Check if already loaded
         if item.childCount() == 1 and item.child(0).text(0) == "loading...":
             item.takeChild(0)
             try:
@@ -5420,14 +6282,14 @@ class NeoProjectsView(QWidget):
                 self.code_viewer.setPlainText(content)
 
             self.insp_meta_lbl.setText(f"{sz_str} · {lines_count:,} lines")
-            self.stack.setCurrentIndex(1) # Switch to Code Page
+            self.stack.setCurrentIndex(1)
         except Exception as e:
             self.code_viewer.setPlainText(f"Error opening file: {e}")
             self.stack.setCurrentIndex(1)
 
     def _close_inspector(self):
         self._active_file_path = None
-        self.stack.setCurrentIndex(0) # Return to KPI Dashboard
+        self.stack.setCurrentIndex(0)
 
     def _ask_neo_review_file(self):
         if not self._active_file_path:
@@ -5476,7 +6338,6 @@ class NeoProjectsView(QWidget):
             return 0, 0, 0, 0
 
         for root, dirs, files in os.walk(str(self.workspace_path), topdown=True):
-            # Prune ignored and hidden directories
             dirs[:] = [d for d in dirs if d not in IGNORED_WORKSPACE_PATTERNS and not (self.hide_cache_files and d.startswith('.'))]
             total_dirs += len(dirs)
             for f in files:
@@ -5489,7 +6350,7 @@ class NeoProjectsView(QWidget):
                     total_sz += sz
                     ext = os.path.splitext(f)[1].lower()
                     if ext in ('.py', '.js', '.ts', '.html', '.css', '.json', '.md'):
-                        with open(fp, 'r', encoding='utf-8', errors='ignore') as fl:
+                        with open(fp, "r", encoding="utf-8", errors="ignore") as fl:
                             total_loc += sum(1 for _ in fl)
                 except Exception:
                     pass
@@ -5504,7 +6365,6 @@ class NeoProjectsView(QWidget):
         self._update_kpi_card(self.card_loc, f"{loc:,} LOC", "Active code volume")
         self._update_kpi_card(self.card_size, f"{sz_mb:.2f} MB", "Physical disk usage")
 
-        # Load README.md if present
         readme_path = self.workspace_path / "README.md"
         if not readme_path.exists():
             readme_path = self.workspace_path / "readme.md"
@@ -5580,8 +6440,6 @@ Use **'🤖 AI Architect'** above to generate an instant architecture blueprint 
         self.toast_lbl.setText(msg)
         self.toast_lbl.show()
         QTimer.singleShot(2400, self.toast_lbl.hide)
-
-
 
 
 
