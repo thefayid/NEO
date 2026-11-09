@@ -20,6 +20,16 @@
           "role": "neo",
           "content": "Cyber Security and RedTeam mode engaged, Boss. Always ready to stress-test and harden defenses. What's the vulnerability assessment on the docket today?",
           "timestamp": "03:23 PM"
+        },
+        {
+          "role": "user",
+          "content": "Heyy",
+          "timestamp": "03:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Boss! Welcome back. It's PM right now. Ready to dive back into some vulnerability assessment or maybe a challenging CTF?",
+          "timestamp": "03:34 PM"
         }
       ]
     }

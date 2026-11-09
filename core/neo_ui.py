@@ -38,7 +38,7 @@ from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
     QLineEdit, QTextEdit, QProgressBar, QFrame, QScrollArea,
     QCheckBox, QListWidget, QListWidgetItem, QSizePolicy,
-    QStackedWidget, QGridLayout, QDialog
+    QStackedWidget, QGridLayout, QDialog, QComboBox, QButtonGroup
 )
 import psutil
 import random
@@ -2220,154 +2220,725 @@ class NeoHeroStage(QWidget):
 # ─────────────────────────────────────────────────────────────────────────────
 #  5. INTERACTIVE FUNCTIONAL VIEWS (Tasks, Notes, Projects, Knowledge, Files)
 # ─────────────────────────────────────────────────────────────────────────────
+_TASKS_FILE = Path(__file__).resolve().parent.parent / "memory" / "tasks.json"
+
+TASK_CATEGORY_COLORS = {
+    "Academic": ("🎓 ACADEMIC", "#a78bfa", "rgba(167, 139, 250, 0.14)"),
+    "Dev":      ("💻 DEV",      "#38bdf8", "rgba(56, 189, 248, 0.14)"),
+    "SIH":      ("🏆 SIH",      "#f59e0b", "rgba(245, 158, 11, 0.14)"),
+    "Security": ("🛡️ SEC",      "#34d399", "rgba(52, 211, 153, 0.14)"),
+    "Ops":      ("⚡ OPS",      "#f43f5e", "rgba(244, 63, 94, 0.14)"),
+    "General":  ("📋 TASK",     "#94a3b8", "rgba(148, 163, 184, 0.14)"),
+}
+
+TASK_PRIORITY_META = {
+    "High":   ("🔴 CRITICAL", "#f43f5e", "rgba(244, 63, 94, 0.16)", "#f43f5e"),
+    "Medium": ("🟡 MEDIUM",   "#f59e0b", "rgba(245, 158, 11, 0.16)", "#f59e0b"),
+    "Low":    ("🔵 ROUTINE",  "#38bdf8", "rgba(56, 189, 248, 0.16)", "#38bdf8"),
+}
+
+
+class NeoTaskCard(QFrame):
+    """High-tech obsidian task card with priority edge, tags, and AI execution action."""
+
+    def __init__(self, task: dict, on_toggle: Callable, on_delete: Callable, on_execute: Callable, parent=None):
+        super().__init__(parent)
+        self.task = task
+        self.on_toggle = on_toggle
+        self.on_delete = on_delete
+        self.on_execute = on_execute
+
+        done = bool(task.get("done", False))
+        priority = task.get("priority", "Medium")
+        category = task.get("category", "General")
+        due = task.get("due_date", "Today")
+
+        p_name, p_fg, p_bg, p_border = TASK_PRIORITY_META.get(priority, TASK_PRIORITY_META["Medium"])
+        c_name, c_fg, c_bg = TASK_CATEGORY_COLORS.get(category, TASK_CATEGORY_COLORS["General"])
+
+        self.setFixedHeight(54)
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: rgba(14, 20, 34, 0.92);
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-left: 4px solid {p_border if not done else '#334155'};
+                border-radius: 10px;
+            }}
+            QFrame:hover {{
+                border-color: rgba(56, 189, 248, 0.35);
+                background: rgba(18, 26, 44, 0.96);
+            }}
+        """)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(14, 0, 14, 0)
+        lay.setSpacing(12)
+
+        # Checkbox
+        self.cb = QCheckBox()
+        self.cb.setChecked(done)
+        self.cb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.cb.setStyleSheet("""
+            QCheckBox::indicator {
+                width: 19px; height: 19px; border-radius: 5px;
+                border: 1.5px solid rgba(255, 255, 255, 0.25);
+                background: #0d1322;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #38bdf8;
+                background: rgba(56, 189, 248, 0.12);
+            }
+            QCheckBox::indicator:checked {
+                background: #00e5ff;
+                border-color: #00e5ff;
+            }
+        """)
+        self.cb.toggled.connect(self._handle_toggle)
+        lay.addWidget(self.cb)
+
+        # Title Label
+        self.title_lbl = QLabel(task.get("title", ""))
+        self.title_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium if not done else QFont.Weight.Normal))
+        self._apply_title_style(done)
+        lay.addWidget(self.title_lbl, stretch=1)
+
+        # Category Tag Pill
+        cat_badge = QLabel(c_name)
+        cat_badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        cat_badge.setStyleSheet(f"""
+            color: {c_fg}; background: {c_bg};
+            border: 1px solid {c_fg}44; border-radius: 5px;
+            padding: 2px 7px;
+        """)
+        lay.addWidget(cat_badge)
+
+        # Priority Tag Pill
+        prio_badge = QLabel(p_name)
+        prio_badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        prio_badge.setStyleSheet(f"""
+            color: {p_fg}; background: {p_bg};
+            border: 1px solid {p_fg}44; border-radius: 5px;
+            padding: 2px 7px;
+        """)
+        lay.addWidget(prio_badge)
+
+        # Due Date Pill
+        due_badge = QLabel(f"📅 {due}")
+        due_badge.setFont(QFont("Segoe UI", 7))
+        is_urgent = ("today" in due.lower() or "now" in due.lower()) and not done and priority == "High"
+        due_color = "#f43f5e" if is_urgent else "#94a3b8"
+        due_badge.setStyleSheet(f"""
+            color: {due_color}; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px;
+            padding: 2px 7px;
+        """)
+        lay.addWidget(due_badge)
+
+        # "⚡ EXECUTE WITH NEO" Tactical Dispatch Button
+        if not done:
+            exec_btn = QPushButton("⚡ EXECUTE")
+            exec_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            exec_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            exec_btn.setFixedHeight(24)
+            exec_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(56, 189, 248, 0.12);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.35);
+                    border-radius: 5px;
+                    padding: 0 8px;
+                    letter-spacing: 0.5px;
+                }
+                QPushButton:hover {
+                    background: rgba(56, 189, 248, 0.3);
+                    color: #ffffff;
+                    border-color: #38bdf8;
+                }
+            """)
+            exec_btn.clicked.connect(lambda: self.on_execute(self.task))
+            lay.addWidget(exec_btn)
+
+        # Delete Action
+        del_btn = QPushButton("✕")
+        del_btn.setFixedSize(24, 24)
+        del_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        del_btn.setStyleSheet("""
+            QPushButton {
+                color: #475569;
+                border: none;
+                background: transparent;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                color: #f43f5e;
+            }
+        """)
+        del_btn.clicked.connect(lambda: self.on_delete(self.task))
+        lay.addWidget(del_btn)
+
+    def _apply_title_style(self, done: bool):
+        if done:
+            self.title_lbl.setStyleSheet("color: #64748b; text-decoration: line-through; background: transparent; border: none;")
+        else:
+            self.title_lbl.setStyleSheet("color: #f8fafc; text-decoration: none; background: transparent; border: none;")
+
+    def _handle_toggle(self, checked: bool):
+        self.task["done"] = checked
+        if checked:
+            self.task["completed_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        self._apply_title_style(checked)
+        self.on_toggle(self.task)
+
+
 class NeoTasksView(QWidget):
-    """Interactive Task & Action Manager view."""
+    """
+    Military-grade Tactical Task & Execution Engine for NEO.
+    Features persistent database, live KPI HUD, multi-filter segmentation,
+    quick-add objective capsule, and autonomous AI task execution.
+    """
     task_action_triggered = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
+        self.active_status_filter = "ALL"
+        self.active_category_filter = "All"
+        self.search_keyword = ""
+
+        # Load persisted task database
+        self.tasks_data = self._load_tasks()
+
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(36, 24, 36, 24)
+        lay.setContentsMargins(32, 20, 32, 20)
         lay.setSpacing(14)
 
+        # 1. Header with Tactical Sync & Clean Actions
         hdr = QHBoxLayout()
+        hdr.setSpacing(10)
+
         t_icn = QLabel("☑")
-        t_icn.setFont(QFont("Segoe UI", 16))
-        t_icn.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+        t_icn.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        t_icn.setStyleSheet("color: #00e5ff; border: none; background: transparent;")
         hdr.addWidget(t_icn)
 
-        t_lbl = QLabel("Task & Execution Engine")
+        t_lbl = QLabel("Task & Tactical Execution Engine")
         t_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        t_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        t_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; letter-spacing: -0.3px;")
         hdr.addWidget(t_lbl)
         hdr.addStretch()
 
-        sync_btn = QPushButton("⚡ SYNC WITH NEO")
-        sync_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        sync_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        sync_btn.setStyleSheet("""
-            QPushButton {
-                background: rgba(96, 165, 250, 0.15); color: #60a5fa;
-                border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 6px; padding: 6px 12px;
-            }
-            QPushButton:hover { background: rgba(96, 165, 250, 0.3); color: #fff; }
-        """)
-        sync_btn.clicked.connect(lambda: self.task_action_triggered.emit("Review my pending tasks and prioritize today's work, Boss"))
-        hdr.addWidget(sync_btn)
+        def _action_btn(text: str, bg: str, fg: str, border: str, hover_bg: str, cb):
+            b = QPushButton(text)
+            b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b.setFixedHeight(28)
+            b.setStyleSheet(f"""
+                QPushButton {{
+                    background: {bg}; color: {fg};
+                    border: 1px solid {border}; border-radius: 6px;
+                    padding: 0 12px; letter-spacing: 0.4px;
+                }}
+                QPushButton:hover {{
+                    background: {hover_bg}; color: #ffffff;
+                }}
+            """)
+            b.clicked.connect(cb)
+            return b
+
+        hdr.addWidget(_action_btn(
+            "⚡ SYNC WITH NEO", "rgba(56, 189, 248, 0.15)", "#38bdf8", "rgba(56, 189, 248, 0.35)", "rgba(56, 189, 248, 0.3)",
+            lambda: self.task_action_triggered.emit("Sync and prioritize my current tasks from the Task Engine, Boss. Give me the top 3 tactical actions to focus on now.")
+        ))
+
+        hdr.addWidget(_action_btn(
+            "🤖 AI ARCHITECT", "rgba(167, 139, 250, 0.15)", "#a78bfa", "rgba(167, 139, 250, 0.35)", "rgba(167, 139, 250, 0.3)",
+            lambda: self.task_action_triggered.emit("Review my highest priority pending task, decompose it into 4 actionable technical subtasks, and prepare an execution outline, Boss.")
+        ))
+
+        hdr.addWidget(_action_btn(
+            "🧹 CLEAR DONE", "rgba(255, 255, 255, 0.05)", "#94a3b8", "rgba(255, 255, 255, 0.08)", "rgba(244, 63, 94, 0.2)",
+            self._clear_completed_tasks
+        ))
+
         lay.addLayout(hdr)
 
-        # New Task Entry Field
-        inp_row = QHBoxLayout()
+        # 2. Tactical KPI HUD & Velocity Strip
+        self.kpi_frame = QFrame()
+        self.kpi_frame.setFixedHeight(68)
+        self.kpi_frame.setStyleSheet("""
+            QFrame {
+                background: rgba(14, 20, 34, 0.88);
+                border: 1px solid rgba(56, 189, 248, 0.22);
+                border-radius: 12px;
+            }
+        """)
+        kpi_lay = QVBoxLayout(self.kpi_frame)
+        kpi_lay.setContentsMargins(16, 8, 16, 8)
+        kpi_lay.setSpacing(6)
+
+        kpi_top = QHBoxLayout()
+        self.kpi_velocity_lbl = QLabel("VELOCITY: 0% · 0/0 OBJECTIVES COMPLETE")
+        self.kpi_velocity_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.kpi_velocity_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent; letter-spacing: 0.5px;")
+        kpi_top.addWidget(self.kpi_velocity_lbl)
+        kpi_top.addStretch()
+
+        self.badge_high = QLabel("🔴 0 Critical")
+        self.badge_today = QLabel("📅 0 Today")
+        self.badge_done = QLabel("✓ 0 Done")
+        self.badge_pending = QLabel("⏳ 0 Pending")
+
+        for b_lbl in (self.badge_high, self.badge_today, self.badge_done, self.badge_pending):
+            b_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            b_lbl.setStyleSheet("""
+                color: #cbd5e1; background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px;
+                padding: 2px 7px;
+            """)
+            kpi_top.addWidget(b_lbl)
+
+        kpi_lay.addLayout(kpi_top)
+
+        # Progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setFixedHeight(6)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                background: rgba(255, 255, 255, 0.06);
+                border: none;
+                border-radius: 3px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00e5ff, stop:1 #38bdf8);
+                border-radius: 3px;
+            }
+        """)
+        kpi_lay.addWidget(self.progress_bar)
+
+        lay.addWidget(self.kpi_frame)
+
+        # 3. Executive Quick-Add Capsule Bar
+        add_frame = QFrame()
+        add_frame.setFixedHeight(48)
+        add_frame.setStyleSheet("""
+            QFrame {
+                background: rgba(13, 19, 33, 0.96);
+                border: 1.5px solid rgba(56, 189, 248, 0.28);
+                border-radius: 10px;
+            }
+            QFrame:hover {
+                border-color: rgba(56, 189, 248, 0.45);
+            }
+        """)
+        add_lay = QHBoxLayout(add_frame)
+        add_lay.setContentsMargins(10, 0, 10, 0)
+        add_lay.setSpacing(8)
+
         self.new_task_edit = QLineEdit()
-        self.new_task_edit.setPlaceholderText("Add a new task or action item...")
-        self.new_task_edit.setFont(QFont("Segoe UI", 10))
+        self.new_task_edit.setPlaceholderText("Deploy a new tactical objective or action item...")
+        self.new_task_edit.setFont(QFont("Segoe UI", 9))
         self.new_task_edit.setStyleSheet(f"""
             QLineEdit {{
-                background: #101624; color: {TEXT_WHITE};
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 8px 12px;
+                background: transparent; border: none;
+                color: {TEXT_WHITE}; padding: 0 4px;
             }}
+            QLineEdit::placeholder {{ color: #64748b; }}
         """)
         self.new_task_edit.returnPressed.connect(self._add_task)
-        inp_row.addWidget(self.new_task_edit, stretch=1)
+        add_lay.addWidget(self.new_task_edit, stretch=1)
 
-        add_b = QPushButton("+ ADD TASK")
-        add_b.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        # Category ComboBox
+        self.cat_combo = QComboBox()
+        self.cat_combo.addItems(["🎓 Academic", "💻 Dev", "🏆 SIH", "🛡️ Security", "⚡ Ops", "📋 General"])
+        self._style_combo(self.cat_combo, 110)
+        add_lay.addWidget(self.cat_combo)
+
+        # Priority ComboBox
+        self.prio_combo = QComboBox()
+        self.prio_combo.addItems(["🔴 High", "🟡 Med", "🔵 Low"])
+        self._style_combo(self.prio_combo, 85)
+        add_lay.addWidget(self.prio_combo)
+
+        # Due Date ComboBox
+        self.due_combo = QComboBox()
+        self.due_combo.addItems(["📅 Today", "📅 Tomorrow", "📅 This Week", "📅 Later"])
+        self._style_combo(self.due_combo, 100)
+        add_lay.addWidget(self.due_combo)
+
+        add_b = QPushButton("+ ADD OBJECTIVE")
+        add_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         add_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        add_b.setStyleSheet(f"""
-            QPushButton {{
-                background: {SEND_BTN_BG}; color: #080a10;
-                border: none; border-radius: 8px; padding: 8px 16px;
-            }}
-            QPushButton:hover {{ background: #a4bde5; }}
+        add_b.setFixedHeight(30)
+        add_b.setStyleSheet("""
+            QPushButton {
+                background: #00e5ff; color: #080a10;
+                border: none; border-radius: 6px; padding: 0 12px;
+                letter-spacing: 0.5px;
+            }
+            QPushButton:hover { background: #38bdf8; }
         """)
         add_b.clicked.connect(self._add_task)
-        inp_row.addWidget(add_b)
-        lay.addLayout(inp_row)
+        add_lay.addWidget(add_b)
 
-        # Tasks List
-        self.tasks_container = QVBoxLayout()
-        self.tasks_container.setSpacing(8)
+        lay.addWidget(add_frame)
 
-        # Initial Tasks
-        initial_tasks = [
-            ("Review Financial Management exam syllabus and formulas", True),
-            ("Smart India Hackathon (SIH) team sync & architecture check", False),
-            ("Autonomous desktop Spotify playback visual controller verification", True),
-            ("Backup and archive NEO local configurations", False),
-            ("Check unread VIP emails from GitHub and Stripe", False),
+        # 4. Multi-Filter Tabs & Category Segmentation Strip
+        filter_row = QHBoxLayout()
+        filter_row.setSpacing(6)
+
+        self.status_btn_group = QButtonGroup(self)
+        self.status_btns = {}
+        statuses = [
+            ("ALL", "All"),
+            ("IN_PROGRESS", "⏳ In Progress"),
+            ("COMPLETED", "✓ Completed"),
+            ("HIGH_PRIO", "🔴 High Priority"),
+            ("TODAY", "📅 Today"),
         ]
-        for t_text, done in initial_tasks:
-            self._render_task_item(t_text, done)
+        for key, label in statuses:
+            b = QPushButton(label)
+            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b.setFixedHeight(26)
+            b.setCheckable(True)
+            if key == "ALL":
+                b.setChecked(True)
+            self._update_tab_style(b, b.isChecked())
+            b.clicked.connect(lambda _, k=key: self._on_status_filter_changed(k))
+            self.status_btn_group.addButton(b)
+            self.status_btns[key] = b
+            filter_row.addWidget(b)
 
-        tasks_widget = QWidget()
-        tasks_widget.setLayout(self.tasks_container)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(tasks_widget)
-        scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
-        lay.addWidget(scroll, stretch=1)
+        filter_row.addSpacing(10)
 
-    def _render_task_item(self, text: str, done: bool = False):
-        card = QFrame()
-        card.setFixedHeight(46)
-        card.setStyleSheet(f"""
-            QFrame {{
-                background: {CARD_BG};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
-            }}
+        # Search box
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("🔍 Filter objectives...")
+        self.search_input.setFont(QFont("Segoe UI", 8))
+        self.search_input.setFixedWidth(160)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255, 255, 255, 0.05); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+                padding: 3px 8px;
+            }
+            QLineEdit:focus {
+                border-color: #38bdf8;
+            }
         """)
-        c_lay = QHBoxLayout(card)
-        c_lay.setContentsMargins(14, 0, 14, 0)
+        self.search_input.textChanged.connect(self._on_search_changed)
+        filter_row.addWidget(self.search_input)
 
-        cb = QCheckBox(text)
-        cb.setChecked(done)
-        cb.setFont(QFont("Segoe UI", 9))
-        cb.setStyleSheet(f"""
-            QCheckBox {{
-                color: {TEXT_MUTED if done else TEXT_WHITE};
-                background: transparent;
-                border: none;
-            }}
-            QCheckBox::indicator {{
-                width: 18px; height: 18px; border-radius: 4px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                background: #141c2c;
-            }}
-            QCheckBox::indicator:checked {{
-                background: #60a5fa;
-                border-color: #60a5fa;
-            }}
+        filter_row.addStretch()
+        lay.addLayout(filter_row)
+
+        # 5. Tasks List Scroll Area
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setStyleSheet("""
+            QScrollArea { background: transparent; border: none; }
+            QScrollBar:vertical {
+                background: transparent; width: 6px; margin: 2px 0 2px 0;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(96, 165, 250, 0.25); border-radius: 3px; min-height: 24px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(56, 189, 248, 0.6);
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
         """)
-        cb.toggled.connect(lambda ch, c=cb: c.setStyleSheet(f"""
-            QCheckBox {{
-                color: {'#6b7c96' if ch else '#ffffff'};
-                background: transparent;
+
+        self.tasks_container = QWidget()
+        self.tasks_container.setStyleSheet("background: transparent;")
+        self.tasks_layout = QVBoxLayout(self.tasks_container)
+        self.tasks_layout.setContentsMargins(0, 4, 6, 4)
+        self.tasks_layout.setSpacing(8)
+        self.tasks_layout.addStretch()
+
+        self.scroll.setWidget(self.tasks_container)
+        lay.addWidget(self.scroll, stretch=1)
+
+        # Initial render
+        self._refresh_ui()
+
+    def _style_combo(self, combo: QComboBox, width: int):
+        combo.setFixedWidth(width)
+        combo.setFont(QFont("Segoe UI", 8))
+        combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(255, 255, 255, 0.05);
+                color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                padding: 4px 8px;
+            }
+            QComboBox:hover {
+                border-color: rgba(56, 189, 248, 0.4);
+            }
+            QComboBox::drop-down {
                 border: none;
-            }}
-            QCheckBox::indicator {{
-                width: 18px; height: 18px; border-radius: 4px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                background: {'#60a5fa' if ch else '#141c2c'};
-            }}
-        """))
-        c_lay.addWidget(cb, stretch=1)
+            }
+            QComboBox QAbstractItemView {
+                background: #0d1322;
+                color: #f8fafc;
+                border: 1px solid rgba(56, 189, 248, 0.3);
+                selection-background-color: rgba(56, 189, 248, 0.2);
+            }
+        """)
 
-        del_btn = QPushButton("✕")
-        del_btn.setFixedSize(22, 22)
-        del_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        del_btn.setStyleSheet("QPushButton { color: #526078; border: none; background: transparent; } QPushButton:hover { color: #f43f5e; }")
-        del_btn.clicked.connect(lambda _, w=card: w.deleteLater())
-        c_lay.addWidget(del_btn)
+    def _update_tab_style(self, btn: QPushButton, active: bool):
+        if active:
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(56, 189, 248, 0.2);
+                    color: #38bdf8;
+                    border: 1px solid #38bdf8;
+                    border-radius: 6px;
+                    padding: 0 10px;
+                }
+            """)
+        else:
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 6px;
+                    padding: 0 10px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #ffffff;
+                }
+            """)
 
-        self.tasks_container.addWidget(card)
+    # ─────────────────────────────────────────────────────────────────────────
+    # Storage & State
+    # ─────────────────────────────────────────────────────────────────────────
+    def _load_tasks(self) -> list[dict]:
+        _TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if _TASKS_FILE.exists():
+            try:
+                with open(_TASKS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and "tasks" in data:
+                        return data["tasks"]
+            except Exception:
+                pass
+
+        default_tasks = [
+            {
+                "id": "task_1",
+                "title": "Review Financial Management exam syllabus and formulas",
+                "category": "Academic",
+                "priority": "High",
+                "due_date": "Today",
+                "done": True,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            },
+            {
+                "id": "task_2",
+                "title": "Smart India Hackathon (SIH) team sync & architecture check",
+                "category": "SIH",
+                "priority": "High",
+                "due_date": "Today",
+                "done": False,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            },
+            {
+                "id": "task_3",
+                "title": "Autonomous desktop Spotify playback visual controller verification",
+                "category": "Dev",
+                "priority": "Medium",
+                "due_date": "Today",
+                "done": True,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            },
+            {
+                "id": "task_4",
+                "title": "Backup and archive NEO local configurations",
+                "category": "Ops",
+                "priority": "Low",
+                "due_date": "This Week",
+                "done": False,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            },
+            {
+                "id": "task_5",
+                "title": "Check unread VIP emails from GitHub and Stripe",
+                "category": "Ops",
+                "priority": "Medium",
+                "due_date": "Today",
+                "done": False,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            },
+        ]
+        self._write_tasks(default_tasks)
+        return default_tasks
+
+    def _write_tasks(self, tasks: list[dict]):
+        try:
+            with open(_TASKS_FILE, "w", encoding="utf-8") as f:
+                json.dump({"tasks": tasks}, f, indent=2)
+        except Exception:
+            pass
+
+    def _save_tasks(self):
+        self._write_tasks(self.tasks_data)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # UI Refresh & Filtering
+    # ─────────────────────────────────────────────────────────────────────────
+    def _refresh_ui(self):
+        # 1. Update KPI stats
+        total = len(self.tasks_data)
+        done_cnt = sum(1 for t in self.tasks_data if t.get("done"))
+        pending_cnt = total - done_cnt
+        high_cnt = sum(1 for t in self.tasks_data if t.get("priority") == "High" and not t.get("done"))
+        today_cnt = sum(1 for t in self.tasks_data if "today" in str(t.get("due_date", "")).lower() and not t.get("done"))
+
+        pct = int((done_cnt / total) * 100) if total > 0 else 0
+        self.progress_bar.setValue(pct)
+        self.kpi_velocity_lbl.setText(f"VELOCITY: {pct}% · {done_cnt}/{total} OBJECTIVES COMPLETE")
+
+        self.badge_high.setText(f"🔴 {high_cnt} Critical")
+        self.badge_today.setText(f"📅 {today_cnt} Today")
+        self.badge_done.setText(f"✓ {done_cnt} Done")
+        self.badge_pending.setText(f"⏳ {pending_cnt} Pending")
+
+        # 2. Clear current task cards (keep bottom stretch intact)
+        for i in reversed(range(self.tasks_layout.count())):
+            item = self.tasks_layout.itemAt(i)
+            if item and item.widget():
+                w = item.widget()
+                self.tasks_layout.removeWidget(w)
+                w.deleteLater()
+
+        # 3. Filter tasks
+        filtered = []
+        kw = self.search_keyword.lower().strip()
+        for t in self.tasks_data:
+            t_done = bool(t.get("done", False))
+            t_prio = str(t.get("priority", "Medium"))
+            t_due = str(t.get("due_date", "")).lower()
+            t_title = str(t.get("title", "")).lower()
+
+            # Status filter
+            if self.active_status_filter == "IN_PROGRESS" and t_done:
+                continue
+            elif self.active_status_filter == "COMPLETED" and not t_done:
+                continue
+            elif self.active_status_filter == "HIGH_PRIO" and (t_prio != "High" or t_done):
+                continue
+            elif self.active_status_filter == "TODAY" and ("today" not in t_due or t_done):
+                continue
+
+            # Keyword filter
+            if kw and kw not in t_title:
+                continue
+
+            filtered.append(t)
+
+        # 4. Render cards or empty state
+        if not filtered:
+            empty_card = QFrame()
+            empty_card.setFixedHeight(80)
+            empty_card.setStyleSheet("""
+                QFrame {
+                    background: rgba(14, 20, 34, 0.6);
+                    border: 1px dashed rgba(255, 255, 255, 0.1);
+                    border-radius: 10px;
+                }
+            """)
+            e_lay = QVBoxLayout(empty_card)
+            e_lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            e_lbl = QLabel("No objectives found under this filter. Tap '+ ADD OBJECTIVE' to deploy a new mission.")
+            e_lbl.setFont(QFont("Segoe UI", 9))
+            e_lbl.setStyleSheet("color: #64748b; background: transparent; border: none;")
+            e_lay.addWidget(e_lbl)
+            self.tasks_layout.insertWidget(0, empty_card)
+        else:
+            for idx, task in enumerate(filtered):
+                card = NeoTaskCard(
+                    task=task,
+                    on_toggle=self._on_task_toggled,
+                    on_delete=self._on_task_deleted,
+                    on_execute=self._on_task_executed,
+                    parent=self.tasks_container,
+                )
+                self.tasks_layout.insertWidget(idx, card)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Event Handlers
+    # ─────────────────────────────────────────────────────────────────────────
+    def _on_status_filter_changed(self, key: str):
+        self.active_status_filter = key
+        for k, b in self.status_btns.items():
+            self._update_tab_style(b, k == key)
+        self._refresh_ui()
+
+    def _on_search_changed(self, text: str):
+        self.search_keyword = text
+        self._refresh_ui()
+
+    def _on_task_toggled(self, task: dict):
+        self._save_tasks()
+        self._refresh_ui()
+
+    def _on_task_deleted(self, task: dict):
+        self.tasks_data = [t for t in self.tasks_data if t.get("id") != task.get("id")]
+        self._save_tasks()
+        self._refresh_ui()
+
+    def _on_task_executed(self, task: dict):
+        title = task.get("title", "")
+        category = task.get("category", "")
+        cmd = f"Execute objective: '{title}' (Category: {category}). Formulate an actionable execution blueprint, generate required code or materials, and assist me in completing it, Boss."
+        self.task_action_triggered.emit(cmd)
 
     def _add_task(self):
-        txt = self.new_task_edit.text().strip()
-        if txt:
-            self._render_task_item(txt, False)
-            self.new_task_edit.clear()
+        title = self.new_task_edit.text().strip()
+        if not title:
+            return
+
+        cat_raw = self.cat_combo.currentText()
+        category = "General"
+        if "Academic" in cat_raw: category = "Academic"
+        elif "Dev" in cat_raw: category = "Dev"
+        elif "SIH" in cat_raw: category = "SIH"
+        elif "Security" in cat_raw: category = "Security"
+        elif "Ops" in cat_raw: category = "Ops"
+
+        prio_raw = self.prio_combo.currentText()
+        priority = "High" if "High" in prio_raw else ("Low" if "Low" in prio_raw else "Medium")
+
+        due_raw = self.due_combo.currentText()
+        due = due_raw.replace("📅 ", "").strip()
+
+        new_t = {
+            "id": f"task_{int(time.time() * 1000)}",
+            "title": title,
+            "category": category,
+            "priority": priority,
+            "due_date": due,
+            "done": False,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+
+        self.tasks_data.insert(0, new_t)
+        self._save_tasks()
+        self.new_task_edit.clear()
+        self._refresh_ui()
+
+    def _clear_completed_tasks(self):
+        self.tasks_data = [t for t in self.tasks_data if not t.get("done")]
+        self._save_tasks()
+        self._refresh_ui()
 
 
 class NeoNotesView(QWidget):
