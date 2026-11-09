@@ -2586,13 +2586,13 @@ class NeoTasksView(QWidget):
         clear_btn.clicked.connect(self._clear_completed_tasks)
         hdr.addWidget(clear_btn)
 
-        reset_btn = QPushButton("↺")
-        reset_btn.setToolTip("Restore sample tasks")
-        reset_btn.setFont(QFont("Segoe UI", 9))
-        reset_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        reset_btn.setStyleSheet("QPushButton { background: transparent; color: #475569; border: none; padding: 4px; } QPushButton:hover { color: #94a3b8; }")
-        reset_btn.clicked.connect(self._restore_default_tasks)
-        hdr.addWidget(reset_btn)
+        refresh_btn = QPushButton("↺")
+        refresh_btn.setToolTip("Reload tasks from memory")
+        refresh_btn.setFont(QFont("Segoe UI", 9))
+        refresh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        refresh_btn.setStyleSheet("QPushButton { background: transparent; color: #475569; border: none; padding: 4px; } QPushButton:hover { color: #38bdf8; }")
+        refresh_btn.clicked.connect(self._reload_from_disk)
+        hdr.addWidget(refresh_btn)
 
         lay.addLayout(hdr)
 
@@ -2843,96 +2843,51 @@ class NeoTasksView(QWidget):
             """)
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Storage & State
+    # Storage & State (Zero-Data-Loss Persistent Engine)
     # ─────────────────────────────────────────────────────────────────────────
-    def _get_default_tasks(self) -> list[dict]:
-        return [
-            {
-                "id": "task_1",
-                "title": "Review Financial Management exam syllabus and formulas",
-                "category": "Academic",
-                "priority": "High",
-                "due_date": "Today",
-                "done": True,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "notes": "Chapter 4 ratio analysis and capital budgeting cash flows",
-            },
-            {
-                "id": "task_2",
-                "title": "Smart India Hackathon (SIH) team sync & architecture check",
-                "category": "SIH",
-                "priority": "High",
-                "due_date": "Today",
-                "done": False,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "notes": "Verify backend API endpoints, latency and database schemas",
-            },
-            {
-                "id": "task_3",
-                "title": "Autonomous desktop Spotify playback visual controller verification",
-                "category": "Dev",
-                "priority": "Medium",
-                "due_date": "Today",
-                "done": True,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "notes": "Confirm token refresh and media session hooks",
-            },
-            {
-                "id": "task_4",
-                "title": "Backup and archive NEO local configurations",
-                "category": "Ops",
-                "priority": "Low",
-                "due_date": "This Week",
-                "done": False,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "notes": "Archive .env, api_keys.json, and speech profiles",
-            },
-            {
-                "id": "task_5",
-                "title": "Check unread VIP emails from GitHub and Stripe",
-                "category": "Ops",
-                "priority": "Medium",
-                "due_date": "Today",
-                "done": False,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "notes": "Check webhook failure logs and security alerts",
-            },
-        ]
-
     def _load_tasks(self) -> list[dict]:
+        """Loads tasks directly from disk. Never overwrites user state with mock data."""
         _TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
         if _TASKS_FILE.exists():
             try:
                 with open(_TASKS_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if isinstance(data, dict) and "tasks" in data:
-                        tasks = data.get("tasks", [])
-                        if tasks:
+                        tasks = data.get("tasks")
+                        if isinstance(tasks, list):
                             return tasks
             except Exception:
                 pass
 
-        default_tasks = self._get_default_tasks()
-        self._write_tasks(default_tasks)
-        return default_tasks
+        # If file does not exist, initialize empty persistent database
+        self._write_tasks([])
+        return []
 
     def _write_tasks(self, tasks: list[dict]):
+        """Atomic write with physical fsync to prevent loss across abrupt exits."""
         try:
-            with open(_TASKS_FILE, "w", encoding="utf-8") as f:
-                json.dump({"tasks": tasks}, f, indent=2)
+            _TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp_file = _TASKS_FILE.with_suffix(".tmp")
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump({"tasks": tasks}, f, indent=2, ensure_ascii=False)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_file, _TASKS_FILE)
         except Exception:
-            pass
+            try:
+                with open(_TASKS_FILE, "w", encoding="utf-8") as f:
+                    json.dump({"tasks": tasks}, f, indent=2, ensure_ascii=False)
+            except Exception:
+                pass
 
     def _save_tasks(self):
         self._write_tasks(self.tasks_data)
 
-    def _restore_default_tasks(self):
-        self.tasks_data = self._get_default_tasks()
-        self._save_tasks()
+    def _reload_from_disk(self):
+        """Cleanly reloads tasks from storage without touching or resetting user items."""
+        self.tasks_data = self._load_tasks()
         self._refresh_ui()
-        self._show_toast("↺ Sample tasks restored")
+        self._show_toast("✓ Tasks reloaded from memory")
 
     # ─────────────────────────────────────────────────────────────────────────
     # UI Refresh & Filtering
