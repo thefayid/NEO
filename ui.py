@@ -4899,6 +4899,8 @@ class MainWindow(QMainWindow):
 
         self.notes_view = NeoNotesView()
         self.notes_view.note_saved.connect(self._on_hero_command)
+        if hasattr(self.notes_view, "note_action_triggered"):
+            self.notes_view.note_action_triggered.connect(self._on_task_action_triggered)
 
         self.projects_view = NeoProjectsView()
         self.projects_view.file_open_requested.connect(self._on_file_selected)
