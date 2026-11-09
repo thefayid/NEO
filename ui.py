@@ -4909,6 +4909,8 @@ class MainWindow(QMainWindow):
 
         self.knowledge_view = NeoKnowledgeView()
         self.knowledge_view.search_triggered.connect(self._on_hero_command)
+        if hasattr(self.knowledge_view, "knowledge_action_triggered"):
+            self.knowledge_view.knowledge_action_triggered.connect(self._on_task_action_triggered)
 
         self._hud_cam_stack = QStackedWidget()
         self._hud_cam_stack.addWidget(self.hero_stage)        # Index 0: Hero
@@ -5787,6 +5789,8 @@ class MainWindow(QMainWindow):
                 self._hud_cam_stack.setCurrentWidget(self.projects_view)
         elif tab == "Knowledge":
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "knowledge_view"):
+                if hasattr(self.knowledge_view, "refresh_memory"):
+                    self.knowledge_view.refresh_memory()
                 self._hud_cam_stack.setCurrentWidget(self.knowledge_view)
         elif tab == "Files":
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "_chat_container"):

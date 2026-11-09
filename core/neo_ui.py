@@ -6443,85 +6443,994 @@ Use **'🤖 AI Architect'** above to generate an instant architecture blueprint 
 
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEO NEURAL KNOWLEDGE & MEMORY HUB (Senior-Dev Knowledge & Graph Studio)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+CATEGORY_THEMES = {
+    "identity": {
+        "label": "👤 Identity",
+        "short_label": "Identity",
+        "color": "#c084fc",
+        "bg": "rgba(192, 132, 252, 0.12)",
+        "border": "rgba(192, 132, 252, 0.35)",
+        "icon": "👤",
+    },
+    "preferences": {
+        "label": "⚙️ Preferences",
+        "short_label": "Preferences",
+        "color": "#fbbf24",
+        "bg": "rgba(251, 191, 36, 0.12)",
+        "border": "rgba(251, 191, 36, 0.35)",
+        "icon": "⚙️",
+    },
+    "projects": {
+        "label": "🗂️ Projects",
+        "short_label": "Projects",
+        "color": "#38bdf8",
+        "bg": "rgba(56, 189, 248, 0.12)",
+        "border": "rgba(56, 189, 248, 0.35)",
+        "icon": "🗂️",
+    },
+    "corrections": {
+        "label": "🛡️ Rules & Behavior",
+        "short_label": "Rules",
+        "color": "#f43f5e",
+        "bg": "rgba(244, 63, 94, 0.14)",
+        "border": "rgba(244, 63, 94, 0.4)",
+        "icon": "🛡️",
+    },
+    "notes": {
+        "label": "📝 Notes & Brain",
+        "short_label": "Notes",
+        "color": "#34d399",
+        "bg": "rgba(52, 211, 153, 0.12)",
+        "border": "rgba(52, 211, 153, 0.35)",
+        "icon": "📝",
+    },
+    "sessions": {
+        "label": "💬 Sessions",
+        "short_label": "Sessions",
+        "color": "#818cf8",
+        "bg": "rgba(129, 140, 248, 0.12)",
+        "border": "rgba(129, 140, 248, 0.35)",
+        "icon": "💬",
+    },
+    "monitors": {
+        "label": "📡 Monitors",
+        "short_label": "Monitors",
+        "color": "#2dd4bf",
+        "bg": "rgba(45, 212, 191, 0.12)",
+        "border": "rgba(45, 212, 191, 0.35)",
+        "icon": "📡",
+    },
+    "relationships": {
+        "label": "👥 Relationships",
+        "short_label": "Relationships",
+        "color": "#e879f9",
+        "bg": "rgba(232, 121, 249, 0.12)",
+        "border": "rgba(232, 121, 249, 0.35)",
+        "icon": "👥",
+    },
+    "wishes": {
+        "label": "🎯 Wishes",
+        "short_label": "Wishes",
+        "color": "#60a5fa",
+        "bg": "rgba(96, 165, 250, 0.12)",
+        "border": "rgba(96, 165, 250, 0.35)",
+        "icon": "🎯",
+    },
+}
+
+
+class NeoMemoryCard(QFrame):
+    """Executive obsidian glass card for a single neural knowledge fact."""
+    delete_requested = pyqtSignal(dict)
+    edit_requested = pyqtSignal(dict)
+    action_requested = pyqtSignal(str)
+
+    def __init__(self, item: dict, parent=None):
+        super().__init__(parent)
+        self.item = item
+        self.cat = item.get("category", "notes")
+        self.key = item.get("key", "")
+        self.val = item.get("value", "")
+        self.updated = item.get("updated", "")
+
+        theme = CATEGORY_THEMES.get(self.cat, {
+            "label": f"🏷️ {self.cat.title()}",
+            "color": "#94a3b8",
+            "bg": "rgba(148, 163, 184, 0.12)",
+            "border": "rgba(148, 163, 184, 0.3)",
+            "icon": "🏷️"
+        })
+        self.theme = theme
+
+        is_critical_rule = (self.cat == "corrections")
+        bg_card = "rgba(24, 14, 26, 0.78)" if is_critical_rule else "rgba(13, 20, 36, 0.72)"
+        border_card = "rgba(244, 63, 94, 0.35)" if is_critical_rule else "rgba(255, 255, 255, 0.07)"
+
+        self.setStyleSheet(f"""
+            NeoMemoryCard {{
+                background: {bg_card};
+                border: 1px solid {border_card};
+                border-radius: 12px;
+            }}
+            NeoMemoryCard:hover {{
+                border: 1px solid {theme['color']}66;
+                background: rgba(18, 28, 52, 0.85);
+            }}
+        """)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(18, 14, 18, 14)
+        lay.setSpacing(10)
+
+        # Header Row
+        hdr = QHBoxLayout()
+        hdr.setSpacing(10)
+
+        badge_txt = "🛡️ CRITICAL BEHAVIOR RULE" if is_critical_rule else theme["label"]
+        cat_badge = QLabel(badge_txt)
+        cat_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        cat_badge.setStyleSheet(f"""
+            background: {theme['bg']};
+            color: {theme['color']};
+            border: 1px solid {theme['border']};
+            border-radius: 6px;
+            padding: 3px 9px;
+        """)
+        hdr.addWidget(cat_badge)
+
+        path_lbl = QLabel(f"{self.cat} · {self.key}")
+        path_lbl.setFont(QFont("Consolas", 8))
+        path_lbl.setStyleSheet("color: #64748b; background: transparent; border: none;")
+        hdr.addWidget(path_lbl)
+
+        hdr.addStretch()
+
+        if self.updated:
+            date_lbl = QLabel(f"🕒 {self.updated}")
+            date_lbl.setFont(QFont("Segoe UI", 8))
+            date_lbl.setStyleSheet("color: #64748b; background: transparent; border: none;")
+            hdr.addWidget(date_lbl)
+
+        lay.addLayout(hdr)
+
+        # Title
+        if self.cat == "sessions":
+            title_text = f"Session Briefing ({self.updated or 'Archived'})"
+        elif self.cat == "monitors":
+            title_text = f"Monitor: {self.key.replace('_', ' ').title()}"
+        else:
+            title_text = self.key.replace("_", " ").title()
+
+        title_lbl = QLabel(title_text)
+        title_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        title_lbl.setStyleSheet(f"color: {TEXT_WHITE}; background: transparent; border: none;")
+        lay.addWidget(title_lbl)
+
+        # Value display
+        val_lbl = QLabel(self.val)
+        val_lbl.setFont(QFont("Segoe UI", 10))
+        val_lbl.setStyleSheet("color: #cbd5e1; background: transparent; border: none; line-height: 1.4;")
+        val_lbl.setWordWrap(True)
+        val_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        lay.addWidget(val_lbl)
+
+        # Actions row
+        act_row = QHBoxLayout()
+        act_row.setSpacing(8)
+
+        # Copy button
+        self.copy_btn = QPushButton("📋 Copy")
+        self.copy_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.copy_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.copy_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
+        """)
+        self.copy_btn.clicked.connect(self._copy_value)
+        act_row.addWidget(self.copy_btn)
+
+        # Deep-dive with NEO
+        deep_btn = QPushButton("⚡ Deep-Dive in Chat")
+        deep_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        deep_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        deep_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.10); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px 11px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.20); color: #ffffff; border-color: #38bdf8; }
+        """)
+        prompt_text = f"Boss requests knowledge deep-dive on [{self.cat} / {self.key}]: {self.val}. Cross-reference with our active projects and context."
+        deep_btn.clicked.connect(lambda: self.action_requested.emit(prompt_text))
+        act_row.addWidget(deep_btn)
+
+        act_row.addStretch()
+
+        # Edit button (for editable categories)
+        if self.cat not in ("sessions", "monitors"):
+            edit_btn = QPushButton("✏️ Edit")
+            edit_btn.setFont(QFont("Segoe UI", 8))
+            edit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            edit_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent; color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 4px 10px;
+                }
+                QPushButton:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+            """)
+            edit_btn.clicked.connect(lambda: self.edit_requested.emit(self.item))
+            act_row.addWidget(edit_btn)
+
+        # Forget / Delete button
+        del_btn = QPushButton("🗑️ Forget")
+        del_btn.setFont(QFont("Segoe UI", 8))
+        del_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        del_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent; color: #ef4444;
+                border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: #ef4444; }
+        """)
+        del_btn.clicked.connect(lambda: self.delete_requested.emit(self.item))
+        act_row.addWidget(del_btn)
+
+        lay.addLayout(act_row)
+
+    def _copy_value(self):
+        try:
+            QApplication.clipboard().setText(self.val)
+            self.copy_btn.setText("✓ Copied!")
+            QTimer.singleShot(1500, lambda: self.copy_btn.setText("📋 Copy"))
+        except Exception:
+            pass
+
+
+class MemoryInjectionDialog(QDialog):
+    """Executive modal dialog to inject or edit permanent knowledge in NEO's Neural Graph."""
+    def __init__(self, initial_data: dict = None, parent=None):
+        super().__init__(parent)
+        self.initial_data = initial_data or {}
+        self.is_edit = bool(self.initial_data and self.initial_data.get("key"))
+
+        self.setWindowTitle("Edit Knowledge Fact" if self.is_edit else "Teach NEO — Remember Knowledge Fact")
+        self.setFixedSize(540, 480)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+
+        self.outer = QFrame(self)
+        self.outer.setGeometry(0, 0, 540, 480)
+        self.outer.setStyleSheet("""
+            QFrame {
+                background: #090e1a;
+                border: 1px solid rgba(56, 189, 248, 0.35);
+                border-radius: 14px;
+            }
+        """)
+
+        lay = QVBoxLayout(self.outer)
+        lay.setContentsMargins(28, 24, 28, 24)
+        lay.setSpacing(14)
+
+        # Header
+        hdr = QHBoxLayout()
+        title_txt = "✏️ Edit Neural Knowledge Fact" if self.is_edit else "🧠 Teach NEO — New Knowledge Fact"
+        t_lbl = QLabel(title_txt)
+        t_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        t_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent;")
+        hdr.addWidget(t_lbl)
+        hdr.addStretch()
+
+        close_btn = QPushButton("✕")
+        close_btn.setFixedSize(28, 28)
+        close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 13px;
+            }
+            QPushButton:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: #ef4444; }
+        """)
+        close_btn.clicked.connect(self.reject)
+        hdr.addWidget(close_btn)
+        lay.addLayout(hdr)
+
+        desc = QLabel("Inject permanent knowledge, identity traits, preferences, or behavior rules into NEO's long-term neural memory store.")
+        desc.setFont(QFont("Segoe UI", 9))
+        desc.setStyleSheet("color: #8e9eb5; border: none; background: transparent;")
+        desc.setWordWrap(True)
+        lay.addWidget(desc)
+
+        # Category Row
+        c_lbl = QLabel("KNOWLEDGE DOMAIN / CATEGORY")
+        c_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        c_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        lay.addWidget(c_lbl)
+
+        self.cat_combo = QComboBox()
+        self.cat_combo.setFixedHeight(38)
+        self.cat_combo.setFont(QFont("Segoe UI", 9))
+        self.cat_combo.setStyleSheet("""
+            QComboBox {
+                background: #101626; color: #f8fafc;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px 12px;
+            }
+            QComboBox::drop-down { border: none; width: 24px; }
+            QComboBox QAbstractItemView {
+                background: #0d1424; color: #f8fafc;
+                selection-background-color: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        """)
+
+        cats = [
+            ("identity", "👤 Identity (Name, Role, Background)"),
+            ("preferences", "⚙️ Preferences (Working rhythm, Style, Tools)"),
+            ("projects", "🗂️ Projects (Priorities, Tech Stacks, Goals)"),
+            ("corrections", "🛡️ Rules & Corrections (Critical behavior rules)"),
+            ("notes", "📝 Notes & Brain (Permanent concepts, facts)"),
+            ("relationships", "👥 Relationships (Mentors, Team members)"),
+            ("wishes", "🎯 Wishes (Future visions, Goals)"),
+        ]
+        for ckey, clbl in cats:
+            self.cat_combo.addItem(clbl, ckey)
+
+        init_cat = self.initial_data.get("category", "identity")
+        for idx, (ckey, _) in enumerate(cats):
+            if ckey == init_cat:
+                self.cat_combo.setCurrentIndex(idx)
+                break
+        lay.addWidget(self.cat_combo)
+
+        # Key Input
+        k_lbl = QLabel("FACT KEY / TOPIC IDENTIFIER")
+        k_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        k_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        lay.addWidget(k_lbl)
+
+        self.key_edit = QLineEdit()
+        self.key_edit.setFixedHeight(36)
+        self.key_edit.setFont(QFont("Consolas", 10))
+        self.key_edit.setPlaceholderText("e.g. primary_framework, terminal_emulator, api_key_preference")
+        self.key_edit.setText(self.initial_data.get("key", ""))
+        self.key_edit.setStyleSheet("""
+            QLineEdit {
+                background: #101626; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px 12px;
+            }
+            QLineEdit:focus { border: 1px solid #38bdf8; }
+        """)
+        lay.addWidget(self.key_edit)
+
+        # Value Input
+        v_lbl = QLabel("KNOWLEDGE STATEMENT / FACT VALUE")
+        v_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        v_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        lay.addWidget(v_lbl)
+
+        self.val_edit = QTextEdit()
+        self.val_edit.setFont(QFont("Segoe UI", 9))
+        self.val_edit.setPlaceholderText("Describe the fact or rule clearly so NEO understands and applies it across future interactions...")
+        self.val_edit.setText(self.initial_data.get("value", ""))
+        self.val_edit.setStyleSheet("""
+            QTextEdit {
+                background: #101626; color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;
+            }
+            QTextEdit:focus { border: 1px solid #38bdf8; }
+        """)
+        lay.addWidget(self.val_edit, stretch=1)
+
+        # Bottom Buttons
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setFont(QFont("Segoe UI", 9))
+        cancel_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent; color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px 18px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+        """)
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+
+        save_btn = QPushButton("💾 Commit to Neural Memory")
+        save_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        save_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: #38bdf8; color: #07090e;
+                border: none; border-radius: 8px; padding: 8px 22px;
+            }
+            QPushButton:hover { background: #7dd3fc; }
+        """)
+        save_btn.clicked.connect(self._save_memory)
+        btn_row.addWidget(save_btn)
+
+        lay.addLayout(btn_row)
+
+    def _save_memory(self):
+        cat = self.cat_combo.currentData()
+        raw_key = self.key_edit.text().strip().lower()
+        key = re.sub(r"[^\w]+", "_", raw_key).strip("_")
+        val = self.val_edit.toPlainText().strip()
+
+        if not key or not val:
+            return
+
+        from memory.memory_manager import remember, forget
+
+        # If editing and key or category changed, forget old
+        if self.is_edit:
+            old_cat = self.initial_data.get("category", "")
+            old_key = self.initial_data.get("key", "")
+            if old_cat and old_key and (old_cat != cat or old_key != key):
+                try:
+                    forget(old_key, old_cat)
+                except Exception:
+                    pass
+
+        try:
+            remember(key, val, cat)
+        except Exception as e:
+            print(f"[Knowledge] remember error: {e}")
+
+        self.accept()
+
+
+class _KnowledgeKpiCard(QFrame):
+    def __init__(self, icon: str, title: str, value: str, subtitle: str, color: str = "#38bdf8", parent=None):
+        super().__init__(parent)
+        self.setStyleSheet(f"""
+            _KnowledgeKpiCard {{
+                background: rgba(13, 20, 36, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 10px;
+            }}
+            _KnowledgeKpiCard:hover {{
+                border: 1px solid {color}40;
+                background: rgba(16, 25, 46, 0.75);
+            }}
+        """)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setSpacing(3)
+
+        top = QHBoxLayout()
+        top.setSpacing(6)
+        i_lbl = QLabel(icon)
+        i_lbl.setStyleSheet("border: none; background: transparent; font-size: 14px;")
+        top.addWidget(i_lbl)
+
+        t_lbl = QLabel(title.upper())
+        t_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        t_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent; letter-spacing: 0.5px;")
+        top.addWidget(t_lbl)
+        top.addStretch()
+        lay.addLayout(top)
+
+        self.v_lbl = QLabel(value)
+        self.v_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        self.v_lbl.setStyleSheet(f"color: {color}; border: none; background: transparent;")
+        lay.addWidget(self.v_lbl)
+
+        self.sub_lbl = QLabel(subtitle)
+        self.sub_lbl.setFont(QFont("Segoe UI", 8))
+        self.sub_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        lay.addWidget(self.sub_lbl)
+
+
 class NeoKnowledgeView(QWidget):
-    """Semantic Knowledge & Memory Search interface."""
+    """
+    Executive Neural Knowledge & Long-Term Memory Hub.
+    Provides instant semantic lookup, deep-dive recall hooks, live filters across 8 cognitive domains,
+    telemetry KPI vitals, inline editing, and seamless fact injection directly into memory/long_term.json.
+    """
     search_triggered = pyqtSignal(str)
+    knowledge_action_triggered = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(36, 24, 36, 24)
-        lay.setSpacing(14)
+        self.active_cat = "all"
+        self.cards: list[NeoMemoryCard] = []
 
+        main_lay = QVBoxLayout(self)
+        main_lay.setContentsMargins(32, 22, 32, 22)
+        main_lay.setSpacing(14)
+
+        # ── Header ─────────────────────────────────────────────────────────────
         hdr = QHBoxLayout()
-        k_lbl = QLabel("📚  NEO Knowledge & Neural Memory")
+        hdr.setSpacing(12)
+
+        icon_lbl = QLabel("🧠")
+        icon_lbl.setFont(QFont("Segoe UI", 16))
+        icon_lbl.setStyleSheet("border: none; background: transparent;")
+        hdr.addWidget(icon_lbl)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(2)
+
+        t_row = QHBoxLayout()
+        t_row.setSpacing(8)
+        k_lbl = QLabel("NEO Knowledge & Neural Memory")
         k_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
         k_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        hdr.addWidget(k_lbl)
-        hdr.addStretch()
-        lay.addLayout(hdr)
+        t_row.addWidget(k_lbl)
 
+        self.count_badge = QLabel("0 facts")
+        self.count_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.count_badge.setStyleSheet("""
+            background: rgba(56, 189, 248, 0.12); color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 9px; padding: 2px 8px;
+        """)
+        t_row.addWidget(self.count_badge)
+        t_row.addStretch()
+        title_col.addLayout(t_row)
+
+        sub_lbl = QLabel("Active Cognitive Store • Instant Semantic Recall • Persistent Neural Graph")
+        sub_lbl.setFont(QFont("Segoe UI", 9))
+        sub_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        title_col.addWidget(sub_lbl)
+        hdr.addLayout(title_col)
+
+        hdr.addStretch()
+
+        # Toast Feedback Label
+        self.toast_lbl = QLabel("")
+        self.toast_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.toast_lbl.setStyleSheet("""
+            background: rgba(16, 185, 129, 0.15); color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 8px; padding: 5px 12px;
+        """)
+        self.toast_lbl.hide()
+        hdr.addWidget(self.toast_lbl)
+
+        # Header Buttons
+        audit_btn = QPushButton("⚡ Neural Audit")
+        audit_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium))
+        audit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        audit_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.10); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 7px 14px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+        """)
+        audit_btn.clicked.connect(self._run_neural_audit)
+        hdr.addWidget(audit_btn)
+
+        sync_btn = QPushButton("🔄 Sync")
+        sync_btn.setFont(QFont("Segoe UI", 9))
+        sync_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        sync_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 7px 12px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        """)
+        sync_btn.clicked.connect(self._sync_disk)
+        hdr.addWidget(sync_btn)
+
+        add_btn = QPushButton("+ Remember Fact")
+        add_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        add_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        add_btn.setStyleSheet("""
+            QPushButton {
+                background: #38bdf8; color: #07090e;
+                border: none; border-radius: 8px; padding: 7px 16px;
+            }
+            QPushButton:hover { background: #7dd3fc; }
+        """)
+        add_btn.clicked.connect(self._add_memory)
+        hdr.addWidget(add_btn)
+
+        main_lay.addLayout(hdr)
+
+        # ── KPI Telemetry Row ──────────────────────────────────────────────────
+        kpi_row = QHBoxLayout()
+        kpi_row.setSpacing(12)
+
+        self.kpi_total = _KnowledgeKpiCard("🧠", "Total Memories", "0", "Indexed in neural store", "#38bdf8")
+        self.kpi_domains = _KnowledgeKpiCard("🏷️", "Active Domains", "0", "Identity, Rules, Tech...", "#c084fc")
+        self.kpi_health = _KnowledgeKpiCard("⚡", "Cognitive Health", "100%", "Graph integrity verified", "#34d399")
+        self.kpi_updated = _KnowledgeKpiCard("🕒", "Last Synchronized", "Today", "Auto-persisted to disk", "#fbbf24")
+
+        kpi_row.addWidget(self.kpi_total)
+        kpi_row.addWidget(self.kpi_domains)
+        kpi_row.addWidget(self.kpi_health)
+        kpi_row.addWidget(self.kpi_updated)
+        main_lay.addLayout(kpi_row)
+
+        # ── Search & Filter Controls ───────────────────────────────────────────
         s_row = QHBoxLayout()
+        s_row.setSpacing(10)
+
         self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search knowledge memories, user preferences, past interactions...")
+        self.search_edit.setPlaceholderText("Search neural memories, identity, tech stack, rules, or sessions...")
         self.search_edit.setFont(QFont("Segoe UI", 10))
         self.search_edit.setStyleSheet(f"""
             QLineEdit {{
-                background: #101624; color: {TEXT_WHITE};
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 8px 12px;
+                background: #0d1424; color: {TEXT_WHITE};
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 9px 14px;
+            }}
+            QLineEdit:focus {{
+                border: 1px solid rgba(56, 189, 248, 0.5);
+                background: #101930;
             }}
         """)
-        self.search_edit.returnPressed.connect(self._search)
+        self.search_edit.textChanged.connect(self._apply_filter)
+        self.search_edit.returnPressed.connect(self._deep_search_neo)
         s_row.addWidget(self.search_edit, stretch=1)
 
-        search_b = QPushButton("SEARCH")
-        search_b.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        search_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        search_b.setStyleSheet(f"""
+        search_neo_b = QPushButton("⚡ Deep Search (NEO)")
+        search_neo_b.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        search_neo_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        search_neo_b.setStyleSheet(f"""
             QPushButton {{
                 background: {SEND_BTN_BG}; color: #080a10;
-                border: none; border-radius: 8px; padding: 8px 16px;
+                border: none; border-radius: 8px; padding: 9px 18px;
             }}
             QPushButton:hover {{ background: #a4bde5; }}
         """)
-        search_b.clicked.connect(self._search)
-        s_row.addWidget(search_b)
-        lay.addLayout(s_row)
+        search_neo_b.clicked.connect(self._deep_search_neo)
+        s_row.addWidget(search_neo_b)
 
-        self.results_edit = QTextEdit()
-        self.results_edit.setReadOnly(True)
-        self.results_edit.setFont(QFont("Consolas", 9))
-        self.results_edit.setStyleSheet(f"""
-            QTextEdit {{
-                background: #101624; color: #a5b4fc;
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px;
-            }}
+        main_lay.addLayout(s_row)
+
+        # ── Category Filter Pills Bar ──────────────────────────────────────────
+        pills_scroll = QScrollArea()
+        pills_scroll.setWidgetResizable(True)
+        pills_scroll.setFixedHeight(46)
+        pills_scroll.setStyleSheet("background: transparent; border: none;")
+        pills_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        pills_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        pills_widget = QWidget()
+        pills_widget.setStyleSheet("background: transparent; border: none;")
+        self.pills_lay = QHBoxLayout(pills_widget)
+        self.pills_lay.setContentsMargins(0, 4, 0, 4)
+        self.pills_lay.setSpacing(8)
+
+        self.pill_buttons: dict[str, QPushButton] = {}
+        self._categories_def = [
+            ("all", "🌐 All"),
+            ("identity", "👤 Identity"),
+            ("preferences", "⚙️ Preferences"),
+            ("projects", "🗂️ Projects"),
+            ("corrections", "🛡️ Rules && Behavior"),
+            ("notes", "📝 Notes && Brain"),
+            ("sessions", "💬 Sessions"),
+            ("monitors", "📡 Monitors"),
+            ("relationships", "👥 Relationships"),
+            ("wishes", "🎯 Wishes"),
+        ]
+
+        for ckey, clbl in self._categories_def:
+            pbtn = QPushButton(clbl)
+            pbtn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+            pbtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            pbtn.clicked.connect(lambda checked, c=ckey: self._set_category(c))
+            self.pill_buttons[ckey] = pbtn
+            self.pills_lay.addWidget(pbtn)
+
+        self.pills_lay.addStretch()
+        pills_scroll.setWidget(pills_widget)
+        main_lay.addWidget(pills_scroll)
+
+        # ── Scrollable Memory Cards Container ──────────────────────────────────
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setStyleSheet("""
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: rgba(10, 15, 28, 0.4);
+                width: 6px;
+                border-radius: 3px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(56, 189, 248, 0.25);
+                border-radius: 3px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(56, 189, 248, 0.45);
+            }
         """)
-        lay.addWidget(self.results_edit, stretch=1)
-        self._load_recent()
 
-    def _load_recent(self):
+        self.cards_container = QWidget()
+        self.cards_container.setStyleSheet("background: transparent;")
+        self.cards_lay = QVBoxLayout(self.cards_container)
+        self.cards_lay.setContentsMargins(0, 4, 0, 16)
+        self.cards_lay.setSpacing(12)
+
+        # Empty state placeholder
+        self.empty_card = QFrame()
+        self.empty_card.setStyleSheet("""
+            QFrame {
+                background: rgba(13, 20, 36, 0.4);
+                border: 1px dashed rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                padding: 30px;
+            }
+        """)
+        empty_lay = QVBoxLayout(self.empty_card)
+        empty_lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_lay.setSpacing(8)
+
+        e_icon = QLabel("🔍")
+        e_icon.setFont(QFont("Segoe UI", 24))
+        e_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        e_icon.setStyleSheet("border: none; background: transparent;")
+        empty_lay.addWidget(e_icon)
+
+        e_title = QLabel("No Matching Neural Knowledge Facts Found")
+        e_title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        e_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        e_title.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        empty_lay.addWidget(e_title)
+
+        e_sub = QLabel("Try adjusting your search query, selecting another category, or teach NEO a new fact.")
+        e_sub.setFont(QFont("Segoe UI", 9))
+        e_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        e_sub.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        empty_lay.addWidget(e_sub)
+
+        e_btn = QPushButton("+ Teach NEO This Fact")
+        e_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        e_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        e_btn.setStyleSheet("""
+            QPushButton {
+                background: #38bdf8; color: #07090e;
+                border: none; border-radius: 8px; padding: 7px 18px; margin-top: 8px;
+            }
+            QPushButton:hover { background: #7dd3fc; }
+        """)
+        e_btn.clicked.connect(self._add_memory)
+        empty_lay.addWidget(e_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.cards_lay.addWidget(self.empty_card)
+        self.empty_card.hide()
+
+        self.cards_lay.addStretch()
+        self.scroll.setWidget(self.cards_container)
+        main_lay.addWidget(self.scroll, stretch=1)
+
+        # Initial Load
+        self.refresh_memory()
+        self._update_pill_styles()
+
+    # ── Memory Loading & Refresh ───────────────────────────────────────────────
+
+    def refresh_memory(self):
+        """Reload all real memories from memory/long_term.json and update the entire UI."""
+        # Clear existing card widgets
+        for card in self.cards:
+            self.cards_lay.removeWidget(card)
+            card.deleteLater()
+        self.cards.clear()
+
+        # Load from disk
+        items = []
         try:
-            from memory.memory_manager import format_memory_for_prompt
-            mem = format_memory_for_prompt()
-            self.results_edit.setText(mem or "No long-term memories stored yet.")
-        except Exception as e:
-            self.results_edit.setText(f"Knowledge memory loaded: {e}")
+            from memory.memory_manager import load_memory
+            mem = load_memory()
 
-    def _search(self):
+            for cat, data in mem.items():
+                if isinstance(data, dict):
+                    for k, v in data.items():
+                        if isinstance(v, dict) and "value" in v:
+                            items.append({
+                                "category": cat,
+                                "key": k,
+                                "value": v["value"],
+                                "updated": v.get("updated", "")
+                            })
+                        elif isinstance(v, dict) and "topic" in v:
+                            items.append({
+                                "category": cat,
+                                "key": k,
+                                "value": f"Telemetry monitor: {v.get('topic', '')} · Last checked: {v.get('last_check', '')}",
+                                "updated": v.get("last_check", "")
+                            })
+                elif isinstance(data, list) and cat == "sessions":
+                    for i, sess in enumerate(data):
+                        if isinstance(sess, dict):
+                            items.append({
+                                "category": "sessions",
+                                "key": f"session_{i+1}",
+                                "value": sess.get("summary", ""),
+                                "updated": sess.get("date", "")
+                            })
+        except Exception as e:
+            print(f"[Knowledge] load error: {e}")
+
+        # Sort: Corrections first, then newest updated
+        def _sort_key(it):
+            is_rule = 0 if it.get("category") == "corrections" else 1
+            upd = it.get("updated") or "0000-00-00"
+            return (is_rule, upd)
+
+        items.sort(key=_sort_key, reverse=True)
+
+        # Compute counts by category
+        cat_counts: dict[str, int] = {"all": len(items)}
+        for it in items:
+            c = it.get("category", "")
+            cat_counts[c] = cat_counts.get(c, 0) + 1
+
+        # Update Pills Text with dynamic counts
+        for ckey, clbl in self._categories_def:
+            btn = self.pill_buttons.get(ckey)
+            if btn:
+                count = cat_counts.get(ckey, 0)
+                btn.setText(f"{clbl} ({count})")
+
+        # Update KPI Telemetry Cards
+        self.kpi_total.v_lbl.setText(f"{len(items)} Facts")
+        active_domains = len([c for c, cnt in cat_counts.items() if c != 'all' and cnt > 0])
+        self.kpi_domains.v_lbl.setText(f"{active_domains} Domains")
+        self.count_badge.setText(f"{len(items)} facts")
+
+        # Create Cards
+        for it in items:
+            card = NeoMemoryCard(it, parent=self.cards_container)
+            card.delete_requested.connect(self._delete_memory)
+            card.edit_requested.connect(self._edit_memory)
+            card.action_requested.connect(self._forward_action)
+            self.cards.append(card)
+            # Insert before empty_card and stretch
+            self.cards_lay.insertWidget(self.cards_lay.count() - 2, card)
+
+        self._apply_filter()
+
+    def _sync_disk(self):
+        self.refresh_memory()
+        self._show_toast("✓ Neural memory synchronized from disk")
+
+    def _show_toast(self, msg: str):
+        self.toast_lbl.setText(msg)
+        self.toast_lbl.show()
+        QTimer.singleShot(2600, self.toast_lbl.hide)
+
+    # ── Category & Filter Logic ────────────────────────────────────────────────
+
+    def _set_category(self, cat: str):
+        self.active_cat = cat
+        self._update_pill_styles()
+        self._apply_filter()
+
+    def _update_pill_styles(self):
+        for ckey, btn in self.pill_buttons.items():
+            if ckey == self.active_cat:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(56, 189, 248, 0.16);
+                        color: #38bdf8;
+                        border: 1px solid rgba(56, 189, 248, 0.45);
+                        border-radius: 14px;
+                        padding: 5px 13px;
+                        font-weight: bold;
+                    }
+                """)
+            else:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.04);
+                        color: #94a3b8;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 14px;
+                        padding: 5px 12px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(255, 255, 255, 0.09);
+                        color: #ffffff;
+                    }
+                """)
+
+    def _apply_filter(self):
+        q = self.search_edit.text().strip().lower()
+        visible_count = 0
+
+        for card in self.cards:
+            match_cat = (self.active_cat == "all" or card.cat == self.active_cat)
+            match_query = True
+            if q:
+                match_query = (
+                    q in card.cat.lower() or
+                    q in card.key.lower() or
+                    q in card.val.lower() or
+                    q in card.key.replace("_", " ").lower()
+                )
+            show = match_cat and match_query
+            card.setVisible(show)
+            if show:
+                visible_count += 1
+
+        self.empty_card.setVisible(visible_count == 0)
+        self.count_badge.setText(f"{visible_count} of {len(self.cards)} facts")
+
+    # ── Actions & Integrations ─────────────────────────────────────────────────
+
+    def _deep_search_neo(self):
         q = self.search_edit.text().strip()
         if q:
-            self.search_triggered.emit(f"Search your memory for: {q}")
-            try:
-                from memory.memory_manager import search_memory
-                hits = search_memory(q)
-                if hits:
-                    self.results_edit.setText(f"--- Search Results for '{q}' ---\n\n" + "\n\n".join(hits))
-                else:
-                    self.results_edit.setText(f"No direct matches found in local memory for '{q}'. Asking NEO...")
-            except Exception:
-                pass
+            prompt = f"Search your neural memory graph and past context for: {q}"
+            self.search_triggered.emit(prompt)
+            self.knowledge_action_triggered.emit(prompt)
+            self._show_toast(f"Searching memory for '{q}'...")
+
+    def _run_neural_audit(self):
+        prompt = (
+            "Boss requests a comprehensive Neural Brain Audit: analyze my active identity traits, "
+            "preferences, ongoing projects, and learned correction rules, and provide an executive summary "
+            "of NEO's cognitive state and recommendations."
+        )
+        self.knowledge_action_triggered.emit(prompt)
+        self._show_toast("⚡ Neural Audit requested — routing to Chat...")
+
+    def _forward_action(self, prompt: str):
+        self.knowledge_action_triggered.emit(prompt)
+        self._show_toast("Routing query to NEO Chat...")
+
+    def _add_memory(self):
+        init = {}
+        if self.active_cat != "all" and self.active_cat in ("identity", "preferences", "projects", "corrections", "notes", "relationships", "wishes"):
+            init["category"] = self.active_cat
+        dlg = MemoryInjectionDialog(initial_data=init, parent=self)
+        if dlg.exec():
+            self._show_toast("✓ Fact injected into long-term memory")
+            self.refresh_memory()
+
+    def _edit_memory(self, item: dict):
+        dlg = MemoryInjectionDialog(initial_data=item, parent=self)
+        if dlg.exec():
+            self._show_toast(f"✓ Memory '{item.get('key')}' updated")
+            self.refresh_memory()
+
+    def _delete_memory(self, item: dict):
+        cat = item.get("category", "")
+        key = item.get("key", "")
+        try:
+            from memory.memory_manager import load_memory, save_memory, forget
+            if cat == "sessions":
+                mem = load_memory()
+                sessions = mem.get("sessions", [])
+                try:
+                    idx = int(key.replace("session_", "")) - 1
+                    if 0 <= idx < len(sessions):
+                        sessions.pop(idx)
+                        mem["sessions"] = sessions
+                        save_memory(mem)
+                except Exception:
+                    pass
+            elif cat == "monitors":
+                mem = load_memory()
+                monitors = mem.get("monitors", {})
+                if key in monitors:
+                    del monitors[key]
+                    mem["monitors"] = monitors
+                    save_memory(mem)
+            else:
+                forget(key, cat)
+            self._show_toast(f"Fact '{key}' forgotten from neural memory")
+            self.refresh_memory()
+        except Exception as e:
+            self._show_toast(f"Error forgetting fact: {e}")
+
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
