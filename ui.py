@@ -4895,7 +4895,7 @@ class MainWindow(QMainWindow):
         self._chat_container = self._build_chat_container()
 
         self.tasks_view = NeoTasksView()
-        self.tasks_view.task_action_triggered.connect(self._on_hero_command)
+        self.tasks_view.task_action_triggered.connect(self._on_task_action_triggered)
 
         self.notes_view = NeoNotesView()
         self.notes_view.note_saved.connect(self._on_hero_command)
@@ -5720,6 +5720,12 @@ class MainWindow(QMainWindow):
             self._proc_lbl.setText("PROC  --")
 
 
+
+    def _on_task_action_triggered(self, text: str):
+        """Dispatched from Task Engine (Execute with NEO / Sync / Architect) — switches view to Chat so user sees real-time AI execution."""
+        if hasattr(self, "_nav_sidebar") and self._nav_sidebar:
+            self._nav_sidebar.select_tab("Chat")
+        self._on_hero_command(text)
 
     def _on_chat_command(self, text: str):
         """Executed when user submits from NEO Chat bar — command is already added to chat UI, so do not duplicate."""
