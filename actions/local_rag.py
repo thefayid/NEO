@@ -188,11 +188,11 @@ TOOL = {
         "using deep semantic indexing. Returns exact code snippets and line citations."
     ),
     "parameters": {
-        "type": "object",
+        "type": "OBJECT",
         "properties": {
-            "action": {"type": "string", "enum": ["query", "index"]},
-            "query": {"type": "string", "description": "The concept, error, function, or question to search across local files."},
-            "directory": {"type": "string", "description": "Optional specific directory to search or index."},
+            "action": {"type": "STRING", "enum": ["query", "index"]},
+            "query": {"type": "STRING", "description": "The concept, error, function, or question to search across local files."},
+            "directory": {"type": "STRING", "description": "Optional specific directory to search or index."},
         },
         "required": ["action"],
     },

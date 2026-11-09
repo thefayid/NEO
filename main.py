@@ -2446,14 +2446,14 @@ class JarvisLive:
 
     async def _run_proactive_mode(self) -> None:
         """
-        Background task: periodically checks if the user has been silent long enough,
-        then hands time + memory context to Gemini so it can decide what (if anything)
-        to say proactively. No hardcoded rules — Gemini makes the call.
+        Background autonomous task: Proactive Brain 3.0.
+        Continuously evaluates multi-sensor telemetry (system health, tasks, calendar,
+        git workspace, and circadian rhythm) to proactively assist Fayid.
         """
         while True:
-            await asyncio.sleep(60)   # evaluate once per minute
+            await asyncio.sleep(30)   # evaluate every 30 seconds
 
-            if not self.session or not self._awake:
+            if not self._awake:
                 continue
 
             with self._speaking_lock:
@@ -2461,10 +2461,11 @@ class JarvisLive:
             if speaking:
                 continue
 
-            if not self._proactive.should_trigger(self._last_user_speech):
+            should_fire, reason, snapshot = self._proactive.evaluate_triggers(self._last_user_speech)
+            if not should_fire:
                 continue
 
-            self._proactive.mark_triggered()
+            self._proactive.mark_triggered(reason)
 
             try:
                 memory       = await asyncio.to_thread(load_memory)
@@ -2474,12 +2475,24 @@ class JarvisLive:
                     memory       = memory,
                     monitors     = monitors or None,
                     recent_turns = recent_turns or None,
+                    reason       = reason,
+                    snapshot     = snapshot,
                 )
-                await self.session.send_client_content(
-                    turns={"role": "user", "parts": [{"text": prompt}]},
-                    turn_complete=True,
-                )
-                print("[JARVIS] Proactive check-in.")
+                print(f"[NEO BRAIN] 🧠 Proactive dispatch triggered: {reason}")
+
+                if self.session:
+                    await self.session.send_client_content(
+                        turns={"role": "user", "parts": [{"text": prompt}]},
+                        turn_complete=True,
+                    )
+                else:
+                    from core import gemini as _gemini
+                    resp = await asyncio.to_thread(_gemini.call, prompt, _gemini.FAST)
+                    if resp and resp.strip():
+                        print(f"[NEO BRAIN] 💬 {resp.strip()}")
+                        self.ui.write_log(f"NEO (Proactive): {resp.strip()}")
+                        if hasattr(self.ui, "_speech_sig"):
+                            self.ui._speech_sig.emit("neo", resp.strip())
             except Exception as e:
                 print(f"[Proactive] ⚠️ {e}")
 

@@ -1671,7 +1671,7 @@ class NeoModernChatWidget(QWidget):
 
         # Model Mode Switcher Pill
         self.model_combo = QComboBox()
-        self.model_combo.addItems(["✦ Pro (Gemini 2.0)", "⚡ Fast (Gemini Flash)", "💻 Local (Ollama)"])
+        self.model_combo.addItems(["✦ High-IQ (Gemini 2.5 Pro)", "⚡ Realtime (Gemini 2.5 Flash)", "💻 Local (Ollama)"])
         self.model_combo.setFont(QFont("Segoe UI", 8))
         self.model_combo.setFixedHeight(28)
         self.model_combo.setStyleSheet("""
@@ -2391,8 +2391,8 @@ class NeoModernChatWidget(QWidget):
     # Model Mode & Voice Toggle
     # ─────────────────────────────────────────────────────────────────────────
     def _on_model_changed(self, idx: int):
-        modes = ["gemini-1.5-pro", "gemini-1.5-flash", "local-ollama"]
-        mode = modes[idx] if idx < len(modes) else "gemini-1.5-pro"
+        modes = ["gemini-2.5-pro", "gemini-2.5-flash", "local-ollama"]
+        mode = modes[idx] if idx < len(modes) else "gemini-2.5-pro"
         try:
             cfg_p = _BASE_DIR / "config" / "api_keys.json"
             if cfg_p.exists():
