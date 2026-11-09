@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 import time
 import json
 import webbrowser
@@ -32,13 +33,13 @@ from typing import Optional, Callable
 from PyQt6.QtCore import Qt, QTimer, QRectF, QPointF, pyqtSignal
 from PyQt6.QtGui import (
     QPainter, QColor, QRadialGradient, QLinearGradient, QPainterPath,
-    QPen, QBrush, QFont, QCursor, QPixmap, QImage
+    QPen, QBrush, QFont, QCursor, QPixmap, QImage, QAction
 )
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
-    QLineEdit, QTextEdit, QProgressBar, QFrame, QScrollArea,
+    QLineEdit, QTextEdit, QTextBrowser, QProgressBar, QFrame, QScrollArea,
     QCheckBox, QListWidget, QListWidgetItem, QSizePolicy,
-    QStackedWidget, QGridLayout, QDialog, QComboBox, QButtonGroup
+    QStackedWidget, QGridLayout, QDialog, QComboBox, QButtonGroup, QMenu
 )
 import psutil
 import random
@@ -2231,6 +2232,108 @@ NOTE_CATEGORY_COLORS = {
     "Quick Note": ("#94a3b8", "rgba(148, 163, 184, 0.12)"),
 }
 
+NOTE_TEMPLATES = {
+    "🛡️ CTF & Security Vulnerability Assessment": {
+        "title": "Security Audit & Vulnerability Assessment #security #ctf",
+        "category": "Security",
+        "content": """# Security Audit: [Target System / Service]
+
+## Executive Summary
+Brief summary of the security audit, target scope, and primary vulnerability posture.
+
+### Target & Scope
+- **Host / URL:** `https://target.local`
+- **Methodology:** Black-box / Reverse Engineering / Dynamic Fuzzing
+- **Severity Rating:** Critical / High / Medium
+
+## Vulnerability Findings
+### 1. [Vulnerability Title]
+- **CVSS Score:** 8.8 (High)
+- **Endpoint:** `POST /api/v1/auth/verify`
+- **Proof of Concept (PoC):**
+```bash
+curl -X POST https://target/api/v1/auth/verify \\
+  -H "Content-Type: application/json" \\
+  -d '{"payload": "test_input"}'
+```
+
+## Remediation & Hardening Steps
+- [ ] Implement parameterized input validation
+- [ ] Restrict CORS headers to authorized origins
+- [ ] Enforce rate-limiting and WAF protection rules
+- [ ] Rotate exposed API tokens and refresh secrets
+"""
+    },
+    "🏛️ System Architecture RFC Blueprint": {
+        "title": "RFC: High-Performance Architecture Blueprint #dev #arch",
+        "category": "Dev",
+        "content": """# RFC: [System / Architecture Name]
+
+## 1. Context & Business Value
+Why this system is required, performance thresholds, and architectural goals.
+
+## 2. High-Level Architecture
+- **Transport Layer:** HTTP/2 & WebSockets with zero-latency duplex
+- **State & Database:** SQLite with WAL mode + in-memory cache
+- **Workers:** Parallel subagent background task queue
+
+## 3. Data Schema & Contracts
+```json
+{
+  "event": "state_sync",
+  "payload": {
+    "id": "uuid-v4",
+    "timestamp": 1731170000,
+    "status": "HEALTHY"
+  }
+}
+```
+
+## 4. Tactical Implementation Milestones
+- [ ] Build core schemas and data persistence
+- [ ] Connect event bus and telemetry hooks
+- [ ] Benchmark sub-50ms latency under 1,000 req/sec load
+- [ ] Deploy production health monitors and automated alerts
+"""
+    },
+    "🎓 Academic Revision & Cheat Sheet": {
+        "title": "Exam Revision & Formulas Cheat Sheet #exam #academic",
+        "category": "Research",
+        "content": """# Academic Revision: [Subject / Course Name]
+
+## Core Principles & Theorems
+Essential theoretical concepts, definitions, and mental models to master.
+
+## Critical Formulas & Equations
+- **Formula 1:** $E = mc^2$
+- **Formula 2:** Net Present Value: $NPV = \\sum_{t=1}^n \\frac{CF_t}{(1+r)^t} - C_0$
+- **Formula 3:** Shannon Entropy: $H(X) = -\\sum P(x) \\log_2 P(x)$
+
+## High-Probability Exam Topics
+- [ ] Review Chapter 3 deep-dive and case problem derivations
+- [ ] Complete previous year exam sample questions
+- [ ] Memorize formula boundary conditions and edge cases
+"""
+    },
+    "🎯 Daily Tactical Standup Log": {
+        "title": "Daily Tactical Execution Log #daily #ops",
+        "category": "Quick Note",
+        "content": """# Tactical Log: [Date]
+
+## 🎯 Top 3 High-Leverage Priorities
+- [ ] Complete core module refactoring and tests
+- [ ] Verify zero-data-loss persistence and edge cases
+- [ ] Submit pull request and sync origin main
+
+## 🚧 Blockers & Impediments
+- None currently active.
+
+## 💡 Notes & Research Takeaways
+Observations, technical insights, and key decisions from today's sprint.
+"""
+    }
+}
+
 TASK_CATEGORY_COLORS = {
     "Academic": ("🎓 ACADEMIC", "#a78bfa", "rgba(167, 139, 250, 0.14)"),
     "Dev":      ("💻 DEV",      "#38bdf8", "rgba(56, 189, 248, 0.14)"),
@@ -3083,6 +3186,7 @@ class NeoNoteCard(QFrame):
     """Sleek minimalist note card for the Notes sidebar list."""
     clicked = pyqtSignal(dict)
     deleted = pyqtSignal(dict)
+    archived = pyqtSignal(dict)
 
     def __init__(self, note: dict, is_active: bool = False, parent=None):
         super().__init__(parent)
@@ -3111,7 +3215,7 @@ class NeoNoteCard(QFrame):
         lay.setContentsMargins(10, 8, 10, 8)
         lay.setSpacing(3)
 
-        # Top row: [Pinned] Title
+        # Top row: [Pinned] [Archived] Title
         top_r = QHBoxLayout()
         top_r.setSpacing(5)
         if note.get("pinned"):
@@ -3119,6 +3223,11 @@ class NeoNoteCard(QFrame):
             p_lbl.setFont(QFont("Segoe UI", 7))
             p_lbl.setStyleSheet("border: none; background: transparent;")
             top_r.addWidget(p_lbl)
+        if note.get("archived"):
+            a_lbl = QLabel("📦")
+            a_lbl.setFont(QFont("Segoe UI", 7))
+            a_lbl.setStyleSheet("border: none; background: transparent;")
+            top_r.addWidget(a_lbl)
 
         title_text = (note.get("title") or "Untitled Note").strip()
         self.title_lbl = QLabel(title_text)
@@ -3135,15 +3244,23 @@ class NeoNoteCard(QFrame):
         self.snip_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
         lay.addWidget(self.snip_lbl)
 
-        # Meta row: Category pill + Time + Delete button
+        # Meta row: Category pill + Tag chip + Time + Delete button
         meta_r = QHBoxLayout()
-        meta_r.setSpacing(6)
+        meta_r.setSpacing(5)
         cat = note.get("category", "Quick Note")
         cfg, cbg = NOTE_CATEGORY_COLORS.get(cat, ("#94a3b8", "rgba(148, 163, 184, 0.12)"))
         cat_b = QLabel(cat)
         cat_b.setFont(QFont("Segoe UI", 7, QFont.Weight.Medium))
         cat_b.setStyleSheet(f"color: {cfg}; background: {cbg}; border-radius: 3px; padding: 1px 5px; border: none;")
         meta_r.addWidget(cat_b)
+
+        # Show first hashtag if present
+        tags = re.findall(r"#([a-zA-Z0-9_\-]+)", (note.get("title", "") + " " + (note.get("content", ""))))
+        if tags:
+            tag_chip = QLabel(f"#{tags[0]}")
+            tag_chip.setFont(QFont("Segoe UI", 7))
+            tag_chip.setStyleSheet("color: #38bdf8; background: rgba(56, 189, 248, 0.08); border-radius: 3px; padding: 1px 4px; border: none;")
+            meta_r.addWidget(tag_chip)
 
         time_str = note.get("updated_at") or note.get("created_at") or "Today"
         time_l = QLabel(time_str.split(" ")[0] if " " in time_str else time_str)
@@ -3171,7 +3288,9 @@ class NeoNoteCard(QFrame):
 class NeoNotesView(QWidget):
     """
     Senior-dev executive Notes & Knowledge Studio for NEO.
-    Provides Master-Detail split navigation, markdown-ready editor, live word metrics,
+    Provides Master-Detail split navigation, Markdown live preview & syntax,
+    Zen focus mode, 4 executive templates, action item task extraction,
+    multi-format export studio (.md, .txt, .html), dynamic hashtags,
     zero-data-loss atomic storage, and autonomous AI analysis.
     """
     note_saved = pyqtSignal(str)            # For long-term memory
@@ -3183,8 +3302,11 @@ class NeoNotesView(QWidget):
         self.notes_data: list[dict] = self._load_notes()
         self.active_note_id: Optional[str] = self.notes_data[0]["id"] if self.notes_data else None
         self.active_filter_cat: str = "All"
+        self.active_tag_filter: Optional[str] = None
         self.search_keyword: str = ""
         self._is_loading_note: bool = False
+        self.is_zen: bool = False
+        self.is_preview: bool = False
 
         # Debounced auto-save timer
         self.save_timer = QTimer(self)
@@ -3198,6 +3320,8 @@ class NeoNotesView(QWidget):
 
         # ── 1. Header Row ──
         hdr = QHBoxLayout()
+        hdr.setSpacing(8)
+
         t_lbl = QLabel("Notes")
         t_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         t_lbl.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
@@ -3221,7 +3345,57 @@ class NeoNotesView(QWidget):
 
         hdr.addStretch()
 
-        review_btn = QPushButton("⚡ Ask NEO to Review")
+        # Zen Focus Mode Button
+        self.zen_btn = QPushButton("⛶ Zen")
+        self.zen_btn.setToolTip("Toggle distraction-free Zen focus canvas")
+        self.zen_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.zen_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.zen_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+                padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+        """)
+        self.zen_btn.clicked.connect(self._toggle_zen)
+        hdr.addWidget(self.zen_btn)
+
+        # Templates Dropdown Menu
+        self.template_btn = QPushButton("📑 Templates ▾")
+        self.template_btn.setToolTip("Insert senior-dev executive note blueprints")
+        self.template_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.template_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.template_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(167, 139, 250, 0.1); color: #a78bfa;
+                border: 1px solid rgba(167, 139, 250, 0.28); border-radius: 6px;
+                padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(167, 139, 250, 0.2); color: #ffffff; }
+        """)
+        self._init_template_menu()
+        hdr.addWidget(self.template_btn)
+
+        # AI Polish & Structure Button
+        polish_btn = QPushButton("✨ Polish")
+        polish_btn.setToolTip("Ask NEO to format, polish prose, and structure this note")
+        polish_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        polish_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        polish_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px;
+                padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(245, 158, 11, 0.22); color: #ffffff; }
+        """)
+        polish_btn.clicked.connect(self._polish_note)
+        hdr.addWidget(polish_btn)
+
+        # AI Review & Brainstorm Button
+        review_btn = QPushButton("⚡ Ask NEO")
+        review_btn.setToolTip("Brainstorm, expand, or get executive feedback from NEO")
         review_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         review_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         review_btn.setStyleSheet("""
@@ -3235,6 +3409,7 @@ class NeoNotesView(QWidget):
         review_btn.clicked.connect(self._ask_neo_review)
         hdr.addWidget(review_btn)
 
+        # + New Note Button
         new_btn = QPushButton("+ New Note")
         new_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         new_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -3254,16 +3429,16 @@ class NeoNotesView(QWidget):
         body_lay.setSpacing(14)
 
         # Left Column: Note Navigator (~230px compact)
-        left_panel = QFrame()
-        left_panel.setFixedWidth(230)
-        left_panel.setStyleSheet("""
+        self.left_panel = QFrame()
+        self.left_panel.setFixedWidth(230)
+        self.left_panel.setStyleSheet("""
             QFrame {
                 background: rgba(13, 19, 32, 0.7);
                 border: 1px solid rgba(255, 255, 255, 0.05);
                 border-radius: 10px;
             }
         """)
-        left_lay = QVBoxLayout(left_panel)
+        left_lay = QVBoxLayout(self.left_panel)
         left_lay.setContentsMargins(10, 10, 10, 10)
         left_lay.setSpacing(8)
 
@@ -3282,23 +3457,46 @@ class NeoNotesView(QWidget):
         self.search_edit.textChanged.connect(self._on_search_changed)
         left_lay.addWidget(self.search_edit)
 
-        # Category pills filter
-        self.cats_bar = QHBoxLayout()
-        self.cats_bar.setSpacing(4)
+        # Category pills filter (2-row grid to avoid label truncation)
+        cats_top = QHBoxLayout()
+        cats_top.setSpacing(3)
+        cats_bot = QHBoxLayout()
+        cats_bot.setSpacing(3)
         self.filter_buttons = {}
-        for cat in ["All", "Dev", "Security", "Ideas", "Research"]:
+
+        for cat in ["All", "Dev", "Security"]:
             b = QPushButton(cat)
             b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold if cat == "All" else QFont.Weight.Normal))
             b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             if cat == "All":
                 b.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; padding: 2px 7px;")
             else:
-                b.setStyleSheet("background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 4px; padding: 2px 6px;")
+                b.setStyleSheet("background: rgba(255, 255, 255, 0.02); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
             b.clicked.connect(lambda _, c=cat: self._set_category_filter(c))
             self.filter_buttons[cat] = b
-            self.cats_bar.addWidget(b)
-        self.cats_bar.addStretch()
-        left_lay.addLayout(self.cats_bar)
+            cats_top.addWidget(b)
+        cats_top.addStretch()
+        left_lay.addLayout(cats_top)
+
+        for cat in ["Ideas", "Research", "Archive"]:
+            lbl = "📦 Archive" if cat == "Archive" else cat
+            b = QPushButton(lbl)
+            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Normal))
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b.setStyleSheet("background: rgba(255, 255, 255, 0.02); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
+            b.clicked.connect(lambda _, c=cat: self._set_category_filter(c))
+            self.filter_buttons[cat] = b
+            cats_bot.addWidget(b)
+        cats_bot.addStretch()
+        left_lay.addLayout(cats_bot)
+
+        # Dynamic Hashtags Filter Bar
+        self.tags_frame = QFrame()
+        self.tags_frame.setStyleSheet("background: transparent; border: none;")
+        self.tags_lay = QHBoxLayout(self.tags_frame)
+        self.tags_lay.setContentsMargins(0, 0, 0, 0)
+        self.tags_lay.setSpacing(4)
+        left_lay.addWidget(self.tags_frame)
 
         # Scrollable Cards Area
         self.notes_scroll = QScrollArea()
@@ -3314,7 +3512,7 @@ class NeoNotesView(QWidget):
 
         self.notes_scroll.setWidget(self.cards_cont)
         left_lay.addWidget(self.notes_scroll, stretch=1)
-        body_lay.addWidget(left_panel)
+        body_lay.addWidget(self.left_panel)
 
         # Right Column: Note Studio & Editor (Stretch)
         self.editor_panel = QFrame()
@@ -3346,24 +3544,75 @@ class NeoNotesView(QWidget):
         self.cat_box.currentIndexChanged.connect(self._on_category_changed)
         tb.addWidget(self.cat_box)
 
+        # Pin Button (Fixed 28x24 icon)
         self.pin_btn = QPushButton("📌")
         self.pin_btn.setToolTip("Toggle pin to top")
         self.pin_btn.setFont(QFont("Segoe UI", 8))
-        self.pin_btn.setFixedSize(26, 24)
+        self.pin_btn.setFixedSize(28, 24)
         self.pin_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px;")
         self.pin_btn.clicked.connect(self._toggle_active_pin)
         tb.addWidget(self.pin_btn)
 
+        # Markdown Preview Toggle
+        self.preview_btn = QPushButton("👁️ Preview")
+        self.preview_btn.setToolTip("Toggle live Markdown formatted reading preview")
+        self.preview_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.preview_btn.setFixedHeight(24)
+        self.preview_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.preview_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        """)
+        self.preview_btn.clicked.connect(self._toggle_preview)
+        tb.addWidget(self.preview_btn)
+
+        # Action Items to Task Engine Button
+        self.tasks_btn = QPushButton("⚡ Tasks")
+        self.tasks_btn.setToolTip("Extract '- [ ]' checklist items directly into Task Engine")
+        self.tasks_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.tasks_btn.setFixedHeight(24)
+        self.tasks_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.tasks_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+        """)
+        self.tasks_btn.clicked.connect(self._extract_tasks_to_engine)
+        tb.addWidget(self.tasks_btn)
+
+        # Export Dropdown Menu
+        self.export_btn = QPushButton("📥 Export ▾")
+        self.export_btn.setToolTip("Export note as Markdown, Plain Text, or HTML")
+        self.export_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.export_btn.setFixedHeight(24)
+        self.export_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.export_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #f1f5f9; }
+        """)
+        self._init_export_menu()
+        tb.addWidget(self.export_btn)
+
         tb.addStretch()
 
-        self.word_metrics_lbl = QLabel("0 words")
+        # Word count & reading metrics
+        self.word_metrics_lbl = QLabel("0 words · 0 chars")
         self.word_metrics_lbl.setFont(QFont("Segoe UI", 7))
         self.word_metrics_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; padding: 0 4px;")
         tb.addWidget(self.word_metrics_lbl)
 
+        # Copy Note Button
         copy_btn = QPushButton("📋")
-        copy_btn.setToolTip("Copy note to clipboard")
+        copy_btn.setToolTip("Copy note as Markdown to clipboard")
         copy_btn.setFont(QFont("Segoe UI", 8))
         copy_btn.setFixedSize(26, 24)
         copy_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -3371,6 +3620,7 @@ class NeoNotesView(QWidget):
         copy_btn.clicked.connect(self._copy_note)
         tb.addWidget(copy_btn)
 
+        # Commit to Long-Term Memory Button
         mem_btn = QPushButton("🧠 Save")
         mem_btn.setToolTip("Commit note to NEO Long-Term Memory")
         mem_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
@@ -3386,8 +3636,19 @@ class NeoNotesView(QWidget):
         mem_btn.clicked.connect(self._commit_to_brain)
         tb.addWidget(mem_btn)
 
+        # Archive Active Note Button
+        self.archive_btn = QPushButton("📦")
+        self.archive_btn.setToolTip("Toggle Archive status for this note")
+        self.archive_btn.setFont(QFont("Segoe UI", 8))
+        self.archive_btn.setFixedSize(26, 24)
+        self.archive_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.archive_btn.setStyleSheet("QPushButton { background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; } QPushButton:hover { color: #f59e0b; }")
+        self.archive_btn.clicked.connect(self._toggle_active_archive)
+        tb.addWidget(self.archive_btn)
+
+        # Delete Note Button
         del_active_btn = QPushButton("🗑️")
-        del_active_btn.setToolTip("Delete note")
+        del_active_btn.setToolTip("Delete note permanently")
         del_active_btn.setFont(QFont("Segoe UI", 8))
         del_active_btn.setFixedSize(26, 24)
         del_active_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -3411,7 +3672,9 @@ class NeoNotesView(QWidget):
         self.title_in.textChanged.connect(self._on_content_changed)
         ed_lay.addWidget(self.title_in)
 
-        # Note Body Editor
+        # Stacked Editor (Page 0: QTextEdit, Page 1: Live Markdown QTextBrowser)
+        self.stacked_ed = QStackedWidget()
+
         self.body_ed = QTextEdit()
         self.body_ed.setPlaceholderText("Write thoughts, code snippets, research findings, or meeting takeaways...")
         self.body_ed.setFont(QFont("Segoe UI", 10))
@@ -3422,7 +3685,24 @@ class NeoNotesView(QWidget):
             }
         """)
         self.body_ed.textChanged.connect(self._on_content_changed)
-        ed_lay.addWidget(self.body_ed, stretch=1)
+        self.stacked_ed.addWidget(self.body_ed)
+
+        self.preview_browser = QTextBrowser()
+        self.preview_browser.setOpenExternalLinks(True)
+        self.preview_browser.setStyleSheet("""
+            QTextBrowser {
+                background: rgba(10, 15, 26, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                border-radius: 8px;
+                color: #e2e8f0;
+                padding: 12px;
+                font-family: 'Segoe UI', -apple-system, sans-serif;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+        """)
+        self.stacked_ed.addWidget(self.preview_browser)
+        ed_lay.addWidget(self.stacked_ed, stretch=1)
 
         # Footer Status Row
         ft = QHBoxLayout()
@@ -3445,6 +3725,287 @@ class NeoNotesView(QWidget):
         # Initial UI render
         self._refresh_notes_list()
         self._populate_active_note_in_editor()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Menus: Templates & Exports
+    # ─────────────────────────────────────────────────────────────────────────
+    def _init_template_menu(self):
+        tpl_menu = QMenu(self)
+        tpl_menu.setStyleSheet("""
+            QMenu {
+                background: #0f172a;
+                color: #e2e8f0;
+                border: 1px solid rgba(56, 189, 248, 0.25);
+                border-radius: 6px;
+                padding: 4px;
+            }
+            QMenu::item {
+                padding: 6px 14px;
+                border-radius: 4px;
+                font-size: 11px;
+            }
+            QMenu::item:selected {
+                background: rgba(56, 189, 248, 0.18);
+                color: #ffffff;
+            }
+        """)
+        for name in NOTE_TEMPLATES.keys():
+            action = QAction(name, self)
+            action.triggered.connect(lambda _, t=name: self._apply_template(t))
+            tpl_menu.addAction(action)
+        self.template_btn.setMenu(tpl_menu)
+
+    def _init_export_menu(self):
+        exp_menu = QMenu(self)
+        exp_menu.setStyleSheet("""
+            QMenu {
+                background: #0f172a;
+                color: #e2e8f0;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 4px;
+            }
+            QMenu::item {
+                padding: 6px 14px;
+                border-radius: 4px;
+                font-size: 11px;
+            }
+            QMenu::item:selected {
+                background: rgba(56, 189, 248, 0.18);
+                color: #ffffff;
+            }
+        """)
+        for fmt, label in [("md", "Markdown (.md)"), ("txt", "Plain Text (.txt)"), ("html", "Rich Document (.html)")]:
+            action = QAction(label, self)
+            action.triggered.connect(lambda _, f=fmt: self._export_note(f))
+            exp_menu.addAction(action)
+        self.export_btn.setMenu(exp_menu)
+
+    def _apply_template(self, template_key: str):
+        tpl = NOTE_TEMPLATES.get(template_key)
+        if not tpl:
+            return
+
+        # Flush any edits
+        if self.save_timer.isActive():
+            self.save_timer.stop()
+
+        new_id = f"note_{int(time.time() * 1000)}"
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        new_note = {
+            "id": new_id,
+            "title": tpl.get("title", "Untitled Note"),
+            "category": tpl.get("category", "Dev"),
+            "pinned": False,
+            "archived": False,
+            "created_at": now_str,
+            "updated_at": now_str,
+            "content": tpl.get("content", ""),
+        }
+        self.notes_data.insert(0, new_note)
+        self.active_note_id = new_id
+        self._save_notes()
+        self.count_badge.setText(f"{len(self.notes_data)} notes")
+        self._refresh_notes_list()
+        self._populate_active_note_in_editor()
+
+        # Switch to Edit mode if currently in Preview
+        if self.is_preview:
+            self._toggle_preview()
+
+        self.body_ed.setFocus()
+        self._show_toast(f"✓ Applied {template_key[:22]}...")
+
+    def _export_note(self, fmt: str):
+        note = self._get_active_note()
+        title = (note.get("title") if note else "") or self.title_in.text().strip() or "Untitled_Note"
+        content = (note.get("content", "") if note else "") or self.body_ed.toPlainText()
+
+        # Sanitize filename
+        safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', title)[:40].strip('_') or "note"
+        export_dir = Path(__file__).resolve().parent.parent / "memory" / "exports"
+        export_dir.mkdir(parents=True, exist_ok=True)
+        out_path = export_dir / f"{safe_title}.{fmt}"
+
+        try:
+            if fmt == "md":
+                out_content = f"# {title}\n\n{content}"
+            elif fmt == "txt":
+                out_content = f"{title}\n\n{content}"
+            elif fmt == "html":
+                # Render clean HTML using browser
+                self.preview_browser.setMarkdown(f"# {title}\n\n{content}")
+                html_body = self.preview_browser.toHtml()
+                out_content = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{title}</title>
+<style>
+  body {{ background: #070b14; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6; }}
+  h1, h2, h3 {{ color: #38bdf8; }}
+  code {{ background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-family: monospace; }}
+  pre {{ background: #0d1320; padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); overflow-x: auto; }}
+</style>
+</head>
+<body>
+{html_body}
+</body>
+</html>"""
+            else:
+                out_content = content
+
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(out_content)
+
+            self._show_toast(f"✓ Exported to memory/exports/{out_path.name}")
+        except Exception as e:
+            self._show_toast(f"Export failed: {str(e)[:24]}")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Zen Focus Mode & Live Preview Toggles
+    # ─────────────────────────────────────────────────────────────────────────
+    def _toggle_zen(self):
+        self.is_zen = not self.is_zen
+        self.left_panel.setVisible(not self.is_zen)
+        if self.is_zen:
+            self.zen_btn.setText("⛶ Exit Zen")
+            self.zen_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(56, 189, 248, 0.18); color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px;
+                    padding: 4px 10px;
+                }
+            """)
+            self._show_toast("Zen Focus Mode Enabled")
+        else:
+            self.zen_btn.setText("⛶ Zen")
+            self.zen_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+                    padding: 4px 10px;
+                }
+                QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+            """)
+            self._show_toast("Zen Focus Mode Disabled")
+
+    def _toggle_preview(self):
+        self.is_preview = not self.is_preview
+        if self.is_preview:
+            # Sync text to preview browser
+            body = self.body_ed.toPlainText()
+            self.preview_browser.setMarkdown(body if body.strip() else "*Empty note...*")
+            self.stacked_ed.setCurrentIndex(1)
+            self.preview_btn.setText("✏️ Edit")
+            self.preview_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(56, 189, 248, 0.15); color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+                }
+            """)
+        else:
+            self.stacked_ed.setCurrentIndex(0)
+            self.preview_btn.setText("👁️ Preview")
+            self.preview_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+                }
+                QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+            """)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Task Extraction to Execution Engine
+    # ─────────────────────────────────────────────────────────────────────────
+    def _extract_tasks_to_engine(self):
+        content = self.body_ed.toPlainText()
+        if not content.strip():
+            self._show_toast("⚠️ Note is empty")
+            return
+
+        # Find markdown checklist items: - [ ] Task or - [x] Task or * [ ] Task
+        checklist_items = []
+        for line in content.splitlines():
+            m = re.match(r"^\s*[-*]\s*\[([ xX])\]\s*(.+)$", line)
+            if m:
+                done_char, desc = m.groups()
+                desc = desc.strip()
+                if desc:
+                    checklist_items.append((done_char.lower() == "x", desc))
+
+        # Fallback to bullet points if no explicit checkboxes found
+        if not checklist_items:
+            for line in content.splitlines():
+                m = re.match(r"^\s*[-*]\s+([A-Za-z0-9].+)$", line)
+                if m:
+                    desc = m.group(1).strip()
+                    if desc and not desc.startswith("["):
+                        checklist_items.append((False, desc))
+
+        if not checklist_items:
+            self._show_toast("⚠️ Add checklist items like '- [ ] task'")
+            return
+
+        # Map active note category to valid task category
+        note_cat = self.cat_box.currentText()
+        if note_cat in ("Academic", "Dev", "SIH", "Security", "Ops", "General"):
+            target_cat = note_cat
+        elif note_cat == "Research":
+            target_cat = "Academic"
+        elif note_cat == "Security":
+            target_cat = "Security"
+        elif note_cat == "Ideas":
+            target_cat = "Dev"
+        else:
+            target_cat = "General"
+
+        # Load tasks from memory/tasks.json
+        current_tasks = []
+        if _TASKS_FILE.exists():
+            try:
+                with open(_TASKS_FILE, "r", encoding="utf-8") as f:
+                    tdata = json.load(f)
+                    if isinstance(tdata, dict) and "tasks" in tdata:
+                        current_tasks = tdata.get("tasks", [])
+            except Exception:
+                current_tasks = []
+
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        added_count = 0
+        for is_done, desc in checklist_items:
+            # Check duplicate in current_tasks
+            if any(t.get("title", "").strip().lower() == desc.lower() for t in current_tasks):
+                continue
+
+            prio = "High" if ("critical" in desc.lower() or "urgent" in desc.lower()) else "Medium"
+            new_task = {
+                "id": f"task_{int(time.time() * 1000)}_{added_count}",
+                "title": desc,
+                "category": target_cat,
+                "priority": prio,
+                "due_date": "Today",
+                "done": is_done,
+                "created_at": now_str,
+                "notes": f"Extracted from Note: {self.title_in.text().strip() or 'Notes Studio'}",
+            }
+            current_tasks.insert(0, new_task)
+            added_count += 1
+
+        if added_count > 0:
+            try:
+                _TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                tmp_f = _TASKS_FILE.with_suffix(".tmp")
+                with open(tmp_f, "w", encoding="utf-8") as f:
+                    json.dump({"tasks": current_tasks}, f, indent=2, ensure_ascii=False)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_f, _TASKS_FILE)
+                self._show_toast(f"✓ Extracted {added_count} tasks to Task Engine!")
+            except Exception as e:
+                self._show_toast(f"Error saving tasks: {str(e)[:20]}")
+        else:
+            self._show_toast("All tasks already in Task Engine")
 
     # ─────────────────────────────────────────────────────────────────────────
     # Storage & Persistence (Zero-Data-Loss Atomic Storage, Zero Mock Data)
@@ -3516,6 +4077,7 @@ class NeoNotesView(QWidget):
                 "title": self.title_in.text().strip() or "Untitled Note",
                 "category": self.cat_box.currentText() or "Quick Note",
                 "pinned": False,
+                "archived": False,
                 "created_at": now_str,
                 "updated_at": now_str,
                 "content": self.body_ed.toPlainText(),
@@ -3533,7 +4095,8 @@ class NeoNotesView(QWidget):
         txt = self.body_ed.toPlainText().strip()
         words = len(txt.split()) if txt else 0
         chars = len(txt)
-        self.word_metrics_lbl.setText(f"{words} words · {chars} chars")
+        read_min = max(1, round(words / 200)) if words > 0 else 0
+        self.word_metrics_lbl.setText(f"{words} words · {chars} chars · ~{read_min}m read")
 
     def _auto_save_active(self):
         note = self._get_active_note()
@@ -3566,13 +4129,17 @@ class NeoNotesView(QWidget):
             if idx >= 0:
                 self.cat_box.setCurrentIndex(idx)
 
-            # Pin button
+            # Pin button (Fixed 28x24 icon)
             if note.get("pinned"):
-                self.pin_btn.setText("📌 Pinned")
-                self.pin_btn.setStyleSheet("background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 5px; padding: 3px 8px;")
+                self.pin_btn.setStyleSheet("background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 5px;")
             else:
-                self.pin_btn.setText("📌 Pin")
-                self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 3px 8px;")
+                self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px;")
+
+            # Archive button
+            if note.get("archived"):
+                self.archive_btn.setStyleSheet("QPushButton { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 5px; }")
+            else:
+                self.archive_btn.setStyleSheet("QPushButton { background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; } QPushButton:hover { color: #f59e0b; }")
 
             t = note.get("updated_at") or note.get("created_at") or "Today"
             self.saved_status_lbl.setText(f"✓ Auto-saved to memory · {t}")
@@ -3584,8 +4151,7 @@ class NeoNotesView(QWidget):
             self.body_ed.setPlaceholderText("Write thoughts, code snippets, research findings, or meeting takeaways...")
             self.word_metrics_lbl.setText("0 words · 0 chars")
             self.saved_status_lbl.setText("Ready · Start typing to create a note")
-            self.pin_btn.setText("📌 Pin")
-            self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 3px 8px;")
+            self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px;")
             self.editor_panel.setEnabled(True)
         self._is_loading_note = False
 
@@ -3599,10 +4165,14 @@ class NeoNotesView(QWidget):
 
         self.active_note_id = note.get("id")
         self._populate_active_note_in_editor()
+        if self.is_preview:
+            # Refresh preview content
+            body = self.body_ed.toPlainText()
+            self.preview_browser.setMarkdown(body if body.strip() else "*Empty note...*")
         self._refresh_notes_list()
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Note Actions (Add, Delete, Pin, Copy, AI Review, Commit)
+    # Note Actions (Add, Delete, Pin, Archive, Copy, AI Review, AI Polish, Commit)
     # ─────────────────────────────────────────────────────────────────────────
     def _add_new_note(self):
         if self.save_timer.isActive():
@@ -3616,6 +4186,7 @@ class NeoNotesView(QWidget):
             "title": "",
             "category": self.active_filter_cat if self.active_filter_cat in NOTE_CATEGORY_COLORS else "Quick Note",
             "pinned": False,
+            "archived": False,
             "created_at": now_str,
             "updated_at": now_str,
             "content": "",
@@ -3626,6 +4197,8 @@ class NeoNotesView(QWidget):
         self.count_badge.setText(f"{len(self.notes_data)} notes")
         self._refresh_notes_list()
         self._populate_active_note_in_editor()
+        if self.is_preview:
+            self._toggle_preview()
         self.title_in.setFocus()
         self._show_toast("✓ New note created")
 
@@ -3657,6 +4230,16 @@ class NeoNotesView(QWidget):
         self._refresh_notes_list()
         self._show_toast("Pinned to top" if note["pinned"] else "Unpinned")
 
+    def _toggle_active_archive(self):
+        note = self._get_active_note()
+        if not note:
+            return
+        note["archived"] = not note.get("archived", False)
+        self._save_notes()
+        self._populate_active_note_in_editor()
+        self._refresh_notes_list()
+        self._show_toast("Archived note" if note["archived"] else "Unarchived note")
+
     def _on_category_changed(self):
         if self._is_loading_note:
             return
@@ -3669,13 +4252,35 @@ class NeoNotesView(QWidget):
 
     def _copy_note(self):
         note = self._get_active_note()
-        if not note:
-            return
-        text = f"# {note.get('title', '')}\n\n{note.get('content', '')}"
+        title = (note.get("title") if note else "") or self.title_in.text().strip()
+        content = (note.get("content", "") if note else "") or self.body_ed.toPlainText()
+        text = f"# {title}\n\n{content}"
         clipboard = QApplication.clipboard()
         if clipboard:
             clipboard.setText(text)
             self._show_toast("📋 Copied note to clipboard")
+
+    def _polish_note(self):
+        # Flush any pending edits immediately
+        if self.save_timer.isActive():
+            self.save_timer.stop()
+            self._auto_save_active()
+
+        note = self._get_active_note()
+        title = (note.get("title") if note else "") or self.title_in.text().strip()
+        content = (note.get("content", "") if note else "") or self.body_ed.toPlainText().strip()
+
+        if not title and not content:
+            self._show_toast("⚠️ Enter a note title or text first")
+            return
+
+        cmd = (
+            f"Please polish, structure, format with clean Markdown headings, and refine the prose of my note '{title}':\n\n"
+            f"{content}\n\n"
+            "Maintain technical precision, clarity, and senior-dev executive formatting, Boss."
+        )
+        self._show_toast("✨ Dispatched note to NEO for polishing")
+        self.note_action_triggered.emit(cmd)
 
     def _ask_neo_review(self):
         # Flush any pending edits immediately
@@ -3727,25 +4332,79 @@ class NeoNotesView(QWidget):
         self._show_toast("🧠 Committed note to NEO Long-Term Memory")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Search, Filtering & Sidebar Refresh
+    # Search, Filtering, Dynamic Hashtags & Sidebar Refresh
     # ─────────────────────────────────────────────────────────────────────────
     def _set_category_filter(self, cat: str):
         self.active_filter_cat = cat
+        self.active_tag_filter = None
         for c, btn in self.filter_buttons.items():
             if c == cat:
                 btn.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; padding: 2px 7px;")
                 btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
             else:
-                btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 4px; padding: 2px 6px;")
+                btn.setStyleSheet("background: rgba(255, 255, 255, 0.02); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
                 btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Normal))
+        self._refresh_notes_list()
+
+    def _set_tag_filter(self, tag: Optional[str]):
+        self.active_tag_filter = tag
         self._refresh_notes_list()
 
     def _on_search_changed(self, text: str):
         self.search_keyword = text.lower().strip()
         self._refresh_notes_list()
 
+    def _refresh_hashtags_bar(self):
+        # Clear existing hashtag widgets
+        for i in reversed(range(self.tags_lay.count())):
+            item = self.tags_lay.itemAt(i)
+            if item and item.widget():
+                w = item.widget()
+                self.tags_lay.removeWidget(w)
+                w.deleteLater()
+
+        # Extract unique tags from non-archived notes
+        all_tags = []
+        for n in self.notes_data:
+            if not n.get("archived", False):
+                t_str = (n.get("title", "") + " " + (n.get("content", "")))
+                tags = re.findall(r"#([a-zA-Z0-9_\-]+)", t_str)
+                all_tags.extend([t.lower() for t in tags])
+
+        unique_tags = list(dict.fromkeys(all_tags))[:5] # Top 5 tags
+        if not unique_tags:
+            self.tags_frame.hide()
+            return
+
+        self.tags_frame.show()
+        # "All tags" button
+        all_btn = QPushButton("all")
+        all_btn.setFont(QFont("Segoe UI", 7))
+        all_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.active_tag_filter is None:
+            all_btn.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-radius: 3px; padding: 1px 5px; border: none;")
+        else:
+            all_btn.setStyleSheet("background: transparent; color: #64748b; border-radius: 3px; padding: 1px 5px; border: none;")
+        all_btn.clicked.connect(lambda: self._set_tag_filter(None))
+        self.tags_lay.addWidget(all_btn)
+
+        for tag in unique_tags:
+            tb = QPushButton(f"#{tag}")
+            tb.setFont(QFont("Segoe UI", 7))
+            tb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            if self.active_tag_filter == tag:
+                tb.setStyleSheet("background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 3px; padding: 1px 5px; border: 1px solid rgba(56, 189, 248, 0.4);")
+            else:
+                tb.setStyleSheet("background: rgba(255, 255, 255, 0.03); color: #94a3b8; border-radius: 3px; padding: 1px 5px; border: none;")
+            tb.clicked.connect(lambda _, tg=tag: self._set_tag_filter(tg))
+            self.tags_lay.addWidget(tb)
+        self.tags_lay.addStretch()
+
     def _refresh_notes_list(self):
-        # Clear existing cards (except stretch at the end)
+        # Refresh hashtags bar
+        self._refresh_hashtags_bar()
+
+        # Clear existing cards
         for i in reversed(range(self.cards_lay.count())):
             item = self.cards_lay.itemAt(i)
             if item and item.widget():
@@ -3763,10 +4422,27 @@ class NeoNotesView(QWidget):
         # Filter
         kw = self.search_keyword
         cat = self.active_filter_cat
+        tag = self.active_tag_filter
         filtered = []
+
         for n in sorted_notes:
-            if cat != "All" and n.get("category") != cat:
-                continue
+            is_archived = n.get("archived", False)
+            if cat == "Archive":
+                if not is_archived:
+                    continue
+            else:
+                if is_archived:
+                    continue
+                if cat != "All" and n.get("category") != cat:
+                    continue
+
+            # Tag filter
+            if tag:
+                t_str = (n.get("title", "") + " " + (n.get("content", ""))).lower()
+                if f"#{tag.lower()}" not in t_str and tag.lower() not in t_str:
+                    continue
+
+            # Search keyword
             if kw:
                 title = n.get("title", "").lower()
                 body = n.get("content", "").lower()
