@@ -3439,7 +3439,7 @@ class NeoNotesView(QWidget):
         self._populate_active_note_in_editor()
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Storage & Persistence (Zero-Data-Loss Atomic Storage)
+    # Storage & Persistence (Zero-Data-Loss Atomic Storage, Zero Mock Data)
     # ─────────────────────────────────────────────────────────────────────────
     def _load_notes(self) -> list[dict]:
         _NOTES_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -3454,20 +3454,9 @@ class NeoNotesView(QWidget):
             except Exception:
                 pass
 
-        # Initial clean default notes
-        initial_notes = [
-            {
-                "id": "note_1",
-                "title": "Ey Project Architecture & Sprint Plan",
-                "category": "Dev",
-                "pinned": True,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "content": "# Ey Project Architecture & Sprint Plan\n\n## Objective\nDecompose the core execution engine and telemetry pipelines for tonight's 9:00 PM sprint.\n\n### Key Milestones:\n1. Telemetry Pipeline: Integrate high-frequency CPU/GPU and system vitals polling into asynchronous queue.\n2. Database Cache: Validate schema migration with zero-latency disk fsync.\n3. Execution Sandbox: Ensure safe background worker isolation for long-running scripts.\n\n### Technical Notes:\n- Keep the UI responsive by offloading heavy compute to subagent tasks.\n- Maintain obsidian dark palette across new modules.",
-            }
-        ]
-        self._write_notes(initial_notes)
-        return initial_notes
+        # Zero mock data: Start completely clean with an empty list
+        self._write_notes([])
+        return []
 
     def _write_notes(self, notes: list[dict]):
         try:
@@ -3506,6 +3495,28 @@ class NeoNotesView(QWidget):
 
     def _on_content_changed(self):
         if self._is_loading_note:
+            return
+        if not self._get_active_note():
+            title_text = self.title_in.text().strip()
+            body_text = self.body_ed.toPlainText().strip()
+            if not title_text and not body_text:
+                return
+            new_id = f"note_{int(time.time() * 1000)}"
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+            new_note = {
+                "id": new_id,
+                "title": self.title_in.text().strip() or "Untitled Note",
+                "category": self.cat_box.currentText() or "Quick Note",
+                "pinned": False,
+                "created_at": now_str,
+                "updated_at": now_str,
+                "content": self.body_ed.toPlainText(),
+            }
+            self.notes_data.insert(0, new_note)
+            self.active_note_id = new_id
+            self.count_badge.setText(f"{len(self.notes_data)} notes")
+            self._save_notes()
+            self._refresh_notes_list()
             return
         self._update_word_metrics()
         self.save_timer.start()
@@ -3560,10 +3571,14 @@ class NeoNotesView(QWidget):
             self._update_word_metrics()
         else:
             self.title_in.clear()
+            self.title_in.setPlaceholderText("Untitled Note (type to start drafting)...")
             self.body_ed.clear()
+            self.body_ed.setPlaceholderText("Write thoughts, code snippets, research findings, or meeting takeaways...")
             self.word_metrics_lbl.setText("0 words · 0 chars")
-            self.saved_status_lbl.setText("No active note")
-            self.editor_panel.setEnabled(False)
+            self.saved_status_lbl.setText("Ready · Start typing to create a note")
+            self.pin_btn.setText("📌 Pin")
+            self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 3px 8px;")
+            self.editor_panel.setEnabled(True)
         self._is_loading_note = False
 
     def _select_note(self, note: dict):
@@ -3590,7 +3605,7 @@ class NeoNotesView(QWidget):
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
         new_note = {
             "id": new_id,
-            "title": "Untitled Note",
+            "title": "",
             "category": self.active_filter_cat if self.active_filter_cat in NOTE_CATEGORY_COLORS else "Quick Note",
             "pinned": False,
             "created_at": now_str,
@@ -3604,7 +3619,6 @@ class NeoNotesView(QWidget):
         self._refresh_notes_list()
         self._populate_active_note_in_editor()
         self.title_in.setFocus()
-        self.title_in.selectAll()
         self._show_toast("✓ New note created")
 
     def _delete_note(self, note: dict):

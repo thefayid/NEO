@@ -9,16 +9,6 @@
       "done": false,
       "created_at": "2026-11-09 15:57",
       "notes": ""
-    },
-    {
-      "id": "task_start_ey_project",
-      "title": "Start Ey Project",
-      "category": "Dev",
-      "priority": "High",
-      "due_date": "Today",
-      "done": false,
-      "created_at": "2026-11-09 19:00",
-      "notes": "Scheduled for tonight 9:00 PM - 10:00 PM"
     }
   ]
 }
