@@ -857,6 +857,33 @@ class ToolExecutionAccordion(QFrame):
 # ─────────────────────────────────────────────────────────────────────────────
 #  4. CHAT MESSAGE BUBBLE (Supports in-place streaming updates)
 # ─────────────────────────────────────────────────────────────────────────────
+def _dedup_stutter(text: str) -> str:
+    """Removes trailing stutter or overlapping repeated sentences common across tool calls."""
+    if not text:
+        return ""
+    cleaned = " ".join(text.split())
+    sentences = re.split(r"(?<=[.!?])\s+", cleaned)
+    if len(sentences) <= 1:
+        return cleaned
+
+    seen = []
+    for s in sentences:
+        s_norm = re.sub(r"[^\w\s]", "", s).lower().strip()
+        words = set(s_norm.split())
+        is_dup = False
+        if len(words) >= 3:
+            for prev in seen:
+                prev_norm = re.sub(r"[^\w\s]", "", prev).lower().strip()
+                prev_words = set(prev_norm.split())
+                overlap = len(words & prev_words) / max(len(words), 1)
+                if overlap >= 0.65:
+                    is_dup = True
+                    break
+        if not is_dup:
+            seen.append(s)
+    return " ".join(seen)
+
+
 def _format_markdown_prose(text: str) -> str:
     escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escaped)
@@ -1124,13 +1151,16 @@ class NeoChatMessageBubble(QFrame):
 
     def _render_body(self, content: str):
         if self.is_user:
-            txt_lbl = QLabel(_format_markdown_prose(content))
+            clean_user = re.sub(r"\[Persona:[^\]]+\]\s*", "", content).strip()
+            txt_lbl = QLabel(_format_markdown_prose(clean_user))
+            txt_lbl.setTextFormat(Qt.TextFormat.RichText)
             txt_lbl.setFont(QFont("Segoe UI", 9))
             txt_lbl.setWordWrap(True)
             txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
             txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; line-height: 140%;")
             self.body_lay.addWidget(txt_lbl)
         else:
+            content = _dedup_stutter(content)
             # 1. Chain-of-thought extraction (<thought> ... </thought>)
             th_match = re.search(r"<(thought|thinking)>(.*?)</\1>", content, flags=re.DOTALL | re.IGNORECASE)
             if th_match:
@@ -1993,6 +2023,7 @@ class NeoModernChatWidget(QWidget):
 
         if tl.startswith("user: ") or tl.startswith("you: "):
             content = clean.split(": ", 1)[1]
+            content = re.sub(r"\[Persona:[^\]]+\]\s*", "", content).strip()
             self.add_message("user", content)
         elif tl.startswith(f"{self._ai_name_lc}: ") or tl.startswith("jarvis: ") or tl.startswith("neo: "):
             content = clean.split(": ", 1)[1]
@@ -2014,7 +2045,42 @@ class NeoModernChatWidget(QWidget):
             return
 
         role_lower = role.lower()
+        if role_lower in ("user", "you"):
+            clean = re.sub(r"\[Persona:[^\]]+\]\s*", "", clean).strip()
+            if not clean:
+                return
+        else:
+            clean = _dedup_stutter(clean)
+            if not clean:
+                return
+
         now = time.time()
+
+        # Check against last message in active session for repetition / duplication
+        curr = self._get_active_session()
+        if curr and curr.get("messages"):
+            last_msg = curr["messages"][-1]
+            last_role = last_msg.get("role", "").lower()
+            last_content = last_msg.get("content", "").strip()
+
+            if last_role == role_lower:
+                if clean == last_content or (len(clean) >= 10 and clean in last_content):
+                    return
+                if clean.startswith(last_content):
+                    remainder = clean[len(last_content):].strip()
+                    if not remainder or remainder in last_content:
+                        return
+                    if self._active_stream_bubble is not None:
+                        self._active_stream_bubble.update_content(clean)
+                        self._last_stream_time = now
+                        last_msg["content"] = clean
+                        self._save_sessions_data()
+                        QTimer.singleShot(20, self._scroll_to_bottom)
+                        return
+                    else:
+                        clean = remainder
+                elif last_content.startswith(clean):
+                    return
 
         # Check if this is an incremental streaming update from the active speaker
         is_streaming_chunk = (
@@ -2032,7 +2098,6 @@ class NeoModernChatWidget(QWidget):
             self._last_stream_time = now
 
             # Update the last message in the active session
-            curr = self._get_active_session()
             if curr and curr.get("messages"):
                 curr["messages"][-1]["content"] = clean
                 self._save_sessions_data()
@@ -2234,10 +2299,25 @@ class NeoModernChatWidget(QWidget):
                     self.welcome_widget.hide()
                 except Exception:
                     pass
+        last_seen_role = None
+        last_seen_txt = ""
+        filtered_msgs = []
         for m in msgs:
             role = m.get("role", "neo")
-            txt = m.get("content", "")
+            txt = m.get("content", "").strip()
             ts = m.get("timestamp", "")
+            if role in ("user", "you"):
+                txt = re.sub(r"\[Persona:[^\]]+\]\s*", "", txt).strip()
+            else:
+                txt = _dedup_stutter(txt)
+            if not txt:
+                continue
+            if role == last_seen_role and (txt == last_seen_txt or (len(txt) >= 10 and txt in last_seen_txt)):
+                continue
+            last_seen_role = role
+            last_seen_txt = txt
+            filtered_msgs.append({"role": role, "content": txt, "timestamp": ts})
+
             bubble = NeoChatMessageBubble(
                 role=role,
                 content=txt,
@@ -2248,6 +2328,8 @@ class NeoModernChatWidget(QWidget):
             bubble.canvas_requested.connect(self.open_artifact_canvas)
             count = self.msg_layout.count()
             self.msg_layout.insertWidget(max(0, count - 1), bubble)
+        curr["messages"] = filtered_msgs
+        self._save_sessions_data()
         QTimer.singleShot(60, self._scroll_to_bottom)
 
     def _create_new_session(self):

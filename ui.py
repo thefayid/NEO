@@ -5721,6 +5721,11 @@ class MainWindow(QMainWindow):
 
 
 
+    def _on_chat_command(self, text: str):
+        """Executed when user submits from NEO Chat bar — command is already added to chat UI, so do not duplicate."""
+        if self.on_text_command:
+            threading.Thread(target=self.on_text_command, args=(text,), daemon=True).start()
+
     def _on_hero_command(self, text: str):
         if hasattr(self, "_log") and self._log:
             self._log.append_log(f"USER: {text}")
@@ -5796,7 +5801,7 @@ class MainWindow(QMainWindow):
             chat_w = NeoModernChatWidget(parent=self)
             self._log = chat_w
             self._drop_zone = chat_w
-            chat_w.command_submitted.connect(self._on_hero_command)
+            chat_w.command_submitted.connect(self._on_chat_command)
             chat_w.file_selected.connect(self._on_file_selected)
             chat_w.mic_toggled.connect(self._on_hero_mic_toggled)
             return chat_w

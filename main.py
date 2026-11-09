@@ -365,16 +365,51 @@ _CTRL_RE = re.compile(r"<ctrl\d+>", re.IGNORECASE)
 _REPEAT_MIN = 12
 
 
-def _is_repeat_chunk(txt: str, buf: list) -> bool:
+def _dedup_stutter(text: str) -> str:
+    """Removes trailing stutter or overlapping repeated sentences common across tool calls."""
+    if not text:
+        return ""
+    cleaned = " ".join(text.split())
+    sentences = re.split(r"(?<=[.!?])\s+", cleaned)
+    if len(sentences) <= 1:
+        return cleaned
+
+    seen = []
+    for s in sentences:
+        s_norm = re.sub(r"[^\w\s]", "", s).lower().strip()
+        words = set(s_norm.split())
+        is_dup = False
+        if len(words) >= 3:
+            for prev in seen:
+                prev_norm = re.sub(r"[^\w\s]", "", prev).lower().strip()
+                prev_words = set(prev_norm.split())
+                overlap = len(words & prev_words) / max(len(words), 1)
+                if overlap >= 0.65:
+                    is_dup = True
+                    break
+        if not is_dup:
+            seen.append(s)
+    return " ".join(seen)
+
+
+def _is_repeat_chunk(txt: str, buf: list, last_logged: str = "") -> bool:
     """True if this transcript chunk has already been seen this turn.
 
     Guards against the API re-sending the tail of a response across the several
     turn_completes a tool-using turn produces.
     """
     if len(txt) < _REPEAT_MIN:
-        return bool(buf) and txt == buf[-1]
+        if bool(buf) and txt == buf[-1]:
+            return True
+        if last_logged and txt in last_logged:
+            return True
+        return False
     joined = " ".join(buf)
-    return txt in joined
+    if txt in joined:
+        return True
+    if last_logged and txt in last_logged:
+        return True
+    return False
 
 def _clean_transcript(text: str) -> str:    
     text = _CTRL_RE.sub("", text)
@@ -1911,7 +1946,7 @@ class JarvisLive:
                             # out_buf had been flushed and emptied, the repeat
                             # sailed straight back in, which logged the answer
                             # twice AND made the avatar mouth it twice.
-                            if txt and not _is_repeat_chunk(txt, out_buf):
+                            if txt and not _is_repeat_chunk(txt, out_buf, getattr(self, "_last_out_logged", "")):
                                 out_buf.append(txt)
                                 # Hand the words to the mouth as they arrive, so
                                 # the avatar can form the consonants the audio
@@ -1961,12 +1996,16 @@ class JarvisLive:
                             in_buf = []
 
                             full_out = " ".join(out_buf).strip()
-                            # Second line of defence: even if a repeat slips
-                            # into a *fresh* buffer after a flush, never log the
-                            # same answer (or a tail of it) twice in a row.
-                            if full_out and len(full_out) >= _REPEAT_MIN and self._last_out_logged:
-                                if full_out in self._last_out_logged:
+                            # Second line of defence: prevent repeats across tool calls or cumulative transcripts
+                            if full_out and self._last_out_logged:
+                                if full_out.startswith(self._last_out_logged):
+                                    full_out = full_out[len(self._last_out_logged):].strip()
+                                elif self._last_out_logged.startswith(full_out):
                                     full_out = ""
+                                elif full_out in self._last_out_logged:
+                                    full_out = ""
+                            if full_out:
+                                full_out = _dedup_stutter(full_out)
                             if full_out:
                                 self._last_out_logged = full_out
                                 self.ui.write_log(f"{self._asst_name}: {full_out}")
