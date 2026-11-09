@@ -1,0 +1,14 @@
+{
+  "active_project_id": "proj_current",
+  "projects": [
+    {
+      "id": "proj_current",
+      "name": "Mark-LVI-main",
+      "path": "E:\\Jarvis\\Mark-LVI-main",
+      "category": "AI/Core",
+      "run_command": "python main.py",
+      "created_at": "2026-11-09",
+      "last_opened": "2026-11-09 21:59"
+    }
+  ]
+}

@@ -4904,6 +4904,8 @@ class MainWindow(QMainWindow):
 
         self.projects_view = NeoProjectsView()
         self.projects_view.file_open_requested.connect(self._on_file_selected)
+        if hasattr(self.projects_view, "project_action_triggered"):
+            self.projects_view.project_action_triggered.connect(self._on_task_action_triggered)
 
         self.knowledge_view = NeoKnowledgeView()
         self.knowledge_view.search_triggered.connect(self._on_hero_command)

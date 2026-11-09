@@ -23,6 +23,7 @@ import os
 import re
 import time
 import json
+import subprocess
 import webbrowser
 import ssl
 import urllib.request
@@ -39,7 +40,8 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
     QLineEdit, QTextEdit, QTextBrowser, QProgressBar, QFrame, QScrollArea,
     QCheckBox, QListWidget, QListWidgetItem, QSizePolicy,
-    QStackedWidget, QGridLayout, QDialog, QComboBox, QButtonGroup, QMenu
+    QStackedWidget, QGridLayout, QDialog, QComboBox, QButtonGroup, QMenu,
+    QTreeWidget, QTreeWidgetItem, QHeaderView, QSplitter, QFileDialog
 )
 import psutil
 import random
@@ -2223,6 +2225,42 @@ class NeoHeroStage(QWidget):
 # ─────────────────────────────────────────────────────────────────────────────
 _TASKS_FILE = Path(__file__).resolve().parent.parent / "memory" / "tasks.json"
 _NOTES_FILE = Path(__file__).resolve().parent.parent / "memory" / "notes.json"
+_PROJECTS_FILE = Path(__file__).resolve().parent.parent / "memory" / "projects.json"
+
+IGNORED_WORKSPACE_PATTERNS = {
+    "__pycache__", ".git", ".venv", "venv", "node_modules",
+    ".pytest_cache", ".idea", ".vscode", ".mypy_cache", ".ruff_cache",
+    ".DS_Store", "build", "dist"
+}
+
+FILE_TYPE_ICONS = {
+    ".py": "🐍",
+    ".json": "📜",
+    ".md": "📄",
+    ".txt": "📄",
+    ".html": "🌐",
+    ".css": "🎨",
+    ".js": "⚡",
+    ".ts": "⚡",
+    ".tsx": "⚛️",
+    ".jsx": "⚛️",
+    ".sh": "🖥️",
+    ".bat": "🖥️",
+    ".ps1": "🖥️",
+    ".toml": "⚙️",
+    ".yaml": "⚙️",
+    ".yml": "⚙️",
+    ".env": "🔒",
+    ".png": "🖼️",
+    ".jpg": "🖼️",
+    ".jpeg": "🖼️",
+    ".svg": "🖼️",
+    ".ico": "🖼️",
+    ".pdf": "📕",
+    ".zip": "📦",
+    ".tar": "📦",
+    ".gz": "📦",
+}
 
 NOTE_CATEGORY_COLORS = {
     "Dev":        ("#38bdf8", "rgba(56, 189, 248, 0.12)"),
@@ -4467,57 +4505,1084 @@ class NeoNotesView(QWidget):
 
 
 class NeoProjectsView(QWidget):
-    """Active Workspace Explorer."""
-    file_open_requested = pyqtSignal(str)
+    """
+    Executive Mission Control & Project Command Center for NEO.
+    Provides multi-workspace portfolio switching, live Git repository telemetry,
+    intelligent filterable file tree with lazy loading, code inspector with AI review hooks,
+    KPI analytics (LOC, repo size, modules), run/test docks, and AI architect roadmap generator.
+    """
+    file_open_requested = pyqtSignal(str)       # Emits absolute file path for assistant ingestion
+    project_action_triggered = pyqtSignal(str)  # Emits prompt to NEO chat (architect, review, sprint)
 
     def __init__(self, workspace_path: str = ".", parent=None):
         super().__init__(parent)
-        self.workspace_path = Path(workspace_path)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(36, 24, 36, 24)
-        lay.setSpacing(14)
+        self.default_workspace = Path(workspace_path).resolve()
+        self.workspace_path = self.default_workspace
+        self.hide_cache_files = True
 
+        # Load projects registry
+        self.projects_data = self._load_projects()
+        active_proj = self._get_active_project()
+        if active_proj and Path(active_proj.get("path", "")).exists():
+            self.workspace_path = Path(active_proj["path"]).resolve()
+
+        self._active_file_path: Optional[Path] = None
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(28, 20, 28, 20)
+        root.setSpacing(12)
+
+        # ── 1. Executive Mission Header ──
         hdr = QHBoxLayout()
-        p_lbl = QLabel("🗂  Workspace & Project Explorer")
-        p_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
-        p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        hdr.addWidget(p_lbl)
+        hdr.setSpacing(8)
+
+        t_lbl = QLabel("Projects")
+        t_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        t_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        hdr.addWidget(t_lbl)
+
+        # Project Switcher Dropdown
+        self.proj_combo = QComboBox()
+        self.proj_combo.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium))
+        self.proj_combo.setFixedHeight(28)
+        self.proj_combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(15, 23, 42, 0.8); color: #f1f5f9;
+                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                padding: 2px 10px; min-width: 170px;
+            }
+            QComboBox:hover { border-color: #38bdf8; }
+            QComboBox::drop-down { border: none; }
+            QComboBox QAbstractItemView {
+                background: #0d1322; color: #f1f5f9;
+                selection-background-color: rgba(56, 189, 248, 0.2);
+                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px;
+            }
+        """)
+        self._populate_project_selector()
+        self.proj_combo.currentIndexChanged.connect(self._on_project_switched)
+        hdr.addWidget(self.proj_combo)
+
+        # + Add Project / Open Folder Button
+        add_proj_btn = QPushButton("+ Open Folder")
+        add_proj_btn.setToolTip("Add and switch to any project folder on your PC")
+        add_proj_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        add_proj_btn.setFixedHeight(28)
+        add_proj_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        add_proj_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 2px 10px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        """)
+        add_proj_btn.clicked.connect(self._add_new_project)
+        hdr.addWidget(add_proj_btn)
+
+        self.toast_lbl = QLabel("")
+        self.toast_lbl.setStyleSheet("""
+            QLabel {
+                background: rgba(15, 23, 42, 0.95); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                padding: 4px 12px; font-size: 11px;
+            }
+        """)
+        self.toast_lbl.hide()
+        hdr.addWidget(self.toast_lbl)
+
         hdr.addStretch()
 
-        branch_lbl = QLabel("🌿 git: main [clean]")
-        branch_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        branch_lbl.setStyleSheet("color: #34d399; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; padding: 4px 8px;")
-        hdr.addWidget(branch_lbl)
-        lay.addLayout(hdr)
-
-        self.list_widget = QListWidget()
-        self.list_widget.setStyleSheet(f"""
-            QListWidget {{
-                background: #101624; color: {TEXT_WHITE};
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 8px;
-            }}
-            QListWidget::item {{
-                padding: 8px 12px; border-radius: 6px;
-            }}
-            QListWidget::item:hover {{
-                background: rgba(96, 165, 250, 0.12); color: #60a5fa;
-            }}
+        # Git Status Pill
+        self.git_badge = QPushButton("🌿 git: checking...")
+        self.git_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.git_badge.setFixedHeight(28)
+        self.git_badge.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.git_badge.setStyleSheet("""
+            QPushButton {
+                color: #34d399; background: rgba(52, 211, 153, 0.1);
+                border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; padding: 2px 10px;
+            }
+            QPushButton:hover { background: rgba(52, 211, 153, 0.2); }
         """)
-        self.list_widget.itemDoubleClicked.connect(lambda item: self.file_open_requested.emit(item.text()))
-        lay.addWidget(self.list_widget, stretch=1)
-        self._load_files()
+        self._init_git_menu()
+        hdr.addWidget(self.git_badge)
 
-    def _load_files(self):
-        self.list_widget.clear()
+        # AI Commit Message Generator
+        ai_commit_btn = QPushButton("✨ AI Commit")
+        ai_commit_btn.setToolTip("Ask NEO to generate an executive conventional commit message from git diff")
+        ai_commit_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        ai_commit_btn.setFixedHeight(28)
+        ai_commit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        ai_commit_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 2px 10px;
+            }
+            QPushButton:hover { background: rgba(245, 158, 11, 0.2); color: #ffffff; }
+        """)
+        ai_commit_btn.clicked.connect(self._ai_generate_commit)
+        hdr.addWidget(ai_commit_btn)
+
+        # AI Project Architect Button
+        ai_arch_btn = QPushButton("🤖 AI Architect")
+        ai_arch_btn.setToolTip("Ask NEO to analyze architecture and generate a 3-phase technical sprint roadmap")
+        ai_arch_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        ai_arch_btn.setFixedHeight(28)
+        ai_arch_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        ai_arch_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.12); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 2px 12px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #ffffff; }
+        """)
+        ai_arch_btn.clicked.connect(self._ai_architect_project)
+        hdr.addWidget(ai_arch_btn)
+
+        # Refresh Button
+        refresh_btn = QPushButton("🔄")
+        refresh_btn.setToolTip("Reload workspace files, git status, and metrics")
+        refresh_btn.setFont(QFont("Segoe UI", 9))
+        refresh_btn.setFixedSize(28, 28)
+        refresh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        refresh_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+        """)
+        refresh_btn.clicked.connect(self._refresh_all)
+        hdr.addWidget(refresh_btn)
+
+        root.addLayout(hdr)
+
+        # ── 2. Master-Detail Center Splitter ──
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setStyleSheet("""
+            QSplitter::handle {
+                background: rgba(255, 255, 255, 0.05); width: 2px;
+            }
+            QSplitter::handle:hover { background: #38bdf8; }
+        """)
+
+        # Left Column: Workspace File Explorer (~310px)
+        left_panel = QFrame()
+        left_panel.setMinimumWidth(260)
+        left_panel.setMaximumWidth(420)
+        left_panel.setStyleSheet("""
+            QFrame {
+                background: rgba(13, 19, 32, 0.7);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 10px;
+            }
+        """)
+        left_lay = QVBoxLayout(left_panel)
+        left_lay.setContentsMargins(10, 10, 10, 10)
+        left_lay.setSpacing(8)
+
+        # File Filter Search Bar & View Controls
+        tree_ctrl = QHBoxLayout()
+        tree_ctrl.setSpacing(6)
+
+        self.file_search_in = QLineEdit()
+        self.file_search_in.setPlaceholderText("🔍 Filter files...")
+        self.file_search_in.setFont(QFont("Segoe UI", 8))
+        self.file_search_in.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-radius: 6px; color: #ffffff; padding: 4px 8px;
+            }
+            QLineEdit:focus { border-color: rgba(56, 189, 248, 0.4); }
+        """)
+        self.file_search_in.textChanged.connect(self._on_search_filter_changed)
+        tree_ctrl.addWidget(self.file_search_in, stretch=1)
+
+        self.toggle_cache_btn = QPushButton("👁️ Clean")
+        self.toggle_cache_btn.setToolTip("Toggle hidden & cache files (__pycache__, .git, etc.)")
+        self.toggle_cache_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Medium))
+        self.toggle_cache_btn.setFixedSize(54, 24)
+        self.toggle_cache_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.toggle_cache_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 5px;
+            }
+        """)
+        self.toggle_cache_btn.clicked.connect(self._toggle_cache_visibility)
+        tree_ctrl.addWidget(self.toggle_cache_btn)
+
+        left_lay.addLayout(tree_ctrl)
+
+        # Hierarchical Tree Widget with Lazy Loading
+        self.tree_widget = QTreeWidget()
+        self.tree_widget.setHeaderLabels(["Name", "Size"])
+        self.tree_widget.setFont(QFont("Segoe UI", 8))
+        self.tree_widget.header().setStyleSheet("""
+            QHeaderView::section {
+                background: rgba(15, 23, 42, 0.6); color: #64748b;
+                border: none; padding: 3px 6px; font-size: 10px; font-weight: bold;
+            }
+        """)
+        self.tree_widget.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.tree_widget.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.tree_widget.setStyleSheet("""
+            QTreeWidget {
+                background: transparent; color: #cbd5e1;
+                border: none; outline: none;
+            }
+            QTreeWidget::item {
+                padding: 4px 2px; border-radius: 4px;
+            }
+            QTreeWidget::item:hover {
+                background: rgba(56, 189, 248, 0.08); color: #38bdf8;
+            }
+            QTreeWidget::item:selected {
+                background: rgba(56, 189, 248, 0.18); color: #ffffff;
+            }
+        """)
+        self.tree_widget.itemClicked.connect(self._on_tree_item_clicked)
+        self.tree_widget.itemDoubleClicked.connect(self._on_tree_item_double_clicked)
+        self.tree_widget.itemExpanded.connect(self._on_tree_item_expanded)
+        left_lay.addWidget(self.tree_widget, stretch=1)
+
+        # Path Status Footer
+        self.path_lbl = QLabel(str(self.workspace_path))
+        self.path_lbl.setFont(QFont("Segoe UI", 7))
+        self.path_lbl.setStyleSheet("color: #475569; border: none; background: transparent;")
+        left_lay.addWidget(self.path_lbl)
+
+        self.splitter.addWidget(left_panel)
+
+        # Right Column: Project Intelligence & Code Inspector (Dual-Mode Stack)
+        self.right_panel = QFrame()
+        self.right_panel.setStyleSheet("""
+            QFrame {
+                background: rgba(13, 19, 32, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 10px;
+            }
+        """)
+        right_lay = QVBoxLayout(self.right_panel)
+        right_lay.setContentsMargins(18, 14, 18, 14)
+        right_lay.setSpacing(10)
+
+        self.stack = QStackedWidget()
+
+        # ── Page 0: Project KPI Dashboard & Embedded README ──
+        self.overview_page = QWidget()
+        ov_lay = QVBoxLayout(self.overview_page)
+        ov_lay.setContentsMargins(0, 0, 0, 0)
+        ov_lay.setSpacing(12)
+
+        # KPI Stats Grid (4 Cards)
+        kpi_grid = QGridLayout()
+        kpi_grid.setSpacing(10)
+
+        self.card_files = self._create_kpi_card("📊 FILES & MODULES", "0 files", "0 dirs")
+        self.card_loc   = self._create_kpi_card("📝 CODE VOLUME", "0 LOC", "Across codebase")
+        self.card_size  = self._create_kpi_card("💾 STORAGE SIZE", "0 MB", "On physical disk")
+        self.card_git   = self._create_kpi_card("🌿 GIT REPOSITORY", "Checking...", "Remote: None")
+
+        kpi_grid.addWidget(self.card_files, 0, 0)
+        kpi_grid.addWidget(self.card_loc,   0, 1)
+        kpi_grid.addWidget(self.card_size,  0, 2)
+        kpi_grid.addWidget(self.card_git,   0, 3)
+        ov_lay.addLayout(kpi_grid)
+
+        # Action Command Dock
+        dock_frame = QFrame()
+        dock_frame.setStyleSheet("""
+            QFrame {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px; padding: 4px;
+            }
+        """)
+        dock_lay = QHBoxLayout(dock_frame)
+        dock_lay.setSpacing(8)
+
+        dock_title = QLabel("⚡ QUICK COMMANDS:")
+        dock_title.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        dock_title.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        dock_lay.addWidget(dock_title)
+
+        run_btn = QPushButton("▶ Launch Project")
+        run_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        run_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        run_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(52, 211, 153, 0.12); color: #34d399;
+                border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 5px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(52, 211, 153, 0.25); color: #ffffff; }
+        """)
+        run_btn.clicked.connect(self._launch_project)
+        dock_lay.addWidget(run_btn)
+
+        test_btn = QPushButton("🧪 Run Tests")
+        test_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        test_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        test_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 5px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+        """)
+        test_btn.clicked.connect(self._run_tests)
+        dock_lay.addWidget(test_btn)
+
+        clean_btn = QPushButton("🧹 Purge Cache")
+        clean_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        clean_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        clean_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                border: 1px solid rgba(245, 158, 11, 0.28); border-radius: 5px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(245, 158, 11, 0.2); color: #ffffff; }
+        """)
+        clean_btn.clicked.connect(self._purge_cache)
+        dock_lay.addWidget(clean_btn)
+
+        gh_btn = QPushButton("🌐 View on GitHub")
+        gh_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        gh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        gh_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 4px 10px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+        """)
+        gh_btn.clicked.connect(self._open_github)
+        dock_lay.addWidget(gh_btn)
+
+        dock_lay.addStretch()
+        ov_lay.addWidget(dock_frame)
+
+        # Embedded README / Architecture Document View
+        readme_hdr = QLabel("📖 PROJECT ARCHITECTURE & README")
+        readme_hdr.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        readme_hdr.setStyleSheet("color: #94a3b8; border: none; background: transparent; padding-top: 4px;")
+        ov_lay.addWidget(readme_hdr)
+
+        self.readme_browser = QTextBrowser()
+        self.readme_browser.setOpenExternalLinks(True)
+        self.readme_browser.setStyleSheet("""
+            QTextBrowser {
+                background: rgba(10, 15, 26, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                border-radius: 8px;
+                color: #e2e8f0;
+                padding: 14px;
+                font-family: 'Segoe UI', -apple-system, sans-serif;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+        """)
+        ov_lay.addWidget(self.readme_browser, stretch=1)
+        self.stack.addWidget(self.overview_page)
+
+        # ── Page 1: Live Code & File Inspector ──
+        self.code_page = QWidget()
+        cd_lay = QVBoxLayout(self.code_page)
+        cd_lay.setContentsMargins(0, 0, 0, 0)
+        cd_lay.setSpacing(8)
+
+        # Inspector Toolbar
+        insp_tb = QHBoxLayout()
+        insp_tb.setSpacing(8)
+
+        self.insp_file_lbl = QLabel("📄 filename")
+        self.insp_file_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.insp_file_lbl.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
+        insp_tb.addWidget(self.insp_file_lbl)
+
+        self.insp_meta_lbl = QLabel("0 KB · 0 lines")
+        self.insp_meta_lbl.setFont(QFont("Segoe UI", 8))
+        self.insp_meta_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        insp_tb.addWidget(self.insp_meta_lbl)
+
+        insp_tb.addStretch()
+
+        # Ask NEO to review file button
+        self.ai_review_file_btn = QPushButton("⚡ Ask NEO to Review")
+        self.ai_review_file_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.ai_review_file_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.ai_review_file_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.12); color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 5px; padding: 3px 10px; font-size: 11px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #ffffff; }
+        """)
+        self.ai_review_file_btn.clicked.connect(self._ask_neo_review_file)
+        insp_tb.addWidget(self.ai_review_file_btn)
+
+        # Open in external editor
+        open_ext_btn = QPushButton("🚀 Open Editor")
+        open_ext_btn.setFont(QFont("Segoe UI", 8))
+        open_ext_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        open_ext_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 3px 8px; font-size: 11px;
+            }
+            QPushButton:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+        """)
+        open_ext_btn.clicked.connect(self._open_in_external_editor)
+        insp_tb.addWidget(open_ext_btn)
+
+        # Copy Path
+        copy_p_btn = QPushButton("📋 Path")
+        copy_p_btn.setFont(QFont("Segoe UI", 8))
+        copy_p_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        copy_p_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent; color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 3px 8px; font-size: 11px;
+            }
+            QPushButton:hover { color: #f1f5f9; }
+        """)
+        copy_p_btn.clicked.connect(self._copy_active_file_path)
+        insp_tb.addWidget(copy_p_btn)
+
+        # Close Inspector / Back to Overview
+        close_insp_btn = QPushButton("✕ Overview")
+        close_insp_btn.setFont(QFont("Segoe UI", 8))
+        close_insp_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        close_insp_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 3px 8px; font-size: 11px;
+            }
+            QPushButton:hover { color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); }
+        """)
+        close_insp_btn.clicked.connect(self._close_inspector)
+        insp_tb.addWidget(close_insp_btn)
+
+        cd_lay.addLayout(insp_tb)
+
+        # Monospace Code Viewer
+        self.code_viewer = QTextBrowser()
+        self.code_viewer.setFont(QFont("Consolas", 10))
+        self.code_viewer.setStyleSheet("""
+            QTextBrowser {
+                background: #090e1a;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 8px;
+                color: #e2e8f0;
+                padding: 10px;
+                line-height: 1.4;
+            }
+        """)
+        cd_lay.addWidget(self.code_viewer, stretch=1)
+        self.stack.addWidget(self.code_page)
+
+        right_lay.addWidget(self.stack, stretch=1)
+        self.splitter.addWidget(self.right_panel)
+        self.splitter.setStretchFactor(0, 1)
+        self.splitter.setStretchFactor(1, 3)
+
+        root.addWidget(self.splitter, stretch=1)
+
+        # Initial Load
+        self._refresh_all()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Helper: Create KPI Stat Card
+    # ─────────────────────────────────────────────────────────────────────────
+    def _create_kpi_card(self, title: str, main_val: str, sub_val: str) -> QFrame:
+        card = QFrame()
+        card.setStyleSheet("""
+            QFrame {
+                background: rgba(255, 255, 255, 0.025);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px; padding: 10px 12px;
+            }
+        """)
+        lay = QVBoxLayout(card)
+        lay.setContentsMargins(8, 8, 8, 8)
+        lay.setSpacing(3)
+
+        t_lbl = QLabel(title)
+        t_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        t_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        lay.addWidget(t_lbl)
+
+        val_lbl = QLabel(main_val)
+        val_lbl.setObjectName("main_val")
+        val_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        val_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        lay.addWidget(val_lbl)
+
+        sub_lbl = QLabel(sub_val)
+        sub_lbl.setObjectName("sub_val")
+        sub_lbl.setFont(QFont("Segoe UI", 7))
+        sub_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        lay.addWidget(sub_lbl)
+        return card
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Project Registry & Management
+    # ─────────────────────────────────────────────────────────────────────────
+    def _load_projects(self) -> dict:
+        _PROJECTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if _PROJECTS_FILE.exists():
+            try:
+                with open(_PROJECTS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and "projects" in data:
+                        return data
+            except Exception:
+                pass
+
+        # Initialize with current workspace
+        init_data = {
+            "active_project_id": "proj_current",
+            "projects": [
+                {
+                    "id": "proj_current",
+                    "name": self.default_workspace.name or "NEO Workspace",
+                    "path": str(self.default_workspace),
+                    "category": "AI/Core",
+                    "run_command": "python main.py",
+                    "created_at": datetime.now().strftime("%Y-%m-%d"),
+                    "last_opened": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                }
+            ]
+        }
+        self._write_projects(init_data)
+        return init_data
+
+    def _write_projects(self, data: dict):
         try:
-            if self.workspace_path.exists():
-                for p in sorted(self.workspace_path.iterdir()):
-                    if not p.name.startswith("."):
-                        icn = "📁" if p.is_dir() else "📄"
-                        self.list_widget.addItem(f"{icn}  {p.name}")
+            _PROJECTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp_f = _PROJECTS_FILE.with_suffix(".tmp")
+            with open(tmp_f, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_f, _PROJECTS_FILE)
         except Exception:
             pass
+
+    def _get_active_project(self) -> Optional[dict]:
+        act_id = self.projects_data.get("active_project_id")
+        for p in self.projects_data.get("projects", []):
+            if p.get("id") == act_id:
+                return p
+        return self.projects_data.get("projects", [None])[0]
+
+    def _populate_project_selector(self):
+        self.proj_combo.blockSignals(True)
+        self.proj_combo.clear()
+        act_id = self.projects_data.get("active_project_id")
+        active_idx = 0
+
+        for idx, p in enumerate(self.projects_data.get("projects", [])):
+            name = p.get("name", "Project")
+            cat = p.get("category", "")
+            label = f"{name} ({cat})" if cat else name
+            self.proj_combo.addItem(f"📁 {label}", p.get("id"))
+            if p.get("id") == act_id:
+                active_idx = idx
+
+        self.proj_combo.setCurrentIndex(active_idx)
+        self.proj_combo.blockSignals(False)
+
+    def _on_project_switched(self, index: int):
+        proj_id = self.proj_combo.itemData(index)
+        if not proj_id:
+            return
+        self.projects_data["active_project_id"] = proj_id
+        for p in self.projects_data.get("projects", []):
+            if p.get("id") == proj_id:
+                p["last_opened"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                self.workspace_path = Path(p.get("path", "")).resolve()
+                break
+        self._write_projects(self.projects_data)
+        self._show_toast(f"Switched to {self.workspace_path.name}")
+        self._refresh_all()
+
+    def _add_new_project(self):
+        chosen_dir = QFileDialog.getExistingDirectory(self, "Select Project Folder", str(self.workspace_path))
+        if not chosen_dir:
+            return
+        p_path = Path(chosen_dir).resolve()
+        # Check if already registered
+        for p in self.projects_data.get("projects", []):
+            if Path(p.get("path", "")).resolve() == p_path:
+                self.projects_data["active_project_id"] = p["id"]
+                self._populate_project_selector()
+                self._on_project_switched(self.proj_combo.currentIndex())
+                return
+
+        new_id = f"proj_{int(datetime.now().timestamp() * 1000)}"
+        new_proj = {
+            "id": new_id,
+            "name": p_path.name,
+            "path": str(p_path),
+            "category": "Development",
+            "run_command": "python main.py" if (p_path / "main.py").exists() else "",
+            "created_at": datetime.now().strftime("%Y-%m-%d"),
+            "last_opened": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        self.projects_data.setdefault("projects", []).append(new_proj)
+        self.projects_data["active_project_id"] = new_id
+        self._write_projects(self.projects_data)
+        self._populate_project_selector()
+        self.workspace_path = p_path
+        self._show_toast(f"✓ Added project: {p_path.name}")
+        self._refresh_all()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Git Telemetry & Source Control Hub
+    # ─────────────────────────────────────────────────────────────────────────
+    def _run_git(self, args: list[str]) -> str:
+        try:
+            res = subprocess.run(
+                ["git"] + args,
+                cwd=str(self.workspace_path),
+                capture_output=True,
+                text=True,
+                timeout=3
+            )
+            return res.stdout.strip()
+        except Exception:
+            return ""
+
+    def _refresh_git_status(self):
+        branch = self._run_git(["rev-parse", "--abbrev-ref", "HEAD"])
+        if not branch:
+            self.git_badge.setText("📁 local folder")
+            self.git_badge.setStyleSheet("""
+                QPushButton {
+                    color: #94a3b8; background: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 2px 10px;
+                }
+            """)
+            self._update_kpi_card(self.card_git, "Local Project", "No Git repository detected")
+            return
+
+        status_raw = self._run_git(["status", "--porcelain"])
+        dirty_lines = [l for l in status_raw.splitlines() if l.strip()]
+        dirty_count = len(dirty_lines)
+
+        if dirty_count == 0:
+            badge_text = f"🌿 git: {branch} [clean]"
+            self.git_badge.setStyleSheet("""
+                QPushButton {
+                    color: #34d399; background: rgba(52, 211, 153, 0.1);
+                    border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; padding: 2px 10px;
+                }
+                QPushButton:hover { background: rgba(52, 211, 153, 0.2); }
+            """)
+        else:
+            badge_text = f"🌿 git: {branch} [● {dirty_count} modified]"
+            self.git_badge.setStyleSheet("""
+                QPushButton {
+                    color: #f59e0b; background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 2px 10px;
+                }
+                QPushButton:hover { background: rgba(245, 158, 11, 0.2); }
+            """)
+
+        self.git_badge.setText(badge_text)
+
+        remote_url = self._run_git(["remote", "get-url", "origin"])
+        remote_display = remote_url.split("/")[-1].replace(".git", "") if remote_url else "Local origin"
+        self._update_kpi_card(self.card_git, f"{branch} · {dirty_count} mod", remote_display)
+
+    def _init_git_menu(self):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #0f172a; color: #e2e8f0;
+                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px;
+            }
+            QMenu::item { padding: 6px 14px; border-radius: 4px; font-size: 11px; }
+            QMenu::item:selected { background: rgba(56, 189, 248, 0.18); color: #ffffff; }
+        """)
+        # Populate dynamically on aboutToShow
+        menu.aboutToShow.connect(lambda: self._populate_git_menu(menu))
+        self.git_badge.setMenu(menu)
+
+    def _populate_git_menu(self, menu: QMenu):
+        menu.clear()
+        logs_raw = self._run_git(["log", "-n", "5", "--pretty=format:%h|%s|%ar"])
+        if logs_raw:
+            hdr_act = QAction("Recent Commits:", self)
+            hdr_act.setEnabled(False)
+            menu.addAction(hdr_act)
+            menu.addSeparator()
+
+            for line in logs_raw.splitlines():
+                if "|" in line:
+                    h, s, r = line.split("|", 2)
+                    act = QAction(f"{h} - {s[:35]} ({r})", self)
+                    menu.addAction(act)
+            menu.addSeparator()
+
+        open_gh_act = QAction("🌐 Open on GitHub", self)
+        open_gh_act.triggered.connect(self._open_github)
+        menu.addAction(open_gh_act)
+
+        ai_comm_act = QAction("✨ Ask NEO for AI Commit Message", self)
+        ai_comm_act.triggered.connect(self._ai_generate_commit)
+        menu.addAction(ai_comm_act)
+
+    def _open_github(self):
+        remote = self._run_git(["remote", "get-url", "origin"])
+        if not remote:
+            self._show_toast("No remote GitHub URL configured")
+            return
+        if remote.startswith("git@github.com:"):
+            url = "https://github.com/" + remote.replace("git@github.com:", "").replace(".git", "")
+        else:
+            url = remote.replace(".git", "")
+        webbrowser.open(url)
+        self._show_toast(f"Opened {url}")
+
+    def _ai_generate_commit(self):
+        diff_stat = self._run_git(["diff", "--stat"])
+        status = self._run_git(["status", "--short"])
+        if not status:
+            self._show_toast("Working tree clean — nothing to commit")
+            return
+
+        cmd = (
+            f"Generate an executive Conventional Commit message for project '{self.workspace_path.name}'.\n\n"
+            f"Git Status:\n{status}\n\n"
+            f"Diff Stat:\n{diff_stat}\n\n"
+            "Format with type (feat/fix/refactor), short title, and bullet points of key changes, Boss."
+        )
+        self._show_toast("✨ Dispatched commit request to NEO")
+        self.project_action_triggered.emit(cmd)
+
+    def _ai_architect_project(self):
+        f_cnt, d_cnt, loc, sz = self._calculate_stats()
+        readme_snippet = self.readme_browser.toPlainText()[:400].replace("\n", " ")
+
+        cmd = (
+            f"Perform an executive Technical Architecture Review & Roadmap for project '{self.workspace_path.name}'.\n"
+            f"- Workspace Path: {self.workspace_path}\n"
+            f"- Scope: {f_cnt} files across {d_cnt} modules (~{loc:,} Lines of Code, {sz / (1024*1024):.2f} MB)\n"
+            f"- Project Overview: {readme_snippet or 'Custom project'}\n\n"
+            "Please deliver:\n"
+            "1. Architectural Component Breakdown & System Topology\n"
+            "2. Potential Bottlenecks, Technical Debt & Security Posture\n"
+            "3. 3-Phase Tactical Sprint Roadmap with immediate next milestones, Boss."
+        )
+        self._show_toast("🤖 Dispatched Architecture Review to NEO")
+        self.project_action_triggered.emit(cmd)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Workspace File Tree with Lazy Loading & Code Inspection
+    # ─────────────────────────────────────────────────────────────────────────
+    def _toggle_cache_visibility(self):
+        self.hide_cache_files = not self.hide_cache_files
+        self.toggle_cache_btn.setText("👁️ All" if not self.hide_cache_files else "👁️ Clean")
+        self._populate_file_tree()
+
+    def _on_search_filter_changed(self, text: str):
+        kw = text.strip().lower()
+        def filter_item(item: QTreeWidgetItem):
+            matched = False
+            item_text = item.text(0).lower()
+            if kw in item_text:
+                matched = True
+            child_matched = False
+            for i in range(item.childCount()):
+                if filter_item(item.child(i)):
+                    child_matched = True
+            is_visible = matched or child_matched or not kw
+            item.setHidden(not is_visible)
+            if child_matched and kw:
+                item.setExpanded(True)
+            return is_visible
+
+        for i in range(self.tree_widget.topLevelItemCount()):
+            filter_item(self.tree_widget.topLevelItem(i))
+
+    def _populate_file_tree(self):
+        self.tree_widget.clear()
+        if not self.workspace_path.exists():
+            return
+
+        try:
+            entries = sorted(self.workspace_path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
+        except Exception:
+            return
+
+        for p in entries:
+            if self.hide_cache_files and p.name in IGNORED_WORKSPACE_PATTERNS:
+                continue
+            if self.hide_cache_files and p.name.startswith(".") and p.name != ".env":
+                continue
+
+            if p.is_dir():
+                node = QTreeWidgetItem([f"📁  {p.name}", ""])
+                node.setData(0, Qt.ItemDataRole.UserRole, str(p))
+                # Add dummy child for lazy expansion
+                dummy = QTreeWidgetItem(["loading...", ""])
+                node.addChild(dummy)
+                self.tree_widget.addTopLevelItem(node)
+            else:
+                icon = FILE_TYPE_ICONS.get(p.suffix.lower(), "📄")
+                try:
+                    sz = p.stat().st_size
+                    sz_str = f"{sz / 1024:.1f} KB" if sz > 1024 else f"{sz} B"
+                except Exception:
+                    sz_str = ""
+                node = QTreeWidgetItem([f"{icon}  {p.name}", sz_str])
+                node.setData(0, Qt.ItemDataRole.UserRole, str(p))
+                self.tree_widget.addTopLevelItem(node)
+
+    def _on_tree_item_expanded(self, item: QTreeWidgetItem):
+        path_str = item.data(0, Qt.ItemDataRole.UserRole)
+        if not path_str:
+            return
+        p_dir = Path(path_str)
+        if not p_dir.is_dir():
+            return
+
+        # Check if already loaded
+        if item.childCount() == 1 and item.child(0).text(0) == "loading...":
+            item.takeChild(0)
+            try:
+                entries = sorted(p_dir.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
+                for p in entries:
+                    if self.hide_cache_files and p.name in IGNORED_WORKSPACE_PATTERNS:
+                        continue
+                    if self.hide_cache_files and p.name.startswith(".") and p.name != ".env":
+                        continue
+
+                    if p.is_dir():
+                        node = QTreeWidgetItem([f"📁  {p.name}", ""])
+                        node.setData(0, Qt.ItemDataRole.UserRole, str(p))
+                        dummy = QTreeWidgetItem(["loading...", ""])
+                        node.addChild(dummy)
+                        item.addChild(node)
+                    else:
+                        icon = FILE_TYPE_ICONS.get(p.suffix.lower(), "📄")
+                        try:
+                            sz = p.stat().st_size
+                            sz_str = f"{sz / 1024:.1f} KB" if sz > 1024 else f"{sz} B"
+                        except Exception:
+                            sz_str = ""
+                        node = QTreeWidgetItem([f"{icon}  {p.name}", sz_str])
+                        node.setData(0, Qt.ItemDataRole.UserRole, str(p))
+                        item.addChild(node)
+            except Exception:
+                pass
+
+    def _on_tree_item_clicked(self, item: QTreeWidgetItem, col: int):
+        path_str = item.data(0, Qt.ItemDataRole.UserRole)
+        if not path_str:
+            return
+        p = Path(path_str)
+        if p.is_file():
+            self._load_file_in_inspector(p)
+
+    def _on_tree_item_double_clicked(self, item: QTreeWidgetItem, col: int):
+        path_str = item.data(0, Qt.ItemDataRole.UserRole)
+        if not path_str:
+            return
+        p = Path(path_str)
+        if p.is_file():
+            self.file_open_requested.emit(str(p))
+            self._show_toast(f"Ingested {p.name} into NEO Assistant")
+
+    def _load_file_in_inspector(self, file_path: Path):
+        self._active_file_path = file_path
+        icon = FILE_TYPE_ICONS.get(file_path.suffix.lower(), "📄")
+        try:
+            rel_name = file_path.relative_to(self.workspace_path)
+        except Exception:
+            rel_name = file_path.name
+        self.insp_file_lbl.setText(f"{icon}  {rel_name}")
+
+        try:
+            sz = file_path.stat().st_size
+            sz_str = f"{sz / (1024*1024):.2f} MB" if sz > 1024*1024 else (f"{sz / 1024:.1f} KB" if sz > 1024 else f"{sz} B")
+            if sz > 2 * 1024 * 1024:
+                self.code_viewer.setPlainText(f"// File is too large for live preview ({sz_str}).\n// Click '🚀 Open Editor' to view externally.")
+                lines_count = 0
+            else:
+                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+                lines_count = len(content.splitlines())
+                self.code_viewer.setPlainText(content)
+
+            self.insp_meta_lbl.setText(f"{sz_str} · {lines_count:,} lines")
+            self.stack.setCurrentIndex(1) # Switch to Code Page
+        except Exception as e:
+            self.code_viewer.setPlainText(f"Error opening file: {e}")
+            self.stack.setCurrentIndex(1)
+
+    def _close_inspector(self):
+        self._active_file_path = None
+        self.stack.setCurrentIndex(0) # Return to KPI Dashboard
+
+    def _ask_neo_review_file(self):
+        if not self._active_file_path:
+            return
+        try:
+            rel = self._active_file_path.relative_to(self.workspace_path)
+        except Exception:
+            rel = self._active_file_path.name
+        content_snippet = self.code_viewer.toPlainText()[:1500]
+
+        cmd = (
+            f"Review and analyze file '{rel}' in project '{self.workspace_path.name}':\n\n"
+            f"```python\n{content_snippet}\n```\n\n"
+            "Analyze code structure, edge cases, vulnerabilities, and optimization opportunities, Boss."
+        )
+        self._show_toast(f"⚡ Dispatched {self._active_file_path.name} to NEO")
+        self.project_action_triggered.emit(cmd)
+
+    def _open_in_external_editor(self):
+        if not self._active_file_path:
+            return
+        try:
+            os.startfile(str(self._active_file_path))
+            self._show_toast(f"Launched {self._active_file_path.name}")
+        except Exception as e:
+            self._show_toast(f"Launch failed: {str(e)[:24]}")
+
+    def _copy_active_file_path(self):
+        if not self._active_file_path:
+            return
+        clipboard = QApplication.clipboard()
+        if clipboard:
+            clipboard.setText(str(self._active_file_path))
+            self._show_toast("📋 Copied absolute path to clipboard")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Fast Analytics (os.walk) & Execution Docks
+    # ─────────────────────────────────────────────────────────────────────────
+    def _calculate_stats(self) -> tuple[int, int, int, int]:
+        total_files = 0
+        total_dirs = 0
+        total_loc = 0
+        total_sz = 0
+
+        if not self.workspace_path.exists():
+            return 0, 0, 0, 0
+
+        for root, dirs, files in os.walk(str(self.workspace_path), topdown=True):
+            # Prune ignored and hidden directories
+            dirs[:] = [d for d in dirs if d not in IGNORED_WORKSPACE_PATTERNS and not (self.hide_cache_files and d.startswith('.'))]
+            total_dirs += len(dirs)
+            for f in files:
+                if self.hide_cache_files and f.startswith('.'):
+                    continue
+                total_files += 1
+                fp = os.path.join(root, f)
+                try:
+                    sz = os.path.getsize(fp)
+                    total_sz += sz
+                    ext = os.path.splitext(f)[1].lower()
+                    if ext in ('.py', '.js', '.ts', '.html', '.css', '.json', '.md'):
+                        with open(fp, 'r', encoding='utf-8', errors='ignore') as fl:
+                            total_loc += sum(1 for _ in fl)
+                except Exception:
+                    pass
+
+        return total_files, total_dirs, total_loc, total_sz
+
+    def _refresh_overview_dashboard(self):
+        f_cnt, d_cnt, loc, sz = self._calculate_stats()
+        sz_mb = sz / (1024 * 1024)
+
+        self._update_kpi_card(self.card_files, f"{f_cnt:,} files", f"{d_cnt:,} modules / dirs")
+        self._update_kpi_card(self.card_loc, f"{loc:,} LOC", "Active code volume")
+        self._update_kpi_card(self.card_size, f"{sz_mb:.2f} MB", "Physical disk usage")
+
+        # Load README.md if present
+        readme_path = self.workspace_path / "README.md"
+        if not readme_path.exists():
+            readme_path = self.workspace_path / "readme.md"
+
+        if readme_path.exists():
+            try:
+                with open(readme_path, "r", encoding="utf-8", errors="replace") as f:
+                    md_text = f.read()
+                self.readme_browser.setMarkdown(md_text)
+            except Exception:
+                self.readme_browser.setMarkdown(f"# {self.workspace_path.name}\n\n*Unable to read README.md*")
+        else:
+            self.readme_browser.setMarkdown(f"""# {self.workspace_path.name}
+
+Welcome to the **NEO Executive Mission Hub** for this workspace.
+
+- **Workspace Path:** `{self.workspace_path}`
+- **Files Count:** {f_cnt}
+- **Lines of Code:** {loc:,} LOC
+
+Use **'🤖 AI Architect'** above to generate an instant architecture blueprint and sprint roadmap!
+""")
+
+    def _update_kpi_card(self, card: QFrame, main_val: str, sub_val: str):
+        mv = card.findChild(QLabel, "main_val")
+        if mv:
+            mv.setText(main_val)
+        sv = card.findChild(QLabel, "sub_val")
+        if sv:
+            sv.setText(sub_val)
+
+    def _launch_project(self):
+        act_proj = self._get_active_project()
+        cmd = (act_proj.get("run_command") if act_proj else "") or "python main.py"
+        try:
+            subprocess.Popen(cmd, shell=True, cwd=str(self.workspace_path))
+            self._show_toast(f"▶ Launched: {cmd}")
+        except Exception as e:
+            self._show_toast(f"Launch failed: {str(e)[:24]}")
+
+    def _run_tests(self):
+        self._show_toast("🧪 Executing test suite...")
+        try:
+            res = subprocess.run(["pytest", "-q"], cwd=str(self.workspace_path), capture_output=True, text=True, timeout=10)
+            if res.returncode == 0:
+                self._show_toast("✓ All unit tests passed!")
+            else:
+                self._show_toast(f"⚠️ Tests failed (code {res.returncode})")
+        except Exception:
+            self._show_toast("⚠️ Pytest runner error or timed out")
+
+    def _purge_cache(self):
+        purged = 0
+        for p in self.workspace_path.rglob("__pycache__"):
+            if p.is_dir():
+                try:
+                    for child in p.iterdir():
+                        child.unlink()
+                        purged += 1
+                    p.rmdir()
+                except Exception:
+                    pass
+        self._show_toast(f"✓ Purged {purged} pycache objects")
+        self._populate_file_tree()
+
+    def _refresh_all(self):
+        self.path_lbl.setText(str(self.workspace_path))
+        self._refresh_git_status()
+        self._populate_file_tree()
+        self._refresh_overview_dashboard()
+
+    def _show_toast(self, msg: str):
+        self.toast_lbl.setText(msg)
+        self.toast_lbl.show()
+        QTimer.singleShot(2400, self.toast_lbl.hide)
+
+
+
 
 
 class NeoKnowledgeView(QWidget):
