@@ -409,21 +409,23 @@ class NeoEclipseCanvas(QWidget):
         # ── 2. CELESTIAL CIRCLE & RADIANT RIM ARC ────────────────────────────
         circ_rect = QRectF(cx - r, cy - r, r * 2.0, r * 2.0)
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(QColor(255, 255, 255, 14), 1.0))
+        ring_col = QColor(255, 255, 255, 14) if CURRENT_NEO_THEME == "dark" else QColor(38, 43, 52, 28)
+        p.setPen(QPen(ring_col, 1.0))
         p.drawEllipse(circ_rect)
 
         # Outer rim glow
-        arc_pen_outer = QPen(QColor(self.cur_pri.red(), self.cur_pri.green(), self.cur_pri.blue(), 75), 7.0)
+        arc_pen_outer = QPen(QColor(self.cur_pri.red(), self.cur_pri.green(), self.cur_pri.blue(), 75 if CURRENT_NEO_THEME == "dark" else 45), 7.0)
         p.setPen(arc_pen_outer)
         p.drawArc(circ_rect, 25 * 16, 130 * 16)
 
         # Mid radiant rim
-        arc_pen_mid = QPen(QColor(self.cur_acc.red(), self.cur_acc.green(), self.cur_acc.blue(), 145), 3.5)
+        arc_pen_mid = QPen(QColor(self.cur_acc.red(), self.cur_acc.green(), self.cur_acc.blue(), 145 if CURRENT_NEO_THEME == "dark" else 180), 3.5)
         p.setPen(arc_pen_mid)
         p.drawArc(circ_rect, 32 * 16, 116 * 16)
 
-        # Core pure white rim highlight
-        arc_pen_core = QPen(QColor(245, 250, 255, 250), 1.8)
+        # Core rim highlight
+        core_rim_col = QColor(245, 250, 255, 250) if CURRENT_NEO_THEME == "dark" else self.cur_pri
+        arc_pen_core = QPen(core_rim_col, 1.8)
         p.setPen(arc_pen_core)
         p.drawArc(circ_rect, 42 * 16, 96 * 16)
 
@@ -491,7 +493,8 @@ class NeoEclipseCanvas(QWidget):
             by = wave_cy - live_h / 2.0
 
             grad = QLinearGradient(bx, by, bx, by + live_h)
-            grad.setColorAt(0.0, QColor(255, 255, 255, 240))
+            top_wave_col = QColor(255, 255, 255, 240) if CURRENT_NEO_THEME == "dark" else self.cur_pri
+            grad.setColorAt(0.0, top_wave_col)
             grad.setColorAt(0.5, self.cur_pri)
             grad.setColorAt(1.0, self.cur_acc)
 
@@ -508,8 +511,12 @@ class NeoEclipseCanvas(QWidget):
         pill_rect = QRectF(pill_x, pill_y, pill_w, pill_h)
 
         # Ultra-sleek translucent glass capsule
-        p.setBrush(QBrush(QColor(15, 23, 42, 160)))
-        p.setPen(QPen(QColor(self.cur_pri.red(), self.cur_pri.green(), self.cur_pri.blue(), 42), 1.0))
+        if CURRENT_NEO_THEME == "dark":
+            p.setBrush(QBrush(QColor(15, 23, 42, 160)))
+            p.setPen(QPen(QColor(self.cur_pri.red(), self.cur_pri.green(), self.cur_pri.blue(), 42), 1.0))
+        else:
+            p.setBrush(QBrush(QColor(255, 255, 255, 240)))
+            p.setPen(QPen(QColor(223, 226, 231, 240), 1.0))
         p.drawRoundedRect(pill_rect, 12.5, 12.5)
 
         # Antialiased glowing pulse indicator dot
@@ -524,7 +531,8 @@ class NeoEclipseCanvas(QWidget):
         # Clean, human-designed modern typography with kerning
         f_pill = font_text(9, QFont.Weight.Medium, letter_spacing=0.4)
         p.setFont(f_pill)
-        p.setPen(QPen(QColor(226, 232, 240, 240)))
+        pill_text_col = QColor(226, 232, 240, 240) if CURRENT_NEO_THEME == "dark" else QColor(26, 29, 35, 240)
+        p.setPen(QPen(pill_text_col))
         text_rect = QRectF(pill_x + 27.0, pill_y, pill_w - 32.0, pill_h)
         p.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, tag_text)
 
@@ -711,12 +719,12 @@ class SystemStatusWidget(QFrame):
         bar.setValue(initial_val)
         bar.setStyleSheet(f"""
             QProgressBar {{
-                background: #141724;
+                background: {CARD_BORDER};
                 border: none;
                 border-radius: 3px;
             }}
             QProgressBar::chunk {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #5B8DEF, stop:1 #5B8DEF);
+                background: {ACCENT_PRIMARY};
                 border-radius: 3px;
             }}
         """)
@@ -1638,9 +1646,43 @@ class NeoNavSidebar(QWidget):
 
         lay.addStretch()
 
+        # Theme Mode Toggle Button
+        is_white = CURRENT_NEO_THEME == "white"
+        self.btn_theme = QPushButton("  🌙   Dark Mode" if is_white else "  ☀️   Light Mode")
+        self.btn_theme.setFixedHeight(34)
+        self.btn_theme.setFont(QFont("Segoe UI", 9))
+        self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_theme.setToolTip("Toggle Light / Dark Mode [F7]")
+        self.btn_theme.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {TEXT_MUTED};
+                border: 1px solid {CARD_BORDER};
+                border-radius: 6px;
+                text-align: left;
+                padding-left: 12px;
+            }}
+            QPushButton:hover {{
+                background: {CARD_HOVER};
+                color: {TEXT_WHITE};
+                border-color: {ACCENT_PRIMARY};
+            }}
+        """)
+        self.btn_theme.clicked.connect(self.theme_toggled.emit)
+        lay.addWidget(self.btn_theme)
+
         self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
         self.btn_settings.clicked.connect(self.settings_requested.emit)
         lay.addWidget(self.btn_settings)
+
+    def update_theme_button(self, is_white: bool):
+        """Update toggle button text and styling based on active theme."""
+        if is_white:
+            self.btn_theme.setText("  🌙   Dark Mode")
+            self.btn_theme.setToolTip("Switch to Dark Mode [F7]")
+        else:
+            self.btn_theme.setText("  ☀️   Light Mode")
+            self.btn_theme.setToolTip("Switch to Light Mode [F7]")
 
     def _create_nav_item(self, icon, label, active=False):
         btn = QPushButton(f"  {icon}   {label}")
