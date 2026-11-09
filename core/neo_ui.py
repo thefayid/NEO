@@ -2370,7 +2370,7 @@ class TaskEditDialog(QDialog):
 
 
 class NeoTaskCard(QFrame):
-    """High-tech obsidian task card with priority edge, tags, and AI execution action."""
+    """Linear / Raycast grade minimalist task row with priority dot, clean typography, and hover actions."""
 
     def __init__(self, task: dict, on_toggle: Callable, on_delete: Callable, on_execute: Callable, on_edit: Callable, parent=None):
         super().__init__(parent)
@@ -2386,37 +2386,36 @@ class NeoTaskCard(QFrame):
         due = task.get("due_date", "Today")
         notes = task.get("notes", "").strip()
 
-        p_name, p_fg, p_bg, p_border = TASK_PRIORITY_META.get(priority, TASK_PRIORITY_META["Medium"])
-        c_name, c_fg, c_bg = TASK_CATEGORY_COLORS.get(category, TASK_CATEGORY_COLORS["General"])
+        dot_colors = {"High": "#f43f5e", "Medium": "#f59e0b", "Low": "#38bdf8"}
+        dot_color = dot_colors.get(priority, "#94a3b8")
 
         has_notes = bool(notes)
-        self.setFixedHeight(58 if has_notes else 50)
-        self.setStyleSheet(f"""
-            QFrame {{
-                background: rgba(14, 20, 34, 0.92);
-                border: 1px solid rgba(255, 255, 255, 0.07);
-                border-left: 4px solid {p_border if not done else '#334155'};
-                border-radius: 10px;
-            }}
-            QFrame:hover {{
-                border-color: rgba(56, 189, 248, 0.35);
-                background: rgba(18, 26, 44, 0.96);
-            }}
+        self.setFixedHeight(48 if has_notes else 40)
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(14, 20, 32, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+            }
+            QFrame:hover {
+                background: rgba(20, 28, 46, 0.95);
+                border-color: rgba(56, 189, 248, 0.25);
+            }
         """)
 
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(14, 4, 14, 4)
-        lay.setSpacing(12)
+        lay.setContentsMargins(12, 0, 10, 0)
+        lay.setSpacing(10)
 
-        # Checkbox
+        # 1. Modern Minimalist Checkbox
         self.cb = QCheckBox()
         self.cb.setChecked(done)
         self.cb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.cb.setStyleSheet("""
             QCheckBox::indicator {
-                width: 19px; height: 19px; border-radius: 5px;
+                width: 16px; height: 16px; border-radius: 4px;
                 border: 1.5px solid rgba(255, 255, 255, 0.25);
-                background: #0d1322;
+                background: #0c101a;
             }
             QCheckBox::indicator:hover {
                 border-color: #38bdf8;
@@ -2430,10 +2429,17 @@ class NeoTaskCard(QFrame):
         self.cb.toggled.connect(self._handle_toggle)
         lay.addWidget(self.cb)
 
-        # Title & Notes Column
+        # 2. Priority Dot
+        prio_dot = QLabel("●")
+        prio_dot.setFont(QFont("Segoe UI", 7))
+        prio_dot.setToolTip(f"Priority: {priority}")
+        prio_dot.setStyleSheet(f"color: {dot_color if not done else '#475569'}; border: none; background: transparent;")
+        lay.addWidget(prio_dot)
+
+        # 3. Title & Optional Subtitle Column
         col = QVBoxLayout()
         col.setContentsMargins(0, 2, 0, 2)
-        col.setSpacing(2)
+        col.setSpacing(1)
 
         self.title_lbl = QLabel(task.get("title", ""))
         self.title_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Medium if not done else QFont.Weight.Normal))
@@ -2441,95 +2447,62 @@ class NeoTaskCard(QFrame):
         col.addWidget(self.title_lbl)
 
         if has_notes:
-            note_lbl = QLabel(f"↳ {notes[:75]}" + ("..." if len(notes) > 75 else ""))
+            note_lbl = QLabel(f"↳ {notes[:70]}" + ("..." if len(notes) > 70 else ""))
             note_lbl.setFont(QFont("Segoe UI", 7))
             note_lbl.setStyleSheet("color: #64748b; background: transparent; border: none;")
             col.addWidget(note_lbl)
 
         lay.addLayout(col, stretch=1)
 
-        # Category Tag Pill
-        cat_badge = QLabel(c_name)
-        cat_badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        cat_badge.setStyleSheet(f"""
-            color: {c_fg}; background: {c_bg};
-            border: 1px solid {c_fg}44; border-radius: 5px;
-            padding: 2px 7px;
-        """)
-        lay.addWidget(cat_badge)
+        # 4. Quiet Category Label
+        cat_lbl = QLabel(category)
+        cat_lbl.setFont(QFont("Segoe UI", 8))
+        cat_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        lay.addWidget(cat_lbl)
 
-        # Priority Tag Pill
-        prio_badge = QLabel(p_name)
-        prio_badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        prio_badge.setStyleSheet(f"""
-            color: {p_fg}; background: {p_bg};
-            border: 1px solid {p_fg}44; border-radius: 5px;
-            padding: 2px 7px;
-        """)
-        lay.addWidget(prio_badge)
+        # 5. Due Date Indicator
+        is_urgent = (due.lower() in ("today", "now") and not done and priority == "High")
+        due_lbl = QLabel(due)
+        due_lbl.setFont(QFont("Segoe UI", 8))
+        due_lbl.setStyleSheet(f"color: {'#f43f5e' if is_urgent else '#64748b'}; border: none; background: transparent; padding-left: 6px;")
+        lay.addWidget(due_lbl)
 
-        # Due Date Pill
-        due_badge = QLabel(f"📅 {due}")
-        due_badge.setFont(QFont("Segoe UI", 7))
-        is_urgent = ("today" in due.lower() or "now" in due.lower()) and not done and priority == "High"
-        due_color = "#f43f5e" if is_urgent else "#94a3b8"
-        due_badge.setStyleSheet(f"""
-            color: {due_color}; background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px;
-            padding: 2px 7px;
-        """)
-        lay.addWidget(due_badge)
-
-        # "⚡ EXECUTE WITH NEO" Tactical Dispatch Button
+        # 6. Action Buttons
         if not done:
-            exec_btn = QPushButton("⚡ EXECUTE")
-            exec_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-            exec_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            exec_btn.setFixedHeight(24)
-            exec_btn.setStyleSheet("""
+            run_btn = QPushButton("⚡ Run")
+            run_btn.setToolTip("Execute objective with NEO in Chat")
+            run_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            run_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            run_btn.setFixedHeight(22)
+            run_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.12);
+                    background: rgba(56, 189, 248, 0.1);
                     color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.35);
-                    border-radius: 5px;
+                    border: 1px solid rgba(56, 189, 248, 0.25);
+                    border-radius: 4px;
                     padding: 0 8px;
-                    letter-spacing: 0.5px;
                 }
                 QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.3);
+                    background: rgba(56, 189, 248, 0.25);
                     color: #ffffff;
-                    border-color: #38bdf8;
                 }
             """)
-            exec_btn.clicked.connect(lambda: self.on_execute(self.task))
-            lay.addWidget(exec_btn)
+            run_btn.clicked.connect(lambda: self.on_execute(self.task))
+            lay.addWidget(run_btn)
 
-        # Edit button
         edit_btn = QPushButton("✎")
-        edit_btn.setToolTip("Edit Objective Details")
-        edit_btn.setFixedSize(24, 24)
+        edit_btn.setToolTip("Edit details")
+        edit_btn.setFixedSize(20, 20)
         edit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        edit_btn.setStyleSheet("QPushButton { color: #64748b; border: none; background: transparent; font-size: 11px; } QPushButton:hover { color: #38bdf8; }")
+        edit_btn.setStyleSheet("QPushButton { color: #475569; border: none; background: transparent; font-size: 10px; } QPushButton:hover { color: #38bdf8; }")
         edit_btn.clicked.connect(lambda: self.on_edit(self.task))
         lay.addWidget(edit_btn)
 
-        # Delete Action
         del_btn = QPushButton("✕")
-        del_btn.setToolTip("Delete Objective")
-        del_btn.setFixedSize(24, 24)
+        del_btn.setToolTip("Delete")
+        del_btn.setFixedSize(20, 20)
         del_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        del_btn.setStyleSheet("""
-            QPushButton {
-                color: #475569;
-                border: none;
-                background: transparent;
-                font-size: 11px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                color: #f43f5e;
-            }
-        """)
+        del_btn.setStyleSheet("QPushButton { color: #475569; border: none; background: transparent; font-size: 10px; } QPushButton:hover { color: #f43f5e; }")
         del_btn.clicked.connect(lambda: self.on_delete(self.task))
         lay.addWidget(del_btn)
 
@@ -2537,7 +2510,7 @@ class NeoTaskCard(QFrame):
         if done:
             self.title_lbl.setStyleSheet("color: #64748b; text-decoration: line-through; background: transparent; border: none;")
         else:
-            self.title_lbl.setStyleSheet("color: #f8fafc; text-decoration: none; background: transparent; border: none;")
+            self.title_lbl.setStyleSheet("color: #e2e8f0; text-decoration: none; background: transparent; border: none;")
 
     def _handle_toggle(self, checked: bool):
         self.task["done"] = checked
@@ -2549,9 +2522,8 @@ class NeoTaskCard(QFrame):
 
 class NeoTasksView(QWidget):
     """
-    Military-grade Tactical Task & Execution Engine for NEO.
-    Features persistent database, live KPI HUD, multi-filter segmentation,
-    quick-add objective capsule, and autonomous AI task execution.
+    Senior-dev executive Task & Execution Engine for NEO.
+    Clean, minimalist, distraction-free UI inspired by Linear, Raycast, and Apple.
     """
     task_action_triggered = pyqtSignal(str)
 
@@ -2562,206 +2534,98 @@ class NeoTasksView(QWidget):
         self.active_category_filter = "All"
         self.search_keyword = ""
 
-        # Load persisted task database (with guarantee of default population)
         self.tasks_data = self._load_tasks()
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(32, 16, 32, 16)
-        lay.setSpacing(12)
+        lay.setContentsMargins(28, 18, 28, 18)
+        lay.setSpacing(10)
 
-        # 1. Header with Tactical Sync & Clean Actions
+        # 1. Clean Breathing Header
         hdr = QHBoxLayout()
-        hdr.setSpacing(10)
+        hdr.setSpacing(8)
 
-        t_icn = QLabel("☑")
-        t_icn.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        t_icn.setStyleSheet("color: #00e5ff; border: none; background: transparent;")
-        hdr.addWidget(t_icn)
-
-        t_lbl = QLabel("Task & Tactical Execution Engine")
-        t_lbl.setFont(QFont("Segoe UI", 15, QFont.Weight.Bold))
+        t_lbl = QLabel("Tasks")
+        t_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         t_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; letter-spacing: -0.3px;")
         hdr.addWidget(t_lbl)
+
+        self.count_badge = QLabel("0 pending")
+        self.count_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.count_badge.setStyleSheet("""
+            color: #94a3b8; background: rgba(255, 255, 255, 0.05);
+            border-radius: 9px; padding: 2px 8px; border: none;
+        """)
+        hdr.addWidget(self.count_badge)
+
         hdr.addStretch()
 
-        def _action_btn(text: str, bg: str, fg: str, border: str, hover_bg: str, cb):
-            b = QPushButton(text)
-            b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            b.setFixedHeight(28)
-            b.setStyleSheet(f"""
-                QPushButton {{
-                    background: {bg}; color: {fg};
-                    border: 1px solid {border}; border-radius: 6px;
-                    padding: 0 12px; letter-spacing: 0.4px;
-                }}
-                QPushButton:hover {{
-                    background: {hover_bg}; color: #ffffff;
-                }}
-            """)
-            b.clicked.connect(cb)
-            return b
+        sync_btn = QPushButton("⚡ Sync with NEO")
+        sync_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        sync_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        sync_btn.setFixedHeight(28)
+        sync_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.1);
+                color: #38bdf8;
+                border: 1px solid rgba(56, 189, 248, 0.28);
+                border-radius: 6px;
+                padding: 0 12px;
+            }
+            QPushButton:hover {
+                background: rgba(56, 189, 248, 0.22);
+                color: #ffffff;
+            }
+        """)
+        sync_btn.clicked.connect(self._on_sync_requested)
+        hdr.addWidget(sync_btn)
 
-        hdr.addWidget(_action_btn(
-            "⚡ SYNC WITH NEO", "rgba(56, 189, 248, 0.15)", "#38bdf8", "rgba(56, 189, 248, 0.35)", "rgba(56, 189, 248, 0.3)",
-            lambda: self._on_sync_requested()
-        ))
+        clear_btn = QPushButton("Clear Done")
+        clear_btn.setFont(QFont("Segoe UI", 8))
+        clear_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        clear_btn.setStyleSheet("QPushButton { background: transparent; color: #64748b; border: none; padding: 4px 8px; } QPushButton:hover { color: #f43f5e; }")
+        clear_btn.clicked.connect(self._clear_completed_tasks)
+        hdr.addWidget(clear_btn)
 
-        hdr.addWidget(_action_btn(
-            "🤖 AI ARCHITECT", "rgba(167, 139, 250, 0.15)", "#a78bfa", "rgba(167, 139, 250, 0.35)", "rgba(167, 139, 250, 0.3)",
-            lambda: self._on_architect_requested()
-        ))
-
-        hdr.addWidget(_action_btn(
-            "↺ RESTORE SAMPLE TASKS", "rgba(52, 211, 153, 0.12)", "#34d399", "rgba(52, 211, 153, 0.3)", "rgba(52, 211, 153, 0.25)",
-            self._restore_default_tasks
-        ))
-
-        hdr.addWidget(_action_btn(
-            "🧹 CLEAR DONE", "rgba(255, 255, 255, 0.05)", "#94a3b8", "rgba(255, 255, 255, 0.08)", "rgba(244, 63, 94, 0.2)",
-            self._clear_completed_tasks
-        ))
+        reset_btn = QPushButton("↺")
+        reset_btn.setToolTip("Restore sample tasks")
+        reset_btn.setFont(QFont("Segoe UI", 9))
+        reset_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        reset_btn.setStyleSheet("QPushButton { background: transparent; color: #475569; border: none; padding: 4px; } QPushButton:hover { color: #94a3b8; }")
+        reset_btn.clicked.connect(self._restore_default_tasks)
+        hdr.addWidget(reset_btn)
 
         lay.addLayout(hdr)
 
-        # 2. Tactical KPI HUD & Velocity Strip
-        self.kpi_frame = QFrame()
-        self.kpi_frame.setFixedHeight(66)
-        self.kpi_frame.setStyleSheet("""
-            QFrame {
-                background: rgba(14, 20, 34, 0.88);
-                border: 1px solid rgba(56, 189, 248, 0.22);
-                border-radius: 12px;
-            }
-        """)
-        kpi_lay = QVBoxLayout(self.kpi_frame)
-        kpi_lay.setContentsMargins(16, 8, 16, 8)
-        kpi_lay.setSpacing(6)
-
-        kpi_top = QHBoxLayout()
-        self.kpi_velocity_lbl = QLabel("VELOCITY: 0% · 0/0 OBJECTIVES COMPLETE")
-        self.kpi_velocity_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.kpi_velocity_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent; letter-spacing: 0.5px;")
-        kpi_top.addWidget(self.kpi_velocity_lbl)
-        kpi_top.addStretch()
-
-        self.badge_high = QLabel("🔴 0 Critical")
-        self.badge_today = QLabel("📅 0 Today")
-        self.badge_done = QLabel("✓ 0 Done")
-        self.badge_pending = QLabel("⏳ 0 Pending")
-
-        for b_lbl in (self.badge_high, self.badge_today, self.badge_done, self.badge_pending):
-            b_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-            b_lbl.setStyleSheet("""
-                color: #cbd5e1; background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px;
-                padding: 2px 7px;
-            """)
-            kpi_top.addWidget(b_lbl)
-
-        kpi_lay.addLayout(kpi_top)
-
-        # Progress bar
+        # 2. Sleek Hairline Progress Bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setFixedHeight(6)
+        self.progress_bar.setFixedHeight(2)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setStyleSheet("""
             QProgressBar {
-                background: rgba(255, 255, 255, 0.06);
+                background: rgba(255, 255, 255, 0.05);
                 border: none;
-                border-radius: 3px;
             }
             QProgressBar::chunk {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00e5ff, stop:1 #38bdf8);
-                border-radius: 3px;
             }
         """)
-        kpi_lay.addWidget(self.progress_bar)
+        lay.addWidget(self.progress_bar)
 
-        lay.addWidget(self.kpi_frame)
-
-        # 3. Executive Quick-Add Capsule Bar
-        self.add_frame = QFrame()
-        self.add_frame.setFixedHeight(48)
-        self.add_frame.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 19, 33, 0.96);
-                border: 1.5px solid rgba(56, 189, 248, 0.28);
-                border-radius: 10px;
-            }
-            QFrame:hover {
-                border-color: rgba(56, 189, 248, 0.45);
-            }
-        """)
-        add_lay = QHBoxLayout(self.add_frame)
-        add_lay.setContentsMargins(10, 0, 10, 0)
-        add_lay.setSpacing(8)
-
-        self.new_task_edit = QLineEdit()
-        self.new_task_edit.setPlaceholderText("Deploy a new tactical objective or action item...")
-        self.new_task_edit.setFont(QFont("Segoe UI", 9))
-        self.new_task_edit.setStyleSheet(f"""
-            QLineEdit {{
-                background: transparent; border: none;
-                color: {TEXT_WHITE}; padding: 0 4px;
-            }}
-            QLineEdit::placeholder {{ color: #64748b; }}
-        """)
-        self.new_task_edit.returnPressed.connect(self._add_task)
-        add_lay.addWidget(self.new_task_edit, stretch=1)
-
-        # Category ComboBox
-        self.cat_combo = QComboBox()
-        self.cat_combo.addItems(["🎓 Academic", "💻 Dev", "🏆 SIH", "🛡️ Security", "⚡ Ops", "📋 General"])
-        self._style_combo(self.cat_combo, 115)
-        add_lay.addWidget(self.cat_combo)
-
-        # Priority ComboBox
-        self.prio_combo = QComboBox()
-        self.prio_combo.addItems(["🔴 High", "🟡 Med", "🔵 Low"])
-        self._style_combo(self.prio_combo, 90)
-        add_lay.addWidget(self.prio_combo)
-
-        # Due Date ComboBox
-        self.due_combo = QComboBox()
-        self.due_combo.addItems(["📅 Today", "📅 Tomorrow", "📅 This Week", "📅 Later"])
-        self._style_combo(self.due_combo, 105)
-        add_lay.addWidget(self.due_combo)
-
-        add_b = QPushButton("+ ADD OBJECTIVE")
-        add_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        add_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        add_b.setFixedHeight(30)
-        add_b.setStyleSheet("""
-            QPushButton {
-                background: #00e5ff; color: #080a10;
-                border: none; border-radius: 6px; padding: 0 12px;
-                letter-spacing: 0.5px;
-            }
-            QPushButton:hover { background: #38bdf8; }
-        """)
-        add_b.clicked.connect(self._add_task)
-        add_lay.addWidget(add_b)
-
-        lay.addWidget(self.add_frame)
-
-        # 4. Multi-Filter Tabs & Category Segmentation
-        # Row A: Status Filters & Search
-        filter_row = QHBoxLayout()
-        filter_row.setSpacing(6)
+        # 3. Unified Single-Row Toolbar (Segmented Filters + Category + Search)
+        bar = QHBoxLayout()
+        bar.setSpacing(6)
 
         self.status_btn_group = QButtonGroup(self)
         self.status_btns = {}
         statuses = [
             ("ALL", "All"),
-            ("IN_PROGRESS", "⏳ In Progress"),
-            ("COMPLETED", "✓ Completed"),
-            ("HIGH_PRIO", "🔴 High Priority"),
-            ("TODAY", "📅 Today"),
+            ("IN_PROGRESS", "Active"),
+            ("COMPLETED", "Completed"),
+            ("HIGH_PRIO", "High Priority"),
         ]
         for key, label in statuses:
             b = QPushButton(label)
-            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+            b.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium if key == "ALL" else QFont.Weight.Normal))
             b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             b.setFixedHeight(26)
             b.setCheckable(True)
@@ -2771,60 +2635,126 @@ class NeoTasksView(QWidget):
             b.clicked.connect(lambda _, k=key: self._on_status_filter_changed(k))
             self.status_btn_group.addButton(b)
             self.status_btns[key] = b
-            filter_row.addWidget(b)
+            bar.addWidget(b)
 
-        filter_row.addSpacing(10)
+        bar.addSpacing(10)
 
-        # Search box
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Filter objectives...")
-        self.search_input.setFont(QFont("Segoe UI", 8))
-        self.search_input.setFixedWidth(160)
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                background: rgba(255, 255, 255, 0.05); color: #cbd5e1;
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
-                padding: 3px 8px;
+        # Category dropdown filter
+        self.cat_filter_combo = QComboBox()
+        self.cat_filter_combo.addItems(["All Categories", "Academic", "Dev", "SIH", "Security", "Ops", "General"])
+        self.cat_filter_combo.setFont(QFont("Segoe UI", 8))
+        self.cat_filter_combo.setFixedHeight(26)
+        self.cat_filter_combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(255, 255, 255, 0.04);
+                color: #94a3b8;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                padding: 2px 8px;
             }
-            QLineEdit:focus {
-                border-color: #38bdf8;
+            QComboBox:hover {
+                color: #cbd5e1;
+                border-color: rgba(56, 189, 248, 0.3);
+            }
+            QComboBox QAbstractItemView {
+                background: #0d1322;
+                color: #f8fafc;
+                border: 1px solid rgba(56, 189, 248, 0.25);
             }
         """)
+        self.cat_filter_combo.currentTextChanged.connect(self._on_category_combo_changed)
+        bar.addWidget(self.cat_filter_combo)
+
+        bar.addStretch()
+
+        # Search filter
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("🔍 Filter...")
+        self.search_input.setFont(QFont("Segoe UI", 8))
+        self.search_input.setFixedWidth(150)
+        self.search_input.setFixedHeight(26)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+                padding: 2px 8px;
+            }
+            QLineEdit:focus { border-color: #38bdf8; }
+        """)
         self.search_input.textChanged.connect(self._on_search_changed)
-        filter_row.addWidget(self.search_input)
+        bar.addWidget(self.search_input)
 
-        filter_row.addStretch()
-        lay.addLayout(filter_row)
+        lay.addLayout(bar)
 
-        # Row B: Domain Category Filter Pills
-        cat_filter_row = QHBoxLayout()
-        cat_filter_row.setSpacing(6)
+        # 4. Minimalist Quick Add Bar
+        self.add_frame = QFrame()
+        self.add_frame.setFixedHeight(38)
+        self.add_frame.setStyleSheet("""
+            QFrame {
+                background: rgba(14, 20, 32, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+            }
+            QFrame:hover {
+                border-color: rgba(56, 189, 248, 0.3);
+            }
+        """)
+        add_lay = QHBoxLayout(self.add_frame)
+        add_lay.setContentsMargins(10, 0, 8, 0)
+        add_lay.setSpacing(6)
 
-        self.cat_btns = {}
-        cats = [
-            ("All", "All Domains"),
-            ("Academic", "🎓 Academic"),
-            ("Dev", "💻 Dev"),
-            ("SIH", "🏆 SIH Hackathon"),
-            ("Security", "🛡️ CyberSec"),
-            ("Ops", "⚡ Daily Ops"),
-            ("General", "📋 General"),
-        ]
-        for key, label in cats:
-            b = QPushButton(label)
-            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Medium))
-            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            b.setFixedHeight(24)
-            b.setCheckable(True)
-            if key == "All":
-                b.setChecked(True)
-            self._update_pill_style(b, b.isChecked())
-            b.clicked.connect(lambda _, k=key: self._on_category_filter_changed(k))
-            self.cat_btns[key] = b
-            cat_filter_row.addWidget(b)
+        self.new_task_edit = QLineEdit()
+        self.new_task_edit.setPlaceholderText("Add a new task... (press Enter to save)")
+        self.new_task_edit.setFont(QFont("Segoe UI", 9))
+        self.new_task_edit.setStyleSheet("""
+            QLineEdit {
+                background: transparent; border: none;
+                color: #ffffff; padding: 0 4px;
+            }
+            QLineEdit::placeholder { color: #64748b; }
+        """)
+        self.new_task_edit.returnPressed.connect(self._add_task)
+        add_lay.addWidget(self.new_task_edit, stretch=1)
 
-        cat_filter_row.addStretch()
-        lay.addLayout(cat_filter_row)
+        def _compact_combo(items, w):
+            cb = QComboBox()
+            cb.addItems(items)
+            cb.setFont(QFont("Segoe UI", 8))
+            cb.setFixedWidth(w)
+            cb.setStyleSheet("""
+                QComboBox {
+                    background: rgba(255, 255, 255, 0.04); color: #94a3b8;
+                    border: none; border-radius: 4px; padding: 2px 6px;
+                }
+                QComboBox:hover { color: #f8fafc; }
+                QComboBox QAbstractItemView { background: #0d1322; color: #f8fafc; }
+            """)
+            return cb
+
+        self.prio_combo = _compact_combo(["🔴 High", "🟡 Med", "🔵 Low"], 80)
+        add_lay.addWidget(self.prio_combo)
+
+        self.cat_combo = _compact_combo(["Academic", "Dev", "SIH", "Security", "Ops", "General"], 85)
+        add_lay.addWidget(self.cat_combo)
+
+        self.due_combo = _compact_combo(["Today", "Tomorrow", "This Week", "Later"], 85)
+        add_lay.addWidget(self.due_combo)
+
+        add_b = QPushButton("+ Add")
+        add_b.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        add_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        add_b.setFixedHeight(26)
+        add_b.setStyleSheet("""
+            QPushButton {
+                background: #38bdf8; color: #070b14;
+                border: none; border-radius: 5px; padding: 0 12px;
+            }
+            QPushButton:hover { background: #00e5ff; }
+        """)
+        add_b.clicked.connect(self._add_task)
+        add_lay.addWidget(add_b)
+
+        lay.addWidget(self.add_frame)
 
         # 5. Tasks List Scroll Area
         self.scroll = QScrollArea()
@@ -2846,8 +2776,8 @@ class NeoTasksView(QWidget):
         self.tasks_container = QWidget()
         self.tasks_container.setStyleSheet("background: transparent;")
         self.tasks_layout = QVBoxLayout(self.tasks_container)
-        self.tasks_layout.setContentsMargins(0, 4, 6, 4)
-        self.tasks_layout.setSpacing(8)
+        self.tasks_layout.setContentsMargins(0, 4, 4, 4)
+        self.tasks_layout.setSpacing(5)
         self.tasks_layout.addStretch()
 
         self.scroll.setWidget(self.tasks_container)
@@ -2868,7 +2798,6 @@ class NeoTasksView(QWidget):
         """)
         self.toast_lbl.setVisible(False)
 
-        # Initial render
         self._refresh_ui()
 
     def resizeEvent(self, event):
@@ -2878,7 +2807,7 @@ class NeoTasksView(QWidget):
     def _reposition_toast(self):
         w = self.toast_lbl.sizeHint().width() + 20
         h = 28
-        self.toast_lbl.setGeometry((self.width() - w) // 2, 12, w, h)
+        self.toast_lbl.setGeometry((self.width() - w) // 2, 10, w, h)
 
     def _show_toast(self, text: str):
         self.toast_lbl.setText(text)
@@ -2888,80 +2817,28 @@ class NeoTasksView(QWidget):
         self.toast_lbl.raise_()
         QTimer.singleShot(2500, self.toast_lbl.hide)
 
-    def _style_combo(self, combo: QComboBox, width: int):
-        combo.setFixedWidth(width)
-        combo.setFont(QFont("Segoe UI", 8))
-        combo.setStyleSheet("""
-            QComboBox {
-                background: rgba(255, 255, 255, 0.05);
-                color: #cbd5e1;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 6px;
-                padding: 4px 8px;
-            }
-            QComboBox:hover {
-                border-color: rgba(56, 189, 248, 0.4);
-            }
-            QComboBox::drop-down {
-                border: none;
-            }
-            QComboBox QAbstractItemView {
-                background: #0d1322;
-                color: #f8fafc;
-                border: 1px solid rgba(56, 189, 248, 0.3);
-                selection-background-color: rgba(56, 189, 248, 0.2);
-            }
-        """)
-
     def _update_tab_style(self, btn: QPushButton, active: bool):
         if active:
             btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.2);
+                    background: rgba(56, 189, 248, 0.15);
                     color: #38bdf8;
-                    border: 1px solid #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.3);
                     border-radius: 6px;
-                    padding: 0 10px;
+                    padding: 3px 10px;
                 }
             """)
         else:
             btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(255, 255, 255, 0.04);
+                    background: transparent;
                     color: #94a3b8;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border: 1px solid transparent;
                     border-radius: 6px;
-                    padding: 0 10px;
+                    padding: 3px 10px;
                 }
                 QPushButton:hover {
-                    background: rgba(255, 255, 255, 0.08);
                     color: #ffffff;
-                }
-            """)
-
-    def _update_pill_style(self, btn: QPushButton, active: bool):
-        if active:
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: rgba(52, 211, 153, 0.18);
-                    color: #34d399;
-                    border: 1px solid #34d399;
-                    border-radius: 12px;
-                    padding: 0 10px;
-                }
-            """)
-        else:
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: rgba(255, 255, 255, 0.03);
-                    color: #64748b;
-                    border: 1px solid rgba(255, 255, 255, 0.06);
-                    border-radius: 12px;
-                    padding: 0 10px;
-                }
-                QPushButton:hover {
-                    background: rgba(255, 255, 255, 0.06);
-                    color: #cbd5e1;
                 }
             """)
 
@@ -3055,29 +2932,21 @@ class NeoTasksView(QWidget):
         self.tasks_data = self._get_default_tasks()
         self._save_tasks()
         self._refresh_ui()
-        self._show_toast("↺ Restored default sample objectives!")
+        self._show_toast("↺ Sample tasks restored")
 
     # ─────────────────────────────────────────────────────────────────────────
     # UI Refresh & Filtering
     # ─────────────────────────────────────────────────────────────────────────
     def _refresh_ui(self):
-        # 1. Update KPI stats
         total = len(self.tasks_data)
         done_cnt = sum(1 for t in self.tasks_data if t.get("done"))
         pending_cnt = total - done_cnt
-        high_cnt = sum(1 for t in self.tasks_data if t.get("priority") == "High" and not t.get("done"))
-        today_cnt = sum(1 for t in self.tasks_data if "today" in str(t.get("due_date", "")).lower() and not t.get("done"))
 
         pct = int((done_cnt / total) * 100) if total > 0 else 0
         self.progress_bar.setValue(pct)
-        self.kpi_velocity_lbl.setText(f"VELOCITY: {pct}% · {done_cnt}/{total} OBJECTIVES COMPLETE")
+        self.count_badge.setText(f"{pending_cnt} active" if pending_cnt > 0 else "All completed")
 
-        self.badge_high.setText(f"🔴 {high_cnt} Critical")
-        self.badge_today.setText(f"📅 {today_cnt} Today")
-        self.badge_done.setText(f"✓ {done_cnt} Done")
-        self.badge_pending.setText(f"⏳ {pending_cnt} Pending")
-
-        # 2. Clear current task cards (keep bottom stretch intact)
+        # Clear current task cards (keep stretch)
         for i in reversed(range(self.tasks_layout.count())):
             item = self.tasks_layout.itemAt(i)
             if item and item.widget():
@@ -3085,76 +2954,41 @@ class NeoTasksView(QWidget):
                 self.tasks_layout.removeWidget(w)
                 w.deleteLater()
 
-        # 3. Filter tasks
+        # Filter
         filtered = []
         kw = self.search_keyword.lower().strip()
         for t in self.tasks_data:
             t_done = bool(t.get("done", False))
             t_prio = str(t.get("priority", "Medium"))
             t_cat = str(t.get("category", "General"))
-            t_due = str(t.get("due_date", "")).lower()
             t_title = str(t.get("title", "")).lower()
             t_notes = str(t.get("notes", "")).lower()
 
-            # Status filter
             if self.active_status_filter == "IN_PROGRESS" and t_done:
                 continue
             elif self.active_status_filter == "COMPLETED" and not t_done:
                 continue
             elif self.active_status_filter == "HIGH_PRIO" and (t_prio != "High" or t_done):
                 continue
-            elif self.active_status_filter == "TODAY" and ("today" not in t_due or t_done):
+
+            if self.active_category_filter != "All" and t_cat.lower() != self.active_category_filter.lower():
                 continue
 
-            # Category filter
-            if self.active_category_filter != "All" and t_cat != self.active_category_filter:
-                continue
-
-            # Keyword filter
             if kw and (kw not in t_title and kw not in t_notes):
                 continue
 
             filtered.append(t)
 
-        # 4. Render cards or empty state
         if not filtered:
             empty_card = QFrame()
-            empty_card.setFixedHeight(100)
-            empty_card.setStyleSheet("""
-                QFrame {
-                    background: rgba(14, 20, 34, 0.6);
-                    border: 1px dashed rgba(255, 255, 255, 0.12);
-                    border-radius: 12px;
-                }
-            """)
+            empty_card.setFixedHeight(70)
+            empty_card.setStyleSheet("QFrame { background: rgba(14, 20, 32, 0.4); border: 1px dashed rgba(255, 255, 255, 0.08); border-radius: 8px; }")
             e_lay = QVBoxLayout(empty_card)
             e_lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            e_lay.setSpacing(6)
-
-            e_lbl = QLabel("No objectives found matching current filter.")
+            e_lbl = QLabel("No tasks found matching current filter.")
             e_lbl.setFont(QFont("Segoe UI", 9))
             e_lbl.setStyleSheet("color: #64748b; background: transparent; border: none;")
             e_lay.addWidget(e_lbl, alignment=Qt.AlignmentFlag.AlignCenter)
-
-            restore_btn = QPushButton("⚡ Restore Sample Objectives")
-            restore_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            restore_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            restore_btn.setStyleSheet("""
-                QPushButton {
-                    background: rgba(56, 189, 248, 0.15);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.35);
-                    border-radius: 6px;
-                    padding: 3px 12px;
-                }
-                QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.3);
-                    color: #ffffff;
-                }
-            """)
-            restore_btn.clicked.connect(self._restore_default_tasks)
-            e_lay.addWidget(restore_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-
             self.tasks_layout.insertWidget(0, empty_card)
         else:
             for idx, task in enumerate(filtered):
@@ -3177,10 +3011,8 @@ class NeoTasksView(QWidget):
             self._update_tab_style(b, k == key)
         self._refresh_ui()
 
-    def _on_category_filter_changed(self, key: str):
-        self.active_category_filter = key
-        for k, b in self.cat_btns.items():
-            self._update_pill_style(b, k == key)
+    def _on_category_combo_changed(self, text: str):
+        self.active_category_filter = "All" if text == "All Categories" else text
         self._refresh_ui()
 
     def _on_search_changed(self, text: str):
@@ -3195,75 +3027,64 @@ class NeoTasksView(QWidget):
         self.tasks_data = [t for t in self.tasks_data if t.get("id") != task.get("id")]
         self._save_tasks()
         self._refresh_ui()
-        self._show_toast("✓ Objective deleted.")
+        self._show_toast("Task removed")
 
     def _on_task_edited(self, task: dict):
         dlg = TaskEditDialog(task, self)
         if dlg.exec():
-            # Update task in memory
             for i, t in enumerate(self.tasks_data):
                 if t.get("id") == task.get("id"):
                     self.tasks_data[i] = dlg.task
                     break
             self._save_tasks()
             self._refresh_ui()
-            self._show_toast("✓ Objective updated.")
+            self._show_toast("Task updated")
 
     def _on_task_executed(self, task: dict):
         title = task.get("title", "")
         category = task.get("category", "")
         cmd = f"Execute objective: '{title}' (Category: {category}). Formulate an actionable execution blueprint, generate required code or materials, and assist me in completing it, Boss."
-        self._show_toast(f"⚡ Dispatched to NEO: '{title[:28]}...'")
+        self._show_toast(f"⚡ Dispatched: '{title[:24]}...'")
         self.task_action_triggered.emit(cmd)
 
     def _on_sync_requested(self):
-        self._show_toast("⚡ Syncing objectives with NEO...")
+        self._show_toast("⚡ Syncing with NEO...")
         self.task_action_triggered.emit("Sync and prioritize my current tasks from the Task Engine, Boss. Give me the top 3 tactical actions to focus on now.")
 
-    def _on_architect_requested(self):
-        self._show_toast("🤖 Engaging AI Task Architect...")
-        self.task_action_triggered.emit("Review my highest priority pending task, decompose it into 4 actionable technical subtasks, and prepare an execution outline, Boss.")
-
     def _reset_input_style(self):
-        self.new_task_edit.setStyleSheet(f"""
-            QLineEdit {{
+        self.new_task_edit.setStyleSheet("""
+            QLineEdit {
                 background: transparent; border: none;
-                color: {TEXT_WHITE}; padding: 0 4px;
-            }}
-            QLineEdit::placeholder {{ color: #64748b; }}
+                color: #ffffff; padding: 0 4px;
+            }
+            QLineEdit::placeholder { color: #64748b; }
         """)
-        self.new_task_edit.setPlaceholderText("Deploy a new tactical objective or action item...")
+        self.new_task_edit.setPlaceholderText("Add a new task... (press Enter to save)")
 
     def _add_task(self):
         title = self.new_task_edit.text().strip()
         if not title:
             self.new_task_edit.setStyleSheet("""
                 QLineEdit {
-                    background: rgba(244, 63, 94, 0.14);
-                    border: 1.5px solid #f43f5e;
-                    border-radius: 6px;
+                    background: rgba(244, 63, 94, 0.12);
+                    border: 1px solid #f43f5e;
+                    border-radius: 4px;
                     color: #ffffff;
-                    padding: 0 6px;
+                    padding: 0 4px;
                 }
             """)
-            self.new_task_edit.setPlaceholderText("⚠️ Please enter an objective title first...")
+            self.new_task_edit.setPlaceholderText("Please enter a task title...")
             self.new_task_edit.setFocus()
             QTimer.singleShot(1500, self._reset_input_style)
             return
 
         cat_raw = self.cat_combo.currentText()
-        category = "General"
-        if "Academic" in cat_raw: category = "Academic"
-        elif "Dev" in cat_raw: category = "Dev"
-        elif "SIH" in cat_raw: category = "SIH"
-        elif "Security" in cat_raw: category = "Security"
-        elif "Ops" in cat_raw: category = "Ops"
+        category = cat_raw if cat_raw in ("Academic", "Dev", "SIH", "Security", "Ops") else "General"
 
         prio_raw = self.prio_combo.currentText()
         priority = "High" if "High" in prio_raw else ("Low" if "Low" in prio_raw else "Medium")
 
-        due_raw = self.due_combo.currentText()
-        due = due_raw.replace("📅 ", "").strip()
+        due = self.due_combo.currentText().strip()
 
         new_t = {
             "id": f"task_{int(time.time() * 1000)}",
@@ -3280,14 +3101,14 @@ class NeoTasksView(QWidget):
         self._save_tasks()
         self.new_task_edit.clear()
         self._reset_input_style()
-        self._show_toast(f"✓ Objective deployed: '{title[:28]}...'")
+        self._show_toast("Task added")
         self._refresh_ui()
 
     def _clear_completed_tasks(self):
         self.tasks_data = [t for t in self.tasks_data if not t.get("done")]
         self._save_tasks()
         self._refresh_ui()
-        self._show_toast("✓ Completed objectives cleared.")
+        self._show_toast("Completed tasks cleared")
 
 
 class NeoNotesView(QWidget):
