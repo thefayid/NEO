@@ -49,14 +49,15 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-BG_OBSIDIAN = "#0b0f19"
+BG_OBSIDIAN = "#090a0f"
 CARD_BG = "rgba(18, 24, 38, 0.92)"
 CARD_BORDER = "rgba(96, 165, 250, 0.22)"
 TEXT_WHITE = "#f8fafc"
 TEXT_MUTED = "#94a3b8"
 TEXT_DIM = "#64748b"
-ACCENT_CYAN = "#00e5ff"
-ACCENT_BLUE = "#60a5fa"
+ACCENT_CYAN = "#6366f1"
+ACCENT_BLUE = "#818cf8"
+ACCENT_INDIGO = "#6366f1"
 ACCENT_GREEN = "#4ade80"
 ACCENT_AMBER = "#fbbf24"
 
@@ -105,7 +106,7 @@ class CodeBlockWidget(QFrame):
 
         lang_lbl = QLabel(lang_label)
         lang_lbl.setFont(QFont("Consolas", 8, QFont.Weight.Bold))
-        lang_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent; letter-spacing: 0.5px;")
+        lang_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent; letter-spacing: 0.5px;")
         hdr.addWidget(lang_lbl)
 
         hdr.addStretch()
@@ -117,14 +118,14 @@ class CodeBlockWidget(QFrame):
         self.canvas_btn.setFixedHeight(22)
         self.canvas_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(0, 229, 255, 0.12);
-                color: #00e5ff;
-                border: 1px solid rgba(0, 229, 255, 0.3);
+                background: rgba(99, 102, 241, 0.12);
+                color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.3);
                 border-radius: 5px;
                 padding: 1px 8px;
             }
             QPushButton:hover {
-                background: rgba(0, 229, 255, 0.25);
+                background: rgba(99, 102, 241, 0.25);
                 color: #ffffff;
             }
         """)
@@ -144,8 +145,8 @@ class CodeBlockWidget(QFrame):
                 padding: 1px 10px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.2);
-                border-color: #38bdf8;
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #818cf8;
                 color: #ffffff;
             }
         """)
@@ -188,8 +189,8 @@ class CodeBlockWidget(QFrame):
                 padding: 1px 8px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.2);
-                border-color: #38bdf8;
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #818cf8;
                 color: #ffffff;
             }
         """)
@@ -208,11 +209,11 @@ class WebLinkCard(QFrame):
         self.setStyleSheet("""
             QFrame#WebLinkCard {
                 background: rgba(15, 23, 42, 0.85);
-                border: 1px solid rgba(56, 189, 248, 0.28);
+                border: 1px solid rgba(99, 102, 241, 0.28);
                 border-radius: 8px;
             }
             QFrame#WebLinkCard:hover {
-                border-color: #38bdf8;
+                border-color: #818cf8;
                 background: rgba(22, 33, 56, 0.95);
             }
         """)
@@ -357,7 +358,7 @@ class TaskChecklistWidget(QFrame):
         self.setStyleSheet("""
             QFrame {
                 background: rgba(15, 23, 42, 0.85);
-                border: 1px solid rgba(56, 189, 248, 0.22);
+                border: 1px solid rgba(99, 102, 241, 0.22);
                 border-radius: 8px;
                 padding: 4px;
             }
@@ -368,7 +369,7 @@ class TaskChecklistWidget(QFrame):
 
         hdr = QLabel("☑️  Active Action Plan & Tasks")
         hdr.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        hdr.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        hdr.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         v.addWidget(hdr)
 
         for text, checked in tasks:
@@ -464,7 +465,7 @@ class GitDiffWidget(QFrame):
         self.setStyleSheet("""
             QFrame {
                 background: #05070e;
-                border: 1px solid rgba(56, 189, 248, 0.25);
+                border: 1px solid rgba(99, 102, 241, 0.25);
                 border-radius: 8px;
             }
         """)
@@ -497,7 +498,7 @@ class GitDiffWidget(QFrame):
             elif line.startswith("-") and not line.startswith("---"):
                 html_lines.append(f"<span style='color: #f87171; background: rgba(239,68,68,0.12);'>{esc}</span>")
             elif line.startswith("@@"):
-                html_lines.append(f"<span style='color: #38bdf8;'>{esc}</span>")
+                html_lines.append(f"<span style='color: #818cf8;'>{esc}</span>")
             elif line.startswith("diff ") or line.startswith("index "):
                 html_lines.append(f"<span style='color: #94a3b8; font-weight:bold;'>{esc}</span>")
             else:
@@ -521,7 +522,7 @@ class AudioWaveformPlayer(QFrame):
         self.setStyleSheet("""
             QFrame {
                 background: rgba(14, 25, 45, 0.85);
-                border: 1px solid rgba(0, 229, 255, 0.35);
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 14px;
             }
         """)
@@ -536,13 +537,13 @@ class AudioWaveformPlayer(QFrame):
         self.btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn.setStyleSheet("""
             QPushButton {
-                background: #00e5ff;
+                background: #818cf8;
                 color: #030712;
                 border: none;
                 border-radius: 11px;
             }
             QPushButton:hover {
-                background: #38bdf8;
+                background: #818cf8;
             }
         """)
         self.btn.clicked.connect(self._toggle)
@@ -550,7 +551,7 @@ class AudioWaveformPlayer(QFrame):
 
         self.wave_lbl = QLabel(" ▂▃▅▆▇▆▅▃▂ ▂▃▅▆▅▃▂ ")
         self.wave_lbl.setFont(QFont("Segoe UI", 8))
-        self.wave_lbl.setStyleSheet("color: #00e5ff; border: none; background: transparent; letter-spacing: 1px;")
+        self.wave_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent; letter-spacing: 1px;")
         lay.addWidget(self.wave_lbl)
 
         self.dur_lbl = QLabel(duration_str)
@@ -620,7 +621,7 @@ class ExportStudioDialog(QDialog):
                     padding: 4px;
                 }
                 QFrame:hover {
-                    border-color: rgba(56, 189, 248, 0.35);
+                    border-color: rgba(99, 102, 241, 0.35);
                 }
             """)
             f_lay = QHBoxLayout(f)
@@ -671,7 +672,7 @@ class ExportStudioDialog(QDialog):
             QPushButton {
                 background: #0284c7;
                 color: #ffffff;
-                border: 1px solid #38bdf8;
+                border: 1px solid #818cf8;
                 border-radius: 6px;
                 padding: 2px 18px;
             }
@@ -747,12 +748,12 @@ class ExportStudioDialog(QDialog):
 <style>
 body {{ background: #080c16; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px; margin: 0; }}
 .container {{ max-width: 860px; margin: 0 auto; }}
-h1 {{ color: #00e5ff; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; }}
+h1 {{ color: #818cf8; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; }}
 .meta {{ color: #64748b; font-size: 13px; margin-bottom: 30px; }}
 .msg {{ margin-bottom: 18px; padding: 16px 20px; border-radius: 12px; }}
-.user-msg {{ background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); }}
+.user-msg {{ background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); }}
 .neo-msg {{ background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); }}
-.msg-hdr {{ font-size: 13px; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; }}
+.msg-hdr {{ font-size: 13px; color: #818cf8; margin-bottom: 8px; display: flex; justify-content: space-between; }}
 .msg-hdr span {{ color: #64748b; font-size: 11px; }}
 .msg-body {{ font-size: 14px; line-height: 1.6; color: #e2e8f0; }}
 </style>
@@ -782,7 +783,7 @@ class ToolExecutionAccordion(QFrame):
         self.setStyleSheet("""
             QFrame#ToolExecutionAccordion {
                 background: rgba(15, 23, 42, 0.65);
-                border: 1px solid rgba(56, 189, 248, 0.20);
+                border: 1px solid rgba(99, 102, 241, 0.20);
                 border-radius: 8px;
             }
         """)
@@ -799,7 +800,7 @@ class ToolExecutionAccordion(QFrame):
         gear.setFont(QFont("Segoe UI", 9))
         hdr.addWidget(gear)
 
-        title = QLabel(f"Tool Execution: <span style='color: #38bdf8; font-weight:600;'>{tool_name}</span>")
+        title = QLabel(f"Tool Execution: <span style='color: #818cf8; font-weight:600;'>{tool_name}</span>")
         title.setFont(QFont("Segoe UI", 8))
         title.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         hdr.addWidget(title)
@@ -819,8 +820,8 @@ class ToolExecutionAccordion(QFrame):
                 padding: 1px 6px;
             }
             QPushButton:hover {
-                color: #38bdf8;
-                border-color: #38bdf8;
+                color: #818cf8;
+                border-color: #818cf8;
             }
         """)
         self.toggle_btn.clicked.connect(self._toggle_expand)
@@ -890,7 +891,7 @@ def _format_markdown_prose(text: str) -> str:
     escaped = re.sub(r"\*(.+?)\*", r"<i>\1</i>", escaped)
     escaped = re.sub(
         r"`([^`]+)`",
-        r'<span style="background: rgba(255,255,255,0.08); color: #38bdf8; font-family: Consolas; padding: 1px 4px; border-radius: 3px;">\1</span>',
+        r'<span style="background: rgba(255,255,255,0.08); color: #818cf8; font-family: Consolas; padding: 1px 4px; border-radius: 3px;">\1</span>',
         escaped,
     )
     escaped = re.sub(r"(?m)^[\*\-]\s+(.+)$", r"&nbsp;•&nbsp; \1", escaped)
@@ -912,7 +913,7 @@ class ChatWelcomeView(QWidget):
         orb = QLabel("⭘")
         orb.setFont(QFont("Segoe UI", 36))
         orb.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        orb.setStyleSheet("color: #00e5ff; background: transparent; border: none;")
+        orb.setStyleSheet("color: #818cf8; background: transparent; border: none;")
         lay.addWidget(orb)
 
         title = QLabel("NEO Intelligence Command Center")
@@ -953,8 +954,8 @@ class ChatWelcomeView(QWidget):
                     border-radius: 12px;
                 }
                 QFrame:hover {
-                    background: rgba(56, 189, 248, 0.14);
-                    border-color: rgba(56, 189, 248, 0.40);
+                    background: rgba(99, 102, 241, 0.14);
+                    border-color: rgba(99, 102, 241, 0.40);
                 }
             """)
             c_v = QVBoxLayout(card)
@@ -963,7 +964,7 @@ class ChatWelcomeView(QWidget):
 
             t_lbl = QLabel(t)
             t_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            t_lbl.setStyleSheet("color: #38bdf8; background: transparent; border: none;")
+            t_lbl.setStyleSheet("color: #818cf8; background: transparent; border: none;")
             c_v.addWidget(t_lbl)
 
             d_lbl = QLabel(d)
@@ -1015,7 +1016,7 @@ class NeoChatMessageBubble(QFrame):
             card.setStyleSheet("""
                 QFrame {
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(14, 165, 233, 0.18), stop:1 rgba(37, 99, 235, 0.14));
-                    border: 1px solid rgba(56, 189, 248, 0.32);
+                    border: 1px solid rgba(99, 102, 241, 0.32);
                     border-radius: 16px;
                     border-bottom-right-radius: 4px;
                 }
@@ -1046,22 +1047,22 @@ class NeoChatMessageBubble(QFrame):
 
             name_lbl = QLabel("👤 You")
             name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            name_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+            name_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
             hdr.addWidget(name_lbl)
         else:
             dot = QLabel("⭘")
             dot.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-            dot.setStyleSheet("color: #00e5ff; border: none; background: transparent;")
+            dot.setStyleSheet("color: #818cf8; border: none; background: transparent;")
             hdr.addWidget(dot)
 
             name_lbl = QLabel("NEO")
             name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            name_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent; letter-spacing: 0.5px;")
+            name_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent; letter-spacing: 0.5px;")
             hdr.addWidget(name_lbl)
 
             badge = QLabel("AI")
             badge.setFont(QFont("Segoe UI", 6, QFont.Weight.Bold))
-            badge.setStyleSheet("color: #00e5ff; background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 4px; padding: 1px 5px;")
+            badge.setStyleSheet("color: #818cf8; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 4px; padding: 1px 5px;")
             hdr.addWidget(badge)
 
             ts_lbl = QLabel(ts)
@@ -1102,8 +1103,8 @@ class NeoChatMessageBubble(QFrame):
                         padding: 1px 8px;
                     }
                     QPushButton:hover {
-                        background: rgba(56, 189, 248, 0.15);
-                        border-color: rgba(56, 189, 248, 0.35);
+                        background: rgba(99, 102, 241, 0.15);
+                        border-color: rgba(99, 102, 241, 0.35);
                         color: #ffffff;
                     }
                 """)
@@ -1354,7 +1355,7 @@ class SlashCommandPopup(QFrame):
         self.setStyleSheet("""
             QFrame#SlashCommandPopup {
                 background: #0f1626;
-                border: 1.5px solid rgba(56, 189, 248, 0.4);
+                border: 1.5px solid rgba(99, 102, 241, 0.4);
                 border-radius: 12px;
             }
         """)
@@ -1367,7 +1368,7 @@ class SlashCommandPopup(QFrame):
 
         hdr = QLabel("⚡ NEO SLASH COMMANDS")
         hdr.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        hdr.setStyleSheet("color: #38bdf8; padding: 2px 6px; border: none; background: transparent;")
+        hdr.setStyleSheet("color: #818cf8; padding: 2px 6px; border: none; background: transparent;")
         lay.addWidget(hdr)
 
         commands = [
@@ -1413,8 +1414,8 @@ class SlashCommandPopup(QFrame):
                     border-radius: 6px;
                 }
                 QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.15);
-                    border: 1px solid rgba(56, 189, 248, 0.3);
+                    background: rgba(99, 102, 241, 0.15);
+                    border: 1px solid rgba(99, 102, 241, 0.3);
                 }
             """)
             b.clicked.connect(lambda _, f=fill: self.command_selected.emit(f))
@@ -1453,13 +1454,13 @@ class ChatHistoryDrawer(QFrame):
         new_b.setFixedHeight(30)
         new_b.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.15);
-                color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.35);
+                background: rgba(99, 102, 241, 0.15);
+                color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 8px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.3);
+                background: rgba(99, 102, 241, 0.3);
                 color: #ffffff;
             }
         """)
@@ -1498,8 +1499,8 @@ class ChatHistoryDrawer(QFrame):
 
             card = QFrame()
             card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            bg = "rgba(56, 189, 248, 0.14)" if is_active else "transparent"
-            border = "rgba(56, 189, 248, 0.35)" if is_active else "transparent"
+            bg = "rgba(99, 102, 241, 0.14)" if is_active else "transparent"
+            border = "rgba(99, 102, 241, 0.35)" if is_active else "transparent"
             card.setStyleSheet(f"""
                 QFrame {{
                     background: {bg};
@@ -1598,8 +1599,8 @@ class NeoModernChatWidget(QWidget):
                 padding: 2px 12px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.2);
-                border-color: #38bdf8;
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #818cf8;
                 color: #ffffff;
             }
         """)
@@ -1665,8 +1666,8 @@ class NeoModernChatWidget(QWidget):
         self.model_combo.setStyleSheet("""
             QComboBox {
                 background: rgba(15, 23, 42, 0.85);
-                color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.28);
+                color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.28);
                 border-radius: 7px;
                 padding: 1px 10px;
             }
@@ -1679,7 +1680,7 @@ class NeoModernChatWidget(QWidget):
                 color: #f8fafc;
                 selection-background-color: #0284c7;
                 selection-color: #ffffff;
-                border: 1px solid rgba(56, 189, 248, 0.3);
+                border: 1px solid rgba(99, 102, 241, 0.3);
             }
         """)
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
@@ -1714,14 +1715,14 @@ class NeoModernChatWidget(QWidget):
         canvas_tgl.setFixedHeight(28)
         canvas_tgl.setStyleSheet("""
             QPushButton {
-                background: rgba(0, 229, 255, 0.12);
-                color: #00e5ff;
-                border: 1px solid rgba(0, 229, 255, 0.35);
+                background: rgba(99, 102, 241, 0.12);
+                color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 7px;
                 padding: 1px 10px;
             }
             QPushButton:hover {
-                background: rgba(0, 229, 255, 0.25);
+                background: rgba(99, 102, 241, 0.25);
                 color: #ffffff;
             }
         """)
@@ -1794,7 +1795,7 @@ class NeoModernChatWidget(QWidget):
                 min-height: 24px;
             }
             QScrollBar::handle:vertical:hover {
-                background: rgba(56, 189, 248, 0.6);
+                background: rgba(99, 102, 241, 0.6);
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 height: 0px;
@@ -1821,8 +1822,8 @@ class NeoModernChatWidget(QWidget):
         self.chip_frame.setVisible(False)
         self.chip_frame.setStyleSheet("""
             QFrame {
-                background: rgba(56, 189, 248, 0.08);
-                border: 1px solid rgba(56, 189, 248, 0.25);
+                background: rgba(99, 102, 241, 0.08);
+                border: 1px solid rgba(99, 102, 241, 0.25);
                 border-radius: 8px;
             }
         """)
@@ -1866,8 +1867,8 @@ class NeoModernChatWidget(QWidget):
                     padding: 2px 11px;
                 }
                 QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.18);
-                    border-color: #38bdf8;
+                    background: rgba(99, 102, 241, 0.18);
+                    border-color: #818cf8;
                     color: #ffffff;
                 }
             """)
@@ -1889,11 +1890,11 @@ class NeoModernChatWidget(QWidget):
         self.bar_frame.setStyleSheet("""
             QFrame#InputBarFrame {
                 background: rgba(13, 19, 33, 0.96);
-                border: 1.5px solid rgba(56, 189, 248, 0.28);
+                border: 1.5px solid rgba(99, 102, 241, 0.28);
                 border-radius: 26px;
             }
             QFrame#InputBarFrame:hover {
-                border-color: rgba(56, 189, 248, 0.45);
+                border-color: rgba(99, 102, 241, 0.45);
             }
         """)
         self.bar_frame.setObjectName("InputBarFrame")
@@ -1914,8 +1915,8 @@ class NeoModernChatWidget(QWidget):
                 border-radius: 15px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.2);
-                border-color: #38bdf8;
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #818cf8;
                 color: #ffffff;
             }
         """)
@@ -1968,13 +1969,13 @@ class NeoModernChatWidget(QWidget):
         send_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         send_btn.setStyleSheet("""
             QPushButton {
-                background: #00e5ff;
+                background: #818cf8;
                 color: #070b14;
                 border: none;
                 border-radius: 16px;
             }
             QPushButton:hover {
-                background: #38bdf8;
+                background: #818cf8;
             }
         """)
         send_btn.clicked.connect(self._submit)
@@ -2182,7 +2183,7 @@ class NeoModernChatWidget(QWidget):
                 line_info = f" · {lines} lines"
         except Exception:
             pass
-        self.chip_lbl.setText(f"📄  <span style='color:#38bdf8; font-weight:bold;'>{p.name}</span>  <span style='color:#34d399;'>[{ext}]</span>  <span style='color:#94a3b8;'>({sz_str}{line_info})</span>")
+        self.chip_lbl.setText(f"📄  <span style='color:#818cf8; font-weight:bold;'>{p.name}</span>  <span style='color:#34d399;'>[{ext}]</span>  <span style='color:#94a3b8;'>({sz_str}{line_info})</span>")
         self.chip_frame.setVisible(True)
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -2215,9 +2216,9 @@ class NeoModernChatWidget(QWidget):
         self.drawer.setVisible(is_vis)
         self.drawer_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {'rgba(56, 189, 248, 0.25)' if is_vis else 'rgba(255, 255, 255, 0.05)'};
-                color: {'#38bdf8' if is_vis else '#8e9eb5'};
-                border: 1px solid {'#38bdf8' if is_vis else 'rgba(255, 255, 255, 0.08)'};
+                background: {'rgba(99, 102, 241, 0.25)' if is_vis else 'rgba(255, 255, 255, 0.05)'};
+                color: {'#818cf8' if is_vis else '#8e9eb5'};
+                border: 1px solid {'#818cf8' if is_vis else 'rgba(255, 255, 255, 0.08)'};
                 border-radius: 6px;
                 padding: 2px 10px;
             }}

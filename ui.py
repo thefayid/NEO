@@ -103,28 +103,28 @@ _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
 
 class C:
-    BG        = "#07090e"   # Deepest Cosmic Void
-    PANEL     = "#0c111a"   # Sleek Frosted Glass Container
-    PANEL2    = "#101624"   # Secondary Elevated Enclave
-    BORDER    = "#182236"   # Clean Cybernetic Border
-    BORDER_B  = "#00e5ff"   # Glowing Arc Reactor Cyan / Active Highlight
-    BORDER_A  = "#1e2a42"   # Card / Section Separator
-    PRI       = "#00e5ff"   # Electric Arc Cyan (NEO Theme)
-    ACCENT    = "#00e5ff"   # Cyan Highlight
-    PRI_DIM   = "#008899"   # Muted Cyan
-    PRI_GHO   = "#00232b"   # Subtle Cyan Glow Background
-    ACC       = "#38bdf8"   # Sky Laser Blue
-    ACC2      = "#fbbf24"   # Stark Amber Gold
-    GREEN     = "#10b981"   # Quantum Emerald Online
+    BG        = "#090a0f"   # Deep Professional Zinc-Slate
+    PANEL     = "#0e1017"   # Sleek Frosted Container
+    PANEL2    = "#141721"   # Secondary Elevated Surface
+    BORDER    = "#1b1f2e"   # Clean Modern Micro-Border
+    BORDER_B  = "#818cf8"   # Refined Indigo / Active Highlight
+    BORDER_A  = "#202538"   # Card / Section Separator
+    PRI       = "#6366f1"   # Linear Precision Indigo
+    ACCENT    = "#6366f1"   # Indigo Highlight
+    PRI_DIM   = "#4f46e5"   # Deep Focused Indigo
+    PRI_GHO   = "rgba(99, 102, 241, 0.12)" # Subtle Indigo Surface Glow
+    ACC       = "#818cf8"   # Soft Periwinkle Accent
+    ACC2      = "#f59e0b"   # Warm Amber
+    GREEN     = "#10b981"   # Soft Sage Emerald
     GREEN_D   = "#059669"
-    RED       = "#f43f5e"   # Tactical Cyber Crimson
+    RED       = "#f43f5e"   # Precision Rose
     MUTED_C   = "#f43f5e"   # Muted Rose
-    TEXT      = "#f8fafc"   # High-Contrast Pure Light
-    TEXT_DIM  = "#5b6b84"   # Sub-telemetry Slate
-    TEXT_MED  = "#94a3b8"   # Muted Informational Slate
+    TEXT      = "#f8fafc"   # Clean Light Slate Text
+    TEXT_DIM  = "#64748b"   # Muted Secondary Slate
+    TEXT_MED  = "#94a3b8"   # Informational Slate
     WHITE     = "#ffffff"
-    DARK      = "#090d14"   # Header & Footer Enclave
-    BAR_BG    = "#111827"   # Telemetry Track
+    DARK      = "#0a0b10"   # Header & Footer Enclave
+    BAR_BG    = "#141722"   # Telemetry Track
 
 
 # Keys tied to the accent colour — only accent highlights, NOT neutral text or dark backgrounds!
@@ -173,28 +173,28 @@ def apply_ui_accent(accent_hex: str) -> bool:
 
 
 DARK_MODE_PALETTE: dict[str, str] = {
-    "BG":       "#07090e",
-    "PANEL":    "#0c111a",
-    "PANEL2":   "#101624",
-    "BORDER":   "#182236",
-    "BORDER_A": "#1e2a42",
-    "BORDER_B": "#00e5ff",
-    "PRI":      "#00e5ff",
-    "ACCENT":   "#00e5ff",
-    "PRI_DIM":  "#008899",
-    "PRI_GHO":  "#00232b",
-    "ACC":      "#38bdf8",
-    "ACC2":     "#fbbf24",
+    "BG":       "#090a0f",
+    "PANEL":    "#0e1017",
+    "PANEL2":   "#141721",
+    "BORDER":   "#1b1f2e",
+    "BORDER_A": "#202538",
+    "BORDER_B": "#818cf8",
+    "PRI":      "#6366f1",
+    "ACCENT":   "#6366f1",
+    "PRI_DIM":  "#4f46e5",
+    "PRI_GHO":  "rgba(99, 102, 241, 0.12)",
+    "ACC":      "#818cf8",
+    "ACC2":     "#f59e0b",
     "GREEN":    "#10b981",
     "GREEN_D":  "#059669",
     "RED":      "#f43f5e",
     "MUTED_C":  "#f43f5e",
     "TEXT":     "#f8fafc",
-    "TEXT_DIM": "#5b6b84",
+    "TEXT_DIM": "#64748b",
     "TEXT_MED": "#94a3b8",
     "WHITE":    "#ffffff",
-    "DARK":     "#090d14",
-    "BAR_BG":   "#111827",
+    "DARK":     "#0a0b10",
+    "BAR_BG":   "#141722",
 }
 
 WHITE_MODE_PALETTE: dict[str, str] = {

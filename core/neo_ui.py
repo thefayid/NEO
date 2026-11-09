@@ -52,12 +52,12 @@ except Exception:
     HoloAvatar = None
 
 EMOTION_PALETTES = {
-    "listening": (QColor(56, 189, 248), QColor(96, 165, 250),  "Listening"),
-    "attuned":   (QColor(56, 189, 248), QColor(96, 165, 250),  "Listening"),
+    "listening": (QColor(99, 102, 241), QColor(129, 140, 248), "Listening"),
+    "attuned":   (QColor(99, 102, 241), QColor(129, 140, 248), "Listening"),
     "thinking":  (QColor(245, 158, 11), QColor(251, 191, 36),  "Thinking..."),
-    "speaking":  (QColor(96, 165, 250), QColor(167, 139, 250), "Speaking"),
-    "happy":     (QColor(52, 211, 153), QColor(56, 189, 248),  "Pleased"),
-    "curious":   (QColor(129, 140, 248), QColor(56, 189, 248), "Curious"),
+    "speaking":  (QColor(129, 140, 248), QColor(167, 139, 250), "Speaking"),
+    "happy":     (QColor(16, 185, 129), QColor(99, 102, 241),  "Pleased"),
+    "curious":   (QColor(129, 140, 248), QColor(99, 102, 241), "Curious"),
     "empathy":   (QColor(236, 72, 153), QColor(192, 132, 252), "Empathetic"),
     "muted":     (QColor(148, 163, 184), QColor(244, 63, 94),  "Muted"),
 }
@@ -85,18 +85,19 @@ def font_text(size: int = 10, weight: QFont.Weight = QFont.Weight.Normal, letter
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     return f
 
-# ── Color Palette ────────────────────────────────────────────────────────────
-BG_OBSIDIAN    = "#07090e"
-SIDEBAR_BG     = "#090c14"
-CARD_BG        = "rgba(16, 21, 33, 0.78)"
-CARD_BORDER    = "rgba(255, 255, 255, 0.07)"
-NAV_ACTIVE_BG  = "#1a2335"
-TEXT_WHITE     = "#ffffff"
-TEXT_MUTED     = "#8e9eb5"
-TEXT_DIM       = "#526078"
-ACCENT_BLUE    = "#60a5fa"
-ACCENT_CYAN    = "#38bdf8"
-SEND_BTN_BG    = "#8ba4d0"
+# ── Color Palette (Linear / Modern Professional Developer Dark System) ─────────
+BG_OBSIDIAN    = "#090a0f"
+SIDEBAR_BG     = "#0c0d14"
+CARD_BG        = "rgba(18, 21, 32, 0.78)"
+CARD_BORDER    = "rgba(255, 255, 255, 0.08)"
+NAV_ACTIVE_BG  = "rgba(99, 102, 241, 0.14)"
+TEXT_WHITE     = "#f8fafc"
+TEXT_MUTED     = "#94a3b8"
+TEXT_DIM       = "#64748b"
+ACCENT_PRIMARY = "#6366f1"   # Linear Precision Indigo
+ACCENT_BLUE    = "#818cf8"   # Soft Periwinkle
+ACCENT_CYAN    = "#6366f1"   # Refined Primary Accent
+SEND_BTN_BG    = "#6366f1"   # High-Contrast Solid Accent Button
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -528,13 +529,13 @@ class FocusSessionWidget(QFrame):
         self.play_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         self.play_btn.setStyleSheet(f"""
             QPushButton {{
-                background: rgba(96, 165, 250, 0.18);
+                background: rgba(99, 102, 241, 0.16);
                 color: {ACCENT_BLUE};
-                border: 1px solid rgba(96, 165, 250, 0.3);
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 19px;
             }}
             QPushButton:hover {{
-                background: rgba(96, 165, 250, 0.35);
+                background: rgba(99, 102, 241, 0.32);
                 color: #ffffff;
             }}
         """)
@@ -654,12 +655,12 @@ class SystemStatusWidget(QFrame):
         bar.setValue(initial_val)
         bar.setStyleSheet(f"""
             QProgressBar {{
-                background: #19202f;
+                background: #141724;
                 border: none;
                 border-radius: 3px;
             }}
             QProgressBar::chunk {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #60a5fa, stop:1 #93c5fd);
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366f1, stop:1 #818cf8);
                 border-radius: 3px;
             }}
         """)
@@ -730,7 +731,7 @@ class CalendarSyncDialog(QDialog):
         self.setStyleSheet("""
             QDialog {
                 background: #0b0f19;
-                border: 1.5px solid rgba(56, 189, 248, 0.38);
+                border: 1.5px solid rgba(99, 102, 241, 0.38);
                 border-radius: 16px;
             }
         """)
@@ -785,7 +786,7 @@ class CalendarSyncDialog(QDialog):
         # 2. Feed URL Section
         f_lbl = QLabel("GOOGLE CALENDAR / OUTLOOK ICAL FEED URL:")
         f_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        f_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        f_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(f_lbl)
 
         self.url_input = QLineEdit()
@@ -797,7 +798,7 @@ class CalendarSyncDialog(QDialog):
                 background: #0f1626; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 8px;
             }
-            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+            QLineEdit:focus { border: 1.5px solid #818cf8; }
         """)
         lay.addWidget(self.url_input)
 
@@ -808,10 +809,10 @@ class CalendarSyncDialog(QDialog):
         self.sync_btn.setFixedHeight(30)
         self.sync_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #818cf8);
                 color: #080c14; border: none; border-radius: 6px; padding: 4px 16px;
             }
-            QPushButton:hover { background: #38bdf8; }
+            QPushButton:hover { background: #818cf8; }
         """)
         self.sync_btn.clicked.connect(self._sync_feed)
         sync_row.addWidget(self.sync_btn)
@@ -843,7 +844,7 @@ class CalendarSyncDialog(QDialog):
                 background: #0f1626; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 8px;
             }
-            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+            QLineEdit:focus { border: 1.5px solid #818cf8; }
         """)
         lay.addWidget(self.title_input)
 
@@ -1019,8 +1020,8 @@ class UpcomingScheduleWidget(QFrame):
                 border-radius: 11px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.2);
-                border-color: #38bdf8;
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #818cf8;
                 color: #ffffff;
             }
         """)
@@ -1226,11 +1227,11 @@ class UpcomingScheduleWidget(QFrame):
                     is_active = False
                     is_done = True
                 elif s_mins <= now_mins < e_mins:
-                    badge_info = ("● Now", "rgba(56, 189, 248, 0.2)", "#38bdf8")
+                    badge_info = ("● Now", "rgba(99, 102, 241, 0.18)", "#a5b4fc")
                     is_active = True
                     is_done = False
                 elif 0 < s_mins - now_mins <= 60:
-                    badge_info = (f"In {s_mins - now_mins}m", "rgba(56, 189, 248, 0.2)", "#38bdf8")
+                    badge_info = (f"In {s_mins - now_mins}m", "rgba(99, 102, 241, 0.18)", "#a5b4fc")
                     is_active = (i == 0)
                     is_done = False
                 else:
@@ -1599,7 +1600,7 @@ class NeoNavSidebar(QWidget):
                 QPushButton {{
                     background: {NAV_ACTIVE_BG};
                     color: {TEXT_WHITE};
-                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(99, 102, 241, 0.35);
                     border-radius: 10px;
                     text-align: left;
                     padding-left: 12px;
@@ -1746,7 +1747,7 @@ class NeoHeroStage(QWidget):
         self.camera_card.setStyleSheet("""
             QFrame {
                 background: rgba(10, 14, 22, 0.95);
-                border: 1px solid rgba(0, 229, 255, 0.35);
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 20px;
             }
         """)
@@ -1763,7 +1764,7 @@ class NeoHeroStage(QWidget):
 
         cam_title = QLabel("NEO OPTICAL SENSOR // LIVE CAMERA FEED")
         cam_title.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        cam_title.setStyleSheet("color: #00e5ff; letter-spacing: 1px; border: none; background: transparent;")
+        cam_title.setStyleSheet("color: #818cf8; letter-spacing: 1px; border: none; background: transparent;")
         cam_hdr.addWidget(cam_title)
 
         cam_hdr.addStretch()
@@ -2246,7 +2247,7 @@ FILE_TYPE_ICONS = {
 }
 
 NOTE_CATEGORY_COLORS = {
-    "Dev":        ("#38bdf8", "rgba(56, 189, 248, 0.12)"),
+    "Dev":        ("#818cf8", "rgba(99, 102, 241, 0.12)"),
     "Security":   ("#34d399", "rgba(52, 211, 153, 0.12)"),
     "Ideas":      ("#f59e0b", "rgba(245, 158, 11, 0.12)"),
     "Research":   ("#a78bfa", "rgba(167, 139, 250, 0.12)"),
@@ -2357,7 +2358,7 @@ Observations, technical insights, and key decisions from today's sprint.
 
 TASK_CATEGORY_COLORS = {
     "Academic": ("🎓 ACADEMIC", "#a78bfa", "rgba(167, 139, 250, 0.14)"),
-    "Dev":      ("💻 DEV",      "#38bdf8", "rgba(56, 189, 248, 0.14)"),
+    "Dev":      ("💻 DEV",      "#818cf8", "rgba(99, 102, 241, 0.14)"),
     "SIH":      ("🏆 SIH",      "#f59e0b", "rgba(245, 158, 11, 0.14)"),
     "Security": ("🛡️ SEC",      "#34d399", "rgba(52, 211, 153, 0.14)"),
     "Ops":      ("⚡ OPS",      "#f43f5e", "rgba(244, 63, 94, 0.14)"),
@@ -2367,7 +2368,7 @@ TASK_CATEGORY_COLORS = {
 TASK_PRIORITY_META = {
     "High":   ("🔴 CRITICAL", "#f43f5e", "rgba(244, 63, 94, 0.16)", "#f43f5e"),
     "Medium": ("🟡 MEDIUM",   "#f59e0b", "rgba(245, 158, 11, 0.16)", "#f59e0b"),
-    "Low":    ("🔵 ROUTINE",  "#38bdf8", "rgba(56, 189, 248, 0.16)", "#38bdf8"),
+    "Low":    ("🔵 ROUTINE",  "#818cf8", "rgba(99, 102, 241, 0.14)", "#818cf8"),
 }
 
 
@@ -2382,7 +2383,7 @@ class TaskEditDialog(QDialog):
         self.setStyleSheet("""
             QDialog {
                 background: #090e1a;
-                border: 1px solid rgba(56, 189, 248, 0.3);
+                border: 1px solid rgba(99, 102, 241, 0.3);
                 border-radius: 12px;
             }
         """)
@@ -2393,7 +2394,7 @@ class TaskEditDialog(QDialog):
 
         hdr = QLabel("✎ Edit Tactical Objective")
         hdr.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
-        hdr.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        hdr.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(hdr)
 
         self.title_edit = QLineEdit(self.task.get("title", ""))
@@ -2403,7 +2404,7 @@ class TaskEditDialog(QDialog):
                 background: rgba(255, 255, 255, 0.05); color: #f8fafc;
                 border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 6px 10px;
             }
-            QLineEdit:focus { border-color: #38bdf8; }
+            QLineEdit:focus { border-color: #818cf8; }
         """)
         lay.addWidget(self.title_edit)
 
@@ -2476,10 +2477,10 @@ class TaskEditDialog(QDialog):
         save_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         save_b.setStyleSheet("""
             QPushButton {
-                background: #00e5ff; color: #070b14;
+                background: #818cf8; color: #070b14;
                 border: none; border-radius: 6px; padding: 6px 16px;
             }
-            QPushButton:hover { background: #38bdf8; }
+            QPushButton:hover { background: #818cf8; }
         """)
         save_b.clicked.connect(self._save)
         btn_row.addWidget(save_b)
@@ -2519,7 +2520,7 @@ class NeoTaskCard(QFrame):
         due = task.get("due_date", "Today")
         notes = task.get("notes", "").strip()
 
-        dot_colors = {"High": "#f43f5e", "Medium": "#f59e0b", "Low": "#38bdf8"}
+        dot_colors = {"High": "#f43f5e", "Medium": "#f59e0b", "Low": "#818cf8"}
         dot_color = dot_colors.get(priority, "#94a3b8")
 
         has_notes = bool(notes)
@@ -2532,7 +2533,7 @@ class NeoTaskCard(QFrame):
             }
             QFrame:hover {
                 background: rgba(20, 28, 46, 0.95);
-                border-color: rgba(56, 189, 248, 0.25);
+                border-color: rgba(99, 102, 241, 0.25);
             }
         """)
 
@@ -2551,12 +2552,12 @@ class NeoTaskCard(QFrame):
                 background: #0c101a;
             }
             QCheckBox::indicator:hover {
-                border-color: #38bdf8;
-                background: rgba(56, 189, 248, 0.12);
+                border-color: #818cf8;
+                background: rgba(99, 102, 241, 0.12);
             }
             QCheckBox::indicator:checked {
-                background: #00e5ff;
-                border-color: #00e5ff;
+                background: #818cf8;
+                border-color: #818cf8;
             }
         """)
         self.cb.toggled.connect(self._handle_toggle)
@@ -2609,14 +2610,14 @@ class NeoTaskCard(QFrame):
             run_btn.setFixedHeight(22)
             run_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.1);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.25);
+                    background: rgba(99, 102, 241, 0.1);
+                    color: #818cf8;
+                    border: 1px solid rgba(99, 102, 241, 0.25);
                     border-radius: 4px;
                     padding: 0 8px;
                 }
                 QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.25);
+                    background: rgba(99, 102, 241, 0.25);
                     color: #ffffff;
                 }
             """)
@@ -2627,7 +2628,7 @@ class NeoTaskCard(QFrame):
         edit_btn.setToolTip("Edit details")
         edit_btn.setFixedSize(20, 20)
         edit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        edit_btn.setStyleSheet("QPushButton { color: #475569; border: none; background: transparent; font-size: 10px; } QPushButton:hover { color: #38bdf8; }")
+        edit_btn.setStyleSheet("QPushButton { color: #475569; border: none; background: transparent; font-size: 10px; } QPushButton:hover { color: #818cf8; }")
         edit_btn.clicked.connect(lambda: self.on_edit(self.task))
         lay.addWidget(edit_btn)
 
@@ -2698,14 +2699,14 @@ class NeoTasksView(QWidget):
         sync_btn.setFixedHeight(28)
         sync_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.1);
-                color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.28);
+                background: rgba(99, 102, 241, 0.1);
+                color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.28);
                 border-radius: 6px;
                 padding: 0 12px;
             }
             QPushButton:hover {
-                background: rgba(56, 189, 248, 0.22);
+                background: rgba(99, 102, 241, 0.22);
                 color: #ffffff;
             }
         """)
@@ -2723,7 +2724,7 @@ class NeoTasksView(QWidget):
         refresh_btn.setToolTip("Reload tasks from memory")
         refresh_btn.setFont(QFont("Segoe UI", 9))
         refresh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        refresh_btn.setStyleSheet("QPushButton { background: transparent; color: #475569; border: none; padding: 4px; } QPushButton:hover { color: #38bdf8; }")
+        refresh_btn.setStyleSheet("QPushButton { background: transparent; color: #475569; border: none; padding: 4px; } QPushButton:hover { color: #818cf8; }")
         refresh_btn.clicked.connect(self._reload_from_disk)
         hdr.addWidget(refresh_btn)
 
@@ -2739,7 +2740,7 @@ class NeoTasksView(QWidget):
                 border: none;
             }
             QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00e5ff, stop:1 #38bdf8);
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #818cf8, stop:1 #818cf8);
             }
         """)
         lay.addWidget(self.progress_bar)
@@ -2787,12 +2788,12 @@ class NeoTasksView(QWidget):
             }
             QComboBox:hover {
                 color: #cbd5e1;
-                border-color: rgba(56, 189, 248, 0.3);
+                border-color: rgba(99, 102, 241, 0.3);
             }
             QComboBox QAbstractItemView {
                 background: #0d1322;
                 color: #f8fafc;
-                border: 1px solid rgba(56, 189, 248, 0.25);
+                border: 1px solid rgba(99, 102, 241, 0.25);
             }
         """)
         self.cat_filter_combo.currentTextChanged.connect(self._on_category_combo_changed)
@@ -2812,7 +2813,7 @@ class NeoTasksView(QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
                 padding: 2px 8px;
             }
-            QLineEdit:focus { border-color: #38bdf8; }
+            QLineEdit:focus { border-color: #818cf8; }
         """)
         self.search_input.textChanged.connect(self._on_search_changed)
         bar.addWidget(self.search_input)
@@ -2829,7 +2830,7 @@ class NeoTasksView(QWidget):
                 border-radius: 8px;
             }
             QFrame:hover {
-                border-color: rgba(56, 189, 248, 0.3);
+                border-color: rgba(99, 102, 241, 0.3);
             }
         """)
         add_lay = QHBoxLayout(self.add_frame)
@@ -2879,10 +2880,10 @@ class NeoTasksView(QWidget):
         add_b.setFixedHeight(26)
         add_b.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #070b14;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 5px; padding: 0 12px;
             }
-            QPushButton:hover { background: #00e5ff; }
+            QPushButton:hover { background: #818cf8; }
         """)
         add_b.clicked.connect(self._add_task)
         add_lay.addWidget(add_b)
@@ -2901,7 +2902,7 @@ class NeoTasksView(QWidget):
                 background: rgba(96, 165, 250, 0.25); border-radius: 3px; min-height: 24px;
             }
             QScrollBar::handle:vertical:hover {
-                background: rgba(56, 189, 248, 0.6);
+                background: rgba(99, 102, 241, 0.6);
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
         """)
@@ -2924,7 +2925,7 @@ class NeoTasksView(QWidget):
             QLabel {
                 background: rgba(14, 165, 233, 0.95);
                 color: #070b14;
-                border: 1px solid #38bdf8;
+                border: 1px solid #818cf8;
                 border-radius: 12px;
                 padding: 4px 18px;
             }
@@ -2954,9 +2955,9 @@ class NeoTasksView(QWidget):
         if active:
             btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.15);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.3);
+                    background: rgba(99, 102, 241, 0.15);
+                    color: #818cf8;
+                    border: 1px solid rgba(99, 102, 241, 0.3);
                     border-radius: 6px;
                     padding: 3px 10px;
                 }
@@ -3215,9 +3216,9 @@ class NeoNoteCard(QFrame):
         self.is_active = is_active
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        bg = "rgba(56, 189, 248, 0.08)" if is_active else "rgba(255, 255, 255, 0.02)"
-        border = "rgba(56, 189, 248, 0.35)" if is_active else "rgba(255, 255, 255, 0.05)"
-        left_border = "3px solid #38bdf8;" if is_active else "1px solid rgba(255, 255, 255, 0.05);"
+        bg = "rgba(99, 102, 241, 0.08)" if is_active else "rgba(255, 255, 255, 0.02)"
+        border = "rgba(99, 102, 241, 0.35)" if is_active else "rgba(255, 255, 255, 0.05)"
+        left_border = "3px solid #818cf8;" if is_active else "1px solid rgba(255, 255, 255, 0.05);"
 
         self.setStyleSheet(f"""
             QFrame {{
@@ -3228,7 +3229,7 @@ class NeoNoteCard(QFrame):
             }}
             QFrame:hover {{
                 background: rgba(255, 255, 255, 0.04);
-                border-color: rgba(56, 189, 248, 0.25);
+                border-color: rgba(99, 102, 241, 0.25);
             }}
         """)
 
@@ -3280,7 +3281,7 @@ class NeoNoteCard(QFrame):
         if tags:
             tag_chip = QLabel(f"#{tags[0]}")
             tag_chip.setFont(QFont("Segoe UI", 7))
-            tag_chip.setStyleSheet("color: #38bdf8; background: rgba(56, 189, 248, 0.08); border-radius: 3px; padding: 1px 4px; border: none;")
+            tag_chip.setStyleSheet("color: #818cf8; background: rgba(99, 102, 241, 0.08); border-radius: 3px; padding: 1px 4px; border: none;")
             meta_r.addWidget(tag_chip)
 
         time_str = note.get("updated_at") or note.get("created_at") or "Today"
@@ -3356,8 +3357,8 @@ class NeoNotesView(QWidget):
         self.toast_lbl = QLabel("")
         self.toast_lbl.setStyleSheet("""
             QLabel {
-                background: rgba(15, 23, 42, 0.95); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                background: rgba(15, 23, 42, 0.95); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px;
                 padding: 4px 12px; font-size: 11px;
             }
         """)
@@ -3421,11 +3422,11 @@ class NeoNotesView(QWidget):
         review_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         review_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                background: rgba(99, 102, 241, 0.1); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px;
                 padding: 4px 12px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.22); color: #ffffff; }
         """)
         review_btn.clicked.connect(self._ask_neo_review)
         hdr.addWidget(review_btn)
@@ -3436,10 +3437,10 @@ class NeoNotesView(QWidget):
         new_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         new_btn.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #070b14;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 6px; padding: 4px 14px;
             }
-            QPushButton:hover { background: #7dd3fc; }
+            QPushButton:hover { background: #4f46e5; }
         """)
         new_btn.clicked.connect(self._add_new_note)
         hdr.addWidget(new_btn)
@@ -3473,7 +3474,7 @@ class NeoNotesView(QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.07);
                 border-radius: 6px; color: #ffffff; padding: 5px 8px;
             }
-            QLineEdit:focus { border-color: rgba(56, 189, 248, 0.4); }
+            QLineEdit:focus { border-color: rgba(99, 102, 241, 0.4); }
         """)
         self.search_edit.textChanged.connect(self._on_search_changed)
         left_lay.addWidget(self.search_edit)
@@ -3490,7 +3491,7 @@ class NeoNotesView(QWidget):
             b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold if cat == "All" else QFont.Weight.Normal))
             b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             if cat == "All":
-                b.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; padding: 2px 7px;")
+                b.setStyleSheet("background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 4px; padding: 2px 7px;")
             else:
                 b.setStyleSheet("background: rgba(255, 255, 255, 0.02); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
             b.clicked.connect(lambda _, c=cat: self._set_category_filter(c))
@@ -3586,7 +3587,7 @@ class NeoNotesView(QWidget):
                 background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
                 border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 9px; font-size: 11px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
         """)
         self.preview_btn.clicked.connect(self._toggle_preview)
         tb.addWidget(self.preview_btn)
@@ -3599,10 +3600,10 @@ class NeoNotesView(QWidget):
         self.tasks_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.tasks_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+                background: rgba(99, 102, 241, 0.1); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.28); border-radius: 5px; padding: 2px 9px; font-size: 11px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.22); color: #ffffff; }
         """)
         self.tasks_btn.clicked.connect(self._extract_tasks_to_engine)
         tb.addWidget(self.tasks_btn)
@@ -3736,7 +3737,7 @@ class NeoNotesView(QWidget):
 
         sync_l = QLabel("⚡ Indexed in NEO Semantic Brain")
         sync_l.setFont(QFont("Segoe UI", 7))
-        sync_l.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        sync_l.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         ft.addWidget(sync_l)
         ed_lay.addLayout(ft)
 
@@ -3756,7 +3757,7 @@ class NeoNotesView(QWidget):
             QMenu {
                 background: #0f172a;
                 color: #e2e8f0;
-                border: 1px solid rgba(56, 189, 248, 0.25);
+                border: 1px solid rgba(99, 102, 241, 0.25);
                 border-radius: 6px;
                 padding: 4px;
             }
@@ -3766,7 +3767,7 @@ class NeoNotesView(QWidget):
                 font-size: 11px;
             }
             QMenu::item:selected {
-                background: rgba(56, 189, 248, 0.18);
+                background: rgba(99, 102, 241, 0.18);
                 color: #ffffff;
             }
         """)
@@ -3792,7 +3793,7 @@ class NeoNotesView(QWidget):
                 font-size: 11px;
             }
             QMenu::item:selected {
-                background: rgba(56, 189, 248, 0.18);
+                background: rgba(99, 102, 241, 0.18);
                 color: #ffffff;
             }
         """)
@@ -3864,7 +3865,7 @@ class NeoNotesView(QWidget):
 <title>{title}</title>
 <style>
   body {{ background: #070b14; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6; }}
-  h1, h2, h3 {{ color: #38bdf8; }}
+  h1, h2, h3 {{ color: #818cf8; }}
   code {{ background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-family: monospace; }}
   pre {{ background: #0d1320; padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); overflow-x: auto; }}
 </style>
@@ -3893,8 +3894,8 @@ class NeoNotesView(QWidget):
             self.zen_btn.setText("⛶ Exit Zen")
             self.zen_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.18); color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px;
+                    background: rgba(99, 102, 241, 0.18); color: #818cf8;
+                    border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 6px;
                     padding: 4px 10px;
                 }
             """)
@@ -3921,8 +3922,8 @@ class NeoNotesView(QWidget):
             self.preview_btn.setText("✏️ Edit")
             self.preview_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(56, 189, 248, 0.15); color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 5px; padding: 2px 9px; font-size: 11px;
+                    background: rgba(99, 102, 241, 0.15); color: #818cf8;
+                    border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 5px; padding: 2px 9px; font-size: 11px;
                 }
             """)
         else:
@@ -3933,7 +3934,7 @@ class NeoNotesView(QWidget):
                     background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
                     border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 9px; font-size: 11px;
                 }
-                QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+                QPushButton:hover { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
             """)
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -4360,7 +4361,7 @@ class NeoNotesView(QWidget):
         self.active_tag_filter = None
         for c, btn in self.filter_buttons.items():
             if c == cat:
-                btn.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; padding: 2px 7px;")
+                btn.setStyleSheet("background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 4px; padding: 2px 7px;")
                 btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
             else:
                 btn.setStyleSheet("background: rgba(255, 255, 255, 0.02); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
@@ -4403,7 +4404,7 @@ class NeoNotesView(QWidget):
         all_btn.setFont(QFont("Segoe UI", 7))
         all_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         if self.active_tag_filter is None:
-            all_btn.setStyleSheet("background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-radius: 3px; padding: 1px 5px; border: none;")
+            all_btn.setStyleSheet("background: rgba(99, 102, 241, 0.15); color: #818cf8; border-radius: 3px; padding: 1px 5px; border: none;")
         else:
             all_btn.setStyleSheet("background: transparent; color: #64748b; border-radius: 3px; padding: 1px 5px; border: none;")
         all_btn.clicked.connect(lambda: self._set_tag_filter(None))
@@ -4414,7 +4415,7 @@ class NeoNotesView(QWidget):
             tb.setFont(QFont("Segoe UI", 7))
             tb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             if self.active_tag_filter == tag:
-                tb.setStyleSheet("background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 3px; padding: 1px 5px; border: 1px solid rgba(56, 189, 248, 0.4);")
+                tb.setStyleSheet("background: rgba(99, 102, 241, 0.2); color: #818cf8; border-radius: 3px; padding: 1px 5px; border: 1px solid rgba(99, 102, 241, 0.4);")
             else:
                 tb.setStyleSheet("background: rgba(255, 255, 255, 0.03); color: #94a3b8; border-radius: 3px; padding: 1px 5px; border: none;")
             tb.clicked.connect(lambda _, tg=tag: self._set_tag_filter(tg))
@@ -4999,7 +5000,7 @@ class ProjectGenesisDialog(QDialog):
             QDialog {
                 background: #090e1a;
                 color: #f1f5f9;
-                border: 1px solid rgba(56, 189, 248, 0.3);
+                border: 1px solid rgba(99, 102, 241, 0.3);
                 border-radius: 10px;
             }
         """)
@@ -5012,7 +5013,7 @@ class ProjectGenesisDialog(QDialog):
         hdr = QHBoxLayout()
         t_lbl = QLabel("⚡ Autonomous Project Genesis")
         t_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
-        t_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        t_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         hdr.addWidget(t_lbl)
         hdr.addStretch()
         lay.addLayout(hdr)
@@ -5033,7 +5034,7 @@ class ProjectGenesisDialog(QDialog):
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 6px; color: #ffffff; padding: 6px 10px;
             }
-            QLineEdit:focus { border-color: #38bdf8; }
+            QLineEdit:focus { border-color: #818cf8; }
         """)
         lay.addWidget(self.name_in)
 
@@ -5060,7 +5061,7 @@ class ProjectGenesisDialog(QDialog):
                 background: rgba(255, 255, 255, 0.06); color: #cbd5e1;
                 border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 6px 12px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
         """)
         browse_btn.clicked.connect(self._browse_location)
         loc_row.addWidget(browse_btn)
@@ -5074,11 +5075,11 @@ class ProjectGenesisDialog(QDialog):
         self.bp_combo.setStyleSheet("""
             QComboBox {
                 background: rgba(15, 23, 42, 0.8); color: #f1f5f9;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 4px 8px;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px; padding: 4px 8px;
             }
             QComboBox QAbstractItemView {
                 background: #0d1322; color: #f1f5f9;
-                selection-background-color: rgba(56, 189, 248, 0.2);
+                selection-background-color: rgba(99, 102, 241, 0.2);
             }
         """)
         self.bp_combo.currentIndexChanged.connect(self._on_blueprint_changed)
@@ -5090,8 +5091,8 @@ class ProjectGenesisDialog(QDialog):
         self.desc_lbl.setFont(QFont("Segoe UI", 7))
         self.desc_lbl.setStyleSheet("""
             QLabel {
-                background: rgba(56, 189, 248, 0.05); color: #94a3b8;
-                border-left: 2px solid #38bdf8; border-radius: 4px; padding: 6px;
+                background: rgba(99, 102, 241, 0.05); color: #94a3b8;
+                border-left: 2px solid #818cf8; border-radius: 4px; padding: 6px;
             }
         """)
         lay.addWidget(self.desc_lbl)
@@ -5160,10 +5161,10 @@ class ProjectGenesisDialog(QDialog):
         self.scaffold_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.scaffold_btn.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #070b14;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 6px; padding: 6px 18px;
             }
-            QPushButton:hover { background: #7dd3fc; }
+            QPushButton:hover { background: #4f46e5; }
         """)
         self.scaffold_btn.clicked.connect(self.accept)
         btn_r.addWidget(self.scaffold_btn)
@@ -5239,15 +5240,15 @@ class NeoProjectsView(QWidget):
         self.proj_combo.setStyleSheet("""
             QComboBox {
                 background: rgba(15, 23, 42, 0.8); color: #f1f5f9;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px;
                 padding: 2px 10px; min-width: 170px;
             }
-            QComboBox:hover { border-color: #38bdf8; }
+            QComboBox:hover { border-color: #818cf8; }
             QComboBox::drop-down { border: none; }
             QComboBox QAbstractItemView {
                 background: #0d1322; color: #f1f5f9;
-                selection-background-color: rgba(56, 189, 248, 0.2);
-                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px;
+                selection-background-color: rgba(99, 102, 241, 0.2);
+                border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 6px; padding: 4px;
             }
         """)
         self._populate_project_selector()
@@ -5262,10 +5263,10 @@ class NeoProjectsView(QWidget):
         scaffold_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         scaffold_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.15); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 2px 12px;
+                background: rgba(99, 102, 241, 0.15); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 6px; padding: 2px 12px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.28); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.28); color: #ffffff; }
         """)
         scaffold_btn.clicked.connect(self._open_genesis_wizard)
         hdr.addWidget(scaffold_btn)
@@ -5281,7 +5282,7 @@ class NeoProjectsView(QWidget):
                 background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
                 border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 2px 10px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
         """)
         add_proj_btn.clicked.connect(self._add_new_project)
         hdr.addWidget(add_proj_btn)
@@ -5289,8 +5290,8 @@ class NeoProjectsView(QWidget):
         self.toast_lbl = QLabel("")
         self.toast_lbl.setStyleSheet("""
             QLabel {
-                background: rgba(15, 23, 42, 0.95); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px;
+                background: rgba(15, 23, 42, 0.95); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px;
                 padding: 4px 12px; font-size: 11px;
             }
         """)
@@ -5338,10 +5339,10 @@ class NeoProjectsView(QWidget):
         ai_arch_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         ai_arch_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.12); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 2px 12px;
+                background: rgba(99, 102, 241, 0.12); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 6px; padding: 2px 12px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.25); color: #ffffff; }
         """)
         ai_arch_btn.clicked.connect(self._ai_architect_project)
         hdr.addWidget(ai_arch_btn)
@@ -5370,7 +5371,7 @@ class NeoProjectsView(QWidget):
             QSplitter::handle {
                 background: rgba(255, 255, 255, 0.05); width: 2px;
             }
-            QSplitter::handle:hover { background: #38bdf8; }
+            QSplitter::handle:hover { background: #818cf8; }
         """)
 
         # Left Column: Workspace File Explorer (~310px)
@@ -5401,7 +5402,7 @@ class NeoProjectsView(QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.07);
                 border-radius: 6px; color: #ffffff; padding: 4px 8px;
             }
-            QLineEdit:focus { border-color: rgba(56, 189, 248, 0.4); }
+            QLineEdit:focus { border-color: rgba(99, 102, 241, 0.4); }
         """)
         self.file_search_in.textChanged.connect(self._on_search_filter_changed)
         tree_ctrl.addWidget(self.file_search_in, stretch=1)
@@ -5413,8 +5414,8 @@ class NeoProjectsView(QWidget):
         self.toggle_cache_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.toggle_cache_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 5px;
+                background: rgba(99, 102, 241, 0.1); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 5px;
             }
         """)
         self.toggle_cache_btn.clicked.connect(self._toggle_cache_visibility)
@@ -5443,10 +5444,10 @@ class NeoProjectsView(QWidget):
                 padding: 4px 2px; border-radius: 4px;
             }
             QTreeWidget::item:hover {
-                background: rgba(56, 189, 248, 0.08); color: #38bdf8;
+                background: rgba(99, 102, 241, 0.08); color: #818cf8;
             }
             QTreeWidget::item:selected {
-                background: rgba(56, 189, 248, 0.18); color: #ffffff;
+                background: rgba(99, 102, 241, 0.18); color: #ffffff;
             }
         """)
         self.tree_widget.itemClicked.connect(self._on_tree_item_clicked)
@@ -5533,10 +5534,10 @@ class NeoProjectsView(QWidget):
         test_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         test_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.1); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 5px; padding: 4px 10px;
+                background: rgba(99, 102, 241, 0.1); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.28); border-radius: 5px; padding: 4px 10px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.22); color: #ffffff; }
         """)
         test_btn.clicked.connect(self._run_tests)
         dock_lay.addWidget(test_btn)
@@ -5621,10 +5622,10 @@ class NeoProjectsView(QWidget):
         self.ai_review_file_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.ai_review_file_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.12); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 5px; padding: 3px 10px; font-size: 11px;
+                background: rgba(99, 102, 241, 0.12); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 5px; padding: 3px 10px; font-size: 11px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.25); color: #ffffff; }
         """)
         self.ai_review_file_btn.clicked.connect(self._ask_neo_review_file)
         insp_tb.addWidget(self.ai_review_file_btn)
@@ -5723,7 +5724,7 @@ class NeoProjectsView(QWidget):
         val_lbl = QLabel(main_val)
         val_lbl.setObjectName("main_val")
         val_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
-        val_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        val_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(val_lbl)
 
         sub_lbl = QLabel(sub_val)
@@ -6051,10 +6052,10 @@ class NeoProjectsView(QWidget):
         menu.setStyleSheet("""
             QMenu {
                 background: #0f172a; color: #e2e8f0;
-                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px;
+                border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 6px; padding: 4px;
             }
             QMenu::item { padding: 6px 14px; border-radius: 4px; font-size: 11px; }
-            QMenu::item:selected { background: rgba(56, 189, 248, 0.18); color: #ffffff; }
+            QMenu::item:selected { background: rgba(99, 102, 241, 0.18); color: #ffffff; }
         """)
         menu.aboutToShow.connect(lambda: self._populate_git_menu(menu))
         self.git_badge.setMenu(menu)
@@ -6450,9 +6451,9 @@ CATEGORY_THEMES = {
     "projects": {
         "label": "🗂️ Projects",
         "short_label": "Projects",
-        "color": "#38bdf8",
-        "bg": "rgba(56, 189, 248, 0.12)",
-        "border": "rgba(56, 189, 248, 0.35)",
+        "color": "#818cf8",
+        "bg": "rgba(99, 102, 241, 0.12)",
+        "border": "rgba(99, 102, 241, 0.35)",
         "icon": "🗂️",
     },
     "corrections": {
@@ -6625,10 +6626,10 @@ class NeoMemoryCard(QFrame):
         deep_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         deep_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.10); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 4px 11px;
+                background: rgba(99, 102, 241, 0.10); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 6px; padding: 4px 11px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.20); color: #ffffff; border-color: #38bdf8; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.20); color: #ffffff; border-color: #818cf8; }
         """)
         prompt_text = f"Boss requests knowledge deep-dive on [{self.cat} / {self.key}]: {self.val}. Cross-reference with our active projects and context."
         deep_btn.clicked.connect(lambda: self.action_requested.emit(prompt_text))
@@ -6693,7 +6694,7 @@ class MemoryInjectionDialog(QDialog):
         self.outer.setStyleSheet("""
             QFrame {
                 background: #090e1a;
-                border: 1px solid rgba(56, 189, 248, 0.35);
+                border: 1px solid rgba(99, 102, 241, 0.35);
                 border-radius: 14px;
             }
         """)
@@ -6734,7 +6735,7 @@ class MemoryInjectionDialog(QDialog):
         # Category Row
         c_lbl = QLabel("KNOWLEDGE DOMAIN / CATEGORY")
         c_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        c_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        c_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(c_lbl)
 
         self.cat_combo = QComboBox()
@@ -6774,7 +6775,7 @@ class MemoryInjectionDialog(QDialog):
         # Key Input
         k_lbl = QLabel("FACT KEY / TOPIC IDENTIFIER")
         k_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        k_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        k_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(k_lbl)
 
         self.key_edit = QLineEdit()
@@ -6787,14 +6788,14 @@ class MemoryInjectionDialog(QDialog):
                 background: #101626; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px 12px;
             }
-            QLineEdit:focus { border: 1px solid #38bdf8; }
+            QLineEdit:focus { border: 1px solid #818cf8; }
         """)
         lay.addWidget(self.key_edit)
 
         # Value Input
         v_lbl = QLabel("KNOWLEDGE STATEMENT / FACT VALUE")
         v_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        v_lbl.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        v_lbl.setStyleSheet("color: #818cf8; border: none; background: transparent;")
         lay.addWidget(v_lbl)
 
         self.val_edit = QTextEdit()
@@ -6806,7 +6807,7 @@ class MemoryInjectionDialog(QDialog):
                 background: #101626; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;
             }
-            QTextEdit:focus { border: 1px solid #38bdf8; }
+            QTextEdit:focus { border: 1px solid #818cf8; }
         """)
         lay.addWidget(self.val_edit, stretch=1)
 
@@ -6832,10 +6833,10 @@ class MemoryInjectionDialog(QDialog):
         save_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         save_btn.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #07090e;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 8px; padding: 8px 22px;
             }
-            QPushButton:hover { background: #7dd3fc; }
+            QPushButton:hover { background: #4f46e5; }
         """)
         save_btn.clicked.connect(self._save_memory)
         btn_row.addWidget(save_btn)
@@ -6872,7 +6873,7 @@ class MemoryInjectionDialog(QDialog):
 
 
 class _KnowledgeKpiCard(QFrame):
-    def __init__(self, icon: str, title: str, value: str, subtitle: str, color: str = "#38bdf8", parent=None):
+    def __init__(self, icon: str, title: str, value: str, subtitle: str, color: str = "#818cf8", parent=None):
         super().__init__(parent)
         self.setStyleSheet(f"""
             _KnowledgeKpiCard {{
@@ -6954,8 +6955,8 @@ class NeoKnowledgeView(QWidget):
         self.count_badge = QLabel("0 facts")
         self.count_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.count_badge.setStyleSheet("""
-            background: rgba(56, 189, 248, 0.12); color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 9px; padding: 2px 8px;
+            background: rgba(99, 102, 241, 0.12); color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 9px; padding: 2px 8px;
         """)
         t_row.addWidget(self.count_badge)
         t_row.addStretch()
@@ -6985,10 +6986,10 @@ class NeoKnowledgeView(QWidget):
         audit_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         audit_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(56, 189, 248, 0.10); color: #38bdf8;
-                border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 7px 14px;
+                background: rgba(99, 102, 241, 0.10); color: #818cf8;
+                border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 7px 14px;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.22); color: #ffffff; }
+            QPushButton:hover { background: rgba(99, 102, 241, 0.22); color: #ffffff; }
         """)
         audit_btn.clicked.connect(self._run_neural_audit)
         hdr.addWidget(audit_btn)
@@ -7011,10 +7012,10 @@ class NeoKnowledgeView(QWidget):
         add_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         add_btn.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #07090e;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 8px; padding: 7px 16px;
             }
-            QPushButton:hover { background: #7dd3fc; }
+            QPushButton:hover { background: #4f46e5; }
         """)
         add_btn.clicked.connect(self._add_memory)
         hdr.addWidget(add_btn)
@@ -7025,7 +7026,7 @@ class NeoKnowledgeView(QWidget):
         kpi_row = QHBoxLayout()
         kpi_row.setSpacing(12)
 
-        self.kpi_total = _KnowledgeKpiCard("🧠", "Total Memories", "0", "Indexed in neural store", "#38bdf8")
+        self.kpi_total = _KnowledgeKpiCard("🧠", "Total Memories", "0", "Indexed in neural store", "#818cf8")
         self.kpi_domains = _KnowledgeKpiCard("🏷️", "Active Domains", "0", "Identity, Rules, Tech...", "#c084fc")
         self.kpi_health = _KnowledgeKpiCard("⚡", "Cognitive Health", "100%", "Graph integrity verified", "#34d399")
         self.kpi_updated = _KnowledgeKpiCard("🕒", "Last Synchronized", "Today", "Auto-persisted to disk", "#fbbf24")
@@ -7049,7 +7050,7 @@ class NeoKnowledgeView(QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 9px 14px;
             }}
             QLineEdit:focus {{
-                border: 1px solid rgba(56, 189, 248, 0.5);
+                border: 1px solid rgba(99, 102, 241, 0.5);
                 background: #101930;
             }}
         """)
@@ -7126,11 +7127,11 @@ class NeoKnowledgeView(QWidget):
                 border-radius: 3px;
             }
             QScrollBar::handle:vertical {
-                background: rgba(56, 189, 248, 0.25);
+                background: rgba(99, 102, 241, 0.25);
                 border-radius: 3px;
             }
             QScrollBar::handle:vertical:hover {
-                background: rgba(56, 189, 248, 0.45);
+                background: rgba(99, 102, 241, 0.45);
             }
         """)
 
@@ -7177,10 +7178,10 @@ class NeoKnowledgeView(QWidget):
         e_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         e_btn.setStyleSheet("""
             QPushButton {
-                background: #38bdf8; color: #07090e;
+                background: #6366f1; color: #ffffff;
                 border: none; border-radius: 8px; padding: 7px 18px; margin-top: 8px;
             }
-            QPushButton:hover { background: #7dd3fc; }
+            QPushButton:hover { background: #4f46e5; }
         """)
         e_btn.clicked.connect(self._add_memory)
         empty_lay.addWidget(e_btn, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -7301,9 +7302,9 @@ class NeoKnowledgeView(QWidget):
             if ckey == self.active_cat:
                 btn.setStyleSheet("""
                     QPushButton {
-                        background: rgba(56, 189, 248, 0.16);
-                        color: #38bdf8;
-                        border: 1px solid rgba(56, 189, 248, 0.45);
+                        background: rgba(99, 102, 241, 0.16);
+                        color: #818cf8;
+                        border: 1px solid rgba(99, 102, 241, 0.45);
                         border-radius: 14px;
                         padding: 5px 13px;
                         font-weight: bold;
@@ -7436,9 +7437,9 @@ class _PillOption(QPushButton):
         if self.isChecked():
             self.setStyleSheet("""
                 QPushButton {
-                    background: rgba(0, 229, 255, 0.16);
+                    background: rgba(99, 102, 241, 0.16);
                     color: #ffffff;
-                    border: 1.5px solid #00e5ff;
+                    border: 1.5px solid #818cf8;
                     border-radius: 17px;
                     padding: 4px 14px;
                     font-weight: bold;
@@ -7454,8 +7455,8 @@ class _PillOption(QPushButton):
                     padding: 4px 14px;
                 }
                 QPushButton:hover {
-                    background: rgba(56, 189, 248, 0.08);
-                    border-color: rgba(56, 189, 248, 0.35);
+                    background: rgba(99, 102, 241, 0.08);
+                    border-color: rgba(99, 102, 241, 0.35);
                     color: #e2e8f0;
                 }
             """)
@@ -7543,17 +7544,17 @@ class _PersonaCard(QFrame):
             self.setStyleSheet("""
                 QFrame {
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                        stop:0 rgba(0, 229, 255, 0.16),
+                        stop:0 rgba(99, 102, 241, 0.16),
                         stop:1 rgba(37, 99, 235, 0.12));
-                    border: 1.5px solid #00e5ff;
+                    border: 1.5px solid #818cf8;
                     border-radius: 12px;
                 }
             """)
             self.title_lbl.setStyleSheet("color: #ffffff; border: none; background: transparent;")
             self.badge_lbl.setStyleSheet("""
-                color: #00e5ff;
-                background: rgba(0, 229, 255, 0.20);
-                border: 1px solid rgba(0, 229, 255, 0.4);
+                color: #818cf8;
+                background: rgba(99, 102, 241, 0.20);
+                border: 1px solid rgba(99, 102, 241, 0.4);
                 border-radius: 4px;
                 padding: 2px 6px;
             """)
@@ -7566,8 +7567,8 @@ class _PersonaCard(QFrame):
                     border-radius: 12px;
                 }
                 QFrame:hover {
-                    background: rgba(56, 189, 248, 0.06);
-                    border-color: rgba(56, 189, 248, 0.3);
+                    background: rgba(99, 102, 241, 0.06);
+                    border-color: rgba(99, 102, 241, 0.3);
                 }
             """)
             self.title_lbl.setStyleSheet("color: #cbd5e1; border: none; background: transparent;")
@@ -7631,7 +7632,7 @@ class NeoCalibrationOverlay(QFrame):
         self.setStyleSheet("""
             QFrame#NeoCalibrationOverlay {
                 background: rgba(13, 17, 28, 0.96);
-                border: 1.5px solid rgba(56, 189, 248, 0.32);
+                border: 1.5px solid rgba(99, 102, 241, 0.32);
                 border-radius: 16px;
             }
         """)
@@ -7647,7 +7648,7 @@ class NeoCalibrationOverlay(QFrame):
 
         icon_lbl = QLabel("⬡")
         icon_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        icon_lbl.setStyleSheet("color: #00e5ff; background: transparent;")
+        icon_lbl.setStyleSheet("color: #818cf8; background: transparent;")
         top_bar.addWidget(icon_lbl)
 
         title_col = QVBoxLayout()
@@ -7719,9 +7720,9 @@ class NeoCalibrationOverlay(QFrame):
             if i == idx:
                 btn.setStyleSheet("""
                     QPushButton {
-                        background: rgba(0, 229, 255, 0.18);
-                        color: #00e5ff;
-                        border: 1.5px solid #00e5ff;
+                        background: rgba(99, 102, 241, 0.18);
+                        color: #818cf8;
+                        border: 1.5px solid #818cf8;
                         border-radius: 14px;
                     }
                 """)
@@ -7767,7 +7768,7 @@ class NeoCalibrationOverlay(QFrame):
                 background: #111726; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
             }
-            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+            QLineEdit:focus { border: 1.5px solid #818cf8; }
         """)
         n_row.addWidget(self.name_input, stretch=1)
 
@@ -7782,7 +7783,7 @@ class NeoCalibrationOverlay(QFrame):
                     background: rgba(255, 255, 255, 0.04); color: #94a3b8;
                     border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 2px 10px;
                 }
-                QPushButton:hover { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: #00e5ff; }
+                QPushButton:hover { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-color: #818cf8; }
             """)
             tb.clicked.connect(lambda _, t=tag: self.name_input.setText(t))
             n_row.addWidget(tb)
@@ -7845,10 +7846,10 @@ class NeoCalibrationOverlay(QFrame):
         next_b.setFixedHeight(36)
         next_b.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #818cf8);
                 color: #080c14; font-weight: bold; border: none; border-radius: 8px; padding: 6px 20px;
             }
-            QPushButton:hover { background: #38bdf8; }
+            QPushButton:hover { background: #818cf8; }
         """)
         next_b.clicked.connect(lambda: self._go_step(1))
         b_row.addWidget(next_b)
@@ -7957,10 +7958,10 @@ class NeoCalibrationOverlay(QFrame):
         next_b.setFixedHeight(36)
         next_b.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #00e5ff);
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0284c7, stop:1 #818cf8);
                 color: #080c14; font-weight: bold; border: none; border-radius: 8px; padding: 6px 20px;
             }
-            QPushButton:hover { background: #38bdf8; }
+            QPushButton:hover { background: #818cf8; }
         """)
         next_b.clicked.connect(lambda: self._go_step(2))
         b_row.addWidget(next_b)
@@ -7989,7 +7990,7 @@ class NeoCalibrationOverlay(QFrame):
                 background: #111726; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
             }
-            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+            QLineEdit:focus { border: 1.5px solid #818cf8; }
         """)
         lay.addWidget(self.goal_input)
 
@@ -8006,7 +8007,7 @@ class NeoCalibrationOverlay(QFrame):
                     background: rgba(255, 255, 255, 0.04); color: #94a3b8;
                     border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 13px; padding: 2px 8px;
                 }
-                QPushButton:hover { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: #00e5ff; }
+                QPushButton:hover { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-color: #818cf8; }
             """)
             sb.clicked.connect(lambda _, t=s_text: self.goal_input.setText(t))
             s_row.addWidget(sb)
@@ -8027,7 +8028,7 @@ class NeoCalibrationOverlay(QFrame):
         get_key_btn = QPushButton("Get Free API Key at Google AI Studio ↗")
         get_key_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         get_key_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        get_key_btn.setStyleSheet("color: #38bdf8; background: transparent; border: none; text-decoration: underline;")
+        get_key_btn.setStyleSheet("color: #818cf8; background: transparent; border: none; text-decoration: underline;")
         get_key_btn.clicked.connect(lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
         k_header.addWidget(get_key_btn)
         lay.addLayout(k_header)
@@ -8044,7 +8045,7 @@ class NeoCalibrationOverlay(QFrame):
                 background: #111726; color: #ffffff;
                 border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 4px 10px;
             }
-            QLineEdit:focus { border: 1.5px solid #00e5ff; }
+            QLineEdit:focus { border: 1.5px solid #818cf8; }
         """)
         key_row.addWidget(self.key_input, stretch=1)
 
@@ -8111,12 +8112,12 @@ class NeoCalibrationOverlay(QFrame):
         finish_b.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #00e5ff, stop:0.5 #38bdf8, stop:1 #2563eb);
+                    stop:0 #818cf8, stop:0.5 #818cf8, stop:1 #2563eb);
                 color: #060911; font-weight: bold; border: none; border-radius: 8px; padding: 6px 24px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #38bdf8, stop:1 #60a5fa);
+                    stop:0 #818cf8, stop:1 #60a5fa);
                 color: #000000;
             }
         """)
