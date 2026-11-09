@@ -66,41 +66,6 @@ DUMMY_EVENT_TITLES = {
 }
 
 
-def _default_seed_agenda(today_str: str) -> list[dict]:
-    """Generates realistic executive/dev agenda items for a productive day."""
-    return [
-        {
-            "id": "evt_sprint_01",
-            "title": "Architecture Review & Sprint Sync",
-            "date": today_str,
-            "start_time": "10:00",
-            "end_time": "10:45",
-            "duration_minutes": 45,
-            "location": "Google Meet / Dev Channel",
-            "source": "local",
-        },
-        {
-            "id": "evt_telemetry_02",
-            "title": "Production Deployment & Telemetry Sign-off",
-            "date": today_str,
-            "start_time": "14:00",
-            "end_time": "14:30",
-            "duration_minutes": 30,
-            "location": "Terminal Workstation",
-            "source": "local",
-        },
-        {
-            "id": "evt_client_03",
-            "title": "Executive Client Project Review",
-            "date": today_str,
-            "start_time": "16:30",
-            "end_time": "17:15",
-            "duration_minutes": 45,
-            "location": "Main Boardroom / Zoom",
-            "source": "local",
-        },
-    ]
-
 
 def _load_agenda() -> dict:
     _MEMORY_DIR.mkdir(parents=True, exist_ok=True)

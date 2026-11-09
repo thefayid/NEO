@@ -1,19 +1,13 @@
 {
-    "krishnakiran": {
-        "name": "Krishnakiran",
-        "phone": "",
-        "telegram": "",
-        "email": "krishnakiranbaiju1@gmail.com"
-    },
-    "boss": {
-        "name": "Boss",
-        "phone": "",
-        "telegram": ""
-    },
-    "rahul": {
-        "name": "Rahul",
-        "phone": "919876543210",
-        "telegram": "@rahul_dev",
-        "email": ""
-    }
+  "krishnakiran": {
+    "name": "Krishnakiran",
+    "phone": "",
+    "telegram": "",
+    "email": "krishnakiranbaiju1@gmail.com"
+  },
+  "boss": {
+    "name": "Boss",
+    "phone": "",
+    "telegram": ""
+  }
 }
