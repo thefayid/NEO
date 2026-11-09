@@ -5499,8 +5499,10 @@ class MainWindow(QMainWindow):
         python  = Path(sys.executable)
         desktop = self._get_desktop_dir()
 
-        # Arc-reactor icon (.ico — also exported as .png for Linux/macOS)
-        ico_path = Path(__file__).resolve().parent / "config" / "jarvis.ico"
+        # Official NEO icon (.ico — with fallback to jarvis.ico)
+        ico_path = Path(__file__).resolve().parent / "config" / "neo.ico"
+        if not ico_path.exists():
+            ico_path = Path(__file__).resolve().parent / "config" / "jarvis.ico"
         if not ico_path.exists():
             self._build_jarvis_icon(ico_path)
 
@@ -5511,10 +5513,12 @@ class MainWindow(QMainWindow):
             if _os == "Windows":
                 pythonw  = python.parent / "pythonw.exe"
                 target   = str(pythonw if pythonw.exists() else python)
-                lnk      = str(desktop / "J.A.R.V.I.S.lnk")
                 icon_loc = str(ico_path) if ico_path.exists() else f"{target},0"
-                self._create_lnk_windows(lnk, target, str(script),
-                                         str(script.parent), icon_loc)
+                # Create modern NEO shortcut and keep legacy J.A.R.V.I.S shortcut synced
+                for name in ("NEO.lnk", "J.A.R.V.I.S.lnk"):
+                    lnk = str(desktop / name)
+                    self._create_lnk_windows(lnk, target, str(script),
+                                             str(script.parent), icon_loc)
 
             # ── macOS — proper .app bundle (no Terminal window) ───────────────
             elif _os == "Darwin":
@@ -6920,12 +6924,18 @@ class MainWindow(QMainWindow):
         try:
             if _OS == "Windows":
                 import winreg
+                startup_lnk = Path(os.environ.get("APPDATA", "")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup" / "NEO.lnk"
+                if startup_lnk.exists():
+                    return True
                 key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_READ)
                 try:
-                    winreg.QueryValueEx(key, "JARVIS_AI")
-                    return True
-                except FileNotFoundError:
+                    for k in ("NEO_AI", "JARVIS_AI"):
+                        try:
+                            winreg.QueryValueEx(key, k)
+                            return True
+                        except FileNotFoundError:
+                            pass
                     return False
                 finally:
                     winreg.CloseKey(key)
@@ -6943,15 +6953,34 @@ class MainWindow(QMainWindow):
             script = str(Path(__file__).resolve().parent / "main.py")
             if _OS == "Windows":
                 import winreg
+                startup_folder = Path(os.environ.get("APPDATA", "")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+                startup_lnk = startup_folder / "NEO.lnk"
                 reg = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
                 if currently_on:
-                    winreg.DeleteValue(reg, "JARVIS_AI")
+                    for k in ("NEO_AI", "JARVIS_AI"):
+                        try:
+                            winreg.DeleteValue(reg, k)
+                        except FileNotFoundError:
+                            pass
+                    if startup_lnk.exists():
+                        try:
+                            startup_lnk.unlink()
+                        except Exception:
+                            pass
                 else:
                     pythonw = Path(sys.executable).parent / "pythonw.exe"
                     exe = str(pythonw if pythonw.exists() else sys.executable)
-                    winreg.SetValueEx(reg, "JARVIS_AI", 0, winreg.REG_SZ,
+                    winreg.SetValueEx(reg, "NEO_AI", 0, winreg.REG_SZ,
                                       f'"{exe}" "{script}"')
+                    # Also write Startup folder .lnk with explicit working directory
+                    try:
+                        ico_path = Path(__file__).resolve().parent / "config" / "neo.ico"
+                        icon_loc = str(ico_path) if ico_path.exists() else f"{exe},0"
+                        self._create_lnk_windows(str(startup_lnk), exe, str(script),
+                                                 str(Path(script).parent), icon_loc)
+                    except Exception:
+                        pass
                 winreg.CloseKey(reg)
             elif _OS == "Darwin":
                 plist_dir = Path.home() / "Library" / "LaunchAgents"

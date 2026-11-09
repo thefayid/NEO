@@ -1,3 +1,16 @@
+import os as _os
+import sys as _sys
+from pathlib import Path as _Path
+
+# ── Lock working directory to repository root on every launch ────────────────
+# Windows Startup, Task Scheduler, and Registry Run entries start in
+# C:\Windows\System32. Locking cwd here guarantees relative paths, configs,
+# memories, and assets always resolve to this installation.
+_REPO_ROOT = _Path(__file__).resolve().parent
+_os.chdir(_REPO_ROOT)
+if str(_REPO_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_REPO_ROOT))
+
 import platform as _platform
 import subprocess as _subprocess
 

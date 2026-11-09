@@ -53,8 +53,9 @@ ACCENT_BLUE = "#60a5fa"
 ACCENT_GREEN = "#4ade80"
 ACCENT_AMBER = "#fbbf24"
 
-_SESSIONS_FILE = Path("memory/chat_sessions.json")
-_EXPORTS_DIR = Path("memory/exports")
+_BASE_DIR = Path(__file__).resolve().parent.parent
+_SESSIONS_FILE = _BASE_DIR / "memory" / "chat_sessions.json"
+_EXPORTS_DIR = _BASE_DIR / "memory" / "exports"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -657,7 +658,7 @@ class NeoChatMessageBubble(QFrame):
 
     def _save_to_notes(self):
         try:
-            notes_p = Path("memory/notes.txt")
+            notes_p = _BASE_DIR / "memory" / "notes.txt"
             notes_p.parent.mkdir(parents=True, exist_ok=True)
             ts = datetime.now().strftime("%Y-%m-%d %H:%M")
             entry = f"\n--- Note saved from NEO Chat ({ts}) ---\n{self.raw_content}\n"
@@ -1669,7 +1670,7 @@ class NeoModernChatWidget(QWidget):
         modes = ["gemini-1.5-pro", "gemini-1.5-flash", "local-ollama"]
         mode = modes[idx] if idx < len(modes) else "gemini-1.5-pro"
         try:
-            cfg_p = Path("config/api_keys.json")
+            cfg_p = _BASE_DIR / "config" / "api_keys.json"
             if cfg_p.exists():
                 with open(cfg_p, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
@@ -1682,7 +1683,7 @@ class NeoModernChatWidget(QWidget):
 
     def _load_voice_muted(self) -> bool:
         try:
-            cfg_p = Path("config/api_keys.json")
+            cfg_p = _BASE_DIR / "config" / "api_keys.json"
             if cfg_p.exists():
                 with open(cfg_p, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
@@ -1695,7 +1696,7 @@ class NeoModernChatWidget(QWidget):
         self.voice_muted = not self.voice_muted
         self.voice_btn.setText("🔇 Silent" if self.voice_muted else "🔊 Voice: ON")
         try:
-            cfg_p = Path("config/api_keys.json")
+            cfg_p = _BASE_DIR / "config" / "api_keys.json"
             if cfg_p.exists():
                 with open(cfg_p, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
@@ -1785,7 +1786,7 @@ class NeoModernChatWidget(QWidget):
         elif full_cmd.startswith("/notes "):
             note_txt = full_cmd[7:].strip()
             self.add_message("user", full_cmd)
-            p = Path("memory/notes.txt")
+            p = _BASE_DIR / "memory" / "notes.txt"
             p.parent.mkdir(parents=True, exist_ok=True)
             with open(p, "a", encoding="utf-8") as f:
                 f.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M')}] {note_txt}\n")
