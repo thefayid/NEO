@@ -3253,9 +3253,9 @@ class NeoNotesView(QWidget):
         body_lay = QHBoxLayout()
         body_lay.setSpacing(14)
 
-        # Left Column: Note Navigator (~280px)
+        # Left Column: Note Navigator (~230px compact)
         left_panel = QFrame()
-        left_panel.setFixedWidth(280)
+        left_panel.setFixedWidth(230)
         left_panel.setStyleSheet("""
             QFrame {
                 background: rgba(13, 19, 32, 0.7);
@@ -3329,50 +3329,57 @@ class NeoNotesView(QWidget):
         ed_lay.setContentsMargins(18, 14, 18, 14)
         ed_lay.setSpacing(10)
 
-        # Editor Toolbar
+        # Editor Toolbar (Responsive & Compact)
         tb = QHBoxLayout()
-        tb.setSpacing(8)
+        tb.setSpacing(6)
 
         self.cat_box = QComboBox()
         self.cat_box.addItems(["Dev", "Security", "Ideas", "Research", "Quick Note"])
         self.cat_box.setFont(QFont("Segoe UI", 8))
+        self.cat_box.setFixedWidth(88)
         self.cat_box.setStyleSheet("""
             QComboBox {
                 background: rgba(255, 255, 255, 0.04); color: #cbd5e1;
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 3px 8px;
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 5px; padding: 2px 6px;
             }
         """)
         self.cat_box.currentIndexChanged.connect(self._on_category_changed)
         tb.addWidget(self.cat_box)
 
-        self.pin_btn = QPushButton("📌 Pin")
+        self.pin_btn = QPushButton("📌")
+        self.pin_btn.setToolTip("Toggle pin to top")
         self.pin_btn.setFont(QFont("Segoe UI", 8))
+        self.pin_btn.setFixedSize(26, 24)
         self.pin_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 3px 8px;")
+        self.pin_btn.setStyleSheet("background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px;")
         self.pin_btn.clicked.connect(self._toggle_active_pin)
         tb.addWidget(self.pin_btn)
 
         tb.addStretch()
 
-        self.word_metrics_lbl = QLabel("0 words · 0 chars")
-        self.word_metrics_lbl.setFont(QFont("Segoe UI", 8))
-        self.word_metrics_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        self.word_metrics_lbl = QLabel("0 words")
+        self.word_metrics_lbl.setFont(QFont("Segoe UI", 7))
+        self.word_metrics_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; padding: 0 4px;")
         tb.addWidget(self.word_metrics_lbl)
 
-        copy_btn = QPushButton("📋 Copy")
+        copy_btn = QPushButton("📋")
+        copy_btn.setToolTip("Copy note to clipboard")
         copy_btn.setFont(QFont("Segoe UI", 8))
+        copy_btn.setFixedSize(26, 24)
         copy_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        copy_btn.setStyleSheet("background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 3px 8px;")
+        copy_btn.setStyleSheet("background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px;")
         copy_btn.clicked.connect(self._copy_note)
         tb.addWidget(copy_btn)
 
-        mem_btn = QPushButton("🧠 Commit to Brain")
+        mem_btn = QPushButton("🧠 Save")
+        mem_btn.setToolTip("Commit note to NEO Long-Term Memory")
         mem_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        mem_btn.setFixedHeight(24)
         mem_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         mem_btn.setStyleSheet("""
             QPushButton {
                 background: rgba(52, 211, 153, 0.12); color: #34d399;
-                border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 5px; padding: 3px 10px;
+                border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 5px; padding: 2px 8px; font-size: 11px;
             }
             QPushButton:hover { background: rgba(52, 211, 153, 0.25); color: #ffffff; }
         """)
@@ -3381,9 +3388,10 @@ class NeoNotesView(QWidget):
 
         del_active_btn = QPushButton("🗑️")
         del_active_btn.setToolTip("Delete note")
-        del_active_btn.setFont(QFont("Segoe UI", 9))
+        del_active_btn.setFont(QFont("Segoe UI", 8))
+        del_active_btn.setFixedSize(26, 24)
         del_active_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        del_active_btn.setStyleSheet("QPushButton { background: transparent; color: #64748b; border: none; padding: 3px; } QPushButton:hover { color: #f43f5e; }")
+        del_active_btn.setStyleSheet("QPushButton { background: transparent; color: #64748b; border: none; } QPushButton:hover { color: #f43f5e; }")
         del_active_btn.clicked.connect(self._delete_active_note)
         tb.addWidget(del_active_btn)
 
@@ -3670,34 +3678,51 @@ class NeoNotesView(QWidget):
             self._show_toast("📋 Copied note to clipboard")
 
     def _ask_neo_review(self):
+        # Flush any pending edits immediately
+        if self.save_timer.isActive():
+            self.save_timer.stop()
+            self._auto_save_active()
+
         note = self._get_active_note()
-        if not note:
-            self._show_toast("⚠️ No active note to review")
-            return
-        title = note.get("title", "Untitled Note")
-        content = note.get("content", "").strip()
-        if not content:
-            self._show_toast("⚠️ Note is empty")
+        title = (note.get("title") if note else "") or self.title_in.text().strip()
+        content = (note.get("content", "") if note else "") or self.body_ed.toPlainText().strip()
+
+        if not title and not content:
+            self._show_toast("⚠️ Enter a note title or text first")
             return
 
-        cmd = (
-            f"Review and analyze my note '{title}':\n\n{content}\n\n"
-            "Provide concise executive feedback, highlight key insights, and formulate 3 immediate tactical next steps, Boss."
-        )
-        self._show_toast(f"⚡ Dispatched '{title[:20]}...' to NEO")
+        if not content:
+            # Boss entered a title or prompt thought: NEO expands and brainstorms
+            cmd = (
+                f"I have a note titled '{title}'. "
+                "Help me brainstorm, expand on this thought, outline key ideas, and provide insightful reflections and actionable next steps, Boss."
+            )
+        else:
+            # Both title and content present
+            cmd = (
+                f"Review and analyze my note '{title}':\n\n{content}\n\n"
+                "Provide concise executive feedback, highlight key insights, and formulate 3 immediate tactical next steps, Boss."
+            )
+        display_title = title if title else "Note"
+        self._show_toast(f"⚡ Dispatched '{display_title[:20]}...' to NEO")
         self.note_action_triggered.emit(cmd)
 
     def _commit_to_brain(self):
+        if self.save_timer.isActive():
+            self.save_timer.stop()
+            self._auto_save_active()
+
         note = self._get_active_note()
-        if not note:
-            return
-        title = note.get("title", "Untitled Note")
-        content = note.get("content", "").strip()
-        if not content:
-            self._show_toast("⚠️ Note is empty")
+        title = (note.get("title") if note else "") or self.title_in.text().strip()
+        content = (note.get("content", "") if note else "") or self.body_ed.toPlainText().strip()
+
+        if not title and not content:
+            self._show_toast("⚠️ Enter a note title or text first")
             return
 
-        memory_fact = f"Note [{title}] ({note.get('category', 'Quick Note')}): {content}"
+        cat = note.get("category", self.cat_box.currentText()) if note else self.cat_box.currentText()
+        text_to_save = content if content else f"Concept/Topic: {title}"
+        memory_fact = f"Note [{title or 'Quick Note'}] ({cat}): {text_to_save}"
         self.note_saved.emit(f"Remember this note in semantic memory: {memory_fact}")
         self._show_toast("🧠 Committed note to NEO Long-Term Memory")
 
