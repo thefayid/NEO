@@ -1578,21 +1578,6 @@ class NeoNavSidebar(QWidget):
         for b in [self.btn_home, self.btn_chat, self.btn_tasks, self.btn_notes, self.btn_projects, self.btn_knowledge]:
             lay.addWidget(b)
 
-        lay.addSpacing(14)
-        tools_lbl = QLabel("TOOLS")
-        tools_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        tools_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent; padding-left: 10px; letter-spacing: 1.5px;")
-        lay.addWidget(tools_lbl)
-        lay.addSpacing(2)
-
-        self.btn_summarize = self._create_nav_item("📑", "Summarize", active=False)
-        self.btn_research = self._create_nav_item("🔍", "Research", active=False)
-        self.btn_code = self._create_nav_item("</>", "Code Assist", active=False)
-        self.btn_files = self._create_nav_item("📁", "Files", active=False)
-
-        for b in [self.btn_summarize, self.btn_research, self.btn_code, self.btn_files]:
-            lay.addWidget(b)
-
         lay.addStretch()
 
         self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
@@ -1639,8 +1624,6 @@ class NeoNavSidebar(QWidget):
         for b, lbl in [
             (self.btn_home, "Home"), (self.btn_chat, "Chat"), (self.btn_tasks, "Tasks"),
             (self.btn_notes, "Notes"), (self.btn_projects, "Projects"), (self.btn_knowledge, "Knowledge"),
-            (self.btn_summarize, "Summarize"), (self.btn_research, "Research"),
-            (self.btn_code, "Code Assist"), (self.btn_files, "Files")
         ]:
             b.setStyleSheet(self._nav_style(lbl == name))
             b.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
