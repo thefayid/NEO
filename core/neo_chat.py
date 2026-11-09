@@ -15,6 +15,7 @@ Features:
 """
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -28,16 +29,22 @@ from PyQt6.QtCore import Qt, QTimer, QUrl, pyqtSignal
 from PyQt6.QtGui import QColor, QCursor, QDesktopServices, QFont, QGuiApplication, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
+    QButtonGroup,
+    QCheckBox,
     QComboBox,
+    QDialog,
     QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QProgressBar,
     QPushButton,
+    QRadioButton,
     QScrollArea,
     QSizePolicy,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -249,6 +256,515 @@ class WebLinkCard(QFrame):
 
     def mousePressEvent(self, e):
         QDesktopServices.openUrl(QUrl(self.url))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2B. REASONING TRACE & CHAIN-OF-THOUGHT ACCORDION (DeepSeek / o1 Style)
+# ─────────────────────────────────────────────────────────────────────────────
+class ReasoningTraceAccordion(QFrame):
+    """Collapsible Neural Reasoning & Chain-of-Thought inspection drawer."""
+
+    def __init__(self, trace_text: str, duration_sec: float = 1.6, parent=None):
+        super().__init__(parent)
+        self.trace_text = trace_text.strip()
+        self.is_expanded = False
+
+        self.setObjectName("ReasoningTraceAccordion")
+        self.setStyleSheet("""
+            QFrame#ReasoningTraceAccordion {
+                background: rgba(24, 18, 43, 0.75);
+                border: 1px solid rgba(168, 85, 247, 0.35);
+                border-radius: 8px;
+            }
+        """)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(10, 6, 10, 6)
+        lay.setSpacing(6)
+
+        hdr = QHBoxLayout()
+        hdr.setSpacing(6)
+
+        dot = QLabel("🧠")
+        dot.setFont(QFont("Segoe UI", 9))
+        hdr.addWidget(dot)
+
+        word_count = len(self.trace_text.split())
+        title = QLabel(f"Thought Process <span style='color: #c084fc; font-weight:600;'>({word_count} tokens · {duration_sec:.1f}s)</span>")
+        title.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        title.setStyleSheet("color: #e2e8f0; border: none; background: transparent;")
+        hdr.addWidget(title)
+        hdr.addStretch()
+
+        self.tgl_btn = QPushButton("▼ Inspect")
+        self.tgl_btn.setFont(QFont("Segoe UI", 7))
+        self.tgl_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.tgl_btn.setFixedHeight(20)
+        self.tgl_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(168, 85, 247, 0.15);
+                color: #d8b4fe;
+                border: 1px solid rgba(168, 85, 247, 0.3);
+                border-radius: 4px;
+                padding: 1px 7px;
+            }
+            QPushButton:hover {
+                background: rgba(168, 85, 247, 0.3);
+                color: #ffffff;
+            }
+        """)
+        self.tgl_btn.clicked.connect(self._toggle)
+        hdr.addWidget(self.tgl_btn)
+        lay.addLayout(hdr)
+
+        self.body = QFrame()
+        self.body.setVisible(False)
+        self.body.setStyleSheet("""
+            QFrame {
+                background: #060813;
+                border-left: 2.5px solid #a855f7;
+                border-radius: 4px;
+                padding: 4px;
+            }
+        """)
+        b_lay = QVBoxLayout(self.body)
+        b_lay.setContentsMargins(8, 6, 8, 6)
+
+        txt = QLabel(self.trace_text)
+        txt.setFont(QFont("Consolas", 8))
+        txt.setWordWrap(True)
+        txt.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        txt.setStyleSheet("color: #cbd5e1; line-height: 140%; border: none; background: transparent;")
+        b_lay.addWidget(txt)
+        lay.addWidget(self.body)
+
+    def _toggle(self):
+        self.is_expanded = not self.is_expanded
+        self.body.setVisible(self.is_expanded)
+        self.tgl_btn.setText("▲ Collapse" if self.is_expanded else "▼ Inspect")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2C. GENERATIVE UI: IN-CHAT INTERACTIVE ACTION PLAN & TASK CHECKLIST
+# ─────────────────────────────────────────────────────────────────────────────
+class TaskChecklistWidget(QFrame):
+    """Interactive in-chat Task Checklist with live strike-through and toggle states."""
+
+    task_toggled = pyqtSignal(str, bool)
+
+    def __init__(self, tasks: list[tuple[str, bool]], parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(15, 23, 42, 0.85);
+                border: 1px solid rgba(56, 189, 248, 0.22);
+                border-radius: 8px;
+                padding: 4px;
+            }
+        """)
+        v = QVBoxLayout(self)
+        v.setContentsMargins(10, 8, 10, 8)
+        v.setSpacing(6)
+
+        hdr = QLabel("☑️  Active Action Plan & Tasks")
+        hdr.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        hdr.setStyleSheet("color: #38bdf8; border: none; background: transparent;")
+        v.addWidget(hdr)
+
+        for text, checked in tasks:
+            cb = QCheckBox(text)
+            cb.setFont(QFont("Segoe UI", 8))
+            cb.setChecked(checked)
+            self._apply_cb_style(cb, checked)
+            cb.toggled.connect(lambda chk, b=cb, t=text: self._on_checked(b, t, chk))
+            v.addWidget(cb)
+
+    def _apply_cb_style(self, cb: QCheckBox, checked: bool):
+        if checked:
+            cb.setStyleSheet("QCheckBox { color: #64748b; text-decoration: line-through; }")
+        else:
+            cb.setStyleSheet("QCheckBox { color: #f8fafc; text-decoration: none; }")
+
+    def _on_checked(self, cb: QCheckBox, text: str, checked: bool):
+        self._apply_cb_style(cb, checked)
+        self.task_toggled.emit(text, checked)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2D. GENERATIVE UI: MINI SPOTIFY TRANSPORT CARD
+# ─────────────────────────────────────────────────────────────────────────────
+class SpotifyMiniWidget(QFrame):
+    """Interactive miniature Spotify media controller inside chat."""
+
+    action_requested = pyqtSignal(str)
+
+    def __init__(self, track_title: str = "Spotify Media Link", parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #062b19, stop:1 #0b1720);
+                border: 1px solid rgba(34, 197, 94, 0.35);
+                border-radius: 10px;
+            }
+        """)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(12, 8, 12, 8)
+        lay.setSpacing(10)
+
+        icon = QLabel("🟢")
+        icon.setFont(QFont("Segoe UI", 10))
+        lay.addWidget(icon)
+
+        info_v = QVBoxLayout()
+        info_v.setSpacing(1)
+        lbl_track = QLabel(track_title)
+        lbl_track.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        lbl_track.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
+        info_v.addWidget(lbl_track)
+
+        lbl_sub = QLabel("SPOTIFY CONNECT")
+        lbl_sub.setFont(QFont("Segoe UI", 6, QFont.Weight.Bold))
+        lbl_sub.setStyleSheet("color: #4ade80; letter-spacing: 0.5px; border: none; background: transparent;")
+        info_v.addWidget(lbl_sub)
+        lay.addLayout(info_v, stretch=1)
+
+        def _ctrl_btn(label: str, cmd: str):
+            b = QPushButton(label)
+            b.setFont(QFont("Segoe UI", 8))
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b.setFixedSize(26, 26)
+            b.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #ffffff;
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                    border-radius: 13px;
+                }
+                QPushButton:hover {
+                    background: #22c55e;
+                    color: #050811;
+                }
+            """)
+            b.clicked.connect(lambda: self.action_requested.emit(cmd))
+            return b
+
+        lay.addWidget(_ctrl_btn("⏮", "Previous Spotify track"))
+        lay.addWidget(_ctrl_btn("⏯", "Toggle Spotify playback"))
+        lay.addWidget(_ctrl_btn("⏭", "Skip to next Spotify track"))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2E. GENERATIVE UI: GIT DIFF INSPECTOR CARD
+# ─────────────────────────────────────────────────────────────────────────────
+class GitDiffWidget(QFrame):
+    """Syntax highlighted Git Diff viewer for reviews directly in chat."""
+
+    def __init__(self, diff_text: str, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QFrame {
+                background: #05070e;
+                border: 1px solid rgba(56, 189, 248, 0.25);
+                border-radius: 8px;
+            }
+        """)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(10, 8, 10, 8)
+        lay.setSpacing(4)
+
+        hdr = QLabel("🌿  Git Diff Review")
+        hdr.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        hdr.setStyleSheet("color: #34d399; border: none; background: transparent;")
+        lay.addWidget(hdr)
+
+        view = QTextEdit()
+        view.setReadOnly(True)
+        view.setFont(QFont("Consolas", 8))
+        view.setStyleSheet("""
+            QTextEdit {
+                background: #020408;
+                color: #e2e8f0;
+                border: none;
+                padding: 6px;
+                line-height: 135%;
+            }
+        """)
+        html_lines = []
+        for line in diff_text.strip().splitlines():
+            esc = html.escape(line)
+            if line.startswith("+") and not line.startswith("+++"):
+                html_lines.append(f"<span style='color: #4ade80; background: rgba(34,197,94,0.12);'>{esc}</span>")
+            elif line.startswith("-") and not line.startswith("---"):
+                html_lines.append(f"<span style='color: #f87171; background: rgba(239,68,68,0.12);'>{esc}</span>")
+            elif line.startswith("@@"):
+                html_lines.append(f"<span style='color: #38bdf8;'>{esc}</span>")
+            elif line.startswith("diff ") or line.startswith("index "):
+                html_lines.append(f"<span style='color: #94a3b8; font-weight:bold;'>{esc}</span>")
+            else:
+                html_lines.append(f"<span style='color: #cbd5e1;'>{esc}</span>")
+        view.setHtml("<br>".join(html_lines))
+        view.setFixedHeight(min(220, max(70, len(diff_text.splitlines()) * 18)))
+        lay.addWidget(view)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2F. AUDIO WAVEFORM PLAYER PILL
+# ─────────────────────────────────────────────────────────────────────────────
+class AudioWaveformPlayer(QFrame):
+    """Interactive cybernetic audio player pill with play/pause and spectrum bars."""
+
+    play_toggled = pyqtSignal()
+
+    def __init__(self, duration_str: str = "0:08", parent=None):
+        super().__init__(parent)
+        self.is_playing = False
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(14, 25, 45, 0.85);
+                border: 1px solid rgba(0, 229, 255, 0.35);
+                border-radius: 14px;
+            }
+        """)
+        self.setFixedHeight(34)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(8, 0, 10, 0)
+        lay.setSpacing(8)
+
+        self.btn = QPushButton("▶")
+        self.btn.setFixedSize(22, 22)
+        self.btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        self.btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn.setStyleSheet("""
+            QPushButton {
+                background: #00e5ff;
+                color: #030712;
+                border: none;
+                border-radius: 11px;
+            }
+            QPushButton:hover {
+                background: #38bdf8;
+            }
+        """)
+        self.btn.clicked.connect(self._toggle)
+        lay.addWidget(self.btn)
+
+        self.wave_lbl = QLabel(" ▂▃▅▆▇▆▅▃▂ ▂▃▅▆▅▃▂ ")
+        self.wave_lbl.setFont(QFont("Segoe UI", 8))
+        self.wave_lbl.setStyleSheet("color: #00e5ff; border: none; background: transparent; letter-spacing: 1px;")
+        lay.addWidget(self.wave_lbl)
+
+        self.dur_lbl = QLabel(duration_str)
+        self.dur_lbl.setFont(QFont("Segoe UI", 7))
+        self.dur_lbl.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        lay.addWidget(self.dur_lbl)
+
+    def _toggle(self):
+        self.is_playing = not self.is_playing
+        self.btn.setText("⏸" if self.is_playing else "▶")
+        self.play_toggled.emit()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  2G. MULTI-FORMAT EXPORT STUDIO DIALOG
+# ─────────────────────────────────────────────────────────────────────────────
+class ExportStudioDialog(QDialog):
+    """Executive Export Studio Modal: Multi-format export for Markdown, HTML report, and Discord/Slack."""
+
+    def __init__(self, session_title: str, messages: list[dict], parent=None):
+        super().__init__(parent)
+        self.session_title = session_title
+        self.messages = messages
+        self.result_path = ""
+        self.setWindowTitle("NEO Export Studio // Multi-Format Dispatch")
+        self.setFixedSize(540, 420)
+        self.setStyleSheet(f"""
+            QDialog {{
+                background: {BG_OBSIDIAN};
+                color: {TEXT_WHITE};
+            }}
+        """)
+
+        v = QVBoxLayout(self)
+        v.setContentsMargins(24, 20, 24, 20)
+        v.setSpacing(14)
+
+        hdr = QHBoxLayout()
+        icon = QLabel("📋")
+        icon.setFont(QFont("Segoe UI", 16))
+        hdr.addWidget(icon)
+
+        v_t = QVBoxLayout()
+        v_t.setSpacing(2)
+        t_lbl = QLabel("Export Conversation Stream")
+        t_lbl.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        t_lbl.setStyleSheet("color: #f8fafc;")
+        v_t.addWidget(t_lbl)
+
+        sub_lbl = QLabel(f"Active session: '{session_title}' · {len(messages)} messages")
+        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setStyleSheet("color: #64748b;")
+        v_t.addWidget(sub_lbl)
+        hdr.addLayout(v_t)
+        hdr.addStretch()
+        v.addLayout(hdr)
+
+        self.btn_group = QButtonGroup(self)
+
+        def _make_opt(id_val: int, title: str, desc: str, checked=False) -> QFrame:
+            f = QFrame()
+            f.setStyleSheet("""
+                QFrame {
+                    background: rgba(18, 24, 38, 0.7);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 8px;
+                    padding: 4px;
+                }
+                QFrame:hover {
+                    border-color: rgba(56, 189, 248, 0.35);
+                }
+            """)
+            f_lay = QHBoxLayout(f)
+            f_lay.setContentsMargins(10, 8, 10, 8)
+            f_lay.setSpacing(10)
+
+            rb = QRadioButton()
+            rb.setChecked(checked)
+            self.btn_group.addButton(rb, id_val)
+            f_lay.addWidget(rb)
+
+            text_v = QVBoxLayout()
+            text_v.setSpacing(2)
+            lbl1 = QLabel(title)
+            lbl1.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            lbl1.setStyleSheet("color: #ffffff; border: none; background: transparent;")
+            text_v.addWidget(lbl1)
+
+            lbl2 = QLabel(desc)
+            lbl2.setFont(QFont("Segoe UI", 7))
+            lbl2.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+            text_v.addWidget(lbl2)
+            f_lay.addLayout(text_v)
+            f_lay.addStretch()
+            return f
+
+        v.addWidget(_make_opt(0, "📝 Markdown Document (.md)", "Full raw conversation with syntax-highlighted code fences", True))
+        v.addWidget(_make_opt(1, "🌐 Executive Holographic HTML (.html)", "Stand-alone dark-themed executive web report ready to share or print to PDF"))
+        v.addWidget(_make_opt(2, "💬 Discord / Slack Formatted (Clipboard)", "Copy clean Markdown formatted specifically for chat channels"))
+        v.addWidget(_make_opt(3, "📄 Plain Text Briefing (.txt)", "Clean unformatted text transcript for quick reading"))
+
+        v.addStretch()
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setFont(QFont("Segoe UI", 8))
+        cancel_btn.setFixedHeight(30)
+        cancel_btn.setStyleSheet("QPushButton { background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px 14px; } QPushButton:hover { color: #ffffff; }")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+
+        self.export_action_btn = QPushButton("Export Now ➔")
+        self.export_action_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.export_action_btn.setFixedHeight(30)
+        self.export_action_btn.setStyleSheet("""
+            QPushButton {
+                background: #0284c7;
+                color: #ffffff;
+                border: 1px solid #38bdf8;
+                border-radius: 6px;
+                padding: 2px 18px;
+            }
+            QPushButton:hover {
+                background: #0369a1;
+            }
+        """)
+        self.export_action_btn.clicked.connect(self._do_export)
+        btn_row.addWidget(self.export_action_btn)
+        v.addLayout(btn_row)
+
+    def _do_export(self):
+        sel_id = self.btn_group.checkedId()
+        _EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        ts_slug = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        if sel_id == 0:  # Markdown
+            fpath = _EXPORTS_DIR / f"neo_export_{ts_slug}.md"
+            lines = [f"# NEO Conversation Export — {self.session_title}", f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n", "---"]
+            for m in self.messages:
+                role = "User" if m.get("role") in ("user", "you") else "NEO"
+                lines.append(f"\n### {role} ({m.get('timestamp')})\n{m.get('content')}")
+            fpath.write_text("\n".join(lines), encoding="utf-8")
+            self.result_path = str(fpath)
+            self.accept()
+
+        elif sel_id == 1:  # HTML Report
+            fpath = _EXPORTS_DIR / f"neo_report_{ts_slug}.html"
+            html_content = self._generate_html_report()
+            fpath.write_text(html_content, encoding="utf-8")
+            self.result_path = str(fpath)
+            self.accept()
+
+        elif sel_id == 2:  # Discord / Slack Clipboard
+            lines = [f"**NEO Stream: {self.session_title}**\n"]
+            for m in self.messages:
+                role = "👤 Fayid" if m.get("role") in ("user", "you") else "🤖 NEO"
+                lines.append(f"> **{role}** ({m.get('timestamp')}):\n{m.get('content')}\n")
+            cb = QGuiApplication.clipboard()
+            if cb:
+                cb.setText("\n".join(lines))
+            self.result_path = "CLIPBOARD"
+            self.accept()
+
+        elif sel_id == 3:  # Plain text
+            fpath = _EXPORTS_DIR / f"neo_transcript_{ts_slug}.txt"
+            lines = [f"NEO TRANSCRIPT: {self.session_title}", f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"]
+            for m in self.messages:
+                role = "USER" if m.get("role") in ("user", "you") else "NEO"
+                lines.append(f"[{m.get('timestamp')}] {role}:\n{m.get('content')}\n")
+            fpath.write_text("\n".join(lines), encoding="utf-8")
+            self.result_path = str(fpath)
+            self.accept()
+
+    def _generate_html_report(self) -> str:
+        body_items = []
+        for m in self.messages:
+            is_u = m.get("role") in ("user", "you")
+            name = "Fayid (User)" if is_u else "NEO Assistant"
+            cls = "user-msg" if is_u else "neo-msg"
+            cnt = html.escape(m.get("content", "")).replace("\n", "<br>")
+            body_items.append(f"""
+            <div class='msg {cls}'>
+                <div class='msg-hdr'><strong>{name}</strong> <span>{m.get('timestamp')}</span></div>
+                <div class='msg-body'>{cnt}</div>
+            </div>
+            """)
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NEO Intelligence Report — {self.session_title}</title>
+<style>
+body {{ background: #080c16; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px; margin: 0; }}
+.container {{ max-width: 860px; margin: 0 auto; }}
+h1 {{ color: #00e5ff; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; }}
+.meta {{ color: #64748b; font-size: 13px; margin-bottom: 30px; }}
+.msg {{ margin-bottom: 18px; padding: 16px 20px; border-radius: 12px; }}
+.user-msg {{ background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); }}
+.neo-msg {{ background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); }}
+.msg-hdr {{ font-size: 13px; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; }}
+.msg-hdr span {{ color: #64748b; font-size: 11px; }}
+.msg-body {{ font-size: 14px; line-height: 1.6; color: #e2e8f0; }}
+</style>
+</head>
+<body>
+<div class='container'>
+    <h1>✦ NEO Intelligence Executive Report</h1>
+    <div class='meta'>Session: {self.session_title} · Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</div>
+    {''.join(body_items)}
+</div>
+</body>
+</html>"""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -573,6 +1089,9 @@ class NeoChatMessageBubble(QFrame):
             self.notes_btn = _btn("📌 Save to Notes", self._save_to_notes)
             footer.addWidget(self.notes_btn)
 
+            self.brain_btn = _btn("🧠 Pin to Brain", self._pin_to_brain)
+            footer.addWidget(self.brain_btn)
+
             self.star_btn = _btn("⭐ Pin", self._toggle_star)
             footer.addWidget(self.star_btn)
 
@@ -612,42 +1131,98 @@ class NeoChatMessageBubble(QFrame):
             txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; line-height: 140%;")
             self.body_lay.addWidget(txt_lbl)
         else:
-            # Parse code blocks (```lang ... ```)
+            # 1. Chain-of-thought extraction (<thought> ... </thought>)
+            th_match = re.search(r"<(thought|thinking)>(.*?)</\1>", content, flags=re.DOTALL | re.IGNORECASE)
+            if th_match:
+                th_text = th_match.group(2).strip()
+                if th_text:
+                    self.body_lay.addWidget(ReasoningTraceAccordion(th_text))
+                content = re.sub(r"<(thought|thinking)>.*?</\1>", "", content, flags=re.DOTALL | re.IGNORECASE).strip()
+
+            # 2. Parse code blocks (```lang ... ```)
             parts = re.split(r"```([a-zA-Z0-9_\-\+]*)\r?\n(.*?)```", content, flags=re.DOTALL)
             if len(parts) > 1:
                 i = 0
                 while i < len(parts):
                     prose = parts[i].strip()
                     if prose:
-                        p_lbl = QLabel(_format_markdown_prose(prose))
-                        p_lbl.setFont(QFont("Segoe UI", 9))
-                        p_lbl.setWordWrap(True)
-                        p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-                        p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-                        self.body_lay.addWidget(p_lbl)
+                        self._render_prose_and_widgets(prose)
 
                     if i + 2 < len(parts):
                         lang = parts[i + 1].strip() or "CODE"
                         code = parts[i + 2].strip()
-                        cb_w = CodeBlockWidget(code, lang)
-                        cb_w.canvas_requested.connect(self.canvas_requested.emit)
-                        self.body_lay.addWidget(cb_w)
+                        if lang.lower() == "diff" or code.startswith("diff --git") or (code.startswith("--- ") and "\n+++" in code):
+                            self.body_lay.addWidget(GitDiffWidget(code))
+                        else:
+                            cb_w = CodeBlockWidget(code, lang)
+                            cb_w.canvas_requested.connect(self.canvas_requested.emit)
+                            self.body_lay.addWidget(cb_w)
                         i += 3
                     else:
                         break
             else:
-                txt_lbl = QLabel(_format_markdown_prose(content))
-                txt_lbl.setFont(QFont("Segoe UI", 9))
-                txt_lbl.setWordWrap(True)
-                txt_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-                txt_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-                self.body_lay.addWidget(txt_lbl)
+                self._render_prose_and_widgets(content)
 
             # Auto-detect URLs and render rich Web Link Cards
             urls = re.findall(r"https?://[^\s<>\"']+", content)
             if urls:
                 for u in urls[:2]:
                     self.body_lay.addWidget(WebLinkCard(u))
+
+    def _render_prose_and_widgets(self, prose: str):
+        # Checklist detection: - [ ] or - [x]
+        tasks = re.findall(r"^[ \t]*-[ \t]*\[([ xX])\][ \t]+(.*)$", prose, flags=re.MULTILINE)
+        if tasks and len(tasks) >= 2:
+            task_items = [(t.strip(), chk.lower() == 'x') for chk, t in tasks]
+            non_task = "\n".join([line for line in prose.splitlines() if not re.match(r"^[ \t]*-[ \t]*\[([ xX])\]", line)]).strip()
+            if non_task:
+                p_lbl = QLabel(_format_markdown_prose(non_task))
+                p_lbl.setFont(QFont("Segoe UI", 9))
+                p_lbl.setWordWrap(True)
+                p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+                self.body_lay.addWidget(p_lbl)
+            self.body_lay.addWidget(TaskChecklistWidget(task_items))
+            return
+
+        # Spotify Mini Widget
+        pl = prose.lower()
+        if "spotify" in pl and any(k in pl for k in ("playing", "track", "paused", "resumed", "standby", "now playing")):
+            p_lbl = QLabel(_format_markdown_prose(prose))
+            p_lbl.setFont(QFont("Segoe UI", 9))
+            p_lbl.setWordWrap(True)
+            p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+            self.body_lay.addWidget(p_lbl)
+            self.body_lay.addWidget(SpotifyMiniWidget("Spotify Media Transport"))
+            return
+
+        if "[audio]" in pl or "[voice]" in pl:
+            self.body_lay.addWidget(AudioWaveformPlayer("0:14"))
+
+        p_lbl = QLabel(_format_markdown_prose(prose))
+        p_lbl.setFont(QFont("Segoe UI", 9))
+        p_lbl.setWordWrap(True)
+        p_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        p_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        self.body_lay.addWidget(p_lbl)
+
+    def _pin_to_brain(self):
+        try:
+            from memory.memory_manager import update_memory
+            update_memory(self.raw_content[:280])
+            self.brain_btn.setText("✓ Pinned!")
+            self.brain_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(34, 197, 94, 0.22);
+                    color: #4ade80;
+                    border: 1px solid rgba(34, 197, 94, 0.5);
+                    border-radius: 5px;
+                    padding: 1px 8px;
+                }
+            """)
+        except Exception as e:
+            print(f"[NeoChat] Pin to brain error: {e}")
 
     def _copy_msg(self):
         cb = QGuiApplication.clipboard()
@@ -772,6 +1347,11 @@ class SlashCommandPopup(QFrame):
             ("👥 /swarm", "Delegate parallel task to subagent swarm", "/swarm "),
             ("🚀 /protocol", "Engage Stark macro protocol (dev, focus)", "/protocol "),
             ("✦ /canvas", "Open interactive code execution sandbox", "/canvas"),
+            ("🛡️ /mode cybersec", "Engage CyberSec & RedTeam Persona", "/mode cybersec"),
+            ("⚡ /mode code", "Engage Full-Stack Architect Persona", "/mode code"),
+            ("👔 /mode exec", "Engage Executive Chief-of-Staff Persona", "/mode executive"),
+            ("🔬 /mode academic", "Engage Academic Researcher Persona", "/mode academic"),
+            ("📋 /export", "Open Multi-Format Export Studio", "/export"),
             ("🎵 /spotify", "Control music (play, pause, next)", "/spotify "),
             ("📅 /brief", "Executive agenda & morning briefing", "/brief"),
             ("📝 /notes", "Save directly to long-term memory notes", "/notes "),
@@ -1012,6 +1592,40 @@ class NeoModernChatWidget(QWidget):
         hdr.addWidget(tag)
 
         hdr.addStretch()
+
+        # Specialized Persona Mode Switcher Pill
+        self.persona_combo = QComboBox()
+        self.persona_combo.addItems([
+            "🛡️ CyberSec",
+            "⚡ Architect",
+            "👔 Executive",
+            "🔬 Academic",
+        ])
+        self.persona_combo.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
+        self.persona_combo.setFixedHeight(28)
+        self.persona_combo.setToolTip("Specialized Reasoning Persona Mode")
+        self.persona_combo.setStyleSheet("""
+            QComboBox {
+                background: rgba(16, 24, 40, 0.90);
+                color: #34d399;
+                border: 1px solid rgba(52, 211, 153, 0.35);
+                border-radius: 7px;
+                padding: 1px 10px;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 16px;
+            }
+            QComboBox QAbstractItemView {
+                background: #0d1624;
+                color: #f8fafc;
+                selection-background-color: #059669;
+                selection-color: #ffffff;
+                border: 1px solid rgba(52, 211, 153, 0.4);
+            }
+        """)
+        self.persona_combo.currentIndexChanged.connect(self._on_persona_changed)
+        hdr.addWidget(self.persona_combo)
 
         # Model Mode Switcher Pill
         self.model_combo = QComboBox()
@@ -1337,6 +1951,14 @@ class NeoModernChatWidget(QWidget):
         bar_lay.addWidget(send_btn)
 
         chat_v.addWidget(self.bar_frame)
+
+        # Context Token & Persona Status HUD Strip
+        self.context_hud = QLabel("⚡ Context: ~0 tokens · Gemini 2.0 Pro · 🛡️ CyberSec · Active")
+        self.context_hud.setFont(QFont("Segoe UI", 7))
+        self.context_hud.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.context_hud.setStyleSheet("color: #475569; padding-top: 4px; padding-bottom: 2px; background: transparent; border: none;")
+        chat_v.addWidget(self.context_hud)
+
         root_h.addWidget(main_chat, stretch=1)
 
         from core.neo_artifacts import NeoArtifactCanvas
@@ -1487,7 +2109,15 @@ class NeoModernChatWidget(QWidget):
         p = Path(file_path)
         sz = p.stat().st_size if p.exists() else 0
         sz_str = f"{sz / 1024:.1f} KB" if sz > 1024 else f"{sz} B"
-        self.chip_lbl.setText(f"📄  {p.name}  ({sz_str})  ·  Attached")
+        ext = p.suffix.upper().replace(".", "") or "FILE"
+        line_info = ""
+        try:
+            if sz < 2_000_000 and ext in ("PY", "JS", "TS", "JSON", "TXT", "MD", "HTML", "CSS", "C", "CPP", "H"):
+                lines = len(p.read_text(encoding="utf-8", errors="ignore").splitlines())
+                line_info = f" · {lines} lines"
+        except Exception:
+            pass
+        self.chip_lbl.setText(f"📄  <span style='color:#38bdf8; font-weight:bold;'>{p.name}</span>  <span style='color:#34d399;'>[{ext}]</span>  <span style='color:#94a3b8;'>({sz_str}{line_info})</span>")
         self.chip_frame.setVisible(True)
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -1680,6 +2310,36 @@ class NeoModernChatWidget(QWidget):
         except Exception:
             pass
         self.add_system_pill(f"SYS: Switched reasoning engine to {self.model_combo.currentText()}.")
+        self._update_context_hud()
+
+    def _on_persona_changed(self, idx: int):
+        personas = ["cybersec", "architect", "executive", "academic"]
+        p_name = personas[idx] if idx < len(personas) else "cybersec"
+        try:
+            cfg_p = _BASE_DIR / "config" / "api_keys.json"
+            if cfg_p.exists():
+                with open(cfg_p, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                cfg["chat_persona_mode"] = p_name
+                with open(cfg_p, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f, indent=4)
+        except Exception:
+            pass
+        self._update_context_hud()
+        self.add_system_pill(f"SYS: Persona calibrated to {self.persona_combo.currentText()}.")
+
+    def _update_context_hud(self):
+        if not hasattr(self, "context_hud"):
+            return
+        curr = self._get_active_session()
+        total_chars = 0
+        if curr:
+            for m in curr.get("messages", []):
+                total_chars += len(m.get("content", ""))
+        approx_tokens = max(0, total_chars // 4)
+        model_name = self.model_combo.currentText() if hasattr(self, "model_combo") else "Pro"
+        persona_name = self.persona_combo.currentText() if hasattr(self, "persona_combo") else "🛡️ CyberSec"
+        self.context_hud.setText(f"⚡ Context: ~{approx_tokens:,} tokens · {model_name} · {persona_name} · Active")
 
     def _load_voice_muted(self) -> bool:
         try:
@@ -1707,7 +2367,7 @@ class NeoModernChatWidget(QWidget):
             pass
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Export Conversation (.md)
+    # Multi-Format Export Studio Dispatch
     # ─────────────────────────────────────────────────────────────────────────
     def _export_conversation(self):
         curr = self._get_active_session()
@@ -1715,24 +2375,12 @@ class NeoModernChatWidget(QWidget):
             self.add_system_pill("SYS: No messages in active conversation to export.")
             return
 
-        _EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
-        ts_slug = datetime.now().strftime("%Y%m%d_%H%M%S")
-        export_file = _EXPORTS_DIR / f"chat_export_{ts_slug}.md"
-
-        lines = [
-            f"# NEO Conversation Export — {curr.get('title')}",
-            f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            "",
-            "---",
-            "",
-        ]
-        for m in curr.get("messages", []):
-            role_title = "User (Fayid)" if m.get("role") in ("user", "you") else "NEO Assistant"
-            lines.append(f"### {role_title} ({m.get('timestamp')})")
-            lines.append(f"{m.get('content')}\n")
-
-        export_file.write_text("\n".join(lines), encoding="utf-8")
-        self.add_system_pill(f"✓ Exported report to: {export_file.name}")
+        dlg = ExportStudioDialog(curr.get("title", "Conversation"), curr.get("messages", []), self)
+        if dlg.exec():
+            if dlg.result_path == "CLIPBOARD":
+                self.add_system_pill("✓ Copied formatted conversation to clipboard for Discord / Slack.")
+            elif dlg.result_path:
+                self.add_system_pill(f"✓ Exported report to: {Path(dlg.result_path).name}")
 
     # ─────────────────────────────────────────────────────────────────────────
     # Input Submission & File Actions
@@ -1774,6 +2422,20 @@ class NeoModernChatWidget(QWidget):
         if full_cmd == "/clear":
             self.clear_stream()
             return
+        elif full_cmd == "/export":
+            self._export_conversation()
+            return
+        elif full_cmd.startswith("/mode"):
+            sub = full_cmd[5:].strip().lower()
+            if "cyber" in sub:
+                self.persona_combo.setCurrentIndex(0)
+            elif "code" in sub or "arch" in sub:
+                self.persona_combo.setCurrentIndex(1)
+            elif "exec" in sub:
+                self.persona_combo.setCurrentIndex(2)
+            elif "acad" in sub or "res" in sub:
+                self.persona_combo.setCurrentIndex(3)
+            return
 
         if full_cmd == "/brief":
             full_cmd = "Run executive morning briefing and upcoming schedule review."
@@ -1793,8 +2455,22 @@ class NeoModernChatWidget(QWidget):
             self.add_system_pill(f"✓ Saved note to memory: '{note_txt[:40]}...'")
             return
 
-        self.add_message("user", full_cmd)
+        # Prepend specialized persona guidance
+        persona_idx = self.persona_combo.currentIndex() if hasattr(self, "persona_combo") else 0
+        persona_prefixes = [
+            "[Persona: Cyber Security & RedTeam Specialist — Focus on vulnerability assessment, reverse engineering, CTF, network security, and defensive hardening]",
+            "[Persona: Principal Software Architect — Focus on clean robust architecture, refactoring, systems programming, and performance]",
+            "[Persona: Executive Chief-of-Staff — Deliver concise, bulleted briefings, high-leverage decision matrices, and priority alignment]",
+            "[Persona: Academic Researcher — Synthesize literature, provide rigorous theoretical frameworks, citations, and formal methodology]",
+        ]
+        active_persona = persona_prefixes[persona_idx] if persona_idx < len(persona_prefixes) else ""
+        raw_user_display = full_cmd
+        if active_persona and not full_cmd.startswith("/") and not full_cmd.startswith("Say aloud:"):
+            full_cmd = f"{active_persona} {full_cmd}"
+
+        self.add_message("user", raw_user_display)
         self.command_submitted.emit(full_cmd)
+        self._update_context_hud()
 
     def _on_speak_requested(self, text: str):
         self.command_submitted.emit(f"Say aloud: {text[:200]}")
