@@ -235,7 +235,7 @@ def current_palette() -> dict[str, str]:
     return {k: getattr(C, k) for k in _HUE_LINKED}
 
 def toggle_ui_theme_mode(parent_win=None) -> str:
-    """Toggles between Dark Mode (Stark Void) and Crisp White Mode."""
+    """Toggles between Dark Mode (Cool Graphite) and Crisp White Mode."""
     global _CURRENT_THEME_MODE
     new_mode = "dark" if _CURRENT_THEME_MODE == "white" else "white"
     set_ui_theme_mode(new_mode, parent_win=parent_win)
@@ -252,6 +252,13 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
     for k, v in target_palette.items():
         setattr(C, k, v)
 
+    # Synchronize core.neo_ui theme tokens
+    try:
+        from core.neo_ui import set_neo_ui_theme
+        set_neo_ui_theme(_CURRENT_THEME_MODE)
+    except Exception as e:
+        print(f"[Theme] update neo_ui tokens: {e}")
+
     # Retheme all widgets dynamically across the entire app
     retheme_all_widgets(old_palette, target_palette)
 
@@ -263,8 +270,6 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
             if hasattr(parent_win, "_header"):
                 parent_win._header.setStyleSheet(
                     f"background: {C.PANEL}; border-bottom: 1px solid {C.BORDER};"
-                    if is_white else
-                    "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #060910, stop:0.35 #0c1524, stop:0.65 #0c1524, stop:1 #060910); border-bottom: 1px solid #1a2a44;"
                 )
             if hasattr(parent_win, "_left_panel"):
                 parent_win._left_panel.setStyleSheet(f"background: {C.PANEL}; border-right: 1px solid {C.BORDER};")
@@ -273,37 +278,101 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
             if hasattr(parent_win, "hud"):
                 parent_win.hud.update()
             if hasattr(parent_win, "_theme_toggle_btn"):
-                parent_win._theme_toggle_btn.setText("☀️ LIGHT" if not is_white else "🌙 DARK")
-                parent_win._theme_toggle_btn.setToolTip("Switch to Light Mode" if not is_white else "Switch to Dark Mode")
+                parent_win._theme_toggle_btn.setText("🌙 DARK" if is_white else "☀️ LIGHT")
+                parent_win._theme_toggle_btn.setToolTip("Switch to Dark Theme [F7]" if is_white else "Switch to White Theme [F7]")
                 parent_win._theme_toggle_btn.setStyleSheet(
-                    f"background: {C.PANEL2}; color: {C.TEXT}; border: 1px solid {C.BORDER}; border-radius: 14px; padding: 0 12px;"
+                    f"QPushButton {{ background: #E2E6ED; color: #1A1D23; border: 1px solid #DFE2E7; border-radius: 6px; padding: 0 10px; }} QPushButton:hover {{ background: #DFE2E7; }}"
+                    if is_white else
+                    f"QPushButton {{ background: #1B1F26; color: #9AA1AD; border: 1px solid #262B34; border-radius: 6px; padding: 0 10px; }} QPushButton:hover {{ color: #E6E8EC; border-color: #5B8DEF; background: #222731; }}"
                 )
+            if hasattr(parent_win, "_nav_sidebar") and hasattr(parent_win._nav_sidebar, "update_theme_button"):
+                parent_win._nav_sidebar.update_theme_button(is_white)
         except Exception as e:
             print(f"[Theme] update window: {e}")
 
 
 def retheme_all_widgets(old: dict[str, str], new: dict[str, str]) -> None:
     """
-    LIVE full theme change. Replaces the old palette colours with the new ones
-    in EVERY widget's stylesheet across the app and repaints them. This way the
-    colour change applies INSTANTLY across the whole interface — panels, buttons,
-    borders included — not just the painted elements. No restart needed.
+    LIVE full theme change. Replaces old palette colours with new ones
+    in EVERY widget's stylesheet across the app and repaints them.
+    Uses a single-pass regex to completely avoid cascading substitutions.
     """
-    mapping = {old[k].lower(): new[k].lower()
-               for k in old if old[k].lower() != new.get(k, old[k]).lower()}
+    import re
+
+    # Base key-value replacements
+    mapping = {}
+    for k in old:
+        o = old[k].lower()
+        n = new.get(k, old[k]).lower()
+        if o != n:
+            mapping[o] = n
+
+    is_to_white = new.get("BG", "").lower() == "#f5f6f8"
+    if is_to_white:
+        # Switching from Dark Graphite to White Theme
+        mapping["#0e1013"] = "#f5f6f8"
+        mapping["#14171c"] = "#ffffff"
+        mapping["#1b1f26"] = "#ffffff"
+        mapping["#262b34"] = "#dfe2e7"
+        mapping["#222731"] = "#ebedf2"
+        mapping["#e6e8ec"] = "#1a1d23"
+        mapping["#f8fafc"] = "#1a1d23"
+        mapping["#f1f5f9"] = "#1a1d23"
+        mapping["#9aa1ad"] = "#5f6672"
+        mapping["#5f6672"] = "#8b949e"
+        mapping["#5b8def"] = "#3f6fd1"
+        mapping["#7aa5f5"] = "#5b8def"
+        mapping["#4376d6"] = "#2b58b4"
+        mapping["#090c14"] = "#ffffff"
+        mapping["#141a26"] = "#f0f2f5"
+        mapping["rgba(255, 255, 255, 0.04)"] = "rgba(0, 0, 0, 0.03)"
+        mapping["rgba(255, 255, 255, 0.05)"] = "rgba(0, 0, 0, 0.04)"
+        mapping["rgba(255, 255, 255, 0.08)"] = "rgba(0, 0, 0, 0.06)"
+        mapping["rgba(255, 255, 255, 0.1)"]  = "rgba(0, 0, 0, 0.08)"
+        mapping["rgba(91, 141, 239, 0.12)"]  = "rgba(63, 111, 209, 0.10)"
+        mapping["rgba(91, 141, 239, 0.15)"]  = "rgba(63, 111, 209, 0.12)"
+        mapping["rgba(91, 141, 239, 0.20)"]  = "rgba(63, 111, 209, 0.18)"
+        mapping["rgba(91, 141, 239, 0.25)"]  = "rgba(63, 111, 209, 0.22)"
+        mapping["rgba(91, 141, 239, 0.35)"]  = "rgba(63, 111, 209, 0.30)"
+    else:
+        # Switching from White Theme to Dark Graphite
+        mapping["#f5f6f8"] = "#0e1013"
+        mapping["#ffffff"] = "#14171c"
+        mapping["#dfe2e7"] = "#262b34"
+        mapping["#ebedf2"] = "#222731"
+        mapping["#1a1d23"] = "#e6e8ec"
+        mapping["#5f6672"] = "#9aa1ad"
+        mapping["#8b949e"] = "#5f6672"
+        mapping["#3f6fd1"] = "#5b8def"
+        mapping["#2b58b4"] = "#4376d6"
+        mapping["#f0f2f5"] = "#1b1f26"
+        mapping["rgba(0, 0, 0, 0.03)"] = "rgba(255, 255, 255, 0.04)"
+        mapping["rgba(0, 0, 0, 0.04)"] = "rgba(255, 255, 255, 0.05)"
+        mapping["rgba(0, 0, 0, 0.06)"] = "rgba(255, 255, 255, 0.08)"
+        mapping["rgba(0, 0, 0, 0.08)"] = "rgba(255, 255, 255, 0.1)"
+        mapping["rgba(63, 111, 209, 0.10)"] = "rgba(91, 141, 239, 0.12)"
+        mapping["rgba(63, 111, 209, 0.12)"] = "rgba(91, 141, 239, 0.15)"
+        mapping["rgba(63, 111, 209, 0.18)"] = "rgba(91, 141, 239, 0.20)"
+        mapping["rgba(63, 111, 209, 0.22)"] = "rgba(91, 141, 239, 0.25)"
+        mapping["rgba(63, 111, 209, 0.30)"] = "rgba(91, 141, 239, 0.35)"
+
     if not mapping:
         return
+
     app = QApplication.instance()
     if app is None:
         return
+
+    pattern = re.compile(
+        "|".join(re.escape(k) for k in sorted(mapping.keys(), key=len, reverse=True)),
+        flags=re.IGNORECASE
+    )
+
     for w in app.allWidgets():
         try:
             ss = w.styleSheet()
             if ss:
-                s2 = ss
-                for o, n in mapping.items():
-                    if o in s2:
-                        s2 = s2.replace(o, n)
+                s2 = pattern.sub(lambda m: mapping.get(m.group(0).lower(), m.group(0)), ss)
                 if s2 != ss:
                     w.setStyleSheet(s2)
             w.update()
@@ -5023,6 +5092,9 @@ class MainWindow(QMainWindow):
         sc_capsule = QShortcut(QKeySequence("F9"), self)
         sc_capsule.activated.connect(self._toggle_floating_island)
 
+        sc_theme = QShortcut(QKeySequence("F7"), self)
+        sc_theme.activated.connect(self._on_toggle_theme)
+
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
         self._cam_preview.show_frame(img_bytes)
@@ -5931,6 +6003,14 @@ class MainWindow(QMainWindow):
         self._capsule_btn = _pill_btn("☁ CAPSULE", "Desktop Floating Island [F9]", self._toggle_floating_island)
         t_lay.addWidget(self._capsule_btn)
 
+        # White / Dark Theme Toggle Button
+        self._theme_toggle_btn = _pill_btn(
+            "☀️ LIGHT" if not is_white_mode() else "🌙 DARK",
+            "Switch to Crisp White Theme [F7]" if not is_white_mode() else "Switch to Dark Graphite Theme [F7]",
+            self._on_toggle_theme
+        )
+        t_lay.addWidget(self._theme_toggle_btn)
+
         # Window Controls: Minimize, Maximize, Close
         btn_min = QPushButton("─")
         btn_min.setFixedSize(28, 26)
@@ -5990,7 +6070,13 @@ class MainWindow(QMainWindow):
         self._nav_sidebar = NeoNavSidebar()
         self._nav_sidebar.tab_changed.connect(self._on_nav_tab_changed)
         self._nav_sidebar.settings_requested.connect(self._show_setup)
+        self._nav_sidebar.theme_toggled.connect(self._on_toggle_theme)
         return self._nav_sidebar
+
+    def _on_toggle_theme(self):
+        """Toggle between Dark Graphite Mode and Crisp White Mode."""
+        new_mode = toggle_ui_theme_mode(parent_win=self)
+        return new_mode
 
     def _cycle_hud_layout(self):
         """Cycle through HUD modes from the persistent top-bar button."""

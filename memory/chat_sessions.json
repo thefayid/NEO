@@ -340,6 +340,51 @@
           "role": "neo",
           "content": "System Alert, Boss. RAM is currently running at 90%, nearly exhausted. I can run a `clean slate` protocol to purge workspace clutter and free up some memory for you.",
           "timestamp": "11:21 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Fayid, system alert! RAM is at 91%, nearly exhausted. We need to free up some memory urgently.",
+          "timestamp": "11:33 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0111\u01b0\u1ee3c nh\u1ec9? <noise>",
+          "timestamp": "11:33 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Clean Slate protocol initiated, Boss. I've purged workspace clutter and freed memory. utilization is still a bit high at 88.4%, but we've got GB of headroom now.",
+          "timestamp": "11:33 PM"
+        },
+        {
+          "role": "user",
+          "content": "\u0111\u01b0\u1ee3c nh\u1ec9? <noise>",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Clean Slate protocol initiated, Boss. I've purged workspace clutter and freed memory. utilization is still a bit high at 88.4%, but we've got GB of headroom now.",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Understood, Boss. We'll keep an eye on the system health.",
+          "timestamp": "11:34 PM"
+        },
+        {
+          "role": "neo",
+          "content": "System Alert, Fayid. RAM usage is critically high at 90%. I can run clean slate protocol to purge cache and free up some memory for you.",
+          "timestamp": "11:40 PM"
+        },
+        {
+          "role": "neo",
+          "content": "\u26a0\ufe0f System at 92%, nearly exhausted. We should memory. run a system audit kill any unnecessary processes",
+          "timestamp": "11:45 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I'm sorry, Fayid, I can only understand and respond in English. It sounds like you might be trying to speak in Malayalam or another Indic language. Could you please repeat your request",
+          "timestamp": "11:46 PM"
         }
       ]
     }

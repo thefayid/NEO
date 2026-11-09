@@ -110,6 +110,50 @@ SEMANTIC_WARNING = "#D9A441"
 SEMANTIC_ERROR   = "#D9534F"
 SEMANTIC_INFO    = "#5B8DEF"
 
+CURRENT_NEO_THEME = "dark"
+
+def set_neo_ui_theme(mode: str) -> None:
+    """Dynamically update global styling tokens in core.neo_ui for dark/white themes."""
+    global CURRENT_NEO_THEME
+    global BG_OBSIDIAN, SIDEBAR_BG, CARD_BG, CARD_BORDER, CARD_HOVER, NAV_ACTIVE_BG
+    global TEXT_WHITE, TEXT_MUTED, TEXT_DIM, ACCENT_PRIMARY, ACCENT_HOVER, ACCENT_PRESSED
+    global ACCENT_BLUE, ACCENT_CYAN, SEND_BTN_BG
+
+    is_white = str(mode or "dark").lower().strip() in ("white", "light")
+    CURRENT_NEO_THEME = "white" if is_white else "dark"
+    if is_white:
+        BG_OBSIDIAN    = "#F5F6F8"   # Crisp light background
+        SIDEBAR_BG     = "#FFFFFF"   # Surface 1
+        CARD_BG        = "#FFFFFF"   # Surface 2
+        CARD_BORDER    = "#DFE2E7"   # 1px border
+        CARD_HOVER     = "#EBEDF2"   # Hover
+        NAV_ACTIVE_BG  = "#EBEDF2"   # Active navigation item
+        TEXT_WHITE     = "#1A1D23"   # Primary text (charcoal, high contrast)
+        TEXT_MUTED     = "#5F6672"   # Secondary text
+        TEXT_DIM       = "#8B949E"   # Disabled / hint
+        ACCENT_PRIMARY = "#3F6FD1"   # Deep steel blue for high contrast on white
+        ACCENT_HOVER   = "#5B8DEF"
+        ACCENT_PRESSED = "#2B58B4"
+        ACCENT_BLUE    = "#3F6FD1"
+        ACCENT_CYAN    = "#3F6FD1"
+        SEND_BTN_BG    = "#3F6FD1"
+    else:
+        BG_OBSIDIAN    = "#0E1013"   # Cool graphite background
+        SIDEBAR_BG     = "#14171C"   # Surface 1
+        CARD_BG        = "#1B1F26"   # Surface 2
+        CARD_BORDER    = "#262B34"   # 1px subtle divider
+        CARD_HOVER     = "#222731"   # Hover
+        NAV_ACTIVE_BG  = "#222731"   # Active navigation item
+        TEXT_WHITE     = "#E6E8EC"   # Primary text (soft off-white)
+        TEXT_MUTED     = "#9AA1AD"   # Secondary text
+        TEXT_DIM       = "#5F6672"   # Disabled / hint
+        ACCENT_PRIMARY = "#5B8DEF"   # Signature steel blue
+        ACCENT_HOVER   = "#7AA5F5"
+        ACCENT_PRESSED = "#4376D6"
+        ACCENT_BLUE    = "#5B8DEF"
+        ACCENT_CYAN    = "#5B8DEF"
+        SEND_BTN_BG    = "#5B8DEF"
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  1. CELESTIAL ECLIPSE ARC & 3D EMOTIONAL AVATAR
@@ -1536,9 +1580,10 @@ class NeoWidgetsSidebar(QWidget):
 #  3. LEFT NAVIGATION SIDEBAR
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoNavSidebar(QWidget):
-    """Left navigation panel with Home, Chat, Tasks, Notes, Tools, Settings."""
+    """Left navigation panel with Home, Chat, Tasks, Notes, Tools, Settings, and Theme Toggle."""
     tab_changed = pyqtSignal(str)
     settings_requested = pyqtSignal()
+    theme_toggled = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1546,7 +1591,7 @@ class NeoNavSidebar(QWidget):
         self.setStyleSheet(f"""
             QWidget {{
                 background: {SIDEBAR_BG};
-                border-right: 1px solid rgba(255, 255, 255, 0.05);
+                border-right: 1px solid {CARD_BORDER};
             }}
         """)
         lay = QVBoxLayout(self)
@@ -1592,9 +1637,42 @@ class NeoNavSidebar(QWidget):
 
         lay.addStretch()
 
+        # Theme Mode Toggle Button
+        self.btn_theme = QPushButton("  ☀️   Light Mode")
+        self.btn_theme.setFixedHeight(34)
+        self.btn_theme.setFont(QFont("Segoe UI", 9))
+        self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_theme.setToolTip("Toggle between Dark Graphite and Crisp White Theme")
+        self.btn_theme.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {TEXT_MUTED};
+                border: 1px solid {CARD_BORDER};
+                border-radius: 6px;
+                text-align: left;
+                padding-left: 12px;
+            }}
+            QPushButton:hover {{
+                background: {CARD_HOVER};
+                color: {TEXT_WHITE};
+                border-color: {ACCENT_PRIMARY};
+            }}
+        """)
+        self.btn_theme.clicked.connect(self.theme_toggled.emit)
+        lay.addWidget(self.btn_theme)
+
         self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
         self.btn_settings.clicked.connect(self.settings_requested.emit)
         lay.addWidget(self.btn_settings)
+
+    def update_theme_button(self, is_white: bool):
+        """Update toggle button text and styling based on active theme."""
+        if is_white:
+            self.btn_theme.setText("  🌙   Dark Mode")
+            self.btn_theme.setToolTip("Switch to Dark Graphite Mode")
+        else:
+            self.btn_theme.setText("  ☀️   Light Mode")
+            self.btn_theme.setToolTip("Switch to Crisp White Mode")
 
     def _create_nav_item(self, icon, label, active=False):
         btn = QPushButton(f"  {icon}   {label}")
@@ -2536,16 +2614,16 @@ class NeoTaskCard(QFrame):
 
         has_notes = bool(notes)
         self.setFixedHeight(48 if has_notes else 40)
-        self.setStyleSheet("""
-            QFrame {
-                background: rgba(14, 20, 32, 0.65);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 8px;
-            }
-            QFrame:hover {
-                background: rgba(20, 28, 46, 0.95);
-                border-color: rgba(91, 141, 239, 0.25);
-            }
+            }}
+            QFrame:hover {{
+                background: {CARD_HOVER};
+                border-color: {ACCENT_PRIMARY};
+            }}
         """)
 
         lay = QHBoxLayout(self)
@@ -2834,15 +2912,15 @@ class NeoTasksView(QWidget):
         # 4. Minimalist Quick Add Bar
         self.add_frame = QFrame()
         self.add_frame.setFixedHeight(38)
-        self.add_frame.setStyleSheet("""
-            QFrame {
-                background: rgba(14, 20, 32, 0.8);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+        self.add_frame.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 8px;
-            }
-            QFrame:hover {
-                border-color: rgba(91, 141, 239, 0.3);
-            }
+            }}
+            QFrame:hover {{
+                border-color: {ACCENT_PRIMARY};
+            }}
         """)
         add_lay = QHBoxLayout(self.add_frame)
         add_lay.setContentsMargins(10, 0, 8, 0)
@@ -3227,9 +3305,9 @@ class NeoNoteCard(QFrame):
         self.is_active = is_active
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        bg = "rgba(91, 141, 239, 0.08)" if is_active else "rgba(255, 255, 255, 0.02)"
-        border = "rgba(91, 141, 239, 0.35)" if is_active else "rgba(255, 255, 255, 0.05)"
-        left_border = "3px solid #5B8DEF;" if is_active else "1px solid rgba(255, 255, 255, 0.05);"
+        bg = "rgba(91, 141, 239, 0.12)" if is_active else CARD_BG
+        border = ACCENT_PRIMARY if is_active else CARD_BORDER
+        left_border = f"3px solid {ACCENT_PRIMARY};" if is_active else f"1px solid {CARD_BORDER};"
 
         self.setStyleSheet(f"""
             QFrame {{
@@ -3239,8 +3317,8 @@ class NeoNoteCard(QFrame):
                 border-radius: 7px;
             }}
             QFrame:hover {{
-                background: rgba(255, 255, 255, 0.04);
-                border-color: rgba(91, 141, 239, 0.25);
+                background: {CARD_HOVER};
+                border-color: {ACCENT_PRIMARY};
             }}
         """)
 
@@ -3357,7 +3435,7 @@ class NeoNotesView(QWidget):
 
         t_lbl = QLabel("Notes")
         t_lbl.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        t_lbl.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
+        t_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(t_lbl)
 
         self.count_badge = QLabel(f"{len(self.notes_data)} notes")
@@ -3464,12 +3542,12 @@ class NeoNotesView(QWidget):
         # Left Column: Note Navigator (~230px compact)
         self.left_panel = QFrame()
         self.left_panel.setFixedWidth(230)
-        self.left_panel.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 19, 32, 0.7);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        self.left_panel.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-            }
+            }}
         """)
         left_lay = QVBoxLayout(self.left_panel)
         left_lay.setContentsMargins(10, 10, 10, 10)
@@ -3549,12 +3627,12 @@ class NeoNotesView(QWidget):
 
         # Right Column: Note Studio & Editor (Stretch)
         self.editor_panel = QFrame()
-        self.editor_panel.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 19, 32, 0.85);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        self.editor_panel.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-            }
+            }}
         """)
         ed_lay = QVBoxLayout(self.editor_panel)
         ed_lay.setContentsMargins(18, 14, 18, 14)
@@ -5389,12 +5467,12 @@ class NeoProjectsView(QWidget):
         left_panel = QFrame()
         left_panel.setMinimumWidth(260)
         left_panel.setMaximumWidth(420)
-        left_panel.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 19, 32, 0.7);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        left_panel.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-            }
+            }}
         """)
         left_lay = QVBoxLayout(left_panel)
         left_lay.setContentsMargins(10, 10, 10, 10)
@@ -5476,12 +5554,12 @@ class NeoProjectsView(QWidget):
 
         # Right Column: Project Intelligence & Code Inspector (Dual-Mode Stack)
         self.right_panel = QFrame()
-        self.right_panel.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 19, 32, 0.85);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        self.right_panel.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-            }
+            }}
         """)
         right_lay = QVBoxLayout(self.right_panel)
         right_lay.setContentsMargins(18, 14, 18, 14)
@@ -5512,12 +5590,12 @@ class NeoProjectsView(QWidget):
 
         # Action Command Dock
         dock_frame = QFrame()
-        dock_frame.setStyleSheet("""
-            QFrame {
-                background: rgba(255, 255, 255, 0.02);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        dock_frame.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 8px; padding: 4px;
-            }
+            }}
         """)
         dock_lay = QHBoxLayout(dock_frame)
         dock_lay.setSpacing(8)
@@ -5617,7 +5695,7 @@ class NeoProjectsView(QWidget):
 
         self.insp_file_lbl = QLabel("📄 filename")
         self.insp_file_lbl.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        self.insp_file_lbl.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
+        self.insp_file_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         insp_tb.addWidget(self.insp_file_lbl)
 
         self.insp_meta_lbl = QLabel("0 KB · 0 lines")
@@ -5716,12 +5794,12 @@ class NeoProjectsView(QWidget):
     # ─────────────────────────────────────────────────────────────────────────
     def _create_kpi_card(self, title: str, main_val: str, sub_val: str) -> QFrame:
         card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background: rgba(255, 255, 255, 0.025);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 8px; padding: 10px 12px;
-            }
+            }}
         """)
         lay = QVBoxLayout(card)
         lay.setContentsMargins(8, 8, 8, 8)
@@ -6542,8 +6620,8 @@ class NeoMemoryCard(QFrame):
         self.theme = theme
 
         is_critical_rule = (self.cat == "corrections")
-        bg_card = "rgba(24, 14, 26, 0.78)" if is_critical_rule else "rgba(13, 20, 36, 0.72)"
-        border_card = "rgba(244, 63, 94, 0.35)" if is_critical_rule else "rgba(255, 255, 255, 0.07)"
+        bg_card = "rgba(217, 83, 79, 0.12)" if is_critical_rule else CARD_BG
+        border_card = "rgba(217, 83, 79, 0.35)" if is_critical_rule else CARD_BORDER
 
         self.setStyleSheet(f"""
             NeoMemoryCard {{
@@ -6552,8 +6630,8 @@ class NeoMemoryCard(QFrame):
                 border-radius: 8px;
             }}
             NeoMemoryCard:hover {{
-                border: 1px solid {theme['color']}66;
-                background: rgba(18, 28, 52, 0.85);
+                border: 1px solid {ACCENT_PRIMARY};
+                background: {CARD_HOVER};
             }}
         """)
 
@@ -6888,13 +6966,13 @@ class _KnowledgeKpiCard(QFrame):
         super().__init__(parent)
         self.setStyleSheet(f"""
             _KnowledgeKpiCard {{
-                background: rgba(13, 20, 36, 0.65);
-                border: 1px solid rgba(255, 255, 255, 0.06);
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
             }}
             _KnowledgeKpiCard:hover {{
-                border: 1px solid {color}40;
-                background: rgba(16, 25, 46, 0.75);
+                border: 1px solid {ACCENT_PRIMARY};
+                background: {CARD_HOVER};
             }}
         """)
         lay = QVBoxLayout(self)
@@ -7057,12 +7135,12 @@ class NeoKnowledgeView(QWidget):
         self.search_edit.setFont(QFont("Segoe UI", 10))
         self.search_edit.setStyleSheet(f"""
             QLineEdit {{
-                background: #0d1424; color: {TEXT_WHITE};
-                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 9px 14px;
+                background: {CARD_BG}; color: {TEXT_WHITE};
+                border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 9px 14px;
             }}
             QLineEdit:focus {{
-                border: 1px solid rgba(91, 141, 239, 0.5);
-                background: #101930;
+                border: 1px solid {ACCENT_PRIMARY};
+                background: {CARD_HOVER};
             }}
         """)
         self.search_edit.textChanged.connect(self._apply_filter)
@@ -7074,8 +7152,8 @@ class NeoKnowledgeView(QWidget):
         search_neo_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         search_neo_b.setStyleSheet(f"""
             QPushButton {{
-                background: {SEND_BTN_BG}; color: #080a10;
-                border: none; border-radius: 8px; padding: 9px 18px;
+                background: {SEND_BTN_BG}; color: #ffffff;
+                border: none; border-radius: 6px; padding: 9px 18px;
             }}
             QPushButton:hover {{ background: #a4bde5; }}
         """)
@@ -7154,13 +7232,13 @@ class NeoKnowledgeView(QWidget):
 
         # Empty state placeholder
         self.empty_card = QFrame()
-        self.empty_card.setStyleSheet("""
-            QFrame {
-                background: rgba(13, 20, 36, 0.4);
-                border: 1px dashed rgba(255, 255, 255, 0.1);
+        self.empty_card.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px dashed {CARD_BORDER};
                 border-radius: 8px;
                 padding: 30px;
-            }
+            }}
         """)
         empty_lay = QVBoxLayout(self.empty_card)
         empty_lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
