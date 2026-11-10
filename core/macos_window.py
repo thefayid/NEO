@@ -492,9 +492,9 @@ class MacOSInspectorPanelContainer(QFrame):
       - Smooth collapse/expand animation
       - Interactive left edge resize grip with double-click reset
     """
-    DEFAULT_WIDTH = 280
-    MIN_WIDTH = 240
-    MAX_WIDTH = 360
+    DEFAULT_WIDTH = 295
+    MIN_WIDTH = 260
+    MAX_WIDTH = 380
 
     def __init__(self, parent=None):
         super().__init__(parent)

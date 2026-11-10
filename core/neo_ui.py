@@ -94,74 +94,77 @@ def font_text(size: int = 12, weight: QFont.Weight = QFont.Weight.Normal, letter
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     return f
 
-# ── Base Surfaces & Apple macOS Dark Vibrancy Design System ──────────────────
-BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas / Window Background
-SIDEBAR_BG     = "#1A1A1D"   # macOS Source List sidebar surface
-CARD_BG        = "#232327"   # macOS Elevated card / panel surface
-CARD_BORDER    = "#2F2F34"   # 1px subtle divider (rgba(255, 255, 255, 0.08))
-CARD_HOVER     = "#2A2A2F"   # Hover state
-NAV_ACTIVE_BG  = "#0A84FF"   # macOS System Accent active capsule
-TEXT_WHITE     = "#F5F5F7"   # macOS Primary text (crisp Apple off-white)
-TEXT_MUTED     = "#98989D"   # macOS Secondary text
-TEXT_DIM       = "#636366"   # macOS Tertiary / disabled text
+# ── Base Surfaces & Steel Blue Pro Design System ──────────────────────────────
+BG_OBSIDIAN    = "#0E1013"   # Cool graphite background (not pure black)
+SIDEBAR_BG     = "#14171C"   # Surface 1 (panels, sidebars)
+CARD_BG        = "#1B1F26"   # Surface 2 (cards, inputs)
+CARD_BORDER    = "#262B34"   # 1px subtle divider
+CARD_HOVER     = "#222731"   # Subtle hover
+NAV_ACTIVE_BG  = "rgba(91, 141, 239, 0.12)"   # Refined steel blue active capsule
+NAV_ACTIVE_TXT = "#5B8DEF"   # Signature steel blue text
+TEXT_WHITE     = "#E6E8EC"   # Primary text (no pure #FFFFFF glare)
+TEXT_MUTED     = "#9AA1AD"   # Secondary text
+TEXT_DIM       = "#5F6672"   # Disabled / hint
 
-# Apple macOS System Accents
-ACCENT_PRIMARY = "#0A84FF"   # macOS System Blue
-ACCENT_HOVER   = "#409CFF"   # Softer hover variant
-ACCENT_PRESSED = "#0071E3"   # Active / pressed variant
-ACCENT_BLUE    = "#0A84FF"
-ACCENT_CYAN    = "#0A84FF"
-SEND_BTN_BG    = "#0A84FF"
+# Steel Blue Signature Accents (pairs with graphite)
+ACCENT_PRIMARY = "#5B8DEF"   # Steel blue signature
+ACCENT_HOVER   = "#7AA5F5"   # Softer hover variant
+ACCENT_PRESSED = "#4376D6"   # Active / pressed variant
+ACCENT_BLUE    = "#5B8DEF"
+ACCENT_CYAN    = "#5B8DEF"
+SEND_BTN_BG    = "#5B8DEF"
 
-# Semantic Colours (Apple HIG standard)
-SEMANTIC_SUCCESS = "#30D158"  # macOS System Green
-SEMANTIC_WARNING = "#FFD60A"  # macOS System Yellow
-SEMANTIC_ERROR   = "#FF453A"  # macOS System Red
-SEMANTIC_INFO    = "#0A84FF"  # macOS System Blue
+# Semantic Colours (desaturated)
+SEMANTIC_SUCCESS = "#4CAF7D"
+SEMANTIC_WARNING = "#D9A441"
+SEMANTIC_ERROR   = "#D9534F"
+SEMANTIC_INFO    = "#5B8DEF"
 
 CURRENT_NEO_THEME = "dark"
 
 def set_neo_ui_theme(mode: str) -> None:
     """Dynamically update global styling tokens in core.neo_ui for dark/white themes."""
     global CURRENT_NEO_THEME
-    global BG_OBSIDIAN, SIDEBAR_BG, CARD_BG, CARD_BORDER, CARD_HOVER, NAV_ACTIVE_BG
+    global BG_OBSIDIAN, SIDEBAR_BG, CARD_BG, CARD_BORDER, CARD_HOVER, NAV_ACTIVE_BG, NAV_ACTIVE_TXT
     global TEXT_WHITE, TEXT_MUTED, TEXT_DIM, ACCENT_PRIMARY, ACCENT_HOVER, ACCENT_PRESSED
     global ACCENT_BLUE, ACCENT_CYAN, SEND_BTN_BG
 
     is_white = str(mode or "dark").lower().strip() in ("white", "light")
     CURRENT_NEO_THEME = "white" if is_white else "dark"
     if is_white:
-        BG_OBSIDIAN    = "#F5F6F8"   # Crisp macOS light background
+        BG_OBSIDIAN    = "#F5F6F8"   # Crisp light background
         SIDEBAR_BG     = "#FFFFFF"   # Surface 1
         CARD_BG        = "#FFFFFF"   # Surface 2
-        CARD_BORDER    = "#DFE2E7"   # 1px border
+        CARD_BORDER    = "#DFE2E7"   # 1px subtle border
         CARD_HOVER     = "#EBEDF2"   # Hover
-        NAV_ACTIVE_BG  = "#007AFF"   # macOS Light Accent Blue
-        TEXT_WHITE     = "#1D1D1F"   # Primary text (charcoal, high contrast)
-        TEXT_MUTED     = "#6E6E73"   # Secondary text
-        TEXT_DIM       = "#8E8E93"   # Disabled / hint
-        ACCENT_PRIMARY = "#007AFF"   # macOS Light Blue
-        ACCENT_HOVER   = "#34C759"
-        ACCENT_PRESSED = "#0056B3"
-        ACCENT_BLUE    = "#007AFF"
-        ACCENT_CYAN    = "#007AFF"
-        SEND_BTN_BG    = "#007AFF"
+        NAV_ACTIVE_BG  = "rgba(63, 111, 209, 0.12)"   # Light active tint
+        NAV_ACTIVE_TXT = "#3F6FD1"   # Darker accent for contrast
+        TEXT_WHITE     = "#1A1D23"   # Primary text (high contrast dark)
+        TEXT_MUTED     = "#5F6672"   # Secondary text
+        TEXT_DIM       = "#8E95A2"   # Disabled / hint
+        ACCENT_PRIMARY = "#3F6FD1"   # Shifted slightly darker for contrast
+        ACCENT_HOVER   = "#5B8DEF"
+        ACCENT_PRESSED = "#2C53A3"
+        ACCENT_BLUE    = "#3F6FD1"
+        ACCENT_CYAN    = "#3F6FD1"
+        SEND_BTN_BG    = "#3F6FD1"
     else:
-        BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas
-        SIDEBAR_BG     = "#1A1A1D"   # Surface 1
-        CARD_BG        = "#232327"   # Surface 2
-        CARD_BORDER    = "#2F2F34"   # 1px subtle divider
-        CARD_HOVER     = "#2A2A2F"   # Hover
-        NAV_ACTIVE_BG  = "#0A84FF"   # macOS System Accent Blue
-        TEXT_WHITE     = "#F5F5F7"   # Primary text (crisp off-white)
-        TEXT_MUTED     = "#98989D"   # Secondary text
-        TEXT_DIM       = "#636366"   # Disabled / hint
-        ACCENT_PRIMARY = "#0A84FF"   # macOS System Blue
-        ACCENT_HOVER   = "#409CFF"
-        ACCENT_PRESSED = "#0071E3"
-        ACCENT_BLUE    = "#0A84FF"
-        ACCENT_CYAN    = "#0A84FF"
-        SEND_BTN_BG    = "#0A84FF"
+        BG_OBSIDIAN    = "#0E1013"   # Cool graphite
+        SIDEBAR_BG     = "#14171C"   # Surface 1
+        CARD_BG        = "#1B1F26"   # Surface 2
+        CARD_BORDER    = "#262B34"   # 1px subtle divider
+        CARD_HOVER     = "#222731"   # Hover
+        NAV_ACTIVE_BG  = "rgba(91, 141, 239, 0.12)"   # Refined steel blue tint
+        NAV_ACTIVE_TXT = "#5B8DEF"   # Signature steel blue
+        TEXT_WHITE     = "#E6E8EC"   # Primary text
+        TEXT_MUTED     = "#9AA1AD"   # Secondary text
+        TEXT_DIM       = "#5F6672"   # Disabled / hint
+        ACCENT_PRIMARY = "#5B8DEF"   # Steel blue
+        ACCENT_HOVER   = "#7AA5F5"
+        ACCENT_PRESSED = "#4376D6"
+        ACCENT_BLUE    = "#5B8DEF"
+        ACCENT_CYAN    = "#5B8DEF"
+        SEND_BTN_BG    = "#5B8DEF"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -559,25 +562,25 @@ class FocusSessionWidget(QFrame):
         super().__init__(parent)
         self.seconds_left = 25 * 60
         self.is_running = False
-        self.setFixedHeight(140)
+        self.setFixedHeight(116)
 
         self.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                border-radius: 7px;
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(18, 14, 18, 14)
-        lay.setSpacing(4)
+        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setSpacing(3)
 
         hdr = QHBoxLayout()
         icn = QLabel("🎯")
-        icn.setFont(QFont("Segoe UI", 13))
+        icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Focus Session")
-        hdr_txt.setFont(font_display(13, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -587,28 +590,28 @@ class FocusSessionWidget(QFrame):
         sub.setFont(font_text(11, QFont.Weight.Normal))
         sub.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         lay.addWidget(sub)
-        lay.addSpacing(4)
+        lay.addSpacing(2)
 
         row = QHBoxLayout()
         self.timer_lbl = QLabel("25:00")
-        self.timer_lbl.setFont(font_display(26, QFont.Weight.Bold))
+        self.timer_lbl.setFont(font_display(24, QFont.Weight.Bold))
         self.timer_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         row.addWidget(self.timer_lbl)
         row.addStretch()
 
         self.play_btn = QPushButton("▶")
-        self.play_btn.setFixedSize(38, 38)
+        self.play_btn.setFixedSize(34, 34)
         self.play_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.play_btn.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        self.play_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         self.play_btn.setStyleSheet(f"""
             QPushButton {{
-                background: rgba(10, 132, 255, 0.16);
+                background: rgba(91, 141, 239, 0.16);
                 color: {ACCENT_BLUE};
-                border: 1px solid rgba(10, 132, 255, 0.35);
-                border-radius: 8px;
+                border: 1px solid rgba(91, 141, 239, 0.35);
+                border-radius: 6px;
             }}
             QPushButton:hover {{
-                background: rgba(10, 132, 255, 0.32);
+                background: rgba(91, 141, 239, 0.30);
                 color: #ffffff;
             }}
         """)
@@ -649,10 +652,10 @@ class FocusSessionWidget(QFrame):
         w, h = self.width(), self.height()
 
         path = QPainterPath()
-        path.moveTo(0, h - 16)
-        path.cubicTo(w * 0.3, h - 30, w * 0.6, h - 6, w, h - 20)
+        path.moveTo(0, h - 14)
+        path.cubicTo(w * 0.3, h - 24, w * 0.6, h - 4, w, h - 16)
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(QColor(96, 165, 250, 30), 1.5))
+        p.setPen(QPen(QColor(91, 141, 239, 20), 1.5))
         p.drawPath(path)
 
 
@@ -666,19 +669,19 @@ class SystemStatusWidget(QFrame):
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                border-radius: 7px;
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(18, 14, 18, 14)
-        lay.setSpacing(8)
+        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setSpacing(6)
 
         hdr = QHBoxLayout()
         icn = QLabel("📈")
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("System Status")
-        hdr_txt.setFont(font_display(13, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -716,13 +719,13 @@ class SystemStatusWidget(QFrame):
         row.addWidget(lbl_icn)
 
         lbl_name = QLabel(name)
-        lbl_name.setFont(font_text(12, QFont.Weight.Normal))
-        lbl_name.setFixedWidth(58)
+        lbl_name.setFont(font_text(11, QFont.Weight.Normal))
+        lbl_name.setFixedWidth(62)
         lbl_name.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         row.addWidget(lbl_name)
 
         bar = QProgressBar()
-        bar.setFixedHeight(6)
+        bar.setFixedHeight(5)
         bar.setTextVisible(False)
         bar.setRange(0, 100)
         bar.setValue(initial_val)
@@ -730,17 +733,17 @@ class SystemStatusWidget(QFrame):
             QProgressBar {{
                 background: {CARD_BORDER};
                 border: none;
-                border-radius: 3px;
+                border-radius: 2px;
             }}
             QProgressBar::chunk {{
                 background: {ACCENT_PRIMARY};
-                border-radius: 3px;
+                border-radius: 2px;
             }}
         """)
         row.addWidget(bar, stretch=1)
 
         pct = QLabel(f"{initial_val}%")
-        pct.setFont(font_text(12, QFont.Weight.Medium))
+        pct.setFont(font_text(11, QFont.Weight.Medium))
         pct.setFixedWidth(38)
         pct.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         pct.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
@@ -777,12 +780,12 @@ class VoiceTelemetryWidget(QFrame):
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                border-radius: 7px;
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(18, 14, 18, 14)
-        lay.setSpacing(8)
+        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setSpacing(6)
 
         # Header
         hdr = QHBoxLayout()
@@ -790,13 +793,13 @@ class VoiceTelemetryWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Voice & Live Engine")
-        hdr_txt.setFont(font_display(13, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
 
         gear_btn = QPushButton("⚙")
-        gear_btn.setFixedSize(22, 22)
+        gear_btn.setFixedSize(20, 20)
         gear_btn.setFont(QFont("Segoe UI", 10))
         gear_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         gear_btn.setToolTip("Switch Voice Engine & Providers")
@@ -819,8 +822,8 @@ class VoiceTelemetryWidget(QFrame):
         m_row.addWidget(m_lbl)
         m_row.addStretch()
         self.engine_badge = QLabel("GEMINI 3.1 LIVE")
-        self.engine_badge.setFont(font_text(11, QFont.Weight.Bold))
-        self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(10, 132, 255, 0.15); border-radius: 4px; padding: 2px 7px;")
+        self.engine_badge.setFont(font_text(10, QFont.Weight.Bold))
+        self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.12); border-radius: 4px; padding: 2px 7px;")
         m_row.addWidget(self.engine_badge)
         lay.addLayout(m_row)
 
@@ -881,7 +884,7 @@ class VoiceTelemetryWidget(QFrame):
 
         lbl_name = QLabel(name)
         lbl_name.setFont(font_text(11, QFont.Weight.Normal))
-        lbl_name.setFixedWidth(68)
+        lbl_name.setFixedWidth(64)
         lbl_name.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         row.addWidget(lbl_name)
 
@@ -1238,14 +1241,14 @@ class UpcomingScheduleWidget(QFrame):
             QFrame#UpcomingScheduleWidget {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                border-radius: 7px;
             }}
         """)
         self.setObjectName("UpcomingScheduleWidget")
 
         self.root_lay = QVBoxLayout(self)
-        self.root_lay.setContentsMargins(18, 14, 18, 14)
-        self.root_lay.setSpacing(8)
+        self.root_lay.setContentsMargins(14, 10, 14, 10)
+        self.root_lay.setSpacing(6)
 
         # 1. Header
         hdr = QHBoxLayout()
@@ -1254,7 +1257,7 @@ class UpcomingScheduleWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Upcoming")
-        hdr_txt.setFont(font_display(13, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
 
@@ -1265,25 +1268,25 @@ class UpcomingScheduleWidget(QFrame):
         self.api_btn.setToolTip("Connect Calendar API & Manage Events")
         self.api_btn.setFont(QFont("Segoe UI", 10))
         self.api_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.api_btn.setFixedSize(22, 22)
-        self.api_btn.setStyleSheet("""
-            QPushButton {
+        self.api_btn.setFixedSize(20, 20)
+        self.api_btn.setStyleSheet(f"""
+            QPushButton {{
                 background: rgba(255, 255, 255, 0.05);
                 color: #8e9eb5;
                 border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 11px;
-            }
-            QPushButton:hover {
-                background: rgba(10, 132, 255, 0.2);
-                border-color: #0A84FF;
+                border-radius: 10px;
+            }}
+            QPushButton:hover {{
+                background: rgba(91, 141, 239, 0.2);
+                border-color: {ACCENT_PRIMARY};
                 color: #ffffff;
-            }
+            }}
         """)
         self.api_btn.clicked.connect(self._open_sync_dialog)
         hdr.addWidget(self.api_btn)
 
         arr_btn = QPushButton("›")
-        arr_btn.setFixedSize(22, 22)
+        arr_btn.setFixedSize(20, 20)
         arr_btn.setFont(QFont("Segoe UI", 13))
         arr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         arr_btn.setStyleSheet("""
@@ -1602,17 +1605,17 @@ class MediaTransportWidget(QFrame):
     """Media Transport & Spotify player card in the right sidebar."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(132)
+        self.setFixedHeight(112)
         self.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                border-radius: 7px;
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(18, 14, 18, 14)
-        lay.setSpacing(6)
+        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setSpacing(4)
 
         hdr = QHBoxLayout()
         icn = QLabel("♫")
@@ -1620,7 +1623,7 @@ class MediaTransportWidget(QFrame):
         icn.setStyleSheet("color: #1ed760; border: none; background: transparent;")
         hdr.addWidget(icn)
         hdr_txt = QLabel("Media Transport")
-        hdr_txt.setFont(font_display(13, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -1635,12 +1638,12 @@ class MediaTransportWidget(QFrame):
         lay.addLayout(hdr)
 
         self.track_lbl = QLabel("No track playing")
-        self.track_lbl.setFont(font_text(12, QFont.Weight.DemiBold))
+        self.track_lbl.setFont(font_text(11, QFont.Weight.DemiBold))
         self.track_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         lay.addWidget(self.track_lbl)
 
         self.artist_lbl = QLabel("Spotify Idle")
-        self.artist_lbl.setFont(font_text(11, QFont.Weight.Normal))
+        self.artist_lbl.setFont(font_text(10, QFont.Weight.Normal))
         self.artist_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         lay.addWidget(self.artist_lbl)
 
@@ -1751,14 +1754,14 @@ class NeoWidgetsSidebar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setMinimumWidth(240)
-        self.setMaximumWidth(360)
-        self.setFixedWidth(280)
+        self.setMinimumWidth(260)
+        self.setMaximumWidth(380)
+        self.setFixedWidth(295)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
         vbox = QVBoxLayout(self)
-        vbox.setContentsMargins(10, 14, 16, 14)
-        vbox.setSpacing(12)
+        vbox.setContentsMargins(10, 10, 12, 10)
+        vbox.setSpacing(8)
 
         self.status_card = SystemStatusWidget()
         self.status_card.telemetry_requested.connect(self.telemetry_requested.emit)
@@ -1926,9 +1929,9 @@ class NeoNavSidebar(QWidget):
             return f"""
                 QPushButton {{
                     background: {NAV_ACTIVE_BG};
-                    color: #FFFFFF;
-                    border: none;
-                    border-radius: 7px;
+                    color: {NAV_ACTIVE_TXT};
+                    border: 1px solid rgba(91, 141, 239, 0.28);
+                    border-radius: 6px;
                     text-align: left;
                     padding-left: 12px;
                     font-size: 13px;
@@ -1940,15 +1943,15 @@ class NeoNavSidebar(QWidget):
             QPushButton {{
                 background: transparent;
                 color: {TEXT_MUTED};
-                border: none;
-                border-radius: 7px;
+                border: 1px solid transparent;
+                border-radius: 6px;
                 text-align: left;
                 padding-left: 12px;
                 font-size: 13px;
                 font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
             }}
             QPushButton:hover {{
-                background: rgba(255, 255, 255, 0.07);
+                background: rgba(255, 255, 255, 0.05);
                 color: {TEXT_WHITE};
             }}
         """
@@ -1972,29 +1975,30 @@ class NeoNavSidebar(QWidget):
 #  4. LIVE SPEECH TRANSCRIPT WIDGET (YOU IN GREEN, NEO IN WHITE)
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoLiveTranscriptWidget(QFrame):
-    """Clean, high-end live speech subtitle pill with green user text and white assistant text."""
+    """Clean, organic floating pill live speech subtitle with green user text and crisp assistant text."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(40)
-        self.setFixedWidth(680)
+        self.setFixedHeight(34)
+        self.setMaximumWidth(580)
+        self.setMinimumWidth(300)
         self.setStyleSheet(f"""
             QFrame {{
-                background: {CARD_BG};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
+                background: rgba(27, 31, 38, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 17px;
             }}
         """)
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(18, 0, 18, 0)
-        lay.setSpacing(10)
+        lay.setContentsMargins(14, 0, 14, 0)
+        lay.setSpacing(8)
 
         self.dot = QLabel("●")
-        self.dot.setFont(font_text(11, QFont.Weight.Bold))
-        self.dot.setStyleSheet("color: #4ade80; border: none; background: transparent;")
+        self.dot.setFont(font_text(10, QFont.Weight.Bold))
+        self.dot.setStyleSheet("color: #4CAF7D; border: none; background: transparent;")
         lay.addWidget(self.dot)
 
-        self.text_lbl = QLabel('<span style="color: #64748b;">● Live Transcript Active · Speak to NEO</span>')
-        self.text_lbl.setFont(font_text(12, QFont.Weight.Normal))
+        self.text_lbl = QLabel('<span style="color: #5F6672;">Live Transcript Active · Speak to NEO</span>')
+        self.text_lbl.setFont(font_text(11, QFont.Weight.Normal))
         self.text_lbl.setStyleSheet("border: none; background: transparent;")
         lay.addWidget(self.text_lbl, stretch=1)
 
@@ -2008,31 +2012,31 @@ class NeoLiveTranscriptWidget(QFrame):
             return
         self._decay_tmr.stop()
         if speaker.lower() in ("user", "you", "fayid"):
-            self.dot.setStyleSheet("color: #4ade80; border: none; background: transparent;")
+            self.dot.setStyleSheet("color: #4CAF7D; border: none; background: transparent;")
             self.text_lbl.setText(
-                f'<span style="color: #4ade80; font-weight: 600;">You:</span> '
-                f'<span style="color: #4ade80;">"{t}"</span>'
+                f'<span style="color: #4CAF7D; font-weight: 600;">You:</span> '
+                f'<span style="color: #4CAF7D;">"{t}"</span>'
             )
         else:
-            self.dot.setStyleSheet("color: #60a5fa; border: none; background: transparent;")
+            self.dot.setStyleSheet("color: #5B8DEF; border: none; background: transparent;")
             self.text_lbl.setText(
-                f'<span style="color: #94a3b8; font-weight: 600;">NEO:</span> '
-                f'<span style="color: #ffffff;">"{t}"</span>'
+                f'<span style="color: #9AA1AD; font-weight: 600;">NEO:</span> '
+                f'<span style="color: #E6E8EC;">"{t}"</span>'
             )
         self._decay_tmr.start()
 
     def _on_decay(self):
         self._decay_tmr.stop()
-        self.dot.setStyleSheet("color: #526078; border: none; background: transparent;")
-        self.text_lbl.setText('<span style="color: #526078;">● Live Transcript Active · Speak to NEO</span>')
+        self.dot.setStyleSheet("color: #5F6672; border: none; background: transparent;")
+        self.text_lbl.setText('<span style="color: #5F6672;">Live Transcript Active · Speak to NEO</span>')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  4.5 PROACTIVE SMART CHIP AFFORDANCE BAR (Apple HIG Contextual Pills)
+#  4.5 PROACTIVE SMART CHIP AFFORDANCE BAR (Linear / Apple HIG Contextual Pills)
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoSmartChipBar(QFrame):
     """
-    Subtle, elegant proactive smart suggestion pill bar matching Apple HIG standards.
+    Subtle, elegant proactive smart suggestion pill bar without heavy enclosing boxes.
     Shows 1-click contextual actions (e.g. [ 🛠 Fix 'httpx' ], [ 📅 Prep Sync Notes ]).
     """
     opportunity_selected = pyqtSignal(str)   # action_payload
@@ -2040,42 +2044,35 @@ class NeoSmartChipBar(QFrame):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(34)
-        self.setFixedWidth(680)
-        self.setStyleSheet(f"""
-            QFrame {{
-                background: rgba(10, 132, 255, 0.08);
-                border: 1px solid rgba(10, 132, 255, 0.22);
-                border-radius: 8px;
-            }}
-        """)
+        self.setFixedHeight(32)
+        self.setStyleSheet("background: transparent; border: none;")
         self._lay = QHBoxLayout(self)
-        self._lay.setContentsMargins(12, 0, 8, 0)
+        self._lay.setContentsMargins(0, 0, 0, 0)
         self._lay.setSpacing(8)
 
         # Prefix Badge
         self.badge = QLabel("✦ Suggested:")
-        self.badge.setFont(font_text(11, QFont.Weight.Bold))
+        self.badge.setFont(font_text(11, QFont.Weight.DemiBold))
         self.badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
         self._lay.addWidget(self.badge)
 
         # Dynamic Chips Row
         self._chips_lay = QHBoxLayout()
         self._chips_lay.setSpacing(6)
-        self._lay.addLayout(self._chips_lay, stretch=1)
+        self._lay.addLayout(self._chips_lay)
 
         # Dismiss Button
         self.btn_dismiss = QPushButton("✕")
-        self.btn_dismiss.setFixedSize(20, 20)
-        self.btn_dismiss.setFont(font_text(9))
+        self.btn_dismiss.setFixedSize(18, 18)
+        self.btn_dismiss.setFont(font_text(8))
         self.btn_dismiss.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_dismiss.setToolTip("Dismiss proactive suggestions")
         self.btn_dismiss.setStyleSheet(f"""
             QPushButton {{
-                color: {TEXT_MUTED}; border: none; background: transparent; border-radius: 4px;
+                color: {TEXT_DIM}; border: none; background: transparent; border-radius: 9px;
             }}
             QPushButton:hover {{
-                color: {TEXT_WHITE}; background: rgba(255, 255, 255, 0.1);
+                color: {TEXT_WHITE}; background: rgba(255, 255, 255, 0.12);
             }}
         """)
         self.btn_dismiss.clicked.connect(self._on_dismiss)
@@ -2102,27 +2099,26 @@ class NeoSmartChipBar(QFrame):
                 continue
 
             btn = QPushButton(title)
-            btn.setFixedHeight(24)
+            btn.setFixedHeight(26)
             btn.setFont(font_text(11, QFont.Weight.Medium))
             btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             btn.setStyleSheet(f"""
                 QPushButton {{
-                    background: rgba(255, 255, 255, 0.07);
-                    color: {TEXT_WHITE};
-                    border: 1px solid rgba(255, 255, 255, 0.12);
-                    border-radius: 6px;
-                    padding: 0 10px;
+                    background: rgba(91, 141, 239, 0.12);
+                    color: {ACCENT_PRIMARY};
+                    border: 1px solid rgba(91, 141, 239, 0.25);
+                    border-radius: 13px;
+                    padding: 0 12px;
                 }}
                 QPushButton:hover {{
-                    background: rgba(10, 132, 255, 0.28);
-                    border-color: {ACCENT_PRIMARY};
+                    background: rgba(91, 141, 239, 0.25);
+                    border-color: {ACCENT_HOVER};
                     color: #FFFFFF;
                 }}
             """)
             btn.clicked.connect(lambda _, p=payload: self._on_chip_clicked(p))
             self._chips_lay.addWidget(btn)
 
-        self._chips_lay.addStretch()
         self.show()
 
     def _on_chip_clicked(self, payload: str):
@@ -2260,7 +2256,7 @@ class NeoHeroStage(QWidget):
         vbox.addLayout(self.camera_box)
         self.camera_card.hide()
 
-        # Live Transcript Subtitle Pill (You in Green, NEO in White)
+        # Live Transcript Subtitle Pill (Organic floating pill)
         vbox.addSpacing(14)
         self._trans_box = QHBoxLayout()
         self._trans_box.addStretch()
@@ -2269,8 +2265,8 @@ class NeoHeroStage(QWidget):
         self._trans_box.addStretch()
         vbox.addLayout(self._trans_box)
 
-        # Proactive Smart Affordance Chip Bar
-        vbox.addSpacing(10)
+        # Proactive Smart Affordance Chip Bar (Borderless contextual pills)
+        vbox.addSpacing(8)
         self._chips_box = QHBoxLayout()
         self._chips_box.addStretch()
         self.smart_chips = NeoSmartChipBar()
@@ -2279,38 +2275,38 @@ class NeoHeroStage(QWidget):
         self._chips_box.addStretch()
         vbox.addLayout(self._chips_box)
 
-        # 3. Omni Prompt Capsule Bar
-        vbox.addSpacing(12)
+        # 3. Omni Prompt Capsule Bar (Linear Command Bar 48px, 8px radius)
+        vbox.addSpacing(10)
         bar_container = QHBoxLayout()
         bar_container.addStretch()
 
         self.input_frame = QFrame()
-        self.input_frame.setFixedHeight(54)
-        self.input_frame.setFixedWidth(680)
+        self.input_frame.setFixedHeight(48)
+        self.input_frame.setFixedWidth(640)
         self.input_frame.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 12px;
+                border-radius: 8px;
             }}
             QFrame:hover {{
                 border-color: {ACCENT_PRIMARY};
             }}
         """)
         bar_lay = QHBoxLayout(self.input_frame)
-        bar_lay.setContentsMargins(14, 0, 10, 0)
-        bar_lay.setSpacing(10)
+        bar_lay.setContentsMargins(12, 0, 8, 0)
+        bar_lay.setSpacing(8)
 
         plus_btn = QPushButton("+")
-        plus_btn.setFixedSize(32, 32)
-        plus_btn.setFont(QFont("Segoe UI", 16))
+        plus_btn.setFixedSize(28, 28)
+        plus_btn.setFont(QFont("Segoe UI", 14))
         plus_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         plus_btn.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
                 color: {TEXT_MUTED};
                 border: 1px solid {CARD_BORDER};
-                border-radius: 16px;
+                border-radius: 6px;
             }}
             QPushButton:hover {{
                 background: {CARD_HOVER};
@@ -2331,14 +2327,14 @@ class NeoHeroStage(QWidget):
                 padding: 0 6px;
             }}
             QLineEdit::placeholder {{
-                color: #61728d;
+                color: {TEXT_DIM};
             }}
         """)
         self.input_edit.returnPressed.connect(self._submit)
         bar_lay.addWidget(self.input_edit, stretch=1)
 
         self.cc_btn = QPushButton("CC")
-        self.cc_btn.setFixedSize(34, 30)
+        self.cc_btn.setFixedSize(30, 26)
         self.cc_btn.setFont(font_text(9, QFont.Weight.Bold))
         self.cc_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.cc_btn.setToolTip("Toggle Live Subtitles (You in Green, NEO in White)")
@@ -2348,32 +2344,34 @@ class NeoHeroStage(QWidget):
         bar_lay.addWidget(self.cc_btn)
 
         self.mic_btn = QPushButton("🎙")
-        self.mic_btn.setFixedSize(32, 32)
-        self.mic_btn.setFont(QFont("Segoe UI", 12))
+        self.mic_btn.setFixedSize(28, 28)
+        self.mic_btn.setFont(QFont("Segoe UI", 11))
         self.mic_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.mic_btn.setStyleSheet("""
-            QPushButton {
+        self.mic_btn.setStyleSheet(f"""
+            QPushButton {{
                 background: transparent;
-                color: #8e9eb5;
+                color: {TEXT_MUTED};
                 border: none;
-            }
-            QPushButton:hover {
-                color: #60a5fa;
-            }
+                border-radius: 6px;
+            }}
+            QPushButton:hover {{
+                color: {ACCENT_PRIMARY};
+                background: {CARD_HOVER};
+            }}
         """)
         self.mic_btn.clicked.connect(self.mic_toggled.emit)
         bar_lay.addWidget(self.mic_btn)
 
         send_btn = QPushButton("➤")
-        send_btn.setFixedSize(38, 34)
-        send_btn.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        send_btn.setFixedSize(32, 32)
+        send_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         send_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         send_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {SEND_BTN_BG};
                 color: #ffffff;
                 border: none;
-                border-radius: 9px;
+                border-radius: 6px;
             }}
             QPushButton:hover {{
                 background: {ACCENT_HOVER};
@@ -2386,31 +2384,8 @@ class NeoHeroStage(QWidget):
         bar_container.addStretch()
         vbox.addLayout(bar_container)
 
-        # 4. Quick Action Pill Cards
-        self.cards_widget = QWidget()
-        cards_widget_lay = QVBoxLayout(self.cards_widget)
-        cards_widget_lay.setContentsMargins(0, 0, 0, 0)
-        cards_widget_lay.setSpacing(0)
-        cards_row = QHBoxLayout()
-        cards_row.setSpacing(12)
-        cards_row.addStretch()
-
-        actions = [
-            ("📅", "Plan My Day"),
-            ("🎯", "Focus Mode"),
-            ("📚", "Research"),
-            ("</>", "Write Code"),
-            ("✦", "Brainstorm"),
-        ]
-
-        for icon, title in actions:
-            card = self._create_action_card(icon, title)
-            cards_row.addWidget(card)
-
-        cards_row.addStretch()
-        cards_widget_lay.addLayout(cards_row)
-        vbox.addSpacing(22)
-        vbox.addWidget(self.cards_widget)
+        # Bottom area is kept clean and breathable (eliminated boxy cards row)
+        self.cards_widget = None
         vbox.addStretch()
 
     def show_camera_stream(self, active: bool):
@@ -2424,7 +2399,7 @@ class NeoHeroStage(QWidget):
                 self.sub1.hide()
             if hasattr(self, "sub2"):
                 self.sub2.hide()
-            if hasattr(self, "cards_widget"):
+            if getattr(self, "cards_widget", None):
                 self.cards_widget.hide()
             if hasattr(self, "camera_card"):
                 self.camera_card.show()
@@ -2441,7 +2416,7 @@ class NeoHeroStage(QWidget):
                 self.sub1.show()
             if hasattr(self, "sub2"):
                 self.sub2.show()
-            if hasattr(self, "cards_widget"):
+            if getattr(self, "cards_widget", None):
                 self.cards_widget.show()
 
     def update_camera_frame(self, data: bytes):
@@ -2527,28 +2502,28 @@ class NeoHeroStage(QWidget):
 
     def _update_cc_style(self):
         if getattr(self, "_cc_enabled", True):
-            self.cc_btn.setStyleSheet("""
-                QPushButton {
-                    background: rgba(91, 141, 239, 0.18);
-                    color: #60a5fa;
-                    border: 1px solid rgba(91, 141, 239, 0.38);
-                    border-radius: 8px;
-                }
-                QPushButton:hover {
+            self.cc_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: rgba(91, 141, 239, 0.16);
+                    color: {ACCENT_PRIMARY};
+                    border: 1px solid rgba(91, 141, 239, 0.35);
+                    border-radius: 6px;
+                }}
+                QPushButton:hover {{
                     background: rgba(91, 141, 239, 0.28);
-                }
+                }}
             """)
         else:
-            self.cc_btn.setStyleSheet("""
-                QPushButton {
+            self.cc_btn.setStyleSheet(f"""
+                QPushButton {{
                     background: transparent;
-                    color: #526078;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 8px;
-                }
-                QPushButton:hover {
-                    color: #8e9eb5;
-                }
+                    color: {TEXT_DIM};
+                    border: 1px solid {CARD_BORDER};
+                    border-radius: 6px;
+                }}
+                QPushButton:hover {{
+                    color: {TEXT_WHITE};
+                }}
             """)
 
     def set_speech(self, speaker: str, text: str):
