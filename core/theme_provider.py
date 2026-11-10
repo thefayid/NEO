@@ -123,6 +123,10 @@ class ThemeProvider(QObject):
         self.set_mode(new_mode)
         return new_mode
 
+    def set_dark_mode(self, enabled: bool) -> None:
+        """Convenience alias to set dark mode boolean."""
+        self.set_mode("dark" if enabled else "light")
+
     # ── 2. Accent Colors ─────────────────────────────────────────────────────
 
     @property

@@ -389,11 +389,17 @@ class MacOSSegmentedControl(QWidget):
       - All states: Rest, Hover, Selected, Focused, Disabled.
     """
     current_changed = pyqtSignal(int, str)
+    selection_changed = pyqtSignal(int)
 
-    def __init__(self, items: Optional[List[str]] = None, parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        items: Optional[List[str]] = None,
+        selected_index: int = 0,
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
         self._items = items or ["Item 1", "Item 2"]
-        self._current_index = 0
+        self._current_index = max(0, min(len(self._items) - 1, selected_index))
 
         self.setFixedHeight(28)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -467,6 +473,7 @@ class MacOSSegmentedControl(QWidget):
             self._animate_pill_to_index(index)
             self._update_button_colors()
             self.current_changed.emit(index, self._items[index])
+            self.selection_changed.emit(index)
 
     def _animate_pill_to_index(self, index: int) -> None:
         if 0 <= index < len(self._buttons):

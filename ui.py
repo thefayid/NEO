@@ -5038,6 +5038,9 @@ class MainWindow(QMainWindow):
         from core.macos_gallery import MacOSComponentGallery
         self.gallery_view = MacOSComponentGallery()
 
+        from core.macos_settings_view import MacOSSettingsView
+        self.settings_view = MacOSSettingsView()
+
         self._hud_cam_stack = QStackedWidget()
         self._hud_cam_stack.addWidget(self.hero_stage)        # Index 0: Hero
         self._hud_cam_stack.addWidget(self._chat_container)   # Index 1: Chat
@@ -5051,9 +5054,10 @@ class MainWindow(QMainWindow):
         self._hud_cam_stack.addWidget(self.swarm_studio)      # Index 9: Swarm
         self._hud_cam_stack.addWidget(self.vision_studio)     # Index 10: Vision
         self._hud_cam_stack.addWidget(self.gallery_view)      # Index 11: Living Gallery
-        self._hud_cam_stack.addWidget(self.hud)               # Index 12: Legacy HUD
-        self._hud_cam_stack.addWidget(_cam_cont)              # Index 13: Camera
-        self._hud_cam_stack.addWidget(self._video_cont)       # Index 14: Video
+        self._hud_cam_stack.addWidget(self.settings_view)     # Index 12: System Settings
+        self._hud_cam_stack.addWidget(self.hud)               # Index 13: Legacy HUD
+        self._hud_cam_stack.addWidget(_cam_cont)              # Index 14: Camera
+        self._hud_cam_stack.addWidget(self._video_cont)       # Index 15: Video
 
         self._center_split = QSplitter(Qt.Orientation.Vertical)
         self._center_split.setStyleSheet(f"""
@@ -5163,6 +5167,23 @@ class MainWindow(QMainWindow):
 
         sc_inspector = QShortcut(QKeySequence("Ctrl+2"), self)
         sc_inspector.activated.connect(self._inspector_container.toggle_collapse)
+
+        # macOS Spotlight-Style Command Bar (Ctrl+Space or Ctrl+K)
+        from core.macos_spotlight import MacOSSpotlightCommandBar
+        self.spotlight = MacOSSpotlightCommandBar(parent=self)
+        self.spotlight.command_triggered.connect(self._on_spotlight_command)
+        sc_spotlight = QShortcut(QKeySequence("Ctrl+Space"), self)
+        sc_spotlight.activated.connect(self.spotlight.toggle)
+        sc_cmd_k = QShortcut(QKeySequence("Ctrl+K"), self)
+        sc_cmd_k.activated.connect(self.spotlight.toggle)
+
+        # macOS Menu Bar Extra / Control Center Quick Panel
+        from core.macos_tray_panel import MacOSTrayQuickPanel
+        self.tray_panel = MacOSTrayQuickPanel()
+        self.tray_panel.restore_main_requested.connect(self._restore_from_tray)
+        self.tray_panel.open_settings_requested.connect(lambda: self._on_nav_tab_changed("Settings"))
+        self.tray_panel.studio_selected.connect(self._on_nav_tab_changed)
+        self.tray_panel.quit_requested.connect(self.close)
 
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
@@ -6079,6 +6100,9 @@ class MainWindow(QMainWindow):
         elif tab == "Gallery":
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "gallery_view"):
                 self._hud_cam_stack.setCurrentWidget(self.gallery_view)
+        elif tab == "Settings":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "settings_view"):
+                self._hud_cam_stack.setCurrentWidget(self.settings_view)
         elif tab == "Summarize":
             self._on_hero_command("Summarize my current notifications, active projects, and latest context, Boss")
         elif tab == "Research":
@@ -6091,6 +6115,30 @@ class MainWindow(QMainWindow):
                 self.hero_stage.input_edit.setText("Write Python code for ")
                 self._hud_cam_stack.setCurrentWidget(self.hero_stage)
                 self.hero_stage.input_edit.setFocus()
+
+    def _on_spotlight_command(self, command_id: str, query: str):
+        """Dispatches commands triggered via the Spotlight Command Bar."""
+        nav_map = {
+            "chat": "Chat", "swarm": "Swarm", "terminal": "Terminal",
+            "vision": "Vision", "notes": "Notes", "files": "Files",
+            "sentinels": "Sentinels", "settings": "Settings", "gallery": "Gallery"
+        }
+        if command_id in nav_map:
+            self._on_nav_tab_changed(nav_map[command_id])
+        elif command_id == "mode_toggle":
+            self._on_toggle_theme()
+        elif command_id == "mic_toggle":
+            self._toggle_mute()
+        elif command_id == "stealth":
+            self._toggle_floating_island()
+        else:
+            prompt = query if query else (command_id if command_id != "ask" else "Hello NEO")
+            self._on_hero_command(prompt)
+
+    def _restore_from_tray(self):
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
     def _build_chat_container(self) -> QWidget:
         try:
             from core.neo_chat import NeoModernChatWidget

@@ -72,6 +72,8 @@ ACCENT_GREEN   = "#30D158"   # macOS System Green
 ACCENT_AMBER   = "#FFD60A"   # macOS System Yellow
 SEMANTIC_ERROR = "#FF453A"   # macOS System Red
 
+from core.theme_provider import theme
+
 _BASE_DIR = Path(__file__).resolve().parent.parent
 _SESSIONS_FILE = _BASE_DIR / "memory" / "chat_sessions.json"
 _EXPORTS_DIR = _BASE_DIR / "memory" / "exports"
@@ -89,12 +91,13 @@ class CodeBlockWidget(QFrame):
         self.code_text = code.strip()
         lang_label = language.strip().upper() if language.strip() else "CODE"
 
-        self.setStyleSheet("""
-            QFrame {
-                background: #121214;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 8px;
-            }
+        r = theme.radii.sm
+        self.setStyleSheet(f"""
+            QFrame {{
+                background-color: {theme.colors.controlBackgroundSecondary};
+                border: 1px solid {theme.colors.separator};
+                border-radius: {r}px;
+            }}
         """)
 
         lay = QVBoxLayout(self)
@@ -1023,62 +1026,53 @@ class NeoChatMessageBubble(QFrame):
 
         card = QFrame()
         card.setMaximumWidth(820)
+        r = theme.radii.md
         if self.is_user:
-            card.setStyleSheet("""
-                QFrame {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(14, 165, 233, 0.18), stop:1 rgba(37, 99, 235, 0.14));
-                    border: 1px solid rgba(91, 141, 239, 0.32);
-                    border-radius: 8px;
-                    border-bottom-right-radius: 4px;
-                }
+            # User Bubble: subtle secondary control card with gentle border
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background-color: {theme.colors.controlBackgroundSecondary};
+                    border: 1px solid {theme.colors.separator};
+                    border-radius: {r}px;
+                }}
             """)
         else:
-            card.setStyleSheet("""
-                QFrame {
-                    background: rgba(14, 20, 34, 0.90);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 8px;
-                    border-bottom-left-radius: 4px;
-                }
+            # Assistant Bubble: clean elevated card
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background-color: {theme.colors.controlBackground};
+                    border: 1px solid {theme.colors.separator};
+                    border-radius: {r}px;
+                }}
             """)
 
         self.card_lay = QVBoxLayout(card)
         self.card_lay.setContentsMargins(14, 10, 14, 10)
         self.card_lay.setSpacing(6)
 
-        # Header
+        # Header (Minimal: No avatars / emoji, right-aligned for user)
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
         if self.is_user:
             hdr.addStretch()
             ts_lbl = QLabel(ts)
-            ts_lbl.setFont(QFont("Segoe UI", 7))
-            ts_lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
+            ts_lbl.setFont(theme.font(theme.typography.caption_2))
+            ts_lbl.setStyleSheet(f"color: {theme.colors.labelTertiary}; border: none; background: transparent;")
             hdr.addWidget(ts_lbl)
 
-            name_lbl = QLabel("👤 You")
-            name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            name_lbl.setStyleSheet("color: #5B8DEF; border: none; background: transparent;")
+            name_lbl = QLabel("You")
+            name_lbl.setFont(theme.font(theme.typography.caption_1, QFont.Weight.DemiBold))
+            name_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary}; border: none; background: transparent;")
             hdr.addWidget(name_lbl)
         else:
-            dot = QLabel("⭘")
-            dot.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-            dot.setStyleSheet("color: #5B8DEF; border: none; background: transparent;")
-            hdr.addWidget(dot)
-
             name_lbl = QLabel("NEO")
-            name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            name_lbl.setStyleSheet("color: #5B8DEF; border: none; background: transparent; letter-spacing: 0.5px;")
+            name_lbl.setFont(theme.font(theme.typography.caption_1, QFont.Weight.DemiBold))
+            name_lbl.setStyleSheet(f"color: {theme.accent_color}; border: none; background: transparent; letter-spacing: 0.5px;")
             hdr.addWidget(name_lbl)
 
-            badge = QLabel("AI")
-            badge.setFont(QFont("Segoe UI", 6, QFont.Weight.Bold))
-            badge.setStyleSheet("color: #5B8DEF; background: rgba(91, 141, 239, 0.12); border: 1px solid rgba(91, 141, 239, 0.25); border-radius: 4px; padding: 1px 5px;")
-            hdr.addWidget(badge)
-
             ts_lbl = QLabel(ts)
-            ts_lbl.setFont(QFont("Segoe UI", 7))
-            ts_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; padding-left: 2px;")
+            ts_lbl.setFont(theme.font(theme.typography.caption_2))
+            ts_lbl.setStyleSheet(f"color: {theme.colors.labelTertiary}; border: none; background: transparent; padding-left: 2px;")
             hdr.addWidget(ts_lbl)
             hdr.addStretch()
 
