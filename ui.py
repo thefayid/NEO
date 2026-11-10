@@ -170,6 +170,12 @@ def apply_ui_accent(accent_hex: str) -> bool:
 
     r, g, b = colorsys.hsv_to_rgb(acc_h, max(0.1, acc_s * 0.35), 0.32)
     C.BORDER_B = "#{:02x}{:02x}{:02x}".format(int(r * 255 + 0.5), int(g * 255 + 0.5), int(b * 255 + 0.5))
+
+    try:
+        from core.theme_provider import theme
+        theme.set_accent(accent_hex)
+    except Exception:
+        pass
     return True
 
 
@@ -253,7 +259,12 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
     for k, v in target_palette.items():
         setattr(C, k, v)
 
-    # Synchronize core.neo_ui theme tokens
+    # Synchronize ThemeProvider and core.neo_ui theme tokens
+    try:
+        from core.theme_provider import theme
+        theme.set_mode(_CURRENT_THEME_MODE)
+    except Exception as e:
+        print(f"[Theme] update theme_provider: {e}")
     try:
         from core.neo_ui import set_neo_ui_theme
         set_neo_ui_theme(_CURRENT_THEME_MODE)
