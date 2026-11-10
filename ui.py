@@ -5185,6 +5185,22 @@ class MainWindow(QMainWindow):
         self.tray_panel.studio_selected.connect(self._on_nav_tab_changed)
         self.tray_panel.quit_requested.connect(self.close)
 
+        # Central Core Hub Interconnection
+        try:
+            from core.neo_central_coordinator import central_core
+            central_core.set_references(ui=self)
+            central_core.tool_synthesized.connect(
+                lambda name, desc: self.write_log(f"TOOL SYNTHESIZED: '{name}' — {desc}") if hasattr(self, "write_log") else None
+            )
+            central_core.goal_event.connect(
+                lambda gid, st, msg: self.write_log(f"GOAL [{gid[:8]}] {st}: {msg}") if hasattr(self, "write_log") else None
+            )
+            central_core.gesture_event.connect(
+                lambda gest, ts: self.write_log(f"GESTURE DETECTED: {gest}") if hasattr(self, "write_log") else None
+            )
+        except Exception as _ce:
+            print(f"[CentralCore] Wiring error: {_ce}")
+
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
 
@@ -6057,6 +6073,11 @@ class MainWindow(QMainWindow):
             self._on_hero_command("Pause focus music, Boss")
 
     def _on_nav_tab_changed(self, tab: str):
+        try:
+            from core.neo_brain import brain
+            brain.working.update_environment(active_window=f"NEO Studio · {tab}")
+        except Exception:
+            pass
         if hasattr(self, "_unified_toolbar"):
             disp = (getattr(self, "_assistant_name", "NEO") or "NEO").upper()
             self._unified_toolbar.set_title(disp if tab == "Home" else f"{disp} · {tab}")

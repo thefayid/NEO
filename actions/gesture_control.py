@@ -130,6 +130,11 @@ class GestureController:
                 pyautogui.press("playpause")
             except Exception:
                 pass
+        try:
+            from core.neo_central_coordinator import central_core
+            central_core.trigger_gesture(self.last_detected_gesture)
+        except Exception:
+            pass
 
     def _trigger_swipe(self, direction: str):
         now = time.monotonic()
@@ -178,6 +183,11 @@ class GestureController:
                 pyautogui.press("playpause")
             except Exception:
                 pass
+        try:
+            from core.neo_central_coordinator import central_core
+            central_core.trigger_gesture(self.last_detected_gesture)
+        except Exception:
+            pass
 
     def _trigger_victory(self):
         now = time.monotonic()
@@ -405,7 +415,7 @@ def gesture_control(parameters: dict, player=None, **kwargs) -> str:
 def init_gesture_on_boot(player=None) -> None:
     """Auto-start gesture control if enabled in config."""
     cfg = _load_config()
-    if False:  # Camera access strictly on-demand per user instruction
+    if cfg.get("gesture_control_enabled", False):
         _gesture_ctl.start(player)
 
 

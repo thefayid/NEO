@@ -773,6 +773,12 @@ class JarvisLive:
         self.ui.get_plugin_settings = self._plugin_registry.settings_schemas  # ⚙ settings tab
         self.ui.request_say = self.plugin_say   # plugins: mid-task speech channel
 
+        try:
+            from core.neo_central_coordinator import central_core
+            central_core.set_references(assistant=self, ui=self.ui)
+        except Exception:
+            pass
+
         # ── Wake word ────────────────────────────────────────────────────────
         # _awake gates the mic (see _listen_audio) and the background speakers.
         # It is True whenever wake word is OFF, so default behaviour is unchanged.
@@ -1476,6 +1482,16 @@ class JarvisLive:
         self.ui.set_state("THINKING")
         try:
             self.ui.set_active_tool(name)
+        except Exception:
+            pass
+
+        try:
+            from core.neo_brain import brain
+            brain.episodic.log_event(
+                "TOOL_INVOCATION",
+                f"Assistant invoked tool '{name}' with args {args}",
+                metadata={"tool": name, "args": args}
+            )
         except Exception:
             pass
 

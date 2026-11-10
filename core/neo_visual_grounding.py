@@ -257,7 +257,8 @@ class VisualGroundingEngine(QObject):
         """
         if _HAS_MSS:
             try:
-                with mss.mss() as sct:
+                mss_cls = getattr(mss, "MSS", getattr(mss, "mss", None))
+                with mss_cls() as sct:
                     monitor = sct.monitors[1] if len(sct.monitors) > 1 else sct.monitors[0]
                     if bbox:
                         monitor = {

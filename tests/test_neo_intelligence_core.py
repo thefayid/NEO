@@ -232,5 +232,64 @@ class TestNeoVisualGrounding(unittest.TestCase):
         overlay.hide()
 
 
+class TestCentralActionsAndCoordinator(unittest.TestCase):
+    """Verifies action adapter handlers and the central coordinator bus."""
+
+    def test_action_execute_autonomous_goal(self):
+        from actions.autonomous_goal import execute_autonomous_goal
+        res = execute_autonomous_goal({"instruction": "Verify system disk and python version"})
+        self.assertIn("initiated successfully", res)
+        self.assertIn("Autonomous Goal", res)
+
+    def test_action_manage_neo_memory(self):
+        from actions.neo_memory import manage_neo_memory
+        # 1. Remember
+        rem_res = manage_neo_memory({
+            "operation": "remember",
+            "entity": "Fayid",
+            "relation": "PREFERS",
+            "target": "macOS Sequoia Graphite Dark Mode",
+            "category": "USER_PREFERENCE"
+        })
+        self.assertIn("Successfully saved", rem_res)
+
+        # 2. Query
+        q_res = manage_neo_memory({"operation": "query", "query": "Fayid"})
+        self.assertIn("Fayid", q_res)
+
+        # 3. Context
+        ctx_res = manage_neo_memory({"operation": "get_context"})
+        self.assertIn("Active Window", ctx_res)
+
+    def test_action_synthesize_custom_tool(self):
+        from actions.dynamic_tool_creator import synthesize_custom_tool
+        res = synthesize_custom_tool({
+            "action_type": "synthesize",
+            "tool_name": "central_test_tool",
+            "description": "Calculates circle area",
+            "code_body": "def central_test_tool(r, **kwargs):\n    return 3.14159 * float(r) ** 2\n"
+        })
+        self.assertIn("Success", res)
+
+        list_res = synthesize_custom_tool({"action_type": "list"})
+        self.assertIn("central_test_tool", list_res)
+
+    def test_action_visual_screen_grounding(self):
+        from actions.visual_grounding_action import visual_screen_grounding
+        res = visual_screen_grounding({"action": "reverse_engineer", "format": "mermaid"})
+        self.assertIsNotNone(res)
+
+    def test_central_coordinator_telemetry(self):
+        from core.neo_central_coordinator import central_core
+        snap = central_core.get_full_telemetry_snapshot()
+        self.assertIn("working_memory", snap)
+        self.assertIn("synthesized_tools_count", snap)
+        self.assertIn("timestamp", snap)
+
+        # Test central remember
+        ok = central_core.remember_fact("NEO", "POWERS", "Mark-LVI Desktop Assistant")
+        self.assertTrue(ok)
+
+
 if __name__ == "__main__":
     unittest.main()

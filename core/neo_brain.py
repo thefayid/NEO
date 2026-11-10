@@ -27,6 +27,7 @@ import sqlite3
 import sys
 import time
 from collections import Counter
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
@@ -97,10 +98,18 @@ class NeoBrainStore:
         self._lock = Lock()
         self._init_db()
 
-    def _get_connection(self) -> sqlite3.Connection:
+    @contextmanager
+    def connection(self):
         conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
+
+    def _get_connection(self):
+        return self.connection()
 
     def _init_db(self):
         with self._lock, self._get_connection() as conn:
