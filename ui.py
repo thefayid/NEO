@@ -6125,6 +6125,43 @@ class MainWindow(QMainWindow):
         }
         if command_id in nav_map:
             self._on_nav_tab_changed(nav_map[command_id])
+        elif command_id == "goal" or query.startswith("/goal"):
+            prompt = query.removeprefix("/goal").strip() if query.startswith("/goal") else query
+            try:
+                from core.neo_agentic_loop import goal_engine
+                goal = goal_engine.submit_goal(prompt or "Autonomous computer verification")
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"GOAL: Dispatched goal [{goal.goal_id[:8]}] — {goal.prompt}")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Failed to submit goal — {e}")
+        elif command_id == "ground" or query.startswith("/ground"):
+            target = query.removeprefix("/ground").strip() if query.startswith("/ground") else query
+            try:
+                from core.neo_visual_grounding import visual_grounding
+                elem = visual_grounding.ground_target_on_screen(target, highlight=True)
+                if hasattr(self, "_log") and self._log:
+                    if elem:
+                        self._log.append_log(f"VISION: Grounded '{elem.label}' at ({elem.center[0]}, {elem.center[1]})")
+                    else:
+                        self._log.append_log(f"VISION: Target '{target}' not found on active display.")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Visual grounding error — {e}")
+        elif command_id == "synthesize" or query.startswith("/synthesize"):
+            spec = query.removeprefix("/synthesize").strip() if query.startswith("/synthesize") else query
+            try:
+                from core.neo_self_tooling import synthesizer
+                parts = spec.split(":", 1)
+                name = parts[0].strip()
+                desc = parts[1].strip() if len(parts) > 1 else f"Dynamically synthesized tool for {name}"
+                body = f"def {name}(**kwargs):\n    return f'Dynamic tool {name} executed with {{kwargs}}'\n"
+                ok, msg = synthesizer.synthesize_tool(name, desc, body)
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"TOOL: {msg}")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Tool synthesis failed — {e}")
         elif command_id == "mode_toggle":
             self._on_toggle_theme()
         elif command_id == "mic_toggle":

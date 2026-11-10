@@ -1377,6 +1377,9 @@ class SlashCommandPopup(QFrame):
         lay.addWidget(hdr)
 
         commands = [
+            ("🎯 /goal", "Autonomous multi-step computer loop", "/goal "),
+            ("👁️ /ground", "Locate & click visual UI targets", "/ground "),
+            ("⚡ /synthesize", "Dynamic self-tooling capability", "/synthesize "),
             ("💻 /code", "Focus on clean coding & debugging", "/code "),
             ("🔍 /research", "Deep web research with live citations", "/research "),
             ("🧠 /rag", "Local semantic file search with citations", "/rag "),
@@ -2011,6 +2014,24 @@ class NeoModernChatWidget(QWidget):
         self._load_active_session()
         self._update_drawer_list()
 
+        # Wire Autonomous Goal Engine real-time telemetry (Pillar 3)
+        try:
+            from core.neo_agentic_loop import goal_engine
+            goal_engine.step_started.connect(
+                lambda gid, sidx, desc: self.add_tool_execution(f"Step {sidx+1}: {desc}", f"Running autonomous step for goal {gid[:8]}...")
+            )
+            goal_engine.step_completed.connect(
+                lambda gid, sidx, out: self.add_system_pill(f"✓ Step {sidx+1} complete: {out[:120]}")
+            )
+            goal_engine.step_retrying.connect(
+                lambda gid, sidx, err, rc: self.add_system_pill(f"⚠️ Self-Reflection: Step {sidx+1} retry {rc}/3 — {err[:80]}")
+            )
+            goal_engine.goal_completed.connect(
+                lambda gid, summary: self.add_message("neo", f"🎯 **Autonomous Goal Finished [{gid[:8]}]**\n\n{summary}")
+            )
+        except Exception:
+            pass
+
     # ─────────────────────────────────────────────────────────────────────────
     # Public API for Logging & External Tool Hooks
     # ─────────────────────────────────────────────────────────────────────────
@@ -2132,6 +2153,28 @@ class NeoModernChatWidget(QWidget):
         if hasattr(self, "welcome_widget"):
             self.welcome_widget.hide()
         self._save_message_to_active_session(role, clean, ts)
+
+        # Wire into Tri-Tier NeoBrain (Pillar 2)
+        try:
+            from core.neo_brain import brain
+            if role_lower in ("user", "you"):
+                brain.working.set_active_goal(clean)
+                brain.working.add_dialog_turn("user", clean)
+            elif role_lower in ("neo", "assistant"):
+                brain.working.add_dialog_turn("neo", clean)
+                last_user_turn = ""
+                for r_t, t_t in reversed(brain.working.recent_dialog_turns):
+                    if r_t == "user":
+                        last_user_turn = t_t
+                        break
+                if last_user_turn:
+                    threading.Thread(
+                        target=brain.learn_interaction,
+                        args=(last_user_turn, clean),
+                        daemon=True
+                    ).start()
+        except Exception:
+            pass
 
     def add_tool_execution(self, tool_name: str, details: str = ""):
         self._active_stream_bubble = None
@@ -2523,6 +2566,47 @@ class NeoModernChatWidget(QWidget):
                 self.persona_combo.setCurrentIndex(2)
             elif "acad" in sub or "res" in sub:
                 self.persona_combo.setCurrentIndex(3)
+            return
+
+        if full_cmd.startswith("/goal "):
+            goal_text = full_cmd[6:].strip()
+            self.add_message("user", full_cmd)
+            self.add_system_pill(f"🚀 Initializing Autonomous Goal Engine: '{goal_text}'")
+            try:
+                from core.neo_agentic_loop import goal_engine
+                goal = goal_engine.submit_goal(goal_text)
+                self.add_system_pill(f"Goal [{goal.goal_id[:8]}] scheduled with {len(goal.steps)} planned steps.")
+            except Exception as e:
+                self.add_system_pill(f"Error launching goal: {e}")
+            return
+        elif full_cmd.startswith("/ground "):
+            target_text = full_cmd[8:].strip()
+            self.add_message("user", full_cmd)
+            self.add_system_pill(f"🎯 Locating visual target on screen: '{target_text}'...")
+            try:
+                from core.neo_visual_grounding import visual_grounding
+                elem = visual_grounding.ground_target_on_screen(target_text, highlight=True)
+                if elem:
+                    self.add_system_pill(f"✓ Target located at ({elem.center[0]}, {elem.center[1]}), confidence {elem.confidence:.2f}")
+                else:
+                    self.add_system_pill(f"Could not locate visual target '{target_text}' on display.")
+            except Exception as e:
+                self.add_system_pill(f"Visual grounding error: {e}")
+            return
+        elif full_cmd.startswith("/synthesize "):
+            spec = full_cmd[12:].strip()
+            self.add_message("user", full_cmd)
+            self.add_system_pill(f"⚡ Synthesizing dynamic tool capability: '{spec}'...")
+            try:
+                from core.neo_self_tooling import synthesizer
+                parts = spec.split(":", 1)
+                name = parts[0].strip()
+                desc = parts[1].strip() if len(parts) > 1 else f"Dynamically synthesized tool for {name}"
+                body = f"def {name}(**kwargs):\n    return f'Dynamic capability {name} executed with {{kwargs}}'\n"
+                ok, msg = synthesizer.synthesize_tool(name, desc, body)
+                self.add_system_pill(f"Synthesizer: {msg}")
+            except Exception as e:
+                self.add_system_pill(f"Tool synthesis error: {e}")
             return
 
         if full_cmd == "/brief":

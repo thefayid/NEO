@@ -352,6 +352,9 @@ class MacOSSpotlightCommandBar(QWidget):
     def _load_default_commands(self):
         self._all_commands = [
             SpotlightCommand("ask", "Ask NEO Anything...", "Assistant", "Submit query to Gemini 3.1 Live Engine", icon_name="message-square", shortcut="↵"),
+            SpotlightCommand("goal", "Autonomous Computer-Use Goal", "Agent", "Execute multi-step autonomous goal loop (/goal)", icon_name="play", shortcut="/goal"),
+            SpotlightCommand("ground", "Multimodal Visual Grounding", "Vision", "Locate and interact with screen UI elements", icon_name="target", shortcut="/ground"),
+            SpotlightCommand("synthesize", "Dynamic Self-Tooling", "Meta-Plugin", "Synthesize and hot-register new Python capabilities", icon_name="cpu", shortcut="/synthesize"),
             SpotlightCommand("research", "Deep Autonomous Research", "Studio", "Launch multi-agent background research pipeline", icon_name="book-open"),
             SpotlightCommand("code", "Code Generation & Architecture", "Studio", "Generate, debug, or refactor codebase", icon_name="terminal"),
             SpotlightCommand("swarm", "Autonomous Subagent Swarm", "Intelligence", "Open 4-node concurrent swarm coordinator", icon_name="cpu"),
@@ -421,15 +424,27 @@ class MacOSSpotlightCommandBar(QWidget):
         self.dismiss()
 
     def _on_return_pressed(self):
+        query = self.input_field.text().strip()
+        if query.startswith("/goal ") or query == "/goal":
+            self.command_triggered.emit("goal", query.removeprefix("/goal").strip())
+            self.dismiss()
+            return
+        elif query.startswith("/ground ") or query == "/ground":
+            self.command_triggered.emit("ground", query.removeprefix("/ground").strip())
+            self.dismiss()
+            return
+        elif query.startswith("/synthesize ") or query == "/synthesize":
+            self.command_triggered.emit("synthesize", query.removeprefix("/synthesize").strip())
+            self.dismiss()
+            return
+
         if self._filtered_rows and 0 <= self._highlighted_index < len(self._filtered_rows):
             cmd = self._filtered_rows[self._highlighted_index].cmd
-            query = self.input_field.text().strip()
             self.command_triggered.emit(cmd.command_id, query)
             if cmd.callback:
                 cmd.callback()
             self.dismiss()
         else:
-            query = self.input_field.text().strip()
             if query:
                 self.command_triggered.emit("ask", query)
                 self.dismiss()

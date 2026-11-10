@@ -1348,6 +1348,13 @@ class JarvisLive:
         parts = [time_ctx, identity_ctx, behavior_ctx]
         if mem_str:
             parts.append(mem_str)
+        try:
+            from core.neo_brain import brain
+            brain_ctx = brain.synthesize_intelligence_prompt("")
+            if brain_ctx:
+                parts.append(brain_ctx)
+        except Exception:
+            pass
         parts.append(sys_prompt)
 
         cfg = dict(
