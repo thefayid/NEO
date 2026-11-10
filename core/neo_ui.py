@@ -1869,11 +1869,9 @@ class NeoNavSidebar(QWidget):
 
         # ── Category 3: SYSTEM ───────────────────────────────────────────────
         lay.addWidget(_section_hdr("SYSTEM"))
-        self.btn_gallery = self._create_nav_item("🎨", "Gallery", active=False)
         self.btn_sentinels = self._create_nav_item("🛡", "Sentinels", active=False)
         self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
         self.btn_settings.clicked.connect(self.settings_requested.emit)
-        lay.addWidget(self.btn_gallery)
         lay.addWidget(self.btn_sentinels)
         lay.addWidget(self.btn_settings)
 
@@ -1958,7 +1956,7 @@ class NeoNavSidebar(QWidget):
             (self.btn_home, "Home"), (self.btn_chat, "Chat"), (self.btn_tasks, "Tasks"),
             (self.btn_notes, "Notes"), (self.btn_projects, "Projects"), (self.btn_knowledge, "Knowledge"),
             (self.btn_files, "Files"), (self.btn_sentinels, "Sentinels"), (self.btn_terminal, "Terminal"),
-            (self.btn_swarm, "Swarm"), (self.btn_vision, "Vision"), (self.btn_gallery, "Gallery")
+            (self.btn_swarm, "Swarm"), (self.btn_vision, "Vision")
         ]:
             b.setStyleSheet(self._nav_style(lbl == name))
             b.setFont(font_text(9, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))

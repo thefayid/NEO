@@ -6121,7 +6121,7 @@ class MainWindow(QMainWindow):
         nav_map = {
             "chat": "Chat", "swarm": "Swarm", "terminal": "Terminal",
             "vision": "Vision", "notes": "Notes", "files": "Files",
-            "sentinels": "Sentinels", "settings": "Settings", "gallery": "Gallery"
+            "sentinels": "Sentinels", "settings": "Settings"
         }
         if command_id in nav_map:
             self._on_nav_tab_changed(nav_map[command_id])
