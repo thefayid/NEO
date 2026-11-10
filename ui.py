@@ -6220,7 +6220,7 @@ class MainWindow(QMainWindow):
     def _build_header(self) -> QWidget:
         # macOS Sequoia 48px Unified Titlebar & Toolbar
         _cfg = _read_full_config()
-        self._assistant_name = (_cfg.get("assistant_name") or "JARVIS").strip()
+        self._assistant_name = (_cfg.get("assistant_name") or "NEO").strip()
         _display = self._assistant_name.upper()
 
         self._unified_toolbar = MacOSUnifiedToolbar(title=_display or "NEO", parent=self)
@@ -6236,125 +6236,126 @@ class MainWindow(QMainWindow):
             lambda: self.showNormal() if self.isMaximized() else self.showMaximized()
         )
 
-        # macOS Tab pill: ⭘ NEO
-        tab = QFrame()
-        tab.setFixedHeight(28)
-        tab.setStyleSheet(f"""
-            QFrame {{
-                background: {C.PANEL2};
-                border: 1px solid {C.BORDER};
-                border-radius: 6px;
-            }}
-        """)
-        tab_l = QHBoxLayout(tab)
-        tab_l.setContentsMargins(10, 0, 8, 0)
-        tab_l.setSpacing(6)
-        t_icn = QLabel("⭘")
-        t_icn.setFont(QFont("Segoe UI", 9))
-        t_icn.setStyleSheet(f"color: {C.ACCENT}; border: none; background: transparent;")
-        tab_l.addWidget(t_icn)
-        t_txt = QLabel("NEO")
-        t_txt.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        t_txt.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent;")
-        tab_l.addWidget(t_txt)
-        tab_plus = QLabel("+")
-        tab_plus.setFont(QFont("Segoe UI", 11))
-        tab_plus.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-left: 6px;")
-        tab_l.addWidget(tab_plus)
-        self._unified_toolbar.left_slot.addWidget(tab)
-
-        # macOS Status Pill (Interactive Online & Mic Mute Toggle)
-        self._status_pill = QPushButton("● ONLINE · 🎙 MIC ACTIVE")
-        self._status_pill.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        # ── 1. Left Slot: Refined Status Pill & Spotlight Summon ─────────────
+        self._status_pill = QPushButton("● Online · Mic Active")
+        self._status_pill.setFixedHeight(28)
+        self._status_pill.setFont(QFont("-apple-system", 10, QFont.Weight.Medium))
         self._status_pill.setCursor(Qt.CursorShape.PointingHandCursor)
         self._status_pill.setToolTip("Click to MUTE or UNMUTE microphone [F4]")
         self._status_pill.setStyleSheet("""
             QPushButton {
-                color: #30D158; background: rgba(48, 209, 88, 0.14);
-                border: 1px solid rgba(48, 209, 88, 0.32); border-radius: 12px;
-                padding: 3px 10px;
-                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+                color: #30D158;
+                background-color: rgba(48, 209, 88, 0.12);
+                border: 1px solid rgba(48, 209, 88, 0.28);
+                border-radius: 14px;
+                padding: 0 12px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
             }
-            QPushButton:hover { background: rgba(48, 209, 88, 0.25); }
+            QPushButton:hover {
+                background-color: rgba(48, 209, 88, 0.22);
+                border-color: rgba(48, 209, 88, 0.42);
+            }
         """)
         self._status_pill.clicked.connect(self._toggle_mute)
         self._unified_toolbar.left_slot.addWidget(self._status_pill)
 
-        # Live Voice & Engine Telemetry Pill
-        self._live_engine_pill = QPushButton("⚡ 260ms · GEMINI 3.1 LIVE")
-        self._live_engine_pill.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        # Center/Left Spotlight Search Capsule
+        self._search_capsule = QPushButton("🔍  Search or ask NEO anything...  ⌘K")
+        self._search_capsule.setFixedHeight(28)
+        self._search_capsule.setFixedWidth(280)
+        self._search_capsule.setFont(QFont("-apple-system", 10, QFont.Weight.Normal))
+        self._search_capsule.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._search_capsule.setToolTip("Summon Spotlight Command Bar [⌘K / Ctrl+Space]")
+        self._search_capsule.setStyleSheet("""
+            QPushButton {
+                color: #8E8E93;
+                background-color: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.09);
+                border-radius: 6px;
+                padding: 0 12px;
+                text-align: left;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+            }
+            QPushButton:hover {
+                color: #FFFFFF;
+                background-color: rgba(255, 255, 255, 0.10);
+                border-color: rgba(10, 132, 255, 0.35);
+            }
+        """)
+        self._search_capsule.clicked.connect(lambda: self.spotlight.summon() if hasattr(self, "spotlight") else None)
+        self._unified_toolbar.left_slot.addWidget(self._search_capsule)
+
+        # ── 2. Right Slot: Modern macOS Glyphs & Control Center ───────────────
+        self._live_engine_pill = QPushButton("⚡ 260ms · Live")
+        self._live_engine_pill.setFixedHeight(28)
+        self._live_engine_pill.setFont(QFont("-apple-system", 10, QFont.Weight.Medium))
         self._live_engine_pill.setCursor(Qt.CursorShape.PointingHandCursor)
         self._live_engine_pill.setToolTip("Voice Engine & Latency Telemetry — Click to switch Engine")
         self._live_engine_pill.setStyleSheet("""
             QPushButton {
-                color: #0A84FF; background: rgba(10, 132, 255, 0.14);
-                border: 1px solid rgba(10, 132, 255, 0.32); border-radius: 12px;
-                padding: 3px 10px;
-                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+                color: #0A84FF;
+                background-color: rgba(10, 132, 255, 0.12);
+                border: 1px solid rgba(10, 132, 255, 0.28);
+                border-radius: 14px;
+                padding: 0 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
             }
-            QPushButton:hover { background: rgba(10, 132, 255, 0.25); color: #409CFF; }
+            QPushButton:hover {
+                background-color: rgba(10, 132, 255, 0.22);
+            }
         """)
         self._live_engine_pill.clicked.connect(self._open_providers)
-        self._unified_toolbar.left_slot.addWidget(self._live_engine_pill)
+        self._unified_toolbar.right_slot.addWidget(self._live_engine_pill)
 
-        # Kerala Weather Pill
-        self._weather_lbl = QLabel("⛅ KERALA  --°C")
-        self._weather_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
-        self._weather_lbl.setStyleSheet("""
-            color: #98989D; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
-            padding: 3px 10px;
-            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
-        """)
-        self._unified_toolbar.left_slot.addWidget(self._weather_lbl)
-
-        # Digital Clock & Date (macOS Typography)
-        self._clock_lbl = QLabel(time.strftime("%H:%M:%S"))
-        self._clock_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        self._clock_lbl.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
-        self._unified_toolbar.right_slot.addWidget(self._clock_lbl)
-
-        self._date_lbl = QLabel(time.strftime("%a %d %b").upper())
-        self._date_lbl.setFont(QFont("Segoe UI", 8))
-        self._date_lbl.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-right: 6px; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
-        self._unified_toolbar.right_slot.addWidget(self._date_lbl)
-
-        def _pill_btn(text: str, tip: str, cb) -> QPushButton:
-            b = QPushButton(text)
-            b.setFixedHeight(26)
-            b.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
+        def _mac_icon_btn(glyph: str, tip: str, cb) -> QPushButton:
+            b = QPushButton(glyph)
+            b.setFixedSize(28, 28)
+            b.setFont(QFont("-apple-system", 11, QFont.Weight.Medium))
             b.setCursor(Qt.CursorShape.PointingHandCursor)
             b.setToolTip(tip)
-            b.setStyleSheet(f"""
-                QPushButton {{
-                    background: rgba(255, 255, 255, 0.06); color: {C.TEXT_MED};
-                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
-                    padding: 0 10px;
-                    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
-                }}
-                QPushButton:hover {{ color: {C.TEXT}; border-color: {C.ACCENT}; background: rgba(255, 255, 255, 0.12); }}
+            b.setStyleSheet("""
+                QPushButton {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    color: #AEAEB2;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 6px;
+                }
+                QPushButton:hover {
+                    background-color: rgba(255, 255, 255, 0.12);
+                    color: #FFFFFF;
+                    border-color: rgba(255, 255, 255, 0.16);
+                }
+                QPushButton:pressed {
+                    background-color: rgba(255, 255, 255, 0.03);
+                }
             """)
             b.clicked.connect(cb)
             return b
 
-        self._unified_toolbar.right_slot.addWidget(_pill_btn("📱 REMOTE", "Phone QR Code Remote Control", self._open_remote))
-        self._unified_toolbar.right_slot.addWidget(_pill_btn("🎛 TELEMETRY", "Subsystem Vitals & Controls", self._toggle_controls))
-        self._drawer_btn = _pill_btn("⚙ CONFIG", "System Settings & Hardware", self._toggle_drawer)
+        # Control Center Button (Sliders icon — triggers Quick Drawer / Tray)
+        self._drawer_btn = _mac_icon_btn("🎛", "Control Center (Remote, Telemetry, Settings, Stealth) [F8]", self._toggle_drawer)
         self._unified_toolbar.right_slot.addWidget(self._drawer_btn)
 
-        self._layout_mode_btn = _pill_btn("🕶 STEALTH", "Toggle Stealth / Command Mode [F8]", self._cycle_hud_layout)
-        self._unified_toolbar.right_slot.addWidget(self._layout_mode_btn)
-
-        self._capsule_btn = _pill_btn("☁ CAPSULE", "Desktop Floating Island [F9]", self._toggle_floating_island)
-        self._unified_toolbar.right_slot.addWidget(self._capsule_btn)
-
         # Light / Dark Theme Toggle Button
-        self._theme_toggle_btn = _pill_btn(
-            "🌙 DARK" if is_white_mode() else "☀️ LIGHT",
+        is_dark = not is_white_mode()
+        self._theme_toggle_btn = _mac_icon_btn(
+            "☀️" if is_dark else "🌙",
             "Toggle Light / Dark Mode [F7]",
             self._on_toggle_theme
         )
         self._unified_toolbar.right_slot.addWidget(self._theme_toggle_btn)
+
+        # Keep legacy references alive for compatibility
+        self._weather_lbl = QLabel()
+        self._weather_lbl.hide()
+        self._clock_lbl = QLabel()
+        self._clock_lbl.hide()
+        self._date_lbl = QLabel()
+        self._date_lbl.hide()
+        self._layout_mode_btn = QPushButton()
+        self._layout_mode_btn.hide()
+        self._capsule_btn = QPushButton()
+        self._capsule_btn.hide()
 
         return self._unified_toolbar
 
