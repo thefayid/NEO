@@ -405,8 +405,7 @@ class MacOSSizingSidebarContainer(QFrame):
         """)
 
         self.anim = QPropertyAnimation(self, b"maximumWidth")
-        self.anim.setDuration(200)
-        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._configure_spring()
 
         self._outer_lay = QHBoxLayout(self)
         self._outer_lay.setContentsMargins(0, 0, 0, 0)
@@ -422,6 +421,15 @@ class MacOSSizingSidebarContainer(QFrame):
         self._grip = _SidebarResizeGrip(self, side="right")
         self._outer_lay.addWidget(self._grip)
 
+    def _configure_spring(self):
+        from core.macos_motion import SpringPresets, motion
+        if motion.is_reduced_motion():
+            self.anim.setDuration(100)
+            self.anim.setEasingCurve(QEasingCurve.Type.Linear)
+        else:
+            self.anim.setDuration(SpringPresets.smooth.duration_ms)
+            self.anim.setEasingCurve(SpringPresets.smooth.easing_curve())
+
     def set_content_widget(self, widget: QWidget) -> None:
         """Sets the inner Source List sidebar widget."""
         while self.content_lay.count():
@@ -433,6 +441,7 @@ class MacOSSizingSidebarContainer(QFrame):
     def toggle_collapse(self) -> None:
         """Smoothly animates collapsing/expanding the sidebar."""
         self.anim.stop()
+        self._configure_spring()
         if not self.is_collapsed:
             # Collapse to 0
             self._target_expanded_width = max(self.MIN_WIDTH, self.width())
@@ -501,8 +510,7 @@ class MacOSInspectorPanelContainer(QFrame):
         """)
 
         self.anim = QPropertyAnimation(self, b"maximumWidth")
-        self.anim.setDuration(200)
-        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._configure_spring()
 
         self._outer_lay = QHBoxLayout(self)
         self._outer_lay.setContentsMargins(0, 0, 0, 0)
@@ -518,6 +526,15 @@ class MacOSInspectorPanelContainer(QFrame):
         self.content_lay.setSpacing(0)
         self._outer_lay.addWidget(self._content_host, stretch=1)
 
+    def _configure_spring(self):
+        from core.macos_motion import SpringPresets, motion
+        if motion.is_reduced_motion():
+            self.anim.setDuration(100)
+            self.anim.setEasingCurve(QEasingCurve.Type.Linear)
+        else:
+            self.anim.setDuration(SpringPresets.smooth.duration_ms)
+            self.anim.setEasingCurve(SpringPresets.smooth.easing_curve())
+
     def set_content_widget(self, widget: QWidget) -> None:
         """Sets the inner Inspector sidebar widget."""
         while self.content_lay.count():
@@ -529,6 +546,7 @@ class MacOSInspectorPanelContainer(QFrame):
     def toggle_collapse(self) -> None:
         """Smoothly animates collapsing/expanding the inspector panel."""
         self.anim.stop()
+        self._configure_spring()
         if not self.is_collapsed:
             self._target_expanded_width = max(self.MIN_WIDTH, self.width())
             self._grip.hide()

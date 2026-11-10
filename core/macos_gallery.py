@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PyQt6.QtCore import Qt, QPoint, QTimer
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import Qt, QPoint, QPointF, QTimer
+from PyQt6.QtGui import QFont, QColor, QPainter, QPainterPath, QPen, QBrush
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QGridLayout, QSizePolicy, QPushButton
@@ -38,8 +38,136 @@ from core.macos_components import (
     MacOSSheetModal,
     MacOSTooltip,
     MacOSScrollArea,
+    MacOSReorderableList,
+    MacOSReorderableItem,
     render_lucide_icon,
 )
+from core.macos_motion import (
+    SpringSpec,
+    SpringPresets,
+    motion,
+    create_spring_animation,
+    stagger_reveal,
+)
+
+
+class MacOSSpringVisualizer(QFrame):
+    """
+    Live interactive canvas displaying exact damped harmonic oscillator curves
+    for Apple's snappy, smooth, and gentle spring presets.
+    """
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.setFixedHeight(170)
+        self._current_spec: SpringSpec = SpringPresets.snappy
+        self._playback_progress: float = 1.0  # [0.0, 1.0]
+
+        self._timer = QTimer(self)
+        self._timer.setInterval(16)  # ~60fps
+        self._timer.timeout.connect(self._on_tick)
+
+        r = theme.radii.sm
+        self.setStyleSheet(f"""
+            QFrame {{
+                background-color: {theme.colors.windowBackground};
+                border: 1px solid {theme.colors.separator};
+                border-radius: {r}px;
+            }}
+        """)
+
+    def set_spec(self, spec: SpringSpec):
+        self._current_spec = spec
+        self._playback_progress = 0.0
+        self._timer.start()
+        self.update()
+
+    def replay(self):
+        self._playback_progress = 0.0
+        self._timer.start()
+        self.update()
+
+    def _on_tick(self):
+        step = 16.0 / max(100.0, float(self._current_spec.duration_ms))
+        self._playback_progress += step
+        if self._playback_progress >= 1.0:
+            self._playback_progress = 1.0
+            self._timer.stop()
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        w, h = float(self.width()), float(self.height())
+        pad_x = 44.0
+        pad_y = 26.0
+        draw_w = w - pad_x * 2.0
+        draw_h = h - pad_y * 2.0 - 16.0
+
+        # Target 1.0 baseline and 0.0 baseline
+        y_target = pad_y + draw_h * 0.28
+        y_zero = pad_y + draw_h * 0.88
+
+        # Target line (dashed)
+        pen_dotted = QPen(QColor(theme.colors.separator), 1.0, Qt.PenStyle.DashLine)
+        painter.setPen(pen_dotted)
+        painter.drawLine(int(pad_x), int(y_target), int(w - pad_x), int(y_target))
+
+        # Baseline 0.0 line
+        pen_base = QPen(QColor(theme.colors.separator), 1.0)
+        painter.setPen(pen_base)
+        painter.drawLine(int(pad_x), int(y_zero), int(w - pad_x), int(y_zero))
+
+        # Text labels on Y axis
+        painter.setFont(theme.font(theme.typography.caption_2))
+        painter.setPen(QColor(theme.colors.labelTertiary))
+        painter.drawText(6, int(y_target + 4), "1.00")
+        painter.drawText(6, int(y_zero + 4), "0.00")
+
+        # Analytical damped harmonic curve
+        pts = 100
+        path = QPainterPath()
+        dur_sec = self._current_spec.settling_time_sec
+
+        for i in range(pts + 1):
+            t_ratio = i / float(pts)
+            x_screen = pad_x + t_ratio * draw_w
+            t_sec = t_ratio * dur_sec
+            val = self._current_spec.solve(t_sec)
+            y_screen = y_zero - val * (y_zero - y_target)
+            if i == 0:
+                path.moveTo(x_screen, y_screen)
+            else:
+                path.lineTo(x_screen, y_screen)
+
+        # Draw curve in Accent color
+        curve_pen = QPen(QColor(theme.accent_color), 2.2)
+        painter.setPen(curve_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(path)
+
+        # Draw current playback head dot
+        cur_x = pad_x + self._playback_progress * draw_w
+        cur_t_sec = self._playback_progress * dur_sec
+        cur_val = self._current_spec.solve(cur_t_sec)
+        cur_y = y_zero - cur_val * (y_zero - y_target)
+
+        painter.setPen(QPen(QColor("#FFFFFF"), 2.0))
+        painter.setBrush(QBrush(QColor(theme.accent_color)))
+        painter.drawEllipse(QPointF(cur_x, cur_y), 5.0, 5.0)
+
+        # Parameter summary text
+        spec = self._current_spec
+        info_text = (
+            f"Preset: {spec.stiffness:.0f} stiffness, {spec.damping:.0f} damping  |  "
+            f"ω₀={spec.w0:.1f} rad/s  ζ={spec.zeta:.3f}  |  "
+            f"Settling Time: {spec.duration_ms}ms  |  60fps GPU"
+        )
+        painter.setPen(QColor(theme.colors.labelSecondary))
+        painter.setFont(theme.font(theme.typography.caption_1))
+        painter.drawText(int(pad_x), int(h - 10), info_text)
+        painter.end()
 
 
 class MacOSComponentGallery(QWidget):
@@ -76,6 +204,7 @@ class MacOSComponentGallery(QWidget):
         self._build_sidebar_list_section()
         self._build_toasts_and_sheet_section()
         self._build_overlay_scroll_section()
+        self._build_motion_system_section()
 
         # Connect live theme updates
         theme.theme_changed.connect(self._on_theme_changed)
@@ -541,3 +670,158 @@ class MacOSComponentGallery(QWidget):
             in_lay.addWidget(QLabel(f"• Log Record Line #{i:02d} — Realtime system telemetry record event.", font=theme.font(theme.typography.callout)))
         scroll_demo.setWidget(inner_content)
         c_lay.addWidget(scroll_demo)
+
+    # ── 10. macOS Motion System & Spring Physics ─────────────────────────────
+
+    def _build_motion_system_section(self):
+        _, c_lay = self._create_card(
+            "9. macOS Motion System & Physical Damped Oscillators",
+            "Apple CoreAnimation / SwiftUI spring physics: x(t) = 1 - e^(-γt) * [cos(ω_d t) + (γ/ω_d) sin(ω_d t)]. "
+            "Zero linear or generic ease curves. GPU-accelerated 60fps micro-interactions."
+        )
+
+        # 1. Physics Curve Visualizer
+        v_title = QLabel("Interactive Damped Harmonic Oscillator Simulator:", font=theme.font(theme.typography.headline))
+        v_title.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        c_lay.addWidget(v_title)
+
+        visualizer = MacOSSpringVisualizer(self.content_widget)
+        c_lay.addWidget(visualizer)
+
+        viz_tools = QHBoxLayout()
+        viz_tools.setSpacing(theme.spacing.sm)
+
+        btn_snappy = MacOSButton("Snappy (400, 30)", variant="secondary")
+        btn_snappy.clicked.connect(lambda: visualizer.set_spec(SpringPresets.snappy))
+        viz_tools.addWidget(btn_snappy)
+
+        btn_smooth = MacOSButton("Smooth (260, 26)", variant="secondary")
+        btn_smooth.clicked.connect(lambda: visualizer.set_spec(SpringPresets.smooth))
+        viz_tools.addWidget(btn_smooth)
+
+        btn_gentle = MacOSButton("Gentle (170, 22)", variant="secondary")
+        btn_gentle.clicked.connect(lambda: visualizer.set_spec(SpringPresets.gentle))
+        viz_tools.addWidget(btn_gentle)
+
+        btn_replay = MacOSButton("▶ Replay Curve", variant="default")
+        btn_replay.clicked.connect(visualizer.replay)
+        viz_tools.addWidget(btn_replay)
+
+        viz_tools.addStretch()
+        c_lay.addLayout(viz_tools)
+
+        c_lay.addSpacing(theme.spacing.sm)
+
+        # 2. Interactive Motion Interactions Grid
+        grid_title = QLabel("Spring Micro-Interactions:", font=theme.font(theme.typography.headline))
+        grid_title.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        c_lay.addWidget(grid_title)
+
+        row_actions = QHBoxLayout()
+        row_actions.setSpacing(theme.spacing.md)
+
+        # Demo 1: Button Press Scale 0.98
+        btn_scale_demo = MacOSButton("Press & Hold (0.98 Scale)", variant="default")
+        row_actions.addWidget(btn_scale_demo)
+
+        # Demo 2: Popover Scale from Anchor (0.96 -> 1.0)
+        btn_popover_demo = MacOSButton("Bloom Popover (0.96)", variant="secondary", icon_name="sliders")
+        pop_demo = MacOSPopover(self.window())
+        pop_body = QWidget()
+        pop_lay = QVBoxLayout(pop_body)
+        pop_lay.addWidget(QLabel("Scale from Anchor Tip", font=theme.font(theme.typography.headline)))
+        pop_lay.addWidget(QLabel("Physics: SpringPresets.snappy (0.96 -> 1.0)", font=theme.font(theme.typography.caption_1)))
+        pop_lay.addWidget(MacOSButton("Confirm Action", variant="default"))
+        pop_demo.set_content(pop_body)
+        btn_popover_demo.clicked.connect(lambda: pop_demo.show_at_widget(btn_popover_demo, direction="bottom"))
+        row_actions.addWidget(btn_popover_demo)
+
+        # Demo 3: Sheet Slide with Dim & Blur
+        btn_sheet_demo = MacOSButton("Slide Sheet (Smooth)", variant="secondary", icon_name="calendar")
+        btn_sheet_demo.clicked.connect(self.sheet.open_sheet)
+        row_actions.addWidget(btn_sheet_demo)
+
+        row_actions.addStretch()
+        c_lay.addLayout(row_actions)
+
+        c_lay.addSpacing(theme.spacing.sm)
+
+        # 3. Dynamic Reorderable List with Snappy Row Swapping
+        reorder_title = QLabel("Reorderable List with Snappy Spring Swapping:", font=theme.font(theme.typography.headline))
+        reorder_title.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        c_lay.addWidget(reorder_title)
+
+        self.reorder_list = MacOSReorderableList(self.content_widget)
+        self.reorder_list.add_item("audio", "Audio Live Engine", "16kHz Gemini 3.1 Live Pipeline", "ULTRA-LOW")
+        self.reorder_list.add_item("swarm", "Autonomous Agent Swarm", "4 Subagents Coordinating Tasks", "ACTIVE")
+        self.reorder_list.add_item("vision", "Spatial Vision Sentinel", "MediaPipe Gesture & Optical Tracking", "60 FPS")
+        c_lay.addWidget(self.reorder_list)
+
+        order_readout = QLabel(f"Current Order: {', '.join(self.reorder_list.get_item_ids())}", font=theme.font(theme.typography.callout))
+        order_readout.setStyleSheet(f"color: {theme.colors.labelSecondary};")
+        self.reorder_list.reordered.connect(lambda ids: order_readout.setText(f"Current Order: {', '.join(ids)}"))
+        c_lay.addWidget(order_readout)
+
+        c_lay.addSpacing(theme.spacing.sm)
+
+        # 4. Staggered Content Reveal at 20ms Intervals
+        stagger_title = QLabel("Staggered Content Reveal (20ms Intervals):", font=theme.font(theme.typography.headline))
+        stagger_title.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        c_lay.addWidget(stagger_title)
+
+        cards_host = QWidget()
+        c_host_lay = QHBoxLayout(cards_host)
+        c_host_lay.setContentsMargins(0, 0, 0, 0)
+        c_host_lay.setSpacing(theme.spacing.md)
+
+        self.stagger_cards = []
+        for i in range(1, 5):
+            c_box = QFrame()
+            c_box.setFixedHeight(64)
+            c_box.setStyleSheet(f"""
+                QFrame {{
+                    background-color: {theme.colors.controlBackgroundSecondary};
+                    border: 1px solid {theme.colors.separator};
+                    border-radius: {theme.radii.sm}px;
+                }}
+            """)
+            cb_lay = QVBoxLayout(c_box)
+            cb_lay.addWidget(QLabel(f"Card #{i:02d}", font=theme.font(theme.typography.headline)))
+            cb_lay.addWidget(QLabel("Staggered +12px smooth entry", font=theme.font(theme.typography.caption_1)))
+            c_host_lay.addWidget(c_box)
+            self.stagger_cards.append(c_box)
+
+        c_lay.addWidget(cards_host)
+
+        btn_stagger_trigger = MacOSButton("Trigger 20ms Cascade Reveal", variant="secondary", icon_name="sliders")
+        btn_stagger_trigger.clicked.connect(lambda: stagger_reveal(self.stagger_cards, interval_ms=20, spring=SpringPresets.smooth))
+        c_lay.addWidget(btn_stagger_trigger, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        c_lay.addSpacing(theme.spacing.sm)
+
+        # 5. Accessibility prefers-reduced-motion Switch
+        acc_title = QLabel("Accessibility & prefers-reduced-motion:", font=theme.font(theme.typography.headline))
+        acc_title.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        c_lay.addWidget(acc_title)
+
+        acc_row = QHBoxLayout()
+        acc_row.setSpacing(theme.spacing.md)
+
+        self.motion_toggle = MacOSToggle(checked=motion.is_reduced_motion())
+        self.motion_status_lbl = QLabel(
+            "Reduced Motion: ON (100ms Simple Fades)" if motion.is_reduced_motion() else "Reduced Motion: OFF (Full 60fps Physical Springs)",
+            font=theme.font(theme.typography.body)
+        )
+        self.motion_status_lbl.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+
+        def _on_motion_toggle(val: bool):
+            motion.set_reduced_motion(val)
+            self.motion_status_lbl.setText(
+                "Reduced Motion: ON (100ms Simple Fades)" if val else "Reduced Motion: OFF (Full 60fps Physical Springs)"
+            )
+
+        self.motion_toggle.toggled.connect(_on_motion_toggle)
+        acc_row.addWidget(self.motion_toggle)
+        acc_row.addWidget(self.motion_status_lbl)
+        acc_row.addStretch()
+        c_lay.addLayout(acc_row)

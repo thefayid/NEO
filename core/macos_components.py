@@ -68,11 +68,13 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QWidget, QPushButton, QLineEdit, QLabel, QFrame, QHBoxLayout,
     QVBoxLayout, QMenu, QScrollArea, QScrollBar, QSizePolicy,
-    QGraphicsDropShadowEffect, QApplication
+    QGraphicsDropShadowEffect, QApplication, QStyleOptionButton,
+    QStyle, QGraphicsBlurEffect, QGraphicsOpacityEffect
 )
 from PyQt6.QtSvg import QSvgRenderer
 
 from core.theme_provider import theme
+from core.macos_motion import motion, SpringPresets, create_spring_animation, stagger_reveal
 
 
 # ── 1. Lucide 1.5 Stroke Vector Icons Engine ─────────────────────────────────
@@ -156,6 +158,9 @@ class MacOSButton(QPushButton):
             self._variant = variant
 
         self._icon_name = icon_name
+        self._scale_factor: float = 1.0
+        self._press_anim: Optional[QPropertyAnimation] = None
+
         self.setFixedHeight(28)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFont(theme.font(theme.typography.headline))
@@ -163,6 +168,46 @@ class MacOSButton(QPushButton):
 
         self._apply_style()
         theme.theme_changed.connect(self._apply_style)
+
+    @pyqtProperty(float)
+    def scale_factor(self) -> float:
+        return self._scale_factor
+
+    @scale_factor.setter
+    def scale_factor(self, val: float) -> None:
+        self._scale_factor = val
+        self.update()
+
+    def mousePressEvent(self, event: QMouseEvent):
+        super().mousePressEvent(event)
+        if not motion.is_reduced_motion() and self.isEnabled():
+            if self._press_anim and self._press_anim.state() == QPropertyAnimation.State.Running:
+                self._press_anim.stop()
+            self._scale_factor = 0.98
+            self.update()
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        super().mouseReleaseEvent(event)
+        if not motion.is_reduced_motion() and self.isEnabled():
+            self._press_anim = create_spring_animation(
+                self, b"scale_factor", self._scale_factor, 1.0, spring=SpringPresets.snappy
+            )
+            self._press_anim.start()
+        else:
+            self._scale_factor = 1.0
+            self.update()
+
+    def leaveEvent(self, event: QEvent):
+        super().leaveEvent(event)
+        if abs(self._scale_factor - 1.0) > 1e-4:
+            if not motion.is_reduced_motion() and self.isEnabled():
+                self._press_anim = create_spring_animation(
+                    self, b"scale_factor", self._scale_factor, 1.0, spring=SpringPresets.snappy
+                )
+                self._press_anim.start()
+            else:
+                self._scale_factor = 1.0
+                self.update()
 
     def set_variant(self, variant: Union[Variant, str]) -> None:
         if isinstance(variant, str):
@@ -271,6 +316,31 @@ class MacOSButton(QPushButton):
             """)
 
     def paintEvent(self, event):
+        if abs(self._scale_factor - 1.0) > 1e-4:
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            cx = self.width() / 2.0
+            cy = self.height() / 2.0
+            painter.translate(cx, cy)
+            painter.scale(self._scale_factor, self._scale_factor)
+            painter.translate(-cx, -cy)
+
+            opt = QStyleOptionButton()
+            self.initStyleOption(opt)
+            self.style().drawControl(QStyle.ControlElement.CE_PushButton, opt, painter, self)
+
+            if self.hasFocus() and self.isEnabled():
+                focus_col = QColor(theme.accent_color if self._variant != self.Variant.DESTRUCTIVE else theme.colors.systemRed)
+                focus_col.setAlpha(80)
+                pen = QPen(focus_col, 2.5)
+                painter.setPen(pen)
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                r = theme.radii.sm
+                painter.drawRoundedRect(QRectF(1, 1, self.width() - 2, self.height() - 2), r, r)
+            painter.end()
+            return
+
         super().paintEvent(event)
         # Render signature 3px diffused outer focus halo when focused
         if self.hasFocus() and self.isEnabled():
@@ -791,11 +861,54 @@ class MacOSPopover(QWidget):
 
         self._direction = "bottom"  # Arrow points: top | bottom | left | right
         self._content_widget: Optional[QWidget] = None
+        self._scale_factor: float = 1.0
+        self._popover_opacity: float = 1.0
+        self._target_rect: QRect = QRect()
+        self._anchor_pt: QPoint = QPoint()
+        self._anim_scale: Optional[QPropertyAnimation] = None
+        self._anim_opacity: Optional[QPropertyAnimation] = None
 
         self._container = QWidget(self)
         self.content_lay = QVBoxLayout(self._container)
         self.content_lay.setContentsMargins(12, 12, 12, 12)
         self.content_lay.setSpacing(theme.spacing.sm)
+
+    @pyqtProperty(float)
+    def scale_factor(self) -> float:
+        return self._scale_factor
+
+    @scale_factor.setter
+    def scale_factor(self, s: float) -> None:
+        self._scale_factor = s
+        if self._target_rect.isValid() and abs(s - 1.0) > 1e-4:
+            tw, th = self._target_rect.width(), self._target_rect.height()
+            w = max(10, int(tw * s))
+            h = max(10, int(th * s))
+            if self._direction == "bottom":
+                x = self._anchor_pt.x() - w // 2
+                y = self._anchor_pt.y()
+            elif self._direction == "top":
+                x = self._anchor_pt.x() - w // 2
+                y = self._anchor_pt.y() - h
+            elif self._direction == "right":
+                x = self._anchor_pt.x()
+                y = self._anchor_pt.y() - h // 2
+            else:
+                x = self._anchor_pt.x() - w
+                y = self._anchor_pt.y() - h // 2
+            self.setGeometry(x, y, w, h)
+        elif self._target_rect.isValid():
+            self.setGeometry(self._target_rect)
+        self.update()
+
+    @pyqtProperty(float)
+    def popover_opacity(self) -> float:
+        return self._popover_opacity
+
+    @popover_opacity.setter
+    def popover_opacity(self, val: float) -> None:
+        self._popover_opacity = max(0.0, min(1.0, val))
+        self.update()
 
     def set_content(self, widget: QWidget) -> None:
         while self.content_lay.count():
@@ -817,18 +930,39 @@ class MacOSPopover(QWidget):
         if direction == "bottom":
             x = anchor_global.x() + (aw - pw) // 2
             y = anchor_global.y() + ah + 4
+            self._anchor_pt = QPoint(anchor_global.x() + aw // 2, anchor_global.y() + ah + 4)
         elif direction == "top":
             x = anchor_global.x() + (aw - pw) // 2
             y = anchor_global.y() - ph - 4
+            self._anchor_pt = QPoint(anchor_global.x() + aw // 2, anchor_global.y() - 4)
         elif direction == "left":
             x = anchor_global.x() - pw - 4
             y = anchor_global.y() + (ah - ph) // 2
+            self._anchor_pt = QPoint(anchor_global.x() - 4, anchor_global.y() + ah // 2)
         else:  # right
             x = anchor_global.x() + aw + 4
             y = anchor_global.y() + (ah - ph) // 2
+            self._anchor_pt = QPoint(anchor_global.x() + aw + 4, anchor_global.y() + ah // 2)
 
-        self.move(x, y)
-        self.show()
+        self._target_rect = QRect(x, y, pw, ph)
+
+        if motion.is_reduced_motion():
+            self._scale_factor = 1.0
+            self._popover_opacity = 0.0
+            self.setGeometry(self._target_rect)
+            self.show()
+            self._anim_opacity = create_spring_animation(self, b"popover_opacity", 0.0, 1.0, duration_ms=100)
+            self._anim_opacity.start()
+        else:
+            self._scale_factor = 0.96
+            self._popover_opacity = 0.0
+            # Initialize scaled start geometry
+            self.scale_factor = 0.96
+            self.show()
+            self._anim_scale = create_spring_animation(self, b"scale_factor", 0.96, 1.0, spring=SpringPresets.snappy)
+            self._anim_opacity = create_spring_animation(self, b"popover_opacity", 0.0, 1.0, spring=SpringPresets.snappy)
+            self._anim_scale.start()
+            self._anim_opacity.start()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -846,6 +980,7 @@ class MacOSPopover(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setOpacity(self._popover_opacity)
 
         path = QPainterPath()
         w, h = float(self.width()), float(self.height())
@@ -1259,6 +1394,9 @@ class MacOSSheetModal(QWidget):
     def __init__(self, title: str = "Sheet", parent: Optional[QWidget] = None):
         super().__init__(parent)
         self._title = title
+        self._dim_opacity: float = 0.0
+        self._blur_effect: Optional[QGraphicsBlurEffect] = None
+        self._blurred_target: Optional[QWidget] = None
 
         # Full-window Scrim Backdrop
         self.setStyleSheet("background: transparent;")
@@ -1333,10 +1471,17 @@ class MacOSSheetModal(QWidget):
 
         card_lay.addLayout(footer)
 
-        # Slide Animation
-        self._anim = QPropertyAnimation(self.card, b"pos")
-        self._anim.setDuration(250)
-        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._anim_pos: Optional[QPropertyAnimation] = None
+        self._anim_dim: Optional[QPropertyAnimation] = None
+
+    @pyqtProperty(float)
+    def dim_opacity(self) -> float:
+        return self._dim_opacity
+
+    @dim_opacity.setter
+    def dim_opacity(self, val: float) -> None:
+        self._dim_opacity = max(0.0, min(1.0, val))
+        self.update()
 
     def set_content_widget(self, widget: QWidget) -> None:
         while self.content_lay.count():
@@ -1357,11 +1502,26 @@ class MacOSSheetModal(QWidget):
         card_h = self.card.sizeHint().height()
         self.card.resize(cw, card_h)
 
-        # Slide down from above view
-        self._anim.stop()
-        self._anim.setStartValue(QPoint(x, -card_h))
-        self._anim.setEndValue(QPoint(x, 0))
-        self._anim.start()
+        # Apply subtle Apple blur to parent window content if supported
+        if not motion.is_reduced_motion():
+            target = getattr(p, "content_area", None) or getattr(p, "central_widget", None)
+            if target and target != self:
+                self._blurred_target = target
+                self._blur_effect = QGraphicsBlurEffect(self)
+                self._blur_effect.setBlurRadius(8.0)
+                target.setGraphicsEffect(self._blur_effect)
+
+        # Slide down & dim
+        if motion.is_reduced_motion():
+            self.card.move(x, 0)
+            self._dim_opacity = 0.0
+            self._anim_dim = create_spring_animation(self, b"dim_opacity", 0.0, 1.0, duration_ms=100)
+            self._anim_dim.start()
+        else:
+            self._anim_pos = create_spring_animation(self.card, b"pos", QPoint(x, -card_h), QPoint(x, 0), spring=SpringPresets.smooth)
+            self._anim_dim = create_spring_animation(self, b"dim_opacity", 0.0, 1.0, spring=SpringPresets.smooth)
+            self._anim_pos.start()
+            self._anim_dim.start()
 
     def accept(self):
         self.accepted.emit()
@@ -1372,23 +1532,41 @@ class MacOSSheetModal(QWidget):
         x = (self.width() - cw) // 2
         card_h = self.card.height()
 
-        self._anim.stop()
-        self._anim.setStartValue(QPoint(x, 0))
-        self._anim.setEndValue(QPoint(x, -card_h))
-        self._anim.finished.connect(self._on_dismiss_finished)
-        self._anim.start()
+        if motion.is_reduced_motion():
+            self._anim_dim = create_spring_animation(self, b"dim_opacity", self._dim_opacity, 0.0, duration_ms=100)
+            self._anim_dim.finished.connect(self._on_dismiss_finished)
+            self._anim_dim.start()
+        else:
+            self._anim_pos = create_spring_animation(self.card, b"pos", QPoint(x, 0), QPoint(x, -card_h), spring=SpringPresets.smooth)
+            self._anim_dim = create_spring_animation(self, b"dim_opacity", self._dim_opacity, 0.0, spring=SpringPresets.smooth)
+            self._anim_pos.finished.connect(self._on_dismiss_finished)
+            self._anim_pos.start()
+            self._anim_dim.start()
 
     def _on_dismiss_finished(self):
-        try:
-            self._anim.finished.disconnect(self._on_dismiss_finished)
-        except Exception:
-            pass
+        if self._anim_pos:
+            try:
+                self._anim_pos.finished.disconnect(self._on_dismiss_finished)
+            except Exception:
+                pass
+        if self._anim_dim:
+            try:
+                self._anim_dim.finished.disconnect(self._on_dismiss_finished)
+            except Exception:
+                pass
+
+        if self._blurred_target and self._blur_effect:
+            self._blurred_target.setGraphicsEffect(None)
+            self._blur_effect = None
+            self._blurred_target = None
+
         self.hide()
         self.rejected.emit()
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 115))  # Scrim overlay
+        alpha = int(115 * self._dim_opacity)
+        painter.fillRect(self.rect(), QColor(0, 0, 0, alpha))
         painter.end()
 
 
@@ -1567,3 +1745,224 @@ class MacOSScrollArea(QScrollArea):
         self._overlay_vbar = MacOSOverlayScrollBar(Qt.Orientation.Vertical, self)
         self.setVerticalScrollBar(self._overlay_vbar)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+
+# ── 14. Reorderable List with Spring Motion (MacOSReorderableList) ───────────
+
+class MacOSReorderableItem(QFrame):
+    """
+    Individual card row inside a macOS Reorderable List.
+    Equipped with vertical translation offset physics driven by SpringPresets.snappy.
+    """
+    move_up_requested = pyqtSignal(str)
+    move_down_requested = pyqtSignal(str)
+
+    def __init__(
+        self,
+        item_id: str,
+        title: str,
+        subtitle: str = "",
+        badge: str = "",
+        parent: Optional[QWidget] = None,
+    ):
+        super().__init__(parent)
+        self.item_id = item_id
+        self._title = title
+        self._subtitle = subtitle
+        self._badge = badge
+        self._y_offset: float = 0.0
+        self._base_y: int = 0
+
+        self.setFixedHeight(40)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+        r = theme.radii.sm
+        self.setStyleSheet(f"""
+            QFrame {{
+                background-color: {theme.colors.controlBackground};
+                border: 1px solid {theme.colors.separator};
+                border-radius: {r}px;
+            }}
+            QFrame:hover {{
+                border-color: rgba(255, 255, 255, 0.20);
+                background-color: {theme.colors.cardBackgroundHover};
+            }}
+        """)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(10, 0, 10, 0)
+        lay.setSpacing(8)
+
+        # Drag grip icon
+        self.grip_lbl = QLabel(self)
+        self.grip_lbl.setPixmap(render_lucide_icon("sliders", color=theme.colors.labelTertiary, size=14))
+        lay.addWidget(self.grip_lbl)
+
+        # Title & Subtitle column
+        t_box = QVBoxLayout()
+        t_box.setContentsMargins(0, 4, 0, 4)
+        t_box.setSpacing(1)
+
+        self.lbl_title = QLabel(title, self)
+        self.lbl_title.setFont(theme.font(theme.typography.headline))
+        self.lbl_title.setStyleSheet(f"color: {theme.colors.labelPrimary}; background: transparent; border: none;")
+        t_box.addWidget(self.lbl_title)
+
+        if subtitle:
+            self.lbl_sub = QLabel(subtitle, self)
+            self.lbl_sub.setFont(theme.font(theme.typography.caption_1))
+            self.lbl_sub.setStyleSheet(f"color: {theme.colors.labelSecondary}; background: transparent; border: none;")
+            t_box.addWidget(self.lbl_sub)
+
+        lay.addLayout(t_box, stretch=1)
+
+        # Optional Badge Pill
+        if badge:
+            badge_lbl = QLabel(badge, self)
+            badge_lbl.setFont(theme.font(theme.typography.caption_2))
+            badge_lbl.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {theme.colors.controlBackgroundSecondary};
+                    color: {theme.colors.labelSecondary};
+                    border-radius: 6px;
+                    padding: 2px 6px;
+                    border: none;
+                }}
+            """)
+            lay.addWidget(badge_lbl)
+
+        # Move Up / Down Buttons
+        self.btn_up = QPushButton("▲", self)
+        self.btn_up.setFixedSize(20, 20)
+        self.btn_up.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_up.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {theme.colors.labelSecondary};
+                border: none;
+                font-size: 9px;
+            }}
+            QPushButton:hover {{
+                color: {theme.colors.labelPrimary};
+                background-color: {theme.colors.controlBackgroundSecondary};
+                border-radius: 4px;
+            }}
+        """)
+        self.btn_up.clicked.connect(lambda: self.move_up_requested.emit(self.item_id))
+        lay.addWidget(self.btn_up)
+
+        self.btn_down = QPushButton("▼", self)
+        self.btn_down.setFixedSize(20, 20)
+        self.btn_down.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_down.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {theme.colors.labelSecondary};
+                border: none;
+                font-size: 9px;
+            }}
+            QPushButton:hover {{
+                color: {theme.colors.labelPrimary};
+                background-color: {theme.colors.controlBackgroundSecondary};
+                border-radius: 4px;
+            }}
+        """)
+        self.btn_down.clicked.connect(lambda: self.move_down_requested.emit(self.item_id))
+        lay.addWidget(self.btn_down)
+
+    @pyqtProperty(float)
+    def y_offset(self) -> float:
+        return self._y_offset
+
+    @y_offset.setter
+    def y_offset(self, val: float) -> None:
+        self._y_offset = val
+        self.move(self.x(), int(self._base_y + val))
+
+
+class MacOSReorderableList(QWidget):
+    """
+    Apple SwiftUI-style dynamic reorderable list with snappy spring physics.
+    Moving rows animate smoothly using SpringPresets.snappy (k=400, d=30).
+    """
+    reordered = pyqtSignal(list)  # list of item_ids in new order
+
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self._items: List[MacOSReorderableItem] = []
+        self._animating: bool = False
+        self._anims: List[QPropertyAnimation] = []
+
+        self._lay = QVBoxLayout(self)
+        self._lay.setContentsMargins(0, 0, 0, 0)
+        self._lay.setSpacing(6)
+
+    def add_item(self, item_id: str, title: str, subtitle: str = "", badge: str = "") -> MacOSReorderableItem:
+        item = MacOSReorderableItem(item_id, title, subtitle=subtitle, badge=badge, parent=self)
+        item.move_up_requested.connect(self._on_item_move_up)
+        item.move_down_requested.connect(self._on_item_move_down)
+        self._lay.addWidget(item)
+        self._items.append(item)
+        return item
+
+    def get_item_ids(self) -> List[str]:
+        return [it.item_id for it in self._items]
+
+    def _on_item_move_up(self, item_id: str) -> None:
+        idx = self._find_index(item_id)
+        if idx > 0:
+            self.swap_indices(idx, idx - 1)
+
+    def _on_item_move_down(self, item_id: str) -> None:
+        idx = self._find_index(item_id)
+        if 0 <= idx < len(self._items) - 1:
+            self.swap_indices(idx, idx + 1)
+
+    def _find_index(self, item_id: str) -> int:
+        for i, it in enumerate(self._items):
+            if it.item_id == item_id:
+                return i
+        return -1
+
+    def swap_indices(self, idx_a: int, idx_b: int) -> None:
+        if self._animating or idx_a == idx_b:
+            return
+
+        item_a = self._items[idx_a]
+        item_b = self._items[idx_b]
+
+        if motion.is_reduced_motion():
+            # Instant swap without spring animation
+            self._items[idx_a], self._items[idx_b] = self._items[idx_b], self._items[idx_a]
+            self._refresh_layout()
+            self.reordered.emit(self.get_item_ids())
+            return
+
+        self._animating = True
+        item_a._base_y = item_a.y()
+        item_b._base_y = item_b.y()
+
+        dy = item_b._base_y - item_a._base_y
+
+        anim_a = create_spring_animation(item_a, b"y_offset", 0.0, float(dy), spring=SpringPresets.snappy)
+        anim_b = create_spring_animation(item_b, b"y_offset", 0.0, float(-dy), spring=SpringPresets.snappy)
+
+        def _on_finished():
+            self._anims.clear()
+            self._items[idx_a], self._items[idx_b] = self._items[idx_b], self._items[idx_a]
+            item_a.y_offset = 0.0
+            item_b.y_offset = 0.0
+            self._refresh_layout()
+            self._animating = False
+            self.reordered.emit(self.get_item_ids())
+
+        anim_a.finished.connect(_on_finished)
+        self._anims = [anim_a, anim_b]
+        anim_a.start()
+        anim_b.start()
+
+    def _refresh_layout(self):
+        for it in self._items:
+            self._lay.removeWidget(it)
+        for it in self._items:
+            self._lay.addWidget(it)

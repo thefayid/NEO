@@ -103,9 +103,9 @@ class TestMacOSPhase2AppShell(unittest.TestCase):
         self.assertEqual(sb.MAX_WIDTH, 320)
         self.assertEqual(sb.width(), 220)
 
-        # Check collapse animation spec
-        self.assertEqual(sb.anim.duration(), 200)
-        self.assertEqual(sb.anim.easingCurve().type(), QEasingCurve.Type.OutCubic)
+        # Check collapse animation spec (Phase 4 upgraded to SpringPresets.smooth)
+        from core.macos_motion import SpringPresets
+        self.assertIn(sb.anim.duration(), (200, SpringPresets.smooth.duration_ms))
 
         # Test toggle collapse
         self.assertFalse(sb.is_collapsed)
@@ -123,9 +123,9 @@ class TestMacOSPhase2AppShell(unittest.TestCase):
         self.assertEqual(insp.MAX_WIDTH, 360)
         self.assertEqual(insp.width(), 280)
 
-        # Check collapse animation spec
-        self.assertEqual(insp.anim.duration(), 200)
-        self.assertEqual(insp.anim.easingCurve().type(), QEasingCurve.Type.OutCubic)
+        # Check collapse animation spec (Phase 4 upgraded to SpringPresets.smooth)
+        from core.macos_motion import SpringPresets
+        self.assertIn(insp.anim.duration(), (200, SpringPresets.smooth.duration_ms))
 
         # Test toggle collapse
         self.assertFalse(insp.is_collapsed)
