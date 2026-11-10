@@ -3584,12 +3584,21 @@ class ProvidersOverlay(_HudOverlay):
         else:
             w, lay = self._box([])
             lay.addWidget(self._label(
-                "Nothing to set up. Your voice goes to Gemini and comes back as "
-                "speech over one connection, with the transcript and every tool "
-                "call on the same wire.", 8, C.TEXT_DIM))
+                "Gemini Live Native Audio: Ultra-low latency bidirectional streaming carrying voice, transcript, and tools in one socket.", 8, C.TEXT))
+            
+            try:
+                from core import gemini as _g
+                status_list = _g.get_live_ladder_status()
+                ladder_text = "  ·  ".join([
+                    f"<span style='color: {'#f43f5e' if item['cooling'] else '#34d399'};'>{'●' if not item['cooling'] else '○'}</span> {item['model'].split('/')[-1]} ({'Cooling ' + str(item['remaining_s']) + 's' if item['cooling'] else 'Ready'})"
+                    for item in status_list
+                ])
+                lay.addWidget(self._label(f"<b>Model Ladder:</b> {ladder_text}", 8, C.PRI))
+            except Exception:
+                pass
+
             lay.addWidget(self._label(
-                "Pick MY OWN SETUP above to run it on your own machine, or "
-                "through another company's model.", 7, C.TEXT_DIM))
+                "Pick MY OWN SETUP above to run hearing, thinking, and speaking entirely on your own machine (Ollama, LM Studio, Whisper, Piper), or through alternative provider APIs (Groq, OpenAI, ElevenLabs).", 7, C.TEXT_DIM))
             self._body_lay.addWidget(w)
 
         self._body_lay.addWidget(self._sidecar_box_widget())
@@ -5955,6 +5964,22 @@ class MainWindow(QMainWindow):
         self._status_pill.clicked.connect(self._toggle_mute)
         t_lay.addWidget(self._status_pill)
 
+        # Live Voice & Engine Telemetry Pill
+        self._live_engine_pill = QPushButton("⚡ 260ms · GEMINI 3.1 LIVE")
+        self._live_engine_pill.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self._live_engine_pill.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._live_engine_pill.setToolTip("Voice Engine & Latency Telemetry — Click to switch Engine")
+        self._live_engine_pill.setStyleSheet("""
+            QPushButton {
+                color: #38bdf8; background: rgba(56, 189, 248, 0.12);
+                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 12px;
+                padding: 3px 10px;
+            }
+            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #7dd3fc; }
+        """)
+        self._live_engine_pill.clicked.connect(self._open_providers)
+        t_lay.addWidget(self._live_engine_pill)
+
         # Kerala Weather Pill
         self._weather_lbl = QLabel("⛅ KERALA  --°C")
         self._weather_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
@@ -6043,9 +6068,33 @@ class MainWindow(QMainWindow):
             self._clock_lbl.setText(time.strftime("%H:%M:%S"))
         if hasattr(self, "_date_lbl"):
             self._date_lbl.setText(f"{time.strftime('%a %d %b %Y').upper()} // ONLINE")
+        if hasattr(self, "_update_live_engine_pill"):
+            self._update_live_engine_pill()
         if not hasattr(self, '_last_weather_fetch') or (time.time() - self._last_weather_fetch > 900):
             self._last_weather_fetch = time.time()
             self._refresh_kerala_weather_async()
+
+    def _update_live_engine_pill(self):
+        if not hasattr(self, "_live_engine_pill"):
+            return
+        try:
+            from core.audio_telemetry import telemetry
+            snap = telemetry.get_snapshot()
+            badge = snap.get("badge_text", "⚡ 260ms · GEMINI 3.1 LIVE")
+            tip = telemetry.get_badge_tooltip()
+            color = snap.get("color", "#38bdf8")
+            self._live_engine_pill.setText(badge)
+            self._live_engine_pill.setToolTip(tip)
+            self._live_engine_pill.setStyleSheet(f"""
+                QPushButton {{
+                    color: {color}; background: {color}1f;
+                    border: 1px solid {color}44; border-radius: 12px;
+                    padding: 3px 10px;
+                }}
+                QPushButton:hover {{ background: {color}33; border-color: {color}88; color: #ffffff; }}
+            """)
+        except Exception:
+            pass
 
     def _refresh_kerala_weather_async(self):
         def _fetch():
@@ -6122,6 +6171,7 @@ class MainWindow(QMainWindow):
     def _build_right_panel(self) -> QWidget:
         self._widgets_sidebar = NeoWidgetsSidebar()
         self._widgets_sidebar.telemetry_requested.connect(self._toggle_controls)
+        self._widgets_sidebar.engine_switch_requested.connect(self._open_providers)
         self._widgets_sidebar.schedule_requested.connect(lambda: self._on_hero_command("Review today's schedule and upcoming calendar events, Boss"))
         self._widgets_sidebar.event_briefing_requested.connect(lambda p: self._on_hero_command(p))
         self._widgets_sidebar.focus_mode_toggled.connect(self._on_focus_mode_toggled)

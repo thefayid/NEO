@@ -155,14 +155,14 @@ PROVIDER_PREFIX = "prov:"
 # cooldown after one attempt instead of being paid for on every call.
 _LADDERS = {
     FAST: (LIVE,
-           "gemini-2.5-flash-lite", "gemini-3.5-flash-lite",
-           "gemini-3.1-flash-lite", "gemini-flash-lite-latest",
+           "gemini-3.1-flash-lite", "gemini-2.5-flash-lite",
+           "gemini-3.5-flash-lite", "gemini-flash-lite-latest",
            "gemini-2.5-flash", "gemini-3.5-flash",
            "gemini-3.6-flash", "gemini-3-flash-preview"),
     SMART: (LIVE,
-            "gemini-2.5-flash", "gemini-3.5-flash",
-            "gemini-2.5-flash-lite", "gemini-3.5-flash-lite",
-            "gemini-3.1-flash-lite",
+            "gemini-3.5-flash", "gemini-2.5-flash",
+            "gemini-3.1-flash-lite", "gemini-2.5-flash-lite",
+            "gemini-3.5-flash-lite",
             "gemini-3.6-flash", "gemini-3-flash-preview", "gemini-flash-latest"),
     # Grounded search needs response.candidates[...].grounding_metadata, which a
     # Live turn does not produce. REST only, and it says so rather than silently
@@ -181,19 +181,18 @@ _LADDERS = {
 # live-translate and a robotics streaming model, none of which are assistants
 # at all.
 #
-# So there are two: the current one, and the native-audio model this assistant
-# used before it, which is known to work here. A mismatch in config is already
-# survivable — the connect loop drops the tuning and proactive-audio fields and
-# reconnects when the server rejects them.
+# Prioritizing Gemini 3.1 Flash Live (fastest, lowest TTFT) with seamless fallback
+# to battle-tested 2.5 Flash Native Audio.
 LIVE_MODELS = (
+    "models/gemini-3.1-flash-live-preview",
     "models/gemini-2.5-flash-native-audio-latest",
     "models/gemini-2.5-flash-native-audio-preview-12-2025",
-    "models/gemini-3.1-flash-live-preview",
+    "models/gemini-2.0-flash-exp",
 )
 
 # The Live model to use for one-shot calls. main.py owns the real one; this is
 # only the fallback for when this module is imported without it (tests).
-_LIVE_FALLBACK = "models/gemini-2.5-flash-native-audio-latest"
+_LIVE_FALLBACK = "models/gemini-3.1-flash-live-preview"
 
 # How many one-shot Live sessions may exist at once.
 #
@@ -251,7 +250,7 @@ _GONE_SECONDS = 6 * 60 * 60
 # but long enough that the fourteen-second wait is paid once, not repeatedly.
 _UNAVAILABLE_SECONDS = 30 * 60
 _cooldown: dict[str, float] = {}
-_cool_lock = threading.Lock()
+_cool_lock = threading.RLock()
 
 
 def _cool(model: str, seconds: float = _COOLDOWN_SECONDS) -> None:
@@ -293,6 +292,25 @@ def live_model() -> str:
     return LIVE_MODELS[0]
 
 
+def all_live_cooling() -> bool:
+    """Returns True if every Live model in the ladder is currently in cooldown."""
+    return all(_cooling(m) for m in LIVE_MODELS)
+
+
+def get_live_ladder_status() -> list[dict]:
+    """Returns status of every model in the Live ladder."""
+    with _cool_lock:
+        now = time.monotonic()
+        return [
+            {
+                "model": m,
+                "cooling": _cooling(m),
+                "remaining_s": max(0, int(_cooldown.get(m, 0.0) - now)) if _cooling(m) else 0,
+            }
+            for m in LIVE_MODELS
+        ]
+
+
 def note_live_failure(model: str, err: str) -> bool:
     """Record why a Live model failed. True when it is worth trying the next.
 
@@ -300,15 +318,24 @@ def note_live_failure(model: str, err: str) -> bool:
     dropped network is not the model's fault, and stepping down the ladder for
     those would work through every model and reach the same wall four times.
     """
+    try:
+        from core.audio_telemetry import telemetry
+    except Exception:
+        telemetry = None
+
     if is_quota_error(err):
         _cool(model, _COOLDOWN_SECONDS)
         print(f"[Gemini] Live model {model} is out of quota — "
               f"switching for {_COOLDOWN_SECONDS // 60} minutes.")
+        if telemetry:
+            telemetry.record_engine_switch(live_model(), f"Quota exhausted on {model.split('/')[-1]}")
         return True
     if is_gone_error(err):
         _cool(model, _GONE_SECONDS)
         print(f"[Gemini] Live model {model} is unavailable to this key — "
               f"setting it aside.")
+        if telemetry:
+            telemetry.record_engine_switch(live_model(), f"Model {model.split('/')[-1]} unavailable")
         return True
     return False
 

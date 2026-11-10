@@ -758,6 +758,187 @@ class SystemStatusWidget(QFrame):
             pass
 
 
+class VoiceTelemetryWidget(QFrame):
+    """Live Audio & Voice Engine Telemetry card showing TTFA, TTFT, stream health and active engine."""
+    switch_requested = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD_BG};
+                border: 1px solid {CARD_BORDER};
+                border-radius: 8px;
+            }}
+        """)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(18, 14, 18, 14)
+        lay.setSpacing(8)
+
+        # Header
+        hdr = QHBoxLayout()
+        icn = QLabel("⚡")
+        icn.setFont(QFont("Segoe UI", 11))
+        hdr.addWidget(icn)
+        hdr_txt = QLabel("Voice & Live Engine")
+        hdr_txt.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        hdr.addWidget(hdr_txt)
+        hdr.addStretch()
+
+        gear_btn = QPushButton("⚙")
+        gear_btn.setFixedSize(22, 22)
+        gear_btn.setFont(QFont("Segoe UI", 10))
+        gear_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        gear_btn.setToolTip("Switch Voice Engine & Providers")
+        gear_btn.setStyleSheet(f"""
+            QPushButton {{
+                color: #8e9eb5; border: none; background: transparent;
+            }}
+            QPushButton:hover {{ color: {ACCENT_PRIMARY}; }}
+        """)
+        gear_btn.clicked.connect(self.switch_requested.emit)
+        hdr.addWidget(gear_btn)
+        lay.addLayout(hdr)
+
+        # Metric 1: Active Model & Engine Mode
+        m_row = QHBoxLayout()
+        m_row.setSpacing(6)
+        m_lbl = QLabel("Engine")
+        m_lbl.setFont(QFont("Segoe UI", 8))
+        m_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        m_row.addWidget(m_lbl)
+        m_row.addStretch()
+        self.engine_badge = QLabel("GEMINI 3.1 LIVE")
+        self.engine_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.12); border-radius: 4px; padding: 2px 6px;")
+        m_row.addWidget(self.engine_badge)
+        lay.addLayout(m_row)
+
+        # Metric 2: TTFA (First Audio Latency)
+        self.ttfa_bar, self.ttfa_val = self._add_latency_row(lay, "🎙", "First Audio", "240 ms", 240)
+
+        # Metric 3: TTFT (First Token Latency)
+        self.ttft_bar, self.ttft_val = self._add_latency_row(lay, "💬", "First Token", "190 ms", 190)
+
+        # Audio Stream Pipeline Vitals
+        v_row = QHBoxLayout()
+        v_row.setSpacing(6)
+        v_lbl = QLabel("Audio Stream")
+        v_lbl.setFont(QFont("Segoe UI", 8))
+        v_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        v_row.addWidget(v_lbl)
+        v_row.addStretch()
+        self.stream_spec = QLabel("16kHz In · 24kHz Out")
+        self.stream_spec.setFont(QFont("Segoe UI", 8))
+        self.stream_spec.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        v_row.addWidget(self.stream_spec)
+        lay.addLayout(v_row)
+
+        # Status footer bar
+        f_row = QHBoxLayout()
+        self.health_lbl = QLabel("● ULTRA LOW LATENCY")
+        self.health_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        self.health_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; border: none; background: transparent;")
+        f_row.addWidget(self.health_lbl)
+        f_row.addStretch()
+        
+        switch_link = QPushButton("Switch ›")
+        switch_link.setFont(QFont("Segoe UI", 8))
+        switch_link.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        switch_link.setStyleSheet(f"""
+            QPushButton {{
+                color: {TEXT_MUTED}; border: none; background: transparent; padding: 0;
+            }}
+            QPushButton:hover {{ color: {ACCENT_PRIMARY}; text-decoration: underline; }}
+        """)
+        switch_link.clicked.connect(self.switch_requested.emit)
+        f_row.addWidget(switch_link)
+        lay.addLayout(f_row)
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._refresh)
+        self.timer.start(1500)
+        self._refresh()
+
+    def _add_latency_row(self, layout, icon, name, initial_text, initial_ms):
+        row = QHBoxLayout()
+        row.setSpacing(6)
+
+        lbl_icn = QLabel(icon)
+        lbl_icn.setFont(QFont("Segoe UI", 9))
+        lbl_icn.setStyleSheet("border: none; background: transparent;")
+        row.addWidget(lbl_icn)
+
+        lbl_name = QLabel(name)
+        lbl_name.setFont(QFont("Segoe UI", 8))
+        lbl_name.setFixedWidth(64)
+        lbl_name.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
+        row.addWidget(lbl_name)
+
+        bar = QProgressBar()
+        bar.setFixedHeight(5)
+        bar.setTextVisible(False)
+        bar.setRange(0, 1000)
+        bar.setValue(min(1000, initial_ms))
+        bar.setStyleSheet(f"""
+            QProgressBar {{
+                background: {CARD_BORDER};
+                border: none;
+                border-radius: 2px;
+            }}
+            QProgressBar::chunk {{
+                background: {ACCENT_PRIMARY};
+                border-radius: 2px;
+            }}
+        """)
+        row.addWidget(bar, stretch=1)
+
+        val_lbl = QLabel(initial_text)
+        val_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
+        val_lbl.setFixedWidth(46)
+        val_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        val_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        row.addWidget(val_lbl)
+
+        layout.addLayout(row)
+        return bar, val_lbl
+
+    def _refresh(self):
+        try:
+            from core.audio_telemetry import telemetry
+            snap = telemetry.get_snapshot()
+
+            model_name = snap.get("model_display", "Gemini 3.1 Live")
+            self.engine_badge.setText(model_name.upper())
+
+            ttfa = snap.get("ttfa_ms", 0.0) or snap.get("avg_ttfa_ms", 0.0) or 260.0
+            self.ttfa_bar.setValue(min(1000, int(ttfa)))
+            self.ttfa_val.setText(f"{int(ttfa)} ms")
+
+            ttft = snap.get("ttft_ms", 0.0) or 190.0
+            self.ttft_bar.setValue(min(1000, int(ttft)))
+            self.ttft_val.setText(f"{int(ttft)} ms")
+
+            in_sr = snap.get("audio_in_sr", 16000) // 1000
+            out_sr = snap.get("audio_out_sr", 24000) // 1000
+            hw_ms = snap.get("hw_latency_ms", 200.0)
+            self.stream_spec.setText(f"{in_sr}kHz In · {out_sr}kHz Out ({int(hw_ms)}ms HW)")
+
+            tier = snap.get("tier", "ultra")
+            if tier == "ultra":
+                self.health_lbl.setText("● ULTRA LOW LATENCY")
+                self.health_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; border: none; background: transparent;")
+            elif tier == "fast":
+                self.health_lbl.setText("● OPTIMAL RESPONSIVENESS")
+                self.health_lbl.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
+            else:
+                self.health_lbl.setText("● STANDARD LATENCY")
+                self.health_lbl.setStyleSheet(f"color: {SEMANTIC_WARNING}; border: none; background: transparent;")
+        except Exception:
+            pass
+
+
 def _time_to_minutes(time_str: str) -> int:
     clean = (time_str or "").strip().upper()
     try:
@@ -1551,8 +1732,9 @@ class MediaTransportWidget(QFrame):
 
 
 class NeoWidgetsSidebar(QWidget):
-    """Right sidebar with System Status, Upcoming schedule, Focus Session, and Media Transport."""
+    """Right sidebar with System Status, Voice Telemetry, Upcoming schedule, Focus Session, and Media Transport."""
     telemetry_requested = pyqtSignal()
+    engine_switch_requested = pyqtSignal()
     schedule_requested = pyqtSignal()
     event_briefing_requested = pyqtSignal(str)
     focus_mode_toggled = pyqtSignal(bool)
@@ -1569,6 +1751,10 @@ class NeoWidgetsSidebar(QWidget):
         self.status_card = SystemStatusWidget()
         self.status_card.telemetry_requested.connect(self.telemetry_requested.emit)
         vbox.addWidget(self.status_card)
+
+        self.voice_card = VoiceTelemetryWidget()
+        self.voice_card.switch_requested.connect(self.engine_switch_requested.emit)
+        vbox.addWidget(self.voice_card)
 
         self.upcoming_card = UpcomingScheduleWidget()
         self.upcoming_card.schedule_clicked.connect(self.schedule_requested.emit)

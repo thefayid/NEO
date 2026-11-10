@@ -125,7 +125,7 @@ PROMPT_PATH     = BASE_DIR / "core" / "prompt.txt"
 #
 # It is reassigned on every connect, so a model that runs out of quota is
 # stepped over and the assistant keeps talking instead of failing to start.
-LIVE_MODEL          = "models/gemini-2.5-flash-native-audio-latest"
+LIVE_MODEL          = "models/gemini-3.1-flash-live-preview"
 CHANNELS            = 1
 SEND_SAMPLE_RATE    = 16000 
 RECEIVE_SAMPLE_RATE = 24000
@@ -1705,9 +1705,11 @@ class JarvisLive:
         if q is None:
             return
         # Keep mic latency strictly sub-second: drain old frames if backpressure builds up
+        dropped = 0
         while q.qsize() > 5:
             try:
                 q.get_nowait()
+                dropped += 1
             except Exception:
                 break
         try:
@@ -1716,8 +1718,15 @@ class JarvisLive:
             try:
                 q.get_nowait()
                 q.put_nowait(item)
+                dropped += 1
             except Exception:
                 pass
+        try:
+            from core.audio_telemetry import telemetry
+            in_d = self.audio_in_queue.qsize() if self.audio_in_queue else 0
+            telemetry.update_buffer_stats(in_depth=in_d, out_depth=q.qsize(), overruns=dropped)
+        except Exception:
+            pass
 
     async def _listen_audio(self):
         print("[JARVIS] 🎤 Mic started")
@@ -1796,9 +1805,23 @@ class JarvisLive:
                 is_talking = rms > 45.0
                 if is_talking:
                     self._last_user_speech = time.monotonic()
-                    self._active_speech_frames = getattr(self, "_active_speech_frames", 0) + 1
+                    prev_f = getattr(self, "_active_speech_frames", 0)
+                    self._active_speech_frames = prev_f + 1
+                    if self._active_speech_frames == 3:  # speech onset confirmed (~60ms)
+                        try:
+                            from core.audio_telemetry import telemetry
+                            telemetry.on_user_speech_start()
+                        except Exception:
+                            pass
                 else:
-                    self._active_speech_frames = max(0, getattr(self, "_active_speech_frames", 0) - 1)
+                    prev_f = getattr(self, "_active_speech_frames", 0)
+                    self._active_speech_frames = max(0, prev_f - 1)
+                    if prev_f >= 3 and self._active_speech_frames == 0:  # speech offset confirmed
+                        try:
+                            from core.audio_telemetry import telemetry
+                            telemetry.on_user_speech_stop()
+                        except Exception:
+                            pass
 
                 raw_int16 = np.clip(raw, -32768, 32767).astype(np.int16)
                 data = raw_int16.tobytes()
@@ -1927,6 +1950,12 @@ class JarvisLive:
                         if self._interrupted:
                             pass  # discard: interrupted
                         else:
+                            try:
+                                from core.audio_telemetry import telemetry
+                                telemetry.on_server_packet_received()
+                                telemetry.on_first_audio_chunk()
+                            except Exception:
+                                pass
                             if self._turn_done_event and self._turn_done_event.is_set():
                                 self._turn_done_event.clear()
                             # Split into ~50 ms chunks so interrupt() stops audio within 50 ms
@@ -1942,6 +1971,11 @@ class JarvisLive:
                         sc = response.server_content
 
                         if sc.output_transcription and sc.output_transcription.text:
+                            try:
+                                from core.audio_telemetry import telemetry
+                                telemetry.on_first_transcript()
+                            except Exception:
+                                pass
                             txt = _clean_transcript(sc.output_transcription.text)
                             # A turn that involves a tool call passes through
                             # several turn_completes, and the API re-sends the
@@ -1973,6 +2007,11 @@ class JarvisLive:
                                     pass
 
                         if sc.turn_complete:
+                            try:
+                                from core.audio_telemetry import telemetry
+                                telemetry.on_turn_completed()
+                            except Exception:
+                                pass
                             if self._turn_done_event:
                                 self._turn_done_event.set()
 
@@ -2035,7 +2074,17 @@ class JarvisLive:
                         fn_responses = []
                         for fc in response.tool_call.function_calls:
                             print(f"[JARVIS] 📞 {fc.name}")
+                            try:
+                                from core.audio_telemetry import telemetry
+                                telemetry.on_tool_start(fc.name)
+                            except Exception:
+                                pass
                             fr = await self._execute_tool(fc)
+                            try:
+                                from core.audio_telemetry import telemetry
+                                telemetry.on_tool_end(fc.name)
+                            except Exception:
+                                pass
                             fn_responses.append(fr)
                         await self.session.send_tool_response(
                             function_responses=fn_responses
@@ -2088,6 +2137,11 @@ class JarvisLive:
                 self._out_latency = lat
             print(f"[JARVIS] 🔊 Output latency {self._out_latency*1000:.0f} ms "
                   f"→ echo tail {(self._out_latency + _TAIL_MARGIN)*1000:.0f} ms")
+            try:
+                from core.audio_telemetry import telemetry
+                telemetry.set_hardware_latency(self._out_latency)
+            except Exception:
+                pass
         except Exception:
             pass
 
@@ -2770,6 +2824,17 @@ class JarvisLive:
                 live_model = LIVE_MODEL
                 print(f"[JARVIS] Live model: {live_model}")
 
+                try:
+                    from core.audio_telemetry import telemetry
+                    telemetry.set_engine_info(
+                        mode=self._engine_mode(),
+                        model=live_model,
+                        in_sr=SEND_SAMPLE_RATE,
+                        out_sr=RECEIVE_SAMPLE_RATE,
+                    )
+                except Exception:
+                    pass
+
                 _resumed_with = self._resume_handle is not None
 
                 # Decided BEFORE the config is built, because the tool
@@ -2965,14 +3030,26 @@ class JarvisLive:
                 # limit always arrives mid-conversation.
                 if _gemini.note_live_failure(live_model, err_str):
                     nxt = _gemini.live_model()
-                    self.ui.write_log(
-                        f"SYS: Switching to {nxt.split('/')[-1]} — the previous "
-                        f"model is out of quota."
-                        if nxt != live_model else
-                        "SYS: Every live model is rate-limited — retrying.")
-                    self._conn_backoff = 0 if nxt != live_model else 15
-                    if nxt == live_model:
-                        await asyncio.sleep(self._conn_backoff)
+                    if nxt != live_model:
+                        self.ui.write_log(
+                            f"SYS: Switching to {nxt.split('/')[-1]} — the previous "
+                            f"model is out of quota."
+                        )
+                        self._conn_backoff = 0
+                    else:
+                        if _gemini.all_live_cooling():
+                            local_probe = self._probe_local_llm()
+                            self.ui.write_log(
+                                "SYS: ⚠️ All Gemini Live models rate-limited. "
+                                f"Engaging Autonomous Fallback Bridge to Local Pipeline "
+                                f"({local_probe['name'] if local_probe else 'Offline Mode'})..."
+                            )
+                            self._auto_offline_fallback = True
+                            self._conn_backoff = 0
+                        else:
+                            self.ui.write_log("SYS: Every live model is rate-limited — retrying.")
+                            self._conn_backoff = 10
+                            await asyncio.sleep(self._conn_backoff)
                     continue
 
                 if getattr(self, "_enforce_english_transcription", True) and (
