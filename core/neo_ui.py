@@ -51,6 +51,13 @@ try:
 except Exception:
     HoloAvatar = None
 
+# Re-export modern executive studios for seamless UI consumption
+from core.neo_files_view import NeoFilesView
+from core.neo_sentinel_hub import NeoSentinelHub
+from core.neo_terminal_studio import NeoTerminalStudio
+from core.neo_swarm_studio import NeoSwarmStudio
+from core.neo_vision_studio import NeoVisionSpatialStudio
+
 EMOTION_PALETTES = {
     "listening": (QColor(91, 141, 239), QColor(122, 165, 245), "Listening"),
     "attuned":   (QColor(91, 141, 239), QColor(122, 165, 245), "Listening"),
@@ -1826,8 +1833,17 @@ class NeoNavSidebar(QWidget):
         self.btn_notes = self._create_nav_item("📄", "Notes", active=False)
         self.btn_projects = self._create_nav_item("🗂", "Projects", active=False)
         self.btn_knowledge = self._create_nav_item("📚", "Knowledge", active=False)
+        self.btn_files = self._create_nav_item("📁", "Files", active=False)
+        self.btn_sentinels = self._create_nav_item("🛡", "Sentinels", active=False)
+        self.btn_terminal = self._create_nav_item("💻", "Terminal", active=False)
+        self.btn_swarm = self._create_nav_item("🐝", "Swarm", active=False)
+        self.btn_vision = self._create_nav_item("👁", "Vision", active=False)
 
-        for b in [self.btn_home, self.btn_chat, self.btn_tasks, self.btn_notes, self.btn_projects, self.btn_knowledge]:
+        for b in [
+            self.btn_home, self.btn_chat, self.btn_tasks, self.btn_notes,
+            self.btn_projects, self.btn_knowledge, self.btn_files,
+            self.btn_sentinels, self.btn_terminal, self.btn_swarm, self.btn_vision
+        ]:
             lay.addWidget(b)
 
         lay.addStretch()
@@ -1835,8 +1851,8 @@ class NeoNavSidebar(QWidget):
         # Theme Mode Toggle Button
         is_white = CURRENT_NEO_THEME == "white"
         self.btn_theme = QPushButton("  🌙   Dark Mode" if is_white else "  ☀️   Light Mode")
-        self.btn_theme.setFixedHeight(34)
-        self.btn_theme.setFont(QFont("Segoe UI", 9))
+        self.btn_theme.setFixedHeight(30)
+        self.btn_theme.setFont(QFont("Segoe UI", 8))
         self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_theme.setToolTip("Toggle Light / Dark Mode [F7]")
         self.btn_theme.setStyleSheet(f"""
@@ -1872,8 +1888,8 @@ class NeoNavSidebar(QWidget):
 
     def _create_nav_item(self, icon, label, active=False):
         btn = QPushButton(f"  {icon}   {label}")
-        btn.setFixedHeight(38)
-        btn.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
+        btn.setFixedHeight(32)
+        btn.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
         btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         btn.setStyleSheet(self._nav_style(active))
         btn.clicked.connect(lambda _, l=label: self._on_item_clicked(l))
@@ -1910,9 +1926,11 @@ class NeoNavSidebar(QWidget):
         for b, lbl in [
             (self.btn_home, "Home"), (self.btn_chat, "Chat"), (self.btn_tasks, "Tasks"),
             (self.btn_notes, "Notes"), (self.btn_projects, "Projects"), (self.btn_knowledge, "Knowledge"),
+            (self.btn_files, "Files"), (self.btn_sentinels, "Sentinels"), (self.btn_terminal, "Terminal"),
+            (self.btn_swarm, "Swarm"), (self.btn_vision, "Vision")
         ]:
             b.setStyleSheet(self._nav_style(lbl == name))
-            b.setFont(QFont("Segoe UI", 9, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
+            b.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
         self.tab_changed.emit(name)
 
     def select_tab(self, name: str):

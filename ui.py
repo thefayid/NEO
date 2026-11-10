@@ -60,7 +60,8 @@ from core.neo_ui import (
     NeoEclipseCanvas, FocusSessionWidget, SystemStatusWidget,
     UpcomingScheduleWidget, MediaTransportWidget, NeoWidgetsSidebar,
     NeoNavSidebar, NeoHeroStage, NeoTasksView, NeoNotesView,
-    NeoProjectsView, NeoKnowledgeView, NeoCalibrationOverlay
+    NeoProjectsView, NeoKnowledgeView, NeoCalibrationOverlay,
+    NeoFilesView, NeoSentinelHub, NeoTerminalStudio, NeoSwarmStudio, NeoVisionSpatialStudio
 )
 
 SetupOverlay = NeoCalibrationOverlay
@@ -4990,6 +4991,25 @@ class MainWindow(QMainWindow):
         if hasattr(self.knowledge_view, "knowledge_action_triggered"):
             self.knowledge_view.knowledge_action_triggered.connect(self._on_task_action_triggered)
 
+        # ── Specialized Autonomous Studios ────────────────────────────────────
+        self.files_view = NeoFilesView()
+        self.files_view.task_action_triggered.connect(self._on_task_action_triggered)
+        self.files_view.search_triggered.connect(self._on_hero_command)
+
+        self.sentinel_hub = NeoSentinelHub()
+        self.sentinel_hub.action_requested.connect(self._on_hero_command)
+
+        self.terminal_studio = NeoTerminalStudio()
+        self.terminal_studio.diagnose_requested.connect(
+            lambda cmd, err: self._on_hero_command(f"Diagnose and provide the terminal fix for this command: '{cmd}'. Error received: {err}")
+        )
+
+        self.swarm_studio = NeoSwarmStudio()
+        self.swarm_studio.task_sync_requested.connect(self._on_task_action_triggered)
+
+        self.vision_studio = NeoVisionSpatialStudio()
+        self.vision_studio.command_requested.connect(self._on_hero_command)
+
         self._hud_cam_stack = QStackedWidget()
         self._hud_cam_stack.addWidget(self.hero_stage)        # Index 0: Hero
         self._hud_cam_stack.addWidget(self._chat_container)   # Index 1: Chat
@@ -4997,9 +5017,14 @@ class MainWindow(QMainWindow):
         self._hud_cam_stack.addWidget(self.notes_view)        # Index 3: Notes
         self._hud_cam_stack.addWidget(self.projects_view)     # Index 4: Projects
         self._hud_cam_stack.addWidget(self.knowledge_view)    # Index 5: Knowledge
-        self._hud_cam_stack.addWidget(self.hud)               # Index 6: Legacy HUD
-        self._hud_cam_stack.addWidget(_cam_cont)              # Index 7: Camera
-        self._hud_cam_stack.addWidget(self._video_cont)       # Index 8: Video
+        self._hud_cam_stack.addWidget(self.files_view)        # Index 6: Files
+        self._hud_cam_stack.addWidget(self.sentinel_hub)      # Index 7: Sentinels
+        self._hud_cam_stack.addWidget(self.terminal_studio)   # Index 8: Terminal
+        self._hud_cam_stack.addWidget(self.swarm_studio)      # Index 9: Swarm
+        self._hud_cam_stack.addWidget(self.vision_studio)     # Index 10: Vision
+        self._hud_cam_stack.addWidget(self.hud)               # Index 11: Legacy HUD
+        self._hud_cam_stack.addWidget(_cam_cont)              # Index 12: Camera
+        self._hud_cam_stack.addWidget(self._video_cont)       # Index 13: Video
 
         self._center_split = QSplitter(Qt.Orientation.Vertical)
         self._center_split.setStyleSheet(f"""
@@ -5877,10 +5902,22 @@ class MainWindow(QMainWindow):
                     self.knowledge_view.refresh_memory()
                 self._hud_cam_stack.setCurrentWidget(self.knowledge_view)
         elif tab == "Files":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "_chat_container"):
-                self._hud_cam_stack.setCurrentWidget(self._chat_container)
-                if hasattr(self, "_drop_zone"):
-                    self._drop_zone.setFocus()
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "files_view"):
+                self._hud_cam_stack.setCurrentWidget(self.files_view)
+        elif tab == "Sentinels":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "sentinel_hub"):
+                self._hud_cam_stack.setCurrentWidget(self.sentinel_hub)
+        elif tab == "Terminal":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "terminal_studio"):
+                self._hud_cam_stack.setCurrentWidget(self.terminal_studio)
+                if hasattr(self.terminal_studio, "cmd_input"):
+                    self.terminal_studio.cmd_input.setFocus()
+        elif tab == "Swarm":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "swarm_studio"):
+                self._hud_cam_stack.setCurrentWidget(self.swarm_studio)
+        elif tab == "Vision":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "vision_studio"):
+                self._hud_cam_stack.setCurrentWidget(self.vision_studio)
         elif tab == "Summarize":
             self._on_hero_command("Summarize my current notifications, active projects, and latest context, Boss")
         elif tab == "Research":
