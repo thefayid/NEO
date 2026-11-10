@@ -2579,6 +2579,23 @@ class JarvisLive:
                 except asyncio.QueueFull:
                     pass
 
+    def _on_vision_watchdog_alert(self, msg: str, error_data: dict, img_bytes: bytes) -> None:
+        """Dispatched when Ambient Vision Watchdog catches an optical traceback or compiler failure."""
+        print(f"[NEO WATCHDOG] 🚨 {msg}")
+        self.ui.write_log(f"🚨 [WATCHDOG]: {msg}")
+        if hasattr(self.ui, "_speech_sig"):
+            self.ui._speech_sig.emit("neo", msg)
+        if hasattr(self.ui, "show_camera_frame") and img_bytes:
+            try:
+                self.ui.show_camera_frame(img_bytes)
+            except Exception:
+                pass
+        if hasattr(self, "_telegram_remote") and self._telegram_remote:
+            try:
+                self._telegram_remote.send_alert(f"🚨 *Watchdog Error Caught*\n\n{msg}")
+            except Exception:
+                pass
+
     def _on_phone_connected(self) -> None:
         self.ui.write_log("SYS: Phone connected via Remote Dashboard.")
         self.ui.notify_phone_connected()
@@ -2840,6 +2857,16 @@ class JarvisLive:
         except Exception as e:
             print(f"[Telegram Remote] Disabled: {e}")
             self._telegram_remote = None
+
+        # Start Autonomous Multimodal Vision Watchdog & Terminal Error Catcher
+        try:
+            from actions.vision_watchdog import AmbientErrorWatchdog
+            self._vision_watchdog = AmbientErrorWatchdog.get_instance()
+            self._vision_watchdog.add_alert_callback(self._on_vision_watchdog_alert)
+            self._vision_watchdog.start()
+        except Exception as e:
+            print(f"[Vision Watchdog] Disabled: {e}")
+            self._vision_watchdog = None
 
         while True:
             try:

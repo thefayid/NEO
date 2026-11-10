@@ -431,3 +431,4 @@ TOOL = {
     },
     "handler": lambda params, **kw: send_remote_alert(params.get("message", "NEO Alert")) if params.get("action") == "send_alert" else "Done.",
 }
+
