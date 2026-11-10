@@ -1,0 +1,38 @@
+{
+  "history": [
+    {
+      "timestamp": 1794323082.4432287,
+      "action_type": "GOAL",
+      "command": "deploy_test_service_1794323082",
+      "hour": 20,
+      "weekday": 1,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794323082.4436877,
+      "action_type": "GOAL",
+      "command": "deploy_test_service_1794323082",
+      "hour": 20,
+      "weekday": 1,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794323082.4439275,
+      "action_type": "GOAL",
+      "command": "deploy_test_service_1794323082",
+      "hour": 20,
+      "weekday": 1,
+      "metadata": {}
+    }
+  ],
+  "habits": {
+    "deploy_test_service_1794323082": {
+      "name": "deploy_test_service_1794323082",
+      "command": "deploy_test_service_1794323082",
+      "occurrences": 3,
+      "first_seen": 1794323082.4444005,
+      "synthesized": false
+    }
+  },
+  "updated_at": 1794323082.4446542
+}

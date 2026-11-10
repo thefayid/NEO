@@ -29,6 +29,9 @@ from core.neo_brain import brain
 from core.neo_agentic_loop import goal_engine, AgenticToolbox, GoalStatus
 from core.neo_self_tooling import synthesizer
 from core.neo_visual_grounding import visual_grounding, UIElement
+from core.neo_ambient_sensor import ambient_sensor, UserFocusState
+from core.neo_precognition import precognitive_engine, ProactiveOpportunity
+from core.neo_habit_learner import habit_learner
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,6 +47,10 @@ class NEOCentralCore(QObject):
     tool_synthesized = pyqtSignal(str, str)           # tool_name, description
     visual_grounded = pyqtSignal(str, int, int)       # target_label, x, y
     system_telemetry = pyqtSignal(dict)               # snapshot dictionary
+    proactive_opportunity_event = pyqtSignal(dict)    # ProactiveOpportunity dict
+    proactive_toast_event = pyqtSignal(str, str, str, str)  # title, message, variant, payload
+    proactive_voice_event = pyqtSignal(str)           # voice speech text
+    habit_event = pyqtSignal(str, str)                # habit_name, description
 
     def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent)
@@ -83,6 +90,32 @@ class NEOCentralCore(QObject):
             lambda label, x, y: self.visual_grounded.emit(label, x, y)
         )
 
+        # 4. Proactive Intelligence -> Central Bus
+        precognitive_engine.opportunity_detected.connect(
+            lambda opp: self.proactive_opportunity_event.emit(opp.to_dict())
+        )
+        precognitive_engine.toast_requested.connect(
+            lambda t, m, v, p: self.proactive_toast_event.emit(t, m, v, p)
+        )
+        precognitive_engine.voice_alert_requested.connect(
+            lambda txt: self._on_proactive_voice(txt)
+        )
+        habit_learner.habit_discovered.connect(
+            lambda h, desc: self.habit_event.emit(h, desc)
+        )
+        ambient_sensor.telemetry_updated.connect(
+            lambda snap: self.system_telemetry.emit(snap)
+        )
+
+    def _on_proactive_voice(self, text: str) -> None:
+        """Emits voice speech if assistant reference is available."""
+        self.proactive_voice_event.emit(text)
+        if self._assistant_ref and hasattr(self._assistant_ref, "speak_text"):
+            try:
+                self._assistant_ref.speak_text(text)
+            except Exception:
+                pass
+
     def _on_goal_finished(self, goal_id: str, summary: str) -> None:
         """Logs finished goals into Tri-Tier memory and informs UI."""
         brain.episodic.log_event("GOAL_COMPLETED", f"Goal {goal_id} completed: {summary}")
@@ -101,9 +134,46 @@ class NEOCentralCore(QObject):
 
     def execute_autonomous_goal(self, prompt: str) -> str:
         """Launches a multi-step agentic goal and updates working memory."""
+        ambient_sensor.record_user_input()
+        habit_learner.record_action("GOAL", prompt)
         brain.working.set_active_goal(prompt)
         gid = goal_engine.submit_goal(prompt)
         return gid
+
+    def get_proactive_opportunities(self) -> List[Dict[str, Any]]:
+        """Returns currently active proactive opportunities from the precognitive engine."""
+        return precognitive_engine.get_active_opportunities()
+
+    def dismiss_proactive_opportunity(self, opportunity_id: str) -> None:
+        """Dismisses an active opportunity and applies cooldown."""
+        precognitive_engine.dismiss_opportunity(opportunity_id)
+
+    def execute_proactive_opportunity(self, opportunity_id: str) -> bool:
+        """Executes the action associated with an opportunity."""
+        ambient_sensor.record_user_input()
+        opp = precognitive_engine._active_opportunities.get(opportunity_id)
+        if not opp:
+            return False
+
+        payload = opp.action_payload
+        precognitive_engine.dismiss_opportunity(opportunity_id)
+
+        if opp.action_type in ("GOAL", "COMMAND"):
+            self.execute_autonomous_goal(payload)
+            return True
+        elif opp.action_type == "TOOL":
+            # Direct tool execution
+            self.execute_autonomous_goal(payload)
+            return True
+        return False
+
+    def start_proactive_subsystems(self) -> None:
+        """Starts ambient sensory sampling and precognitive monitors."""
+        ambient_sensor.start()
+
+    def stop_proactive_subsystems(self) -> None:
+        """Stops ambient sensory sampling."""
+        ambient_sensor.stop()
 
     def query_knowledge(self, query: str) -> Dict[str, Any]:
         """Queries working context, episodic memories, and knowledge graph."""

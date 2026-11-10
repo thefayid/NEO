@@ -2028,6 +2028,113 @@ class NeoLiveTranscriptWidget(QFrame):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  4.5 PROACTIVE SMART CHIP AFFORDANCE BAR (Apple HIG Contextual Pills)
+# ─────────────────────────────────────────────────────────────────────────────
+class NeoSmartChipBar(QFrame):
+    """
+    Subtle, elegant proactive smart suggestion pill bar matching Apple HIG standards.
+    Shows 1-click contextual actions (e.g. [ 🛠 Fix 'httpx' ], [ 📅 Prep Sync Notes ]).
+    """
+    opportunity_selected = pyqtSignal(str)   # action_payload
+    dismissed = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(34)
+        self.setFixedWidth(680)
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: rgba(10, 132, 255, 0.08);
+                border: 1px solid rgba(10, 132, 255, 0.22);
+                border-radius: 8px;
+            }}
+        """)
+        self._lay = QHBoxLayout(self)
+        self._lay.setContentsMargins(12, 0, 8, 0)
+        self._lay.setSpacing(8)
+
+        # Prefix Badge
+        self.badge = QLabel("✦ Suggested:")
+        self.badge.setFont(font_text(11, QFont.Weight.Bold))
+        self.badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
+        self._lay.addWidget(self.badge)
+
+        # Dynamic Chips Row
+        self._chips_lay = QHBoxLayout()
+        self._chips_lay.setSpacing(6)
+        self._lay.addLayout(self._chips_lay, stretch=1)
+
+        # Dismiss Button
+        self.btn_dismiss = QPushButton("✕")
+        self.btn_dismiss.setFixedSize(20, 20)
+        self.btn_dismiss.setFont(font_text(9))
+        self.btn_dismiss.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_dismiss.setToolTip("Dismiss proactive suggestions")
+        self.btn_dismiss.setStyleSheet(f"""
+            QPushButton {{
+                color: {TEXT_MUTED}; border: none; background: transparent; border-radius: 4px;
+            }}
+            QPushButton:hover {{
+                color: {TEXT_WHITE}; background: rgba(255, 255, 255, 0.1);
+            }}
+        """)
+        self.btn_dismiss.clicked.connect(self._on_dismiss)
+        self._lay.addWidget(self.btn_dismiss)
+
+        self.hide()  # Initially hidden until opportunities arrive
+
+    def set_opportunities(self, opportunities: list):
+        """Populates dynamic 1-click action chips from precognitive engine."""
+        # Clear existing
+        while self._chips_lay.count():
+            item = self._chips_lay.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        if not opportunities:
+            self.hide()
+            return
+
+        for opp in opportunities[:2]:
+            title = opp.get("title", "") if isinstance(opp, dict) else getattr(opp, "title", "")
+            payload = opp.get("action_payload", "") if isinstance(opp, dict) else getattr(opp, "action_payload", "")
+            if not title:
+                continue
+
+            btn = QPushButton(title)
+            btn.setFixedHeight(24)
+            btn.setFont(font_text(11, QFont.Weight.Medium))
+            btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: rgba(255, 255, 255, 0.07);
+                    color: {TEXT_WHITE};
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    border-radius: 6px;
+                    padding: 0 10px;
+                }}
+                QPushButton:hover {{
+                    background: rgba(10, 132, 255, 0.28);
+                    border-color: {ACCENT_PRIMARY};
+                    color: #FFFFFF;
+                }}
+            """)
+            btn.clicked.connect(lambda _, p=payload: self._on_chip_clicked(p))
+            self._chips_lay.addWidget(btn)
+
+        self._chips_lay.addStretch()
+        self.show()
+
+    def _on_chip_clicked(self, payload: str):
+        self.opportunity_selected.emit(payload)
+        self.hide()
+
+    def _on_dismiss(self):
+        self.dismissed.emit()
+        self.hide()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  5. CENTER HERO STAGE
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoHeroStage(QWidget):
@@ -2162,8 +2269,18 @@ class NeoHeroStage(QWidget):
         self._trans_box.addStretch()
         vbox.addLayout(self._trans_box)
 
+        # Proactive Smart Affordance Chip Bar
+        vbox.addSpacing(10)
+        self._chips_box = QHBoxLayout()
+        self._chips_box.addStretch()
+        self.smart_chips = NeoSmartChipBar()
+        self.smart_chips.opportunity_selected.connect(self._on_smart_chip_selected)
+        self._chips_box.addWidget(self.smart_chips)
+        self._chips_box.addStretch()
+        vbox.addLayout(self._chips_box)
+
         # 3. Omni Prompt Capsule Bar
-        vbox.addSpacing(16)
+        vbox.addSpacing(12)
         bar_container = QHBoxLayout()
         bar_container.addStretch()
 
@@ -2443,6 +2560,11 @@ class NeoHeroStage(QWidget):
         if text:
             self.command_submitted.emit(text)
             self.input_edit.clear()
+
+    def _on_smart_chip_selected(self, payload: str):
+        if hasattr(self, "input_edit"):
+            self.input_edit.setText(payload)
+        self.command_submitted.emit(payload)
 
     def set_audio_level(self, level: float):
         if hasattr(self, "eclipse") and self.eclipse is not None:

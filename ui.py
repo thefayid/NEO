@@ -5185,9 +5185,10 @@ class MainWindow(QMainWindow):
         self.tray_panel.studio_selected.connect(self._on_nav_tab_changed)
         self.tray_panel.quit_requested.connect(self.close)
 
-        # Central Core Hub Interconnection
+        # Central Core Hub Interconnection & Proactive Intelligence
         try:
             from core.neo_central_coordinator import central_core
+            from core.neo_precognition import precognitive_engine
             central_core.set_references(ui=self)
             central_core.tool_synthesized.connect(
                 lambda name, desc: self.write_log(f"TOOL SYNTHESIZED: '{name}' — {desc}") if hasattr(self, "write_log") else None
@@ -5198,6 +5199,15 @@ class MainWindow(QMainWindow):
             central_core.gesture_event.connect(
                 lambda gest, ts: self.write_log(f"GESTURE DETECTED: {gest}") if hasattr(self, "write_log") else None
             )
+            # Proactive smart affordance chips
+            precognitive_engine.chips_updated.connect(
+                lambda opps: self.hero_stage.smart_chips.set_opportunities(opps)
+                if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "smart_chips") else None
+            )
+            # Proactive macOS Notification Center toasts
+            precognitive_engine.toast_requested.connect(self._on_proactive_toast)
+            # Start ambient sensory nervous system
+            central_core.start_proactive_subsystems()
         except Exception as _ce:
             print(f"[CentralCore] Wiring error: {_ce}")
 
@@ -6197,6 +6207,14 @@ class MainWindow(QMainWindow):
         self.showNormal()
         self.raise_()
         self.activateWindow()
+
+    def _on_proactive_toast(self, title: str, message: str, variant: str, payload: str):
+        """Displays native Apple Notification Center toast with 1-click execution affordance."""
+        try:
+            from core.macos_components import MacOSToast
+            MacOSToast.show_toast(self, title, message, variant=variant, duration_ms=4500)
+        except Exception as _e:
+            pass
     def _build_chat_container(self) -> QWidget:
         try:
             from core.neo_chat import NeoModernChatWidget

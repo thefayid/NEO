@@ -196,6 +196,17 @@ class ProactiveEngine:
             "silence_seconds": int(silence),
         }
 
+        # 0. Level 0: PRE-COGNITIVE AMBIENT ENGINE (Highest Situational IQ)
+        try:
+            from core.neo_precognition import precognitive_engine
+            opps = precognitive_engine.get_active_opportunities()
+            if opps:
+                top_opp = opps[0]
+                if top_opp.get("urgency", 0.0) >= 0.70 and silence >= 15:
+                    return True, f"PRECOGNITIVE:{top_opp.get('category')}:{top_opp.get('title')}", snapshot
+        except Exception:
+            pass
+
         # 1. Level 1: URGENT — Imminent Calendar Event (in <= 20 mins)
         if agenda:
             soonest = min(agenda, key=lambda x: x["minutes_until"])
