@@ -23,21 +23,21 @@ from PyQt6.QtWidgets import (
 
 from core.tasks_db import add_task
 
-# Shared executive styling tokens
-CARD_BG = "#1B1F26"
-CARD_BORDER = "#262B34"
-CARD_HOVER = "#222731"
-TEXT_WHITE = "#E6E8EC"
-TEXT_MUTED = "#9AA1AD"
-TEXT_DIM = "#5F6672"
-ACCENT_PRIMARY = "#5B8DEF"
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR = "#D9534F"
+# Shared executive styling tokens (Apple macOS Dark Vibrancy)
+CARD_BG = "#232327"
+CARD_BORDER = "#2F2F34"
+CARD_HOVER = "#2A2A2F"
+TEXT_WHITE = "#F5F5F7"
+TEXT_MUTED = "#98989D"
+TEXT_DIM = "#636366"
+ACCENT_PRIMARY = "#0A84FF"
+SEMANTIC_SUCCESS = "#30D158"
+SEMANTIC_WARNING = "#FFD60A"
+SEMANTIC_ERROR = "#FF453A"
 
 
 class NeoSwarmStudio(QWidget):
-    """Executive Subagent Swarm Orchestration Deck."""
+    """Executive Subagent Swarm Orchestration Deck (macOS Standard)."""
     mission_dispatched = pyqtSignal(str, list)  # (objective, roles)
     task_sync_requested = pyqtSignal(str)       # (task_notification_text)
 
@@ -50,8 +50,9 @@ class NeoSwarmStudio(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{
-                background: #0E1013;
+                background: #161618;
                 color: {TEXT_WHITE};
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
         """)
 
@@ -72,18 +73,18 @@ class NeoSwarmStudio(QWidget):
         t_row = QHBoxLayout()
         t_row.setSpacing(8)
         title_lbl = QLabel("Subagent Swarm Orchestrator")
-        title_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        title_lbl.setFont(QFont("-apple-system", 13, QFont.Weight.Bold))
         t_row.addWidget(title_lbl)
 
         self.swarm_badge = QLabel("● IDLE (0 SWARMS)")
-        self.swarm_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.swarm_badge.setStyleSheet(f"color: {TEXT_MUTED}; background: rgba(154, 161, 173, 0.15); border-radius: 10px; padding: 2px 8px;")
+        self.swarm_badge.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
+        self.swarm_badge.setStyleSheet(f"color: {TEXT_MUTED}; background: rgba(152, 152, 157, 0.15); border-radius: 10px; padding: 2px 8px;")
         t_row.addWidget(self.swarm_badge)
         t_row.addStretch()
         title_col.addLayout(t_row)
 
         sub_lbl = QLabel("Parallel multi-agent execution: Code audits, web scouting, testing, and research synthesis")
-        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setFont(QFont("-apple-system", 8))
         sub_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         title_col.addWidget(sub_lbl)
         hdr.addLayout(title_col)
@@ -92,12 +93,12 @@ class NeoSwarmStudio(QWidget):
 
         refresh_btn = QPushButton("↻ Refresh Swarm")
         refresh_btn.setFixedHeight(28)
-        refresh_btn.setFont(QFont("Segoe UI", 8))
+        refresh_btn.setFont(QFont("-apple-system", 8))
         refresh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         refresh_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {CARD_BG}; color: {TEXT_MUTED};
-                border: 1px solid {CARD_BORDER}; border-radius: 5px; padding: 0 10px;
+                border: 1px solid {CARD_BORDER}; border-radius: 6px; padding: 0 10px;
             }}
             QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
         """)

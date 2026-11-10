@@ -49,28 +49,28 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-# ── Base Surfaces & Steel Blue Design System ──────────────────────────────────
-BG_OBSIDIAN    = "#0E1013"   # Cool graphite background (avoids glare)
-SURFACE_1      = "#14171C"   # Panels, sidebars
-CARD_BG        = "#1B1F26"   # Surface 2 (cards, inputs)
-CARD_BORDER    = "#262B34"   # 1px subtle divider
-CARD_HOVER     = "#222731"   # Subtle hover
-TEXT_WHITE     = "#E6E8EC"   # Primary text (no pure #FFFFFF glare)
-TEXT_MUTED     = "#9AA1AD"   # Secondary text
-TEXT_DIM       = "#5F6672"   # Disabled / hint
+# ── Base Surfaces & Apple macOS Dark Vibrancy Design System ──────────────────
+BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas / Background
+SURFACE_1      = "#1C1C1E"   # macOS Surface 1 (sidebars, panels)
+CARD_BG        = "#232327"   # macOS Elevated cards / inputs
+CARD_BORDER    = "#2F2F34"   # 1px subtle divider (rgba(255, 255, 255, 0.08))
+CARD_HOVER     = "#2A2A2F"   # Hover state
+TEXT_WHITE     = "#F5F5F7"   # macOS Primary text (crisp Apple off-white)
+TEXT_MUTED     = "#98989D"   # macOS Secondary text
+TEXT_DIM       = "#636366"   # macOS Tertiary / disabled text
 
-# Signature Single Accent: Steel Blue
-ACCENT_PRIMARY = "#5B8DEF"
-ACCENT_HOVER   = "#7AA5F5"
-ACCENT_PRESSED = "#4376D6"
-ACCENT_CYAN    = "#5B8DEF"
-ACCENT_BLUE    = "#5B8DEF"
-ACCENT_INDIGO  = "#5B8DEF"
+# Apple macOS System Accents
+ACCENT_PRIMARY = "#0A84FF"   # macOS System Blue
+ACCENT_HOVER   = "#409CFF"   # Softer hover variant
+ACCENT_PRESSED = "#0071E3"   # Active pressed variant
+ACCENT_CYAN    = "#0A84FF"
+ACCENT_BLUE    = "#0A84FF"
+ACCENT_INDIGO  = "#0A84FF"
 
-# Semantic Colours (desaturated)
-ACCENT_GREEN   = "#4CAF7D"   # Success
-ACCENT_AMBER   = "#D9A441"   # Warning
-SEMANTIC_ERROR = "#D9534F"   # Error
+# Semantic Colours (Apple HIG standard)
+ACCENT_GREEN   = "#30D158"   # macOS System Green
+ACCENT_AMBER   = "#FFD60A"   # macOS System Yellow
+SEMANTIC_ERROR = "#FF453A"   # macOS System Red
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 _SESSIONS_FILE = _BASE_DIR / "memory" / "chat_sessions.json"
@@ -78,10 +78,10 @@ _EXPORTS_DIR = _BASE_DIR / "memory" / "exports"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  1. CODE BLOCK WIDGET
+#  1. CODE BLOCK WIDGET (macOS Terminal / Code Window)
 # ─────────────────────────────────────────────────────────────────────────────
 class CodeBlockWidget(QFrame):
-    """Sleek syntax-highlighted code block with macOS-style window dots and copy feedback."""
+    """Sleek syntax-highlighted code block with macOS-style traffic lights and copy feedback."""
     canvas_requested = pyqtSignal(str, str)
 
     def __init__(self, code: str, language: str = "CODE", parent=None):
@@ -91,9 +91,9 @@ class CodeBlockWidget(QFrame):
 
         self.setStyleSheet("""
             QFrame {
-                background: #060912;
-                border: 1px solid rgba(255, 255, 255, 0.09);
-                border-radius: 6px;
+                background: #121214;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
             }
         """)
 
@@ -107,7 +107,7 @@ class CodeBlockWidget(QFrame):
 
         dot_box = QHBoxLayout()
         dot_box.setSpacing(5)
-        for c in ("#D9534F", "#f59e0b", "#10b981"):
+        for c in ("#FF5F56", "#FFBD2E", "#27C93F"):
             d = QLabel()
             d.setFixedSize(8, 8)
             d.setStyleSheet(f"background: {c}; border-radius: 4px;")
@@ -116,8 +116,8 @@ class CodeBlockWidget(QFrame):
         hdr.addSpacing(6)
 
         lang_lbl = QLabel(lang_label)
-        lang_lbl.setFont(QFont("Consolas", 8, QFont.Weight.Bold))
-        lang_lbl.setStyleSheet("color: #5B8DEF; border: none; background: transparent; letter-spacing: 0.5px;")
+        lang_lbl.setFont(QFont("SF Mono", 8, QFont.Weight.Bold))
+        lang_lbl.setStyleSheet("color: #0A84FF; border: none; background: transparent; letter-spacing: 0.5px;")
         hdr.addWidget(lang_lbl)
 
         hdr.addStretch()

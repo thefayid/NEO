@@ -104,28 +104,28 @@ _OS = platform.system()  # "Windows" | "Darwin" | "Linux"
 
 
 class C:
-    BG        = "#0E1013"   # Cool graphite background (avoids harsh contrast on OLED/LCD)
-    PANEL     = "#14171C"   # Surface 1 (panels, sidebar)
-    PANEL2    = "#1B1F26"   # Surface 2 (cards, inputs)
-    BORDER    = "#262B34"   # 1px subtle divider
-    BORDER_B  = "#5B8DEF"   # Steel blue active highlight / focus ring
-    BORDER_A  = "#262B34"   # Card / Section separator
-    PRI       = "#5B8DEF"   # Steel blue signature accent
-    ACCENT    = "#5B8DEF"   # Single signature accent
-    PRI_DIM   = "#4376D6"   # Pressed variant
-    PRI_GHO   = "#1B1F26"   # Surface 2 container
-    ACC       = "#7AA5F5"   # Softer hover variant
-    ACC2      = "#D9A441"   # Semantic warning / amber
-    GREEN     = "#4CAF7D"   # Semantic success (desaturated)
-    GREEN_D   = "#3E9468"
-    RED       = "#D9534F"   # Semantic error (desaturated)
-    MUTED_C   = "#D9534F"   # Muted red
-    TEXT      = "#E6E8EC"   # Primary text (never pure #FFFFFF)
-    TEXT_DIM  = "#5F6672"   # Disabled / hint text
-    TEXT_MED  = "#9AA1AD"   # Secondary text
-    WHITE     = "#E6E8EC"   # High-legibility primary
-    DARK      = "#0E1013"   # Base background
-    BAR_BG    = "#14171C"   # Surface 1 track
+    BG        = "#161618"   # macOS Dark Canvas / Background
+    PANEL     = "#1C1C1E"   # macOS Surface 1 (Source List sidebar, panels)
+    PANEL2    = "#252529"   # macOS Surface 2 (cards, inputs, list items)
+    BORDER    = "#2F2F34"   # macOS subtle 1px divider
+    BORDER_B  = "#0A84FF"   # macOS System Accent Blue highlight / focus ring
+    BORDER_A  = "#38383E"   # macOS Card / Section separator
+    PRI       = "#0A84FF"   # macOS System Accent Blue
+    ACCENT    = "#0A84FF"   # macOS System Accent Blue
+    PRI_DIM   = "#0071E3"   # macOS Pressed variant
+    PRI_GHO   = "#1E293B"   # macOS Translucent active container
+    ACC       = "#409CFF"   # macOS Softer hover variant
+    ACC2      = "#FFD60A"   # macOS System Yellow
+    GREEN     = "#30D158"   # macOS System Green
+    GREEN_D   = "#248A3D"
+    RED       = "#FF453A"   # macOS System Red
+    MUTED_C   = "#FF453A"   # macOS Red variant
+    TEXT      = "#F5F5F7"   # macOS Primary text (crisp Apple off-white)
+    TEXT_DIM  = "#636366"   # macOS Tertiary / disabled text
+    TEXT_MED  = "#98989D"   # macOS Secondary text
+    WHITE     = "#F5F5F7"   # macOS High-legibility primary
+    DARK      = "#161618"   # Base dark canvas
+    BAR_BG    = "#1C1C1E"   # Surface 1 track
 
 
 # Keys tied to the accent colour — only accent highlights, NOT neutral text or dark backgrounds!
@@ -174,51 +174,51 @@ def apply_ui_accent(accent_hex: str) -> bool:
 
 
 DARK_MODE_PALETTE: dict[str, str] = {
-    "BG":       "#0E1013",
-    "PANEL":    "#14171C",
-    "PANEL2":   "#1B1F26",
-    "BORDER":   "#262B34",
-    "BORDER_A": "#262B34",
-    "BORDER_B": "#5B8DEF",
-    "PRI":      "#5B8DEF",
-    "ACCENT":   "#5B8DEF",
-    "PRI_DIM":  "#4376D6",
-    "PRI_GHO":  "#1B1F26",
-    "ACC":      "#7AA5F5",
-    "ACC2":     "#D9A441",
-    "GREEN":    "#4CAF7D",
-    "GREEN_D":  "#3E9468",
-    "RED":      "#D9534F",
-    "MUTED_C":  "#D9534F",
-    "TEXT":     "#E6E8EC",
-    "TEXT_DIM": "#5F6672",
-    "TEXT_MED": "#9AA1AD",
-    "WHITE":    "#E6E8EC",
-    "DARK":     "#0E1013",
-    "BAR_BG":   "#14171C",
+    "BG":       "#161618",
+    "PANEL":    "#1C1C1E",
+    "PANEL2":   "#252529",
+    "BORDER":   "#2F2F34",
+    "BORDER_A": "#38383E",
+    "BORDER_B": "#0A84FF",
+    "PRI":      "#0A84FF",
+    "ACCENT":   "#0A84FF",
+    "PRI_DIM":  "#0071E3",
+    "PRI_GHO":  "#1E293B",
+    "ACC":      "#409CFF",
+    "ACC2":     "#FFD60A",
+    "GREEN":    "#30D158",
+    "GREEN_D":  "#248A3D",
+    "RED":      "#FF453A",
+    "MUTED_C":  "#FF453A",
+    "TEXT":     "#F5F5F7",
+    "TEXT_DIM": "#636366",
+    "TEXT_MED": "#98989D",
+    "WHITE":    "#F5F5F7",
+    "DARK":     "#161618",
+    "BAR_BG":   "#1C1C1E",
 }
 
 WHITE_MODE_PALETTE: dict[str, str] = {
     "BG":       "#F5F6F8",
     "PANEL":    "#FFFFFF",
-    "PANEL2":   "#FFFFFF",
+    "PANEL2":   "#F2F2F7",
     "BORDER":   "#DFE2E7",
-    "BORDER_A": "#DFE2E7",
-    "BORDER_B": "#3F6FD1",
-    "PRI":      "#3F6FD1",
-    "ACCENT":   "#3F6FD1",
-    "PRI_DIM":  "#325CB0",
-    "PRI_GHO":  "#EAEFF9",
-    "ACC":      "#5B8DEF",
-    "ACC2":     "#D9A441",
-    "GREEN":    "#4CAF7D",
-    "GREEN_D":  "#3E9468",
-    "RED":      "#D9534F",
-    "MUTED_C":  "#D9534F",
-    "TEXT":     "#1A1D23",
-    "TEXT_DIM": "#5F6672",
-    "TEXT_MED": "#4B5563",
-    "WHITE":    "#1A1D23",
+    "BORDER_A": "#D1D1D6",
+    "BORDER_B": "#007AFF",
+    "PRI":      "#007AFF",
+    "ACCENT":   "#007AFF",
+    "PRI_DIM":  "#0056B3",
+    "PRI_GHO":  "#E5F1FF",
+    "ACC":      "#34C759",
+    "ACC2":     "#FF9500",
+    "GREEN":    "#34C759",
+    "GREEN_D":  "#248A3D",
+    "RED":      "#FF3B30",
+    "MUTED_C":  "#FF3B30",
+    "TEXT":     "#1D1D1F",
+    "TEXT_DIM": "#8E8E93",
+    "TEXT_MED": "#6E6E73",
+    "WHITE":    "#1D1D1F",
     "DARK":     "#DFE2E7",
     "BAR_BG":   "#DFE2E7",
 }
@@ -282,9 +282,9 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
                 parent_win._theme_toggle_btn.setText("🌙 DARK" if is_white else "☀️ LIGHT")
                 parent_win._theme_toggle_btn.setToolTip("Switch to Dark Theme [F7]" if is_white else "Switch to White Theme [F7]")
                 parent_win._theme_toggle_btn.setStyleSheet(
-                    f"QPushButton {{ background: #E2E6ED; color: #1A1D23; border: 1px solid #DFE2E7; border-radius: 6px; padding: 0 10px; }} QPushButton:hover {{ background: #DFE2E7; }}"
+                    f"QPushButton {{ background: rgba(0, 0, 0, 0.06); color: #1D1D1F; border: 1px solid #D1D1D6; border-radius: 6px; padding: 0 10px; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif; }} QPushButton:hover {{ background: rgba(0, 0, 0, 0.1); }}"
                     if is_white else
-                    f"QPushButton {{ background: #1B1F26; color: #9AA1AD; border: 1px solid #262B34; border-radius: 6px; padding: 0 10px; }} QPushButton:hover {{ color: #E6E8EC; border-color: #5B8DEF; background: #222731; }}"
+                    f"QPushButton {{ background: rgba(255, 255, 255, 0.06); color: #98989D; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 0 10px; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif; }} QPushButton:hover {{ color: #F5F5F7; border-color: #0A84FF; background: rgba(255, 255, 255, 0.12); }}"
                 )
             if hasattr(parent_win, "_nav_sidebar") and hasattr(parent_win._nav_sidebar, "update_theme_button"):
                 parent_win._nav_sidebar.update_theme_button(is_white)
@@ -4790,7 +4790,61 @@ class MainWindow(QMainWindow):
         self._customize_overlay: CustomizeOverlay | None = None
 
         central = QWidget()
-        central.setStyleSheet(f"background: {C.BG};")
+        central.setStyleSheet(f"""
+            QWidget {{
+                background: {C.BG};
+                color: {C.TEXT};
+                font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", sans-serif;
+            }}
+            QScrollBar:vertical {{
+                background: transparent;
+                width: 7px;
+                margin: 2px 0 2px 0;
+            }}
+            QScrollBar::handle:vertical {{
+                background: rgba(255, 255, 255, 0.22);
+                min-height: 24px;
+                border-radius: 3px;
+            }}
+            QScrollBar::handle:vertical:hover {{
+                background: rgba(255, 255, 255, 0.45);
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                height: 0px;
+                background: transparent;
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                background: transparent;
+            }}
+            QScrollBar:horizontal {{
+                background: transparent;
+                height: 7px;
+                margin: 0 2px 0 2px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background: rgba(255, 255, 255, 0.22);
+                min-width: 24px;
+                border-radius: 3px;
+            }}
+            QScrollBar::handle:horizontal:hover {{
+                background: rgba(255, 255, 255, 0.45);
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+                width: 0px;
+                background: transparent;
+            }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+                background: transparent;
+            }}
+            QToolTip {{
+                background: #252529;
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 6px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }}
+        """)
         self.setCentralWidget(central)
 
         root = QVBoxLayout(central)
@@ -5977,12 +6031,97 @@ class MainWindow(QMainWindow):
     def _build_header(self) -> QWidget:
         top = QWidget()
         top.setFixedHeight(44)
-        top.setStyleSheet("background: #090c14; border-bottom: 1px solid rgba(255, 255, 255, 0.05);")
+        top.setStyleSheet(f"background: {C.PANEL}; border-bottom: 1px solid {C.BORDER};")
         t_lay = QHBoxLayout(top)
         t_lay.setContentsMargins(14, 0, 14, 0)
         t_lay.setSpacing(10)
 
-        # Tab pill: ( ) NEO   +
+        # ── macOS Window Traffic Lights (🔴 Close, 🟡 Minimize, 🟢 Maximize/Zoom) ──
+        traffic_cluster = QWidget()
+        traffic_cluster.setStyleSheet("background: transparent; border: none;")
+        traffic_lay = QHBoxLayout(traffic_cluster)
+        traffic_lay.setContentsMargins(2, 0, 6, 0)
+        traffic_lay.setSpacing(8)
+
+        # 🔴 Close
+        self.btn_traffic_close = QPushButton("×")
+        self.btn_traffic_close.setFixedSize(12, 12)
+        self.btn_traffic_close.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_traffic_close.setToolTip("Close")
+        self.btn_traffic_close.setStyleSheet("""
+            QPushButton {
+                background-color: #FF5F56;
+                border: 1px solid #E0443E;
+                border-radius: 6px;
+                color: transparent;
+                font-size: 8px;
+                font-weight: bold;
+                padding-bottom: 1px;
+            }
+            QPushButton:hover {
+                background-color: #FF5F56;
+                color: #4A0002;
+            }
+        """)
+        self.btn_traffic_close.clicked.connect(self.close)
+        traffic_lay.addWidget(self.btn_traffic_close)
+
+        # 🟡 Minimize
+        self.btn_traffic_min = QPushButton("−")
+        self.btn_traffic_min.setFixedSize(12, 12)
+        self.btn_traffic_min.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_traffic_min.setToolTip("Minimize")
+        self.btn_traffic_min.setStyleSheet("""
+            QPushButton {
+                background-color: #FFBD2E;
+                border: 1px solid #DEA123;
+                border-radius: 6px;
+                color: transparent;
+                font-size: 9px;
+                font-weight: bold;
+                padding-bottom: 1px;
+            }
+            QPushButton:hover {
+                background-color: #FFBD2E;
+                color: #5B3C00;
+            }
+        """)
+        self.btn_traffic_min.clicked.connect(self.showMinimized)
+        traffic_lay.addWidget(self.btn_traffic_min)
+
+        # 🟢 Maximize / Zoom
+        self.btn_traffic_zoom = QPushButton("+")
+        self.btn_traffic_zoom.setFixedSize(12, 12)
+        self.btn_traffic_zoom.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_traffic_zoom.setToolTip("Zoom")
+        self.btn_traffic_zoom.setStyleSheet("""
+            QPushButton {
+                background-color: #27C93F;
+                border: 1px solid #1AAB29;
+                border-radius: 6px;
+                color: transparent;
+                font-size: 8px;
+                font-weight: bold;
+                padding-bottom: 1px;
+            }
+            QPushButton:hover {
+                background-color: #27C93F;
+                color: #0A4410;
+            }
+        """)
+        self.btn_traffic_zoom.clicked.connect(lambda: self.showNormal() if self.isMaximized() else self.showMaximized())
+        traffic_lay.addWidget(self.btn_traffic_zoom)
+
+        t_lay.addWidget(traffic_cluster)
+
+        # Divider between traffic lights and toolbar
+        traffic_sep = QFrame()
+        traffic_sep.setFrameShape(QFrame.Shape.VLine)
+        traffic_sep.setFixedSize(1, 16)
+        traffic_sep.setStyleSheet(f"background: {C.BORDER}; border: none;")
+        t_lay.addWidget(traffic_sep)
+
+        # macOS Tab pill: ⭘ NEO
         tab = QFrame()
         tab.setFixedHeight(28)
         tab.setStyleSheet(f"""
@@ -6009,18 +6148,19 @@ class MainWindow(QMainWindow):
         tab_l.addWidget(tab_plus)
         t_lay.addWidget(tab)
 
-        # Status Pill (Interactive Online & Mic Mute Toggle)
+        # macOS Status Pill (Interactive Online & Mic Mute Toggle)
         self._status_pill = QPushButton("● ONLINE · 🎙 MIC ACTIVE")
         self._status_pill.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self._status_pill.setCursor(Qt.CursorShape.PointingHandCursor)
         self._status_pill.setToolTip("Click to MUTE or UNMUTE microphone [F4]")
         self._status_pill.setStyleSheet("""
             QPushButton {
-                color: #34d399; background: rgba(52, 211, 153, 0.12);
-                border: 1px solid rgba(52, 211, 153, 0.28); border-radius: 12px;
+                color: #30D158; background: rgba(48, 209, 88, 0.14);
+                border: 1px solid rgba(48, 209, 88, 0.32); border-radius: 12px;
                 padding: 3px 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }
-            QPushButton:hover { background: rgba(52, 211, 153, 0.25); }
+            QPushButton:hover { background: rgba(48, 209, 88, 0.25); }
         """)
         self._status_pill.clicked.connect(self._toggle_mute)
         t_lay.addWidget(self._status_pill)
@@ -6032,11 +6172,12 @@ class MainWindow(QMainWindow):
         self._live_engine_pill.setToolTip("Voice Engine & Latency Telemetry — Click to switch Engine")
         self._live_engine_pill.setStyleSheet("""
             QPushButton {
-                color: #38bdf8; background: rgba(56, 189, 248, 0.12);
-                border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 12px;
+                color: #0A84FF; background: rgba(10, 132, 255, 0.14);
+                border: 1px solid rgba(10, 132, 255, 0.32); border-radius: 12px;
                 padding: 3px 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }
-            QPushButton:hover { background: rgba(56, 189, 248, 0.25); color: #7dd3fc; }
+            QPushButton:hover { background: rgba(10, 132, 255, 0.25); color: #409CFF; }
         """)
         self._live_engine_pill.clicked.connect(self._open_providers)
         t_lay.addWidget(self._live_engine_pill)
@@ -6045,23 +6186,24 @@ class MainWindow(QMainWindow):
         self._weather_lbl = QLabel("⛅ KERALA  --°C")
         self._weather_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
         self._weather_lbl.setStyleSheet("""
-            color: #93c5fd; background: rgba(96, 165, 250, 0.1);
-            border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 12px;
+            color: #98989D; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
             padding: 3px 10px;
+            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
         """)
         t_lay.addWidget(self._weather_lbl)
 
         t_lay.addStretch()
 
-        # Digital Clock & Date
+        # Digital Clock & Date (macOS Typography)
         self._clock_lbl = QLabel(time.strftime("%H:%M:%S"))
         self._clock_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        self._clock_lbl.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent;")
+        self._clock_lbl.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
         t_lay.addWidget(self._clock_lbl)
 
         self._date_lbl = QLabel(time.strftime("%a %d %b").upper())
         self._date_lbl.setFont(QFont("Segoe UI", 8))
-        self._date_lbl.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-right: 6px;")
+        self._date_lbl.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-right: 6px; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
         t_lay.addWidget(self._date_lbl)
 
         def _pill_btn(text: str, tip: str, cb) -> QPushButton:
@@ -6072,11 +6214,12 @@ class MainWindow(QMainWindow):
             b.setToolTip(tip)
             b.setStyleSheet(f"""
                 QPushButton {{
-                    background: {C.PANEL2}; color: {C.TEXT_MED};
-                    border: 1px solid {C.BORDER}; border-radius: 6px;
+                    background: rgba(255, 255, 255, 0.06); color: {C.TEXT_MED};
+                    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
                     padding: 0 10px;
+                    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
                 }}
-                QPushButton:hover {{ color: {C.TEXT}; border-color: {C.ACCENT}; background: {C.PANEL2}; }}
+                QPushButton:hover {{ color: {C.TEXT}; border-color: {C.ACCENT}; background: rgba(255, 255, 255, 0.12); }}
             """)
             b.clicked.connect(cb)
             return b
@@ -6099,28 +6242,6 @@ class MainWindow(QMainWindow):
             self._on_toggle_theme
         )
         t_lay.addWidget(self._theme_toggle_btn)
-
-        # Window Controls: Minimize, Maximize, Close
-        btn_min = QPushButton("─")
-        btn_min.setFixedSize(28, 26)
-        btn_min.setFont(QFont("Segoe UI", 9))
-        btn_min.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { background: rgba(255,255,255,0.08); color: #fff; }")
-        btn_min.clicked.connect(self.showMinimized)
-        t_lay.addWidget(btn_min)
-
-        btn_max = QPushButton("□")
-        btn_max.setFixedSize(28, 26)
-        btn_max.setFont(QFont("Segoe UI", 9))
-        btn_max.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { background: rgba(255,255,255,0.08); color: #fff; }")
-        btn_max.clicked.connect(lambda: self.showNormal() if self.isMaximized() else self.showMaximized())
-        t_lay.addWidget(btn_max)
-
-        btn_close = QPushButton("✕")
-        btn_close.setFixedSize(28, 26)
-        btn_close.setFont(QFont("Segoe UI", 9))
-        btn_close.setStyleSheet("QPushButton { background: transparent; color: #8e9eb5; border: none; } QPushButton:hover { background: #e11d48; color: #fff; }")
-        btn_close.clicked.connect(self.close)
-        t_lay.addWidget(btn_close)
 
         return top
 

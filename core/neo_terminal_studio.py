@@ -21,17 +21,17 @@ from PyQt6.QtWidgets import (
     QLineEdit, QTextBrowser, QFrame, QScrollArea
 )
 
-# Shared executive styling tokens
-CARD_BG = "#1B1F26"
-CARD_BORDER = "#262B34"
-CARD_HOVER = "#222731"
-TEXT_WHITE = "#E6E8EC"
-TEXT_MUTED = "#9AA1AD"
-TEXT_DIM = "#5F6672"
-ACCENT_PRIMARY = "#5B8DEF"
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR = "#D9534F"
+# Shared executive styling tokens (Apple macOS Dark Vibrancy)
+CARD_BG = "#232327"
+CARD_BORDER = "#2F2F34"
+CARD_HOVER = "#2A2A2F"
+TEXT_WHITE = "#F5F5F7"
+TEXT_MUTED = "#98989D"
+TEXT_DIM = "#636366"
+ACCENT_PRIMARY = "#0A84FF"
+SEMANTIC_SUCCESS = "#30D158"
+SEMANTIC_WARNING = "#FFD60A"
+SEMANTIC_ERROR = "#FF453A"
 
 
 class _HistoryLineEdit(QLineEdit):
@@ -50,7 +50,7 @@ class _HistoryLineEdit(QLineEdit):
 
 
 class NeoTerminalStudio(QWidget):
-    """Embedded Executive Dev Terminal & AI Agent Workbench."""
+    """Embedded Executive Dev Terminal & AI Agent Workbench (macOS Standard)."""
     diagnose_requested = pyqtSignal(str, str)  # (command, error_text)
 
     def __init__(self, parent=None, cwd: Optional[str] = None):
@@ -62,8 +62,9 @@ class NeoTerminalStudio(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{
-                background: #0E1013;
+                background: #161618;
                 color: {TEXT_WHITE};
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
         """)
 
@@ -71,12 +72,23 @@ class NeoTerminalStudio(QWidget):
         main_lay.setContentsMargins(18, 16, 18, 16)
         main_lay.setSpacing(10)
 
-        # ── 1. Top Bar ───────────────────────────────────────────────────────
+        # ── 1. Top Bar with macOS Window Dots ────────────────────────────────
         hdr = QHBoxLayout()
         hdr.setSpacing(10)
 
+        # Mini traffic light cluster
+        dot_box = QHBoxLayout()
+        dot_box.setSpacing(5)
+        for c in ("#FF5F56", "#FFBD2E", "#27C93F"):
+            d = QLabel()
+            d.setFixedSize(10, 10)
+            d.setStyleSheet(f"background: {c}; border-radius: 5px;")
+            dot_box.addWidget(d)
+        hdr.addLayout(dot_box)
+        hdr.addSpacing(4)
+
         icon_lbl = QLabel("💻")
-        icon_lbl.setFont(QFont("Segoe UI", 16))
+        icon_lbl.setFont(QFont("Segoe UI", 14))
         hdr.addWidget(icon_lbl)
 
         title_col = QVBoxLayout()
@@ -84,18 +96,18 @@ class NeoTerminalStudio(QWidget):
         t_row = QHBoxLayout()
         t_row.setSpacing(8)
         title_lbl = QLabel("Dev Terminal & Agent Workbench")
-        title_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        title_lbl.setFont(QFont("-apple-system", 12, QFont.Weight.Bold))
         t_row.addWidget(title_lbl)
 
         self.status_pill = QLabel("● READY")
-        self.status_pill.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.status_pill.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 10px; padding: 2px 8px;")
+        self.status_pill.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
+        self.status_pill.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(48, 209, 88, 0.15); border-radius: 10px; padding: 2px 8px;")
         t_row.addWidget(self.status_pill)
         t_row.addStretch()
         title_col.addLayout(t_row)
 
         self.cwd_lbl = QLabel(f"Working Directory: {self.cwd}")
-        self.cwd_lbl.setFont(QFont("Segoe UI", 8))
+        self.cwd_lbl.setFont(QFont("-apple-system", 8))
         self.cwd_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         title_col.addWidget(self.cwd_lbl)
         hdr.addLayout(title_col)
@@ -104,12 +116,12 @@ class NeoTerminalStudio(QWidget):
 
         clear_btn = QPushButton("Clear Console")
         clear_btn.setFixedHeight(28)
-        clear_btn.setFont(QFont("Segoe UI", 8))
+        clear_btn.setFont(QFont("-apple-system", 8))
         clear_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         clear_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {CARD_BG}; color: {TEXT_MUTED};
-                border: 1px solid {CARD_BORDER}; border-radius: 5px; padding: 0 10px;
+                border: 1px solid {CARD_BORDER}; border-radius: 6px; padding: 0 10px;
             }}
             QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
         """)
@@ -119,14 +131,14 @@ class NeoTerminalStudio(QWidget):
         self.abort_btn = QPushButton("⏹ Stop")
         self.abort_btn.setFixedHeight(28)
         self.abort_btn.setEnabled(False)
-        self.abort_btn.setFont(QFont("Segoe UI", 8))
+        self.abort_btn.setFont(QFont("-apple-system", 8))
         self.abort_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.abort_btn.setStyleSheet(f"""
             QPushButton {{
-                background: rgba(217, 83, 79, 0.15); color: {SEMANTIC_ERROR};
-                border: 1px solid rgba(217, 83, 79, 0.3); border-radius: 5px; padding: 0 10px;
+                background: rgba(255, 69, 58, 0.15); color: {SEMANTIC_ERROR};
+                border: 1px solid rgba(255, 69, 58, 0.3); border-radius: 6px; padding: 0 10px;
             }}
-            QPushButton:hover {{ background: rgba(217, 83, 79, 0.3); }}
+            QPushButton:hover {{ background: rgba(255, 69, 58, 0.3); }}
             QPushButton:disabled {{ background: transparent; color: {TEXT_DIM}; border-color: {CARD_BORDER}; }}
         """)
         self.abort_btn.clicked.connect(self._abort_command)
@@ -138,7 +150,7 @@ class NeoTerminalStudio(QWidget):
         preset_row = QHBoxLayout()
         preset_row.setSpacing(6)
         p_lbl = QLabel("Quick Scripts:")
-        p_lbl.setFont(QFont("Segoe UI", 8))
+        p_lbl.setFont(QFont("-apple-system", 8))
         p_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         preset_row.addWidget(p_lbl)
 
@@ -151,13 +163,13 @@ class NeoTerminalStudio(QWidget):
 
         for label, cmd in presets:
             btn = QPushButton(label)
-            btn.setFixedHeight(22)
-            btn.setFont(QFont("Segoe UI", 7))
+            btn.setFixedHeight(24)
+            btn.setFont(QFont("-apple-system", 8))
             btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             btn.setStyleSheet(f"""
                 QPushButton {{
-                    background: #14171C; color: {TEXT_WHITE};
-                    border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
+                    background: rgba(255, 255, 255, 0.05); color: {TEXT_WHITE};
+                    border: 1px solid {CARD_BORDER}; border-radius: 6px; padding: 0 8px;
                 }}
                 QPushButton:hover {{ background: {CARD_HOVER}; border-color: {ACCENT_PRIMARY}; }}
             """)
@@ -167,17 +179,18 @@ class NeoTerminalStudio(QWidget):
         preset_row.addStretch()
         main_lay.addLayout(preset_row)
 
-        # ── 3. Terminal Console Output Screen ────────────────────────────────
+        # ── 3. Terminal Console Output Screen (macOS Dark Terminal) ──────────
         self.console = QTextBrowser()
-        self.console.setFont(QFont("Consolas", 9))
+        self.console.setFont(QFont("SF Mono", 9))
         self.console.setStyleSheet(f"""
             QTextBrowser {{
-                background: #0B0E14;
-                color: #C8D1DC;
+                background: #121214;
+                color: #E6E8EC;
                 border: 1px solid {CARD_BORDER};
-                border-radius: 6px;
-                padding: 10px;
+                border-radius: 8px;
+                padding: 12px;
                 line-height: 1.35;
+                font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
             }}
         """)
         main_lay.addWidget(self.console, stretch=1)
@@ -187,8 +200,8 @@ class NeoTerminalStudio(QWidget):
         self.diag_frame.setVisible(False)
         self.diag_frame.setStyleSheet(f"""
             QFrame {{
-                background: rgba(217, 83, 79, 0.1);
-                border: 1px solid rgba(217, 83, 79, 0.4);
+                background: rgba(255, 69, 58, 0.1);
+                border: 1px solid rgba(255, 69, 58, 0.35);
                 border-radius: 6px;
             }}
         """)
@@ -205,46 +218,48 @@ class NeoTerminalStudio(QWidget):
         diag_lay.addWidget(self.diag_msg, stretch=1)
 
         self.diag_fix_btn = QPushButton("🧠 Ask NEO to Auto-Fix")
-        self.diag_fix_btn.setFixedHeight(24)
-        self.diag_fix_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.diag_fix_btn.setFixedHeight(26)
+        self.diag_fix_btn.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
         self.diag_fix_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.diag_fix_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {ACCENT_PRIMARY}; color: #ffffff;
-                border: none; border-radius: 4px; padding: 0 10px;
+                border: none; border-radius: 6px; padding: 0 12px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
-            QPushButton:hover {{ background: #4a7fdc; }}
+            QPushButton:hover {{ background: #409CFF; }}
         """)
         self.diag_fix_btn.clicked.connect(self._trigger_ai_diagnosis)
         diag_lay.addWidget(self.diag_fix_btn)
 
         main_lay.addWidget(self.diag_frame)
 
-        # ── 5. Command Input Box ─────────────────────────────────────────────
+        # ── 5. Command Input Box (macOS Capsule Input) ───────────────────────
         inp_box = QFrame()
         inp_box.setStyleSheet(f"""
             QFrame {{
-                background: {CARD_BG};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 6px;
+                background: #1C1C1E;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
             }}
         """)
         i_lay = QHBoxLayout(inp_box)
-        i_lay.setContentsMargins(10, 4, 10, 4)
-        i_lay.setSpacing(6)
+        i_lay.setContentsMargins(12, 5, 12, 5)
+        i_lay.setSpacing(8)
 
-        self.prompt_lbl = QLabel(f"PS {self.cwd.name}&gt;")
-        self.prompt_lbl.setFont(QFont("Consolas", 9, QFont.Weight.Bold))
+        self.prompt_lbl = QLabel(f"neo-mac:{self.cwd.name} %")
+        self.prompt_lbl.setFont(QFont("SF Mono", 9, QFont.Weight.Bold))
         self.prompt_lbl.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
         i_lay.addWidget(self.prompt_lbl)
 
         self.cmd_input = _HistoryLineEdit()
-        self.cmd_input.setFont(QFont("Consolas", 9))
+        self.cmd_input.setFont(QFont("SF Mono", 9))
         self.cmd_input.setPlaceholderText("Type command or script (e.g., git status, cd .., python script.py)...")
         self.cmd_input.setStyleSheet("""
             QLineEdit {
-                background: transparent; color: #ffffff;
+                background: transparent; color: #F5F5F7;
                 border: none; padding: 2px 0;
+                font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
             }
         """)
         self.cmd_input.returnPressed.connect(self._on_return_pressed)
@@ -253,15 +268,16 @@ class NeoTerminalStudio(QWidget):
         i_lay.addWidget(self.cmd_input, stretch=1)
 
         run_btn = QPushButton("Run ↵")
-        run_btn.setFixedHeight(24)
-        run_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        run_btn.setFixedHeight(26)
+        run_btn.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
         run_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         run_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {ACCENT_PRIMARY}; color: #ffffff;
-                border: none; border-radius: 4px; padding: 0 12px;
+                border: none; border-radius: 6px; padding: 0 12px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
-            QPushButton:hover {{ background: #4a7fdc; }}
+            QPushButton:hover {{ background: #409CFF; }}
         """)
         run_btn.clicked.connect(self._on_return_pressed)
         i_lay.addWidget(run_btn)
@@ -270,9 +286,9 @@ class NeoTerminalStudio(QWidget):
 
         # Welcome message
         self.console.append(
-            f"<span style='color: #5B8DEF; font-weight: bold;'>NEO Executive Developer Terminal & Subagent Shell [Version 3.1]</span><br>"
-            f"<span style='color: #64748B;'>Working Environment: {self.cwd}</span><br>"
-            f"<span style='color: #64748B;'>Type any system command, script, or use quick presets above.</span><br><br>"
+            f"<span style='color: #0A84FF; font-weight: bold;'>NEO macOS Executive Terminal & Subagent Shell [Version 3.1]</span><br>"
+            f"<span style='color: #98989D;'>Working Environment: {self.cwd}</span><br>"
+            f"<span style='color: #98989D;'>Type any system command, script, or use quick presets above.</span><br><br>"
         )
 
     # ── Execution Logic & Shell Built-in Emulation ────────────────────────────

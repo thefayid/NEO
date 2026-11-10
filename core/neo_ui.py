@@ -77,45 +77,47 @@ def _lerp_color(c1: QColor, c2: QColor, factor: float) -> QColor:
     return QColor(r, g, b, a)
 
 def font_display(size: int = 24, weight: QFont.Weight = QFont.Weight.Medium) -> QFont:
-    """Refined executive typography (Segoe UI Variable Display / Inter)."""
-    f = QFont("Segoe UI Variable Display", size)
+    """Apple macOS HIG Display Typography (-apple-system / SF Pro Display / Helvetica Neue)."""
+    f = QFont("-apple-system", size)
+    f.setFamilies(["-apple-system", "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI Variable Display", "Segoe UI", "sans-serif"])
     f.setWeight(weight)
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     return f
 
 def font_text(size: int = 10, weight: QFont.Weight = QFont.Weight.Normal, letter_spacing: float = 0.0) -> QFont:
-    """Human-designed body typography with precision tracking."""
-    f = QFont("Segoe UI Variable Text", size)
+    """Apple macOS HIG Body Typography (-apple-system / SF Pro Text / Helvetica Neue)."""
+    f = QFont("-apple-system", size)
+    f.setFamilies(["-apple-system", "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI Variable Text", "Segoe UI", "sans-serif"])
     f.setWeight(weight)
     if letter_spacing > 0.0:
         f.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, letter_spacing)
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     return f
 
-# ── Base Surfaces & Steel Blue Design System ──────────────────────────────────
-BG_OBSIDIAN    = "#0E1013"   # Cool graphite background (avoids OLED/LCD harsh contrast)
-SIDEBAR_BG     = "#14171C"   # Surface 1 (panels, sidebar)
-CARD_BG        = "#1B1F26"   # Surface 2 (cards, inputs)
-CARD_BORDER    = "#262B34"   # 1px subtle border / divider
-CARD_HOVER     = "#222731"   # Hover state
-NAV_ACTIVE_BG  = "#222731"   # Surface 2 active state
-TEXT_WHITE     = "#E6E8EC"   # Primary text (avoids glare of pure #FFFFFF)
-TEXT_MUTED     = "#9AA1AD"   # Secondary text
-TEXT_DIM       = "#5F6672"   # Disabled / hint text
+# ── Base Surfaces & Apple macOS Dark Vibrancy Design System ──────────────────
+BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas / Window Background
+SIDEBAR_BG     = "#1A1A1D"   # macOS Source List sidebar surface
+CARD_BG        = "#232327"   # macOS Elevated card / panel surface
+CARD_BORDER    = "#2F2F34"   # 1px subtle divider (rgba(255, 255, 255, 0.08))
+CARD_HOVER     = "#2A2A2F"   # Hover state
+NAV_ACTIVE_BG  = "#0A84FF"   # macOS System Accent active capsule
+TEXT_WHITE     = "#F5F5F7"   # macOS Primary text (crisp Apple off-white)
+TEXT_MUTED     = "#98989D"   # macOS Secondary text
+TEXT_DIM       = "#636366"   # macOS Tertiary / disabled text
 
-# Signature Single Accent: Steel Blue
-ACCENT_PRIMARY = "#5B8DEF"   # Trustworthy, Windows-native Steel Blue
-ACCENT_HOVER   = "#7AA5F5"   # Softer hover variant
-ACCENT_PRESSED = "#4376D6"   # Pressed / active variant
-ACCENT_BLUE    = "#5B8DEF"
-ACCENT_CYAN    = "#5B8DEF"
-SEND_BTN_BG    = "#5B8DEF"
+# Apple macOS System Accents
+ACCENT_PRIMARY = "#0A84FF"   # macOS System Blue
+ACCENT_HOVER   = "#409CFF"   # Softer hover variant
+ACCENT_PRESSED = "#0071E3"   # Active / pressed variant
+ACCENT_BLUE    = "#0A84FF"
+ACCENT_CYAN    = "#0A84FF"
+SEND_BTN_BG    = "#0A84FF"
 
-# Semantic Colours (desaturated)
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR   = "#D9534F"
-SEMANTIC_INFO    = "#5B8DEF"
+# Semantic Colours (Apple HIG standard)
+SEMANTIC_SUCCESS = "#30D158"  # macOS System Green
+SEMANTIC_WARNING = "#FFD60A"  # macOS System Yellow
+SEMANTIC_ERROR   = "#FF453A"  # macOS System Red
+SEMANTIC_INFO    = "#0A84FF"  # macOS System Blue
 
 CURRENT_NEO_THEME = "dark"
 
@@ -129,37 +131,37 @@ def set_neo_ui_theme(mode: str) -> None:
     is_white = str(mode or "dark").lower().strip() in ("white", "light")
     CURRENT_NEO_THEME = "white" if is_white else "dark"
     if is_white:
-        BG_OBSIDIAN    = "#F5F6F8"   # Crisp light background
+        BG_OBSIDIAN    = "#F5F6F8"   # Crisp macOS light background
         SIDEBAR_BG     = "#FFFFFF"   # Surface 1
         CARD_BG        = "#FFFFFF"   # Surface 2
         CARD_BORDER    = "#DFE2E7"   # 1px border
         CARD_HOVER     = "#EBEDF2"   # Hover
-        NAV_ACTIVE_BG  = "#EBEDF2"   # Active navigation item
-        TEXT_WHITE     = "#1A1D23"   # Primary text (charcoal, high contrast)
-        TEXT_MUTED     = "#5F6672"   # Secondary text
-        TEXT_DIM       = "#8B949E"   # Disabled / hint
-        ACCENT_PRIMARY = "#3F6FD1"   # Deep steel blue for high contrast on white
-        ACCENT_HOVER   = "#5B8DEF"
-        ACCENT_PRESSED = "#2B58B4"
-        ACCENT_BLUE    = "#3F6FD1"
-        ACCENT_CYAN    = "#3F6FD1"
-        SEND_BTN_BG    = "#3F6FD1"
+        NAV_ACTIVE_BG  = "#007AFF"   # macOS Light Accent Blue
+        TEXT_WHITE     = "#1D1D1F"   # Primary text (charcoal, high contrast)
+        TEXT_MUTED     = "#6E6E73"   # Secondary text
+        TEXT_DIM       = "#8E8E93"   # Disabled / hint
+        ACCENT_PRIMARY = "#007AFF"   # macOS Light Blue
+        ACCENT_HOVER   = "#34C759"
+        ACCENT_PRESSED = "#0056B3"
+        ACCENT_BLUE    = "#007AFF"
+        ACCENT_CYAN    = "#007AFF"
+        SEND_BTN_BG    = "#007AFF"
     else:
-        BG_OBSIDIAN    = "#0E1013"   # Cool graphite background
-        SIDEBAR_BG     = "#14171C"   # Surface 1
-        CARD_BG        = "#1B1F26"   # Surface 2
-        CARD_BORDER    = "#262B34"   # 1px subtle divider
-        CARD_HOVER     = "#222731"   # Hover
-        NAV_ACTIVE_BG  = "#222731"   # Active navigation item
-        TEXT_WHITE     = "#E6E8EC"   # Primary text (soft off-white)
-        TEXT_MUTED     = "#9AA1AD"   # Secondary text
-        TEXT_DIM       = "#5F6672"   # Disabled / hint
-        ACCENT_PRIMARY = "#5B8DEF"   # Signature steel blue
-        ACCENT_HOVER   = "#7AA5F5"
-        ACCENT_PRESSED = "#4376D6"
-        ACCENT_BLUE    = "#5B8DEF"
-        ACCENT_CYAN    = "#5B8DEF"
-        SEND_BTN_BG    = "#5B8DEF"
+        BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas
+        SIDEBAR_BG     = "#1A1A1D"   # Surface 1
+        CARD_BG        = "#232327"   # Surface 2
+        CARD_BORDER    = "#2F2F34"   # 1px subtle divider
+        CARD_HOVER     = "#2A2A2F"   # Hover
+        NAV_ACTIVE_BG  = "#0A84FF"   # macOS System Accent Blue
+        TEXT_WHITE     = "#F5F5F7"   # Primary text (crisp off-white)
+        TEXT_MUTED     = "#98989D"   # Secondary text
+        TEXT_DIM       = "#636366"   # Disabled / hint
+        ACCENT_PRIMARY = "#0A84FF"   # macOS System Blue
+        ACCENT_HOVER   = "#409CFF"
+        ACCENT_PRESSED = "#0071E3"
+        ACCENT_BLUE    = "#0A84FF"
+        ACCENT_CYAN    = "#0A84FF"
+        SEND_BTN_BG    = "#0A84FF"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -818,7 +820,7 @@ class VoiceTelemetryWidget(QFrame):
         m_row.addStretch()
         self.engine_badge = QLabel("GEMINI 3.1 LIVE")
         self.engine_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.12); border-radius: 4px; padding: 2px 6px;")
+        self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(10, 132, 255, 0.15); border-radius: 4px; padding: 2px 6px;")
         m_row.addWidget(self.engine_badge)
         lay.addLayout(m_row)
 
@@ -1779,17 +1781,17 @@ class NeoWidgetsSidebar(QWidget):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  3. LEFT NAVIGATION SIDEBAR
+#  3. LEFT NAVIGATION SIDEBAR (Apple macOS Source List Standard)
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoNavSidebar(QWidget):
-    """Left navigation panel with Home, Chat, Tasks, Notes, Tools, Settings, and Theme Toggle."""
+    """macOS Source List Navigation Sidebar with APPS, STUDIOS, and SYSTEM sections."""
     tab_changed = pyqtSignal(str)
     settings_requested = pyqtSignal()
     theme_toggled = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(205)
+        self.setFixedWidth(210)
         self.setStyleSheet(f"""
             QWidget {{
                 background: {SIDEBAR_BG};
@@ -1797,72 +1799,92 @@ class NeoNavSidebar(QWidget):
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(12, 16, 12, 16)
-        lay.setSpacing(4)
+        lay.setContentsMargins(10, 14, 10, 14)
+        lay.setSpacing(3)
 
-        # Header Logo
+        # Header Logo & Assistant Name (Apple HIG style)
         logo_row = QHBoxLayout()
-        logo_row.setContentsMargins(6, 0, 6, 14)
+        logo_row.setContentsMargins(6, 0, 6, 10)
         logo_icn = QLabel("⭘")
-        logo_icn.setFont(QFont("Segoe UI", 16))
-        logo_icn.setStyleSheet(f"color: {ACCENT_CYAN}; border: none; background: transparent;")
+        logo_icn.setFont(font_display(14, QFont.Weight.Bold))
+        logo_icn.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
         logo_row.addWidget(logo_icn)
 
         logo_title = QLabel("NEO")
-        logo_title.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
-        logo_title.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; letter-spacing: 1px;")
+        logo_title.setFont(font_display(12, QFont.Weight.Bold))
+        logo_title.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent; letter-spacing: 0.5px;")
         logo_row.addWidget(logo_title)
         logo_row.addStretch()
 
-        collapse_btn = QPushButton("◫")
-        collapse_btn.setFixedSize(24, 24)
-        collapse_btn.setFont(QFont("Segoe UI", 10))
+        collapse_btn = QPushButton("􀏛")
+        collapse_btn.setText("◫")
+        collapse_btn.setFixedSize(22, 22)
+        collapse_btn.setFont(font_text(9))
         collapse_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        collapse_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent; color: #526078; border: none;
-            }
-            QPushButton:hover { color: #8e9eb5; }
+        collapse_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent; color: {TEXT_DIM}; border: none; border-radius: 4px;
+            }}
+            QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
         """)
         logo_row.addWidget(collapse_btn)
         lay.addLayout(logo_row)
 
+        def _section_hdr(title: str) -> QLabel:
+            lbl = QLabel(title)
+            lbl.setFont(font_text(8, QFont.Weight.Bold, letter_spacing=1.0))
+            lbl.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent; padding-left: 8px; padding-top: 6px; padding-bottom: 2px;")
+            return lbl
+
+        # ── Category 1: APPS ─────────────────────────────────────────────────
+        lay.addWidget(_section_hdr("APPS"))
         self.btn_home = self._create_nav_item("⌂", "Home", active=True)
         self.btn_chat = self._create_nav_item("💬", "Chat", active=False)
         self.btn_tasks = self._create_nav_item("☑", "Tasks", active=False)
         self.btn_notes = self._create_nav_item("📄", "Notes", active=False)
+        for b in [self.btn_home, self.btn_chat, self.btn_tasks, self.btn_notes]:
+            lay.addWidget(b)
+
+        # ── Category 2: STUDIOS ──────────────────────────────────────────────
+        lay.addWidget(_section_hdr("STUDIOS"))
         self.btn_projects = self._create_nav_item("🗂", "Projects", active=False)
         self.btn_knowledge = self._create_nav_item("📚", "Knowledge", active=False)
         self.btn_files = self._create_nav_item("📁", "Files", active=False)
-        self.btn_sentinels = self._create_nav_item("🛡", "Sentinels", active=False)
         self.btn_terminal = self._create_nav_item("💻", "Terminal", active=False)
         self.btn_swarm = self._create_nav_item("🐝", "Swarm", active=False)
         self.btn_vision = self._create_nav_item("👁", "Vision", active=False)
-
         for b in [
-            self.btn_home, self.btn_chat, self.btn_tasks, self.btn_notes,
             self.btn_projects, self.btn_knowledge, self.btn_files,
-            self.btn_sentinels, self.btn_terminal, self.btn_swarm, self.btn_vision
+            self.btn_terminal, self.btn_swarm, self.btn_vision
         ]:
             lay.addWidget(b)
 
+        # ── Category 3: SYSTEM ───────────────────────────────────────────────
+        lay.addWidget(_section_hdr("SYSTEM"))
+        self.btn_sentinels = self._create_nav_item("🛡", "Sentinels", active=False)
+        self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
+        self.btn_settings.clicked.connect(self.settings_requested.emit)
+        lay.addWidget(self.btn_sentinels)
+        lay.addWidget(self.btn_settings)
+
         lay.addStretch()
 
-        # Theme Mode Toggle Button
+        # macOS Theme Mode Capsule Button
         is_white = CURRENT_NEO_THEME == "white"
-        self.btn_theme = QPushButton("  🌙   Dark Mode" if is_white else "  ☀️   Light Mode")
+        self.btn_theme = QPushButton("  🌙   Dark Appearance" if is_white else "  ☀️   Light Appearance")
         self.btn_theme.setFixedHeight(30)
-        self.btn_theme.setFont(QFont("Segoe UI", 8))
+        self.btn_theme.setFont(font_text(9))
         self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_theme.setToolTip("Toggle Light / Dark Mode [F7]")
         self.btn_theme.setStyleSheet(f"""
             QPushButton {{
-                background: transparent;
+                background: rgba(255, 255, 255, 0.04);
                 color: {TEXT_MUTED};
                 border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
                 text-align: left;
-                padding-left: 12px;
+                padding-left: 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
             QPushButton:hover {{
                 background: {CARD_HOVER};
@@ -1873,23 +1895,19 @@ class NeoNavSidebar(QWidget):
         self.btn_theme.clicked.connect(self.theme_toggled.emit)
         lay.addWidget(self.btn_theme)
 
-        self.btn_settings = self._create_nav_item("⚙", "Settings", active=False)
-        self.btn_settings.clicked.connect(self.settings_requested.emit)
-        lay.addWidget(self.btn_settings)
-
     def update_theme_button(self, is_white: bool):
         """Update toggle button text and styling based on active theme."""
         if is_white:
-            self.btn_theme.setText("  🌙   Dark Mode")
-            self.btn_theme.setToolTip("Switch to Dark Mode [F7]")
+            self.btn_theme.setText("  🌙   Dark Appearance")
+            self.btn_theme.setToolTip("Switch to Dark Appearance [F7]")
         else:
-            self.btn_theme.setText("  ☀️   Light Mode")
-            self.btn_theme.setToolTip("Switch to Light Mode [F7]")
+            self.btn_theme.setText("  ☀️   Light Appearance")
+            self.btn_theme.setToolTip("Switch to Light Appearance [F7]")
 
     def _create_nav_item(self, icon, label, active=False):
         btn = QPushButton(f"  {icon}   {label}")
-        btn.setFixedHeight(32)
-        btn.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
+        btn.setFixedHeight(30)
+        btn.setFont(font_text(9, QFont.Weight.DemiBold if active else QFont.Weight.Normal))
         btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         btn.setStyleSheet(self._nav_style(active))
         btn.clicked.connect(lambda _, l=label: self._on_item_clicked(l))
@@ -1900,11 +1918,13 @@ class NeoNavSidebar(QWidget):
             return f"""
                 QPushButton {{
                     background: {NAV_ACTIVE_BG};
-                    color: {TEXT_WHITE};
-                    border: 1px solid rgba(91, 141, 239, 0.35);
+                    color: #FFFFFF;
+                    border: none;
                     border-radius: 6px;
                     text-align: left;
-                    padding-left: 12px;
+                    padding-left: 10px;
+                    font-weight: 600;
+                    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
                 }}
             """
         return f"""
@@ -1914,10 +1934,11 @@ class NeoNavSidebar(QWidget):
                 border: none;
                 border-radius: 6px;
                 text-align: left;
-                padding-left: 12px;
+                padding-left: 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
             QPushButton:hover {{
-                background: rgba(255, 255, 255, 0.04);
+                background: rgba(255, 255, 255, 0.06);
                 color: {TEXT_WHITE};
             }}
         """
@@ -1930,7 +1951,7 @@ class NeoNavSidebar(QWidget):
             (self.btn_swarm, "Swarm"), (self.btn_vision, "Vision")
         ]:
             b.setStyleSheet(self._nav_style(lbl == name))
-            b.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
+            b.setFont(font_text(9, QFont.Weight.DemiBold if lbl == name else QFont.Weight.Normal))
         self.tab_changed.emit(name)
 
     def select_tab(self, name: str):
@@ -2786,7 +2807,7 @@ class NeoTaskCard(QFrame):
         due = task.get("due_date", "Today")
         notes = task.get("notes", "").strip()
 
-        dot_colors = {"High": "#D9534F", "Medium": "#D9A441", "Low": "#5B8DEF"}
+        dot_colors = {"High": SEMANTIC_ERROR, "Medium": SEMANTIC_WARNING, "Low": ACCENT_PRIMARY}
         dot_color = dot_colors.get(priority, "#94a3b8")
 
         has_notes = bool(notes)
@@ -3482,7 +3503,7 @@ class NeoNoteCard(QFrame):
         self.is_active = is_active
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        bg = "rgba(91, 141, 239, 0.12)" if is_active else CARD_BG
+        bg = "rgba(10, 132, 255, 0.16)" if is_active else CARD_BG
         border = ACCENT_PRIMARY if is_active else CARD_BORDER
         left_border = f"3px solid {ACCENT_PRIMARY};" if is_active else f"1px solid {CARD_BORDER};"
 

@@ -23,22 +23,22 @@ from PyQt6.QtWidgets import (
 
 from core.tasks_db import add_task
 
-# Shared executive theme tokens
-CARD_BG = "#1B1F26"
-CARD_BORDER = "#262B34"
-CARD_HOVER = "#222731"
-TEXT_WHITE = "#E6E8EC"
-TEXT_MUTED = "#9AA1AD"
-TEXT_DIM = "#5F6672"
-ACCENT_PRIMARY = "#5B8DEF"
-ACCENT_HOVER = "#7AA5F5"
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR = "#D9534F"
+# Shared executive theme tokens (Apple macOS Dark Vibrancy)
+CARD_BG = "#232327"
+CARD_BORDER = "#2F2F34"
+CARD_HOVER = "#2A2A2F"
+TEXT_WHITE = "#F5F5F7"
+TEXT_MUTED = "#98989D"
+TEXT_DIM = "#636366"
+ACCENT_PRIMARY = "#0A84FF"
+ACCENT_HOVER = "#409CFF"
+SEMANTIC_SUCCESS = "#30D158"
+SEMANTIC_WARNING = "#FFD60A"
+SEMANTIC_ERROR = "#FF453A"
 
 
 class NeoFilesView(QWidget):
-    """Executive File Explorer, Document Inspector, and RAG Semantic Analyzer."""
+    """Executive File Explorer, Document Inspector, and RAG Semantic Analyzer (macOS Standard)."""
     file_action_requested = pyqtSignal(str, str)     # (action_type, file_path)
     task_action_triggered = pyqtSignal(str)         # (notification_text)
     search_triggered = pyqtSignal(str)              # (query)
@@ -52,8 +52,9 @@ class NeoFilesView(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{
-                background: #0E1013;
+                background: #161618;
                 color: {TEXT_WHITE};
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
         """)
 
@@ -74,18 +75,18 @@ class NeoFilesView(QWidget):
         t_row = QHBoxLayout()
         t_row.setSpacing(8)
         title_lbl = QLabel("Document & Files Vault")
-        title_lbl.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title_lbl.setFont(QFont("-apple-system", 14, QFont.Weight.Bold))
         t_row.addWidget(title_lbl)
 
         self.file_count_badge = QLabel("0 files")
-        self.file_count_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.file_count_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.15); border-radius: 10px; padding: 2px 8px;")
+        self.file_count_badge.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
+        self.file_count_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(10, 132, 255, 0.15); border-radius: 10px; padding: 2px 8px;")
         t_row.addWidget(self.file_count_badge)
         t_row.addStretch()
         title_col.addLayout(t_row)
 
         sub_lbl = QLabel("Autonomous workspace file tree, deep code inspector, and RAG semantic analyzer")
-        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setFont(QFont("-apple-system", 8))
         sub_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         title_col.addWidget(sub_lbl)
         hdr.addLayout(title_col)
@@ -94,7 +95,7 @@ class NeoFilesView(QWidget):
 
         self.root_btn = QPushButton(f"📂 {self.workspace_root.name}")
         self.root_btn.setFixedHeight(30)
-        self.root_btn.setFont(QFont("Segoe UI", 8))
+        self.root_btn.setFont(QFont("-apple-system", 8))
         self.root_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.root_btn.setToolTip(str(self.workspace_root))
         self.root_btn.setStyleSheet(f"""
@@ -109,7 +110,7 @@ class NeoFilesView(QWidget):
 
         refresh_btn = QPushButton("↻ Refresh")
         refresh_btn.setFixedHeight(30)
-        refresh_btn.setFont(QFont("Segoe UI", 8))
+        refresh_btn.setFont(QFont("-apple-system", 8))
         refresh_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         refresh_btn.setStyleSheet(f"""
             QPushButton {{
@@ -165,17 +166,18 @@ class NeoFilesView(QWidget):
         lay.setContentsMargins(10, 10, 10, 10)
         lay.setSpacing(8)
 
-        # Search box
+        # macOS Search Field
         self.search_in = QLineEdit()
         self.search_in.setFixedHeight(28)
-        self.search_in.setFont(QFont("Segoe UI", 8))
-        self.search_in.setPlaceholderText("Filter files...")
+        self.search_in.setFont(QFont("-apple-system", 8))
+        self.search_in.setPlaceholderText("🔍 Filter files...")
         self.search_in.setStyleSheet(f"""
             QLineEdit {{
-                background: #14171C; color: {TEXT_WHITE};
-                border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
+                background: #1C1C1E; color: {TEXT_WHITE};
+                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 7px; padding: 0 8px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
-            QLineEdit:focus {{ border-color: {ACCENT_PRIMARY}; }}
+            QLineEdit:focus {{ border-color: {ACCENT_PRIMARY}; background: #252528; }}
         """)
         self.search_in.textChanged.connect(self._on_search_changed)
         lay.addWidget(self.search_in)

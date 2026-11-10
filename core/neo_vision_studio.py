@@ -29,21 +29,21 @@ except ImportError:
 
 from core import gemini
 
-# Shared executive styling tokens
-CARD_BG = "#1B1F26"
-CARD_BORDER = "#262B34"
-CARD_HOVER = "#222731"
-TEXT_WHITE = "#E6E8EC"
-TEXT_MUTED = "#9AA1AD"
-TEXT_DIM = "#5F6672"
-ACCENT_PRIMARY = "#5B8DEF"
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR = "#D9534F"
+# Shared executive styling tokens (Apple macOS Dark Vibrancy)
+CARD_BG = "#232327"
+CARD_BORDER = "#2F2F34"
+CARD_HOVER = "#2A2A2F"
+TEXT_WHITE = "#F5F5F7"
+TEXT_MUTED = "#98989D"
+TEXT_DIM = "#636366"
+ACCENT_PRIMARY = "#0A84FF"
+SEMANTIC_SUCCESS = "#30D158"
+SEMANTIC_WARNING = "#FFD60A"
+SEMANTIC_ERROR = "#FF453A"
 
 
 class NeoVisionSpatialStudio(QWidget):
-    """Executive Computer Vision, Screen Region Inspector, and Gesture Controller."""
+    """Executive Computer Vision, Screen Region Inspector, and Gesture Controller (macOS Standard)."""
     command_requested = pyqtSignal(str)   # (voice_or_system_command)
 
     def __init__(self, parent=None):
@@ -57,8 +57,9 @@ class NeoVisionSpatialStudio(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{
-                background: #0E1013;
+                background: #161618;
                 color: {TEXT_WHITE};
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
             }}
         """)
 
@@ -79,18 +80,18 @@ class NeoVisionSpatialStudio(QWidget):
         t_row = QHBoxLayout()
         t_row.setSpacing(8)
         title_lbl = QLabel("Visual HUD, Gesture & Deep OCR Studio")
-        title_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
+        title_lbl.setFont(QFont("-apple-system", 13, QFont.Weight.Bold))
         t_row.addWidget(title_lbl)
 
         self.vision_badge = QLabel("● VISION READY")
-        self.vision_badge.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.vision_badge.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 10px; padding: 2px 8px;")
+        self.vision_badge.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
+        self.vision_badge.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(48, 209, 88, 0.15); border-radius: 10px; padding: 2px 8px;")
         t_row.addWidget(self.vision_badge)
         t_row.addStretch()
         title_col.addLayout(t_row)
 
         sub_lbl = QLabel("Webcam optical targeting, Google MediaPipe neural gestures, and screen/camera text OCR extraction")
-        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setFont(QFont("-apple-system", 8))
         sub_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         title_col.addWidget(sub_lbl)
         hdr.addLayout(title_col)
@@ -99,14 +100,14 @@ class NeoVisionSpatialStudio(QWidget):
 
         self.screen_ocr_btn = QPushButton("🔍 Extract Screen OCR")
         self.screen_ocr_btn.setFixedHeight(30)
-        self.screen_ocr_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.screen_ocr_btn.setFont(QFont("-apple-system", 8, QFont.Weight.Bold))
         self.screen_ocr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.screen_ocr_btn.setStyleSheet(f"""
             QPushButton {{
-                background: rgba(76, 175, 125, 0.2); color: {SEMANTIC_SUCCESS};
+                background: rgba(48, 209, 88, 0.18); color: {SEMANTIC_SUCCESS};
                 border: 1px solid {SEMANTIC_SUCCESS}; border-radius: 6px; padding: 0 12px;
             }}
-            QPushButton:hover {{ background: rgba(76, 175, 125, 0.35); color: #ffffff; }}
+            QPushButton:hover {{ background: rgba(48, 209, 88, 0.3); color: #ffffff; }}
         """)
         self.screen_ocr_btn.clicked.connect(self._capture_screen_ocr)
         hdr.addWidget(self.screen_ocr_btn)
