@@ -159,6 +159,18 @@ class ThemeProvider(QObject):
         return dark_hex if self.is_dark else light_hex
 
     @property
+    def accent_color(self) -> str:
+        return self.accent
+
+    @property
+    def accent_color_hover(self) -> str:
+        return self.accent_hover
+
+    @property
+    def accent_color_pressed(self) -> str:
+        return self.accent_pressed
+
+    @property
     def accent_hover(self) -> str:
         """Lighter/more saturated variant for hover states."""
         c = QColor(self.accent)

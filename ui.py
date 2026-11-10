@@ -5035,6 +5035,9 @@ class MainWindow(QMainWindow):
         self.vision_studio = NeoVisionSpatialStudio()
         self.vision_studio.command_requested.connect(self._on_hero_command)
 
+        from core.macos_gallery import MacOSComponentGallery
+        self.gallery_view = MacOSComponentGallery()
+
         self._hud_cam_stack = QStackedWidget()
         self._hud_cam_stack.addWidget(self.hero_stage)        # Index 0: Hero
         self._hud_cam_stack.addWidget(self._chat_container)   # Index 1: Chat
@@ -5047,9 +5050,10 @@ class MainWindow(QMainWindow):
         self._hud_cam_stack.addWidget(self.terminal_studio)   # Index 8: Terminal
         self._hud_cam_stack.addWidget(self.swarm_studio)      # Index 9: Swarm
         self._hud_cam_stack.addWidget(self.vision_studio)     # Index 10: Vision
-        self._hud_cam_stack.addWidget(self.hud)               # Index 11: Legacy HUD
-        self._hud_cam_stack.addWidget(_cam_cont)              # Index 12: Camera
-        self._hud_cam_stack.addWidget(self._video_cont)       # Index 13: Video
+        self._hud_cam_stack.addWidget(self.gallery_view)      # Index 11: Living Gallery
+        self._hud_cam_stack.addWidget(self.hud)               # Index 12: Legacy HUD
+        self._hud_cam_stack.addWidget(_cam_cont)              # Index 13: Camera
+        self._hud_cam_stack.addWidget(self._video_cont)       # Index 14: Video
 
         self._center_split = QSplitter(Qt.Orientation.Vertical)
         self._center_split.setStyleSheet(f"""
@@ -6072,6 +6076,9 @@ class MainWindow(QMainWindow):
         elif tab == "Vision":
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "vision_studio"):
                 self._hud_cam_stack.setCurrentWidget(self.vision_studio)
+        elif tab == "Gallery":
+            if hasattr(self, "_hud_cam_stack") and hasattr(self, "gallery_view"):
+                self._hud_cam_stack.setCurrentWidget(self.gallery_view)
         elif tab == "Summarize":
             self._on_hero_command("Summarize my current notifications, active projects, and latest context, Boss")
         elif tab == "Research":
