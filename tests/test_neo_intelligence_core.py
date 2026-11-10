@@ -169,6 +169,16 @@ class TestNeoAgenticLoop(unittest.TestCase):
 class TestNeoSelfTooling(unittest.TestCase):
     """Verifies Pillar 4: Dynamic Self-Tooling & Meta-Plugin Synthesizer."""
 
+    def tearDown(self):
+        # Clean up any synthesized test files
+        for tool_name in ["test_temperature_converter", "central_test_tool"]:
+            p = Path("plugins") / "synthesized" / f"{tool_name}.py"
+            if p.exists():
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+
     def test_synthesizer_success(self):
         tool_name = "test_temperature_converter"
         desc = "Converts Fahrenheit to Celsius"
@@ -234,6 +244,14 @@ class TestNeoVisualGrounding(unittest.TestCase):
 
 class TestCentralActionsAndCoordinator(unittest.TestCase):
     """Verifies action adapter handlers and the central coordinator bus."""
+
+    def tearDown(self):
+        p = Path("plugins") / "synthesized" / "central_test_tool.py"
+        if p.exists():
+            try:
+                p.unlink()
+            except OSError:
+                pass
 
     def test_action_execute_autonomous_goal(self):
         from actions.autonomous_goal import execute_autonomous_goal

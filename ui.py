@@ -5206,6 +5206,19 @@ class MainWindow(QMainWindow):
             )
             # Proactive macOS Notification Center toasts
             precognitive_engine.toast_requested.connect(self._on_proactive_toast)
+            # Superhuman Frontiers event wiring
+            central_core.swarm_event.connect(
+                lambda mid, role, msg: self.write_log(f"SWARM [{mid[:8]}] {role}: {msg[:60]}") if hasattr(self, "write_log") else None
+            )
+            central_core.mobile_event.connect(
+                lambda ch, msg: self.write_log(f"MOBILE [{ch}]: {msg[:60]}") if hasattr(self, "write_log") else None
+            )
+            central_core.self_healing_event.connect(
+                lambda ev, dt: self.write_log(f"HEAL [{ev}]: {dt[:60]}") if hasattr(self, "write_log") else None
+            )
+            central_core.spatial_vision_event.connect(
+                lambda ev, dt: self.write_log(f"VISION [{ev}]: {dt[:60]}") if hasattr(self, "write_log") else None
+            )
             # Start ambient sensory nervous system
             central_core.start_proactive_subsystems()
         except Exception as _ce:
@@ -6193,6 +6206,43 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 if hasattr(self, "_log") and self._log:
                     self._log.append_log(f"ERR: Tool synthesis failed — {e}")
+        elif command_id == "swarm" or query.startswith("/swarm"):
+            spec = query.removeprefix("/swarm").strip() if query.startswith("/swarm") else query
+            try:
+                from core.neo_central_coordinator import central_core
+                mid = central_core.dispatch_swarm_mission(spec or "Collaborative multi-agent engineering review")
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"SWARM: Dispatched War Room mission [{mid[:8]}]")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Swarm dispatch error — {e}")
+        elif command_id == "heal" or query.startswith("/heal") or query.startswith("/audit"):
+            try:
+                from core.neo_central_coordinator import central_core
+                res = central_core.run_workspace_self_healing()
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"HEAL: Scanned {res.get('files_scanned', 0)} files — {res.get('errors_found', 0)} syntax errors")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Self-healing error — {e}")
+        elif command_id == "commit" or query.startswith("/commit"):
+            try:
+                from core.neo_central_coordinator import central_core
+                ok, msg = central_core.auto_commit_workspace()
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"GIT: {msg}")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Auto-commit error — {e}")
+        elif command_id == "scan" or query.startswith("/scan"):
+            try:
+                from core.neo_central_coordinator import central_core
+                ok, title, _ = central_core.scan_physical_document()
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"SCAN: {title}")
+            except Exception as e:
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"ERR: Document scan error — {e}")
         elif command_id == "mode_toggle":
             self._on_toggle_theme()
         elif command_id == "mic_toggle":

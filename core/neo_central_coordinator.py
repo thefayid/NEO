@@ -32,6 +32,10 @@ from core.neo_visual_grounding import visual_grounding, UIElement
 from core.neo_ambient_sensor import ambient_sensor, UserFocusState
 from core.neo_precognition import precognitive_engine, ProactiveOpportunity
 from core.neo_habit_learner import habit_learner
+from core.neo_swarm_war_room import swarm_war_room
+from core.neo_mobile_telepathy import mobile_telepathy
+from core.neo_self_healing import self_healing_guardian
+from core.neo_spatial_vision import spatial_vision
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,6 +55,10 @@ class NEOCentralCore(QObject):
     proactive_toast_event = pyqtSignal(str, str, str, str)  # title, message, variant, payload
     proactive_voice_event = pyqtSignal(str)           # voice speech text
     habit_event = pyqtSignal(str, str)                # habit_name, description
+    swarm_event = pyqtSignal(str, str, str)           # mission_id, role_or_status, message
+    mobile_event = pyqtSignal(str, str)               # channel, message
+    self_healing_event = pyqtSignal(str, str)         # event_type, details
+    spatial_vision_event = pyqtSignal(str, str)       # event_type, details
 
     def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent)
@@ -105,6 +113,35 @@ class NEOCentralCore(QObject):
         )
         ambient_sensor.telemetry_updated.connect(
             lambda snap: self.system_telemetry.emit(snap)
+        )
+
+        # 5. Frontier 1: Swarm War Room
+        swarm_war_room.agent_lane_updated.connect(
+            lambda mid, role, st, snip: self.swarm_event.emit(mid, f"{role}:{st}", snip)
+        )
+        swarm_war_room.mission_completed.connect(
+            lambda mid, summ, dels: self.swarm_event.emit(mid, "COMPLETED", summ[:100])
+        )
+
+        # 6. Frontier 2: Mobile Telepathy
+        mobile_telepathy.mobile_alert_dispatched.connect(
+            lambda ch, msg: self.mobile_event.emit(ch, msg)
+        )
+
+        # 7. Frontier 3: Self-Healing Guardian
+        self_healing_guardian.audit_completed.connect(
+            lambda res: self.self_healing_event.emit("AUDIT_COMPLETED", f"Found {res.get('errors_found', 0)} errors")
+        )
+        self_healing_guardian.commit_generated.connect(
+            lambda br, msg: self.self_healing_event.emit("COMMIT_GENERATED", msg)
+        )
+
+        # 8. Frontier 4: Spatial Multimodal Vision
+        spatial_vision.user_returned.connect(
+            lambda grt: self.spatial_vision_event.emit("USER_RETURNED", grt)
+        )
+        spatial_vision.fatigue_alert.connect(
+            lambda fmsg: self.spatial_vision_event.emit("FATIGUE_ALERT", fmsg)
         )
 
     def _on_proactive_voice(self, text: str) -> None:
@@ -174,6 +211,42 @@ class NEOCentralCore(QObject):
     def stop_proactive_subsystems(self) -> None:
         """Stops ambient sensory sampling."""
         ambient_sensor.stop()
+
+    # ── Superhuman Frontiers API ─────────────────────────────────────────────
+
+    def dispatch_swarm_mission(self, objective: str) -> str:
+        """Dispatches a collaborative 4-agent swarm mission in the War Room."""
+        habit_learner.record_action("SWARM_MISSION", objective)
+        mid = swarm_war_room.submit_mission(objective)
+        return mid
+
+    def get_swarm_missions(self) -> List[Dict[str, Any]]:
+        """Returns all War Room missions."""
+        return swarm_war_room.list_missions()
+
+    def send_mobile_push(self, title: str, message: str, urgency: float = 0.5, photo_path: Optional[str] = None) -> bool:
+        """Dispatches an encrypted push alert to the paired mobile companion."""
+        return mobile_telepathy.dispatch_mobile_push(title, message, urgency=urgency, photo_path=photo_path)
+
+    def capture_and_send_mobile_screen(self, caption: str = "🖥️ Live Desktop Screen Snapshot") -> bool:
+        """Captures active desktop and transmits image to phone."""
+        return mobile_telepathy.capture_and_send_screen(caption)
+
+    def run_workspace_self_healing(self) -> Dict[str, Any]:
+        """Runs syntax audit and automated diagnosis across active workspace."""
+        return self_healing_guardian.run_workspace_audit()
+
+    def generate_git_commit(self) -> str:
+        """Generates conventional git commit message from active diff."""
+        return self_healing_guardian.generate_conventional_commit_message()
+
+    def auto_commit_workspace(self, message: Optional[str] = None) -> Tuple[bool, str]:
+        """Stages all changes and creates conventional commit."""
+        return self_healing_guardian.auto_commit_workspace(message)
+
+    def scan_physical_document(self) -> Tuple[bool, str, str]:
+        """Captures physical document via webcam and converts to markdown notes."""
+        return spatial_vision.scan_physical_document()
 
     def query_knowledge(self, query: str) -> Dict[str, Any]:
         """Queries working context, episodic memories, and knowledge graph."""

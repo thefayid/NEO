@@ -146,7 +146,7 @@ class Typography:
 # ── 5. User-Selectable macOS Accent Colors ─────────────────────────────────────
 # (Dark Hex, Light Hex)
 MACOS_ACCENTS: Dict[str, Tuple[str, str]] = {
-    "blue":     ("#5B8DEF", "#3F6FD1"),  # Steel Blue Signature (Default)
+    "blue":     ("#0A84FF", "#007AFF"),  # macOS System Accent Blue (Default)
     "purple":   ("#BF5AF2", "#AF52DE"),  # macOS System Purple
     "pink":     ("#FF375F", "#FF2D55"),  # macOS System Pink
     "red":      ("#FF453A", "#FF3B30"),  # macOS System Red
@@ -201,12 +201,12 @@ class SemanticColors:
 # ── 7. Apple macOS Sequoia/Tahoe Color Palettes ────────────────────────────────
 
 DARK_SEMANTIC_COLORS = SemanticColors(
-    windowBackground           = "#0E1013",
+    windowBackground           = "#161618",
     controlBackground          = "#1B1F26",
     controlBackgroundSecondary = "#222731",
     controlBackgroundTertiary  = "#14171C",
     sidebar                    = "#14171C",
-    sidebarSelected            = "rgba(91, 141, 239, 0.12)",
+    sidebarSelected            = "rgba(10, 132, 255, 0.16)",
     cardBackground             = "#1B1F26",
     cardBackgroundHover        = "#222731",
     popoverBackground          = "#1B1F26",
@@ -216,19 +216,19 @@ DARK_SEMANTIC_COLORS = SemanticColors(
     separator                  = "#262B34",
     separatorOpaque            = "#262B34",
     controlBorder              = "#262B34",
-    focusRing                  = "#5B8DEF",
+    focusRing                  = "#0A84FF",
     labelPrimary               = "#E6E8EC",
     labelSecondary             = "#9AA1AD",
     labelTertiary              = "#5F6672",
     labelQuaternary            = "rgba(154, 161, 173, 0.20)",
-    systemGreen                = "#4CAF7D",
-    systemYellow               = "#D9A441",
-    systemOrange               = "#E67E22",
-    systemRed                  = "#D9534F",
-    systemPurple               = "#9B72CF",
-    systemPink                 = "#E86F98",
-    systemTeal                 = "#4EA8DE",
-    systemIndigo               = "#5B8DEF",
+    systemGreen                = "#30D158",
+    systemYellow               = "#FFD60A",
+    systemOrange               = "#FF9F0A",
+    systemRed                  = "#FF453A",
+    systemPurple               = "#BF5AF2",
+    systemPink                 = "#FF375F",
+    systemTeal                 = "#64D2FF",
+    systemIndigo               = "#0A84FF",
     systemGray                 = "#8E95A2",
 )
 
