@@ -63,6 +63,13 @@ from core.neo_ui import (
     NeoProjectsView, NeoKnowledgeView, NeoCalibrationOverlay,
     NeoFilesView, NeoSentinelHub, NeoTerminalStudio, NeoSwarmStudio, NeoVisionSpatialStudio
 )
+from core.macos_window import (
+    apply_macos_vibrancy,
+    MacOSUnifiedToolbar,
+    MacOSSizingSidebarContainer,
+    MacOSInspectorPanelContainer,
+    MacOSFramelessHelper,
+)
 
 SetupOverlay = NeoCalibrationOverlay
 
@@ -276,17 +283,16 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
 
     if parent_win is not None:
         try:
-            cw = parent_win.centralWidget()
-            if cw:
-                cw.setStyleSheet(f"background: {C.BG};")
+            if hasattr(parent_win, "_update_window_frame_style"):
+                parent_win._update_window_frame_style()
             if hasattr(parent_win, "_header"):
                 parent_win._header.setStyleSheet(
-                    f"background: {C.PANEL}; border-bottom: 1px solid {C.BORDER};"
+                    f"background: {theme.colors.sidebar}; border-bottom: 1px solid {theme.colors.separator};"
                 )
             if hasattr(parent_win, "_left_panel"):
-                parent_win._left_panel.setStyleSheet(f"background: {C.PANEL}; border-right: 1px solid {C.BORDER};")
+                parent_win._left_panel.setStyleSheet(f"background: {theme.colors.sidebar}; border-right: 1px solid {theme.colors.separator};")
             if hasattr(parent_win, "_right_panel"):
-                parent_win._right_panel.setStyleSheet(f"background: {C.PANEL}; border-left: 1px solid {C.BORDER};")
+                parent_win._right_panel.setStyleSheet(f"background: {theme.colors.sidebar}; border-left: 1px solid {theme.colors.separator};")
             if hasattr(parent_win, "hud"):
                 parent_win.hud.update()
             if hasattr(parent_win, "_theme_toggle_btn"):
@@ -4775,6 +4781,11 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(1200, 780)
 
+        # macOS Sequoia Native Frameless Window Frame
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setMouseTracking(True)
+
         screen = QApplication.primaryScreen().availableGeometry()
         self.move(
             (screen.width()  - _DEFAULT_W) // 2,
@@ -4801,65 +4812,14 @@ class MainWindow(QMainWindow):
         self._customize_overlay: CustomizeOverlay | None = None
 
         central = QWidget()
-        central.setStyleSheet(f"""
-            QWidget {{
-                background: {C.BG};
-                color: {C.TEXT};
-                font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", sans-serif;
-            }}
-            QScrollBar:vertical {{
-                background: transparent;
-                width: 7px;
-                margin: 2px 0 2px 0;
-            }}
-            QScrollBar::handle:vertical {{
-                background: rgba(255, 255, 255, 0.22);
-                min-height: 24px;
-                border-radius: 3px;
-            }}
-            QScrollBar::handle:vertical:hover {{
-                background: rgba(255, 255, 255, 0.45);
-            }}
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-                height: 0px;
-                background: transparent;
-            }}
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
-                background: transparent;
-            }}
-            QScrollBar:horizontal {{
-                background: transparent;
-                height: 7px;
-                margin: 0 2px 0 2px;
-            }}
-            QScrollBar::handle:horizontal {{
-                background: rgba(255, 255, 255, 0.22);
-                min-width: 24px;
-                border-radius: 3px;
-            }}
-            QScrollBar::handle:horizontal:hover {{
-                background: rgba(255, 255, 255, 0.45);
-            }}
-            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
-                width: 0px;
-                background: transparent;
-            }}
-            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
-                background: transparent;
-            }}
-            QToolTip {{
-                background: #252529;
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 6px;
-                padding: 4px 8px;
-                font-size: 11px;
-            }}
-        """)
+        central.setObjectName("macOSRootCanvas")
+        central.setMouseTracking(True)
+        self._central = central
         self.setCentralWidget(central)
+        self._update_window_frame_style()
 
         root = QVBoxLayout(central)
-        root.setContentsMargins(0, 0, 0, 0)
+        root.setContentsMargins(1, 1, 1, 1)
         root.setSpacing(0)
         self._header = self._build_header()
         root.addWidget(self._header)
@@ -5194,8 +5154,110 @@ class MainWindow(QMainWindow):
         sc_theme = QShortcut(QKeySequence("F7"), self)
         sc_theme.activated.connect(self._on_toggle_theme)
 
+        sc_sidebar = QShortcut(QKeySequence("Ctrl+1"), self)
+        sc_sidebar.activated.connect(self._sidebar_container.toggle_collapse)
+
+        sc_inspector = QShortcut(QKeySequence("Ctrl+2"), self)
+        sc_inspector.activated.connect(self._inspector_container.toggle_collapse)
+
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
+
+    def _update_window_frame_style(self):
+        if not hasattr(self, "_central") or not self._central:
+            return
+        from core.theme_provider import theme
+        is_max = self.isMaximized()
+        is_dark = theme.is_dark
+        border_spec = "none" if is_max else (
+            "1px solid rgba(255, 255, 255, 0.06)" if is_dark else "1px solid rgba(0, 0, 0, 0.08)"
+        )
+        radius_spec = "0px" if is_max else f"{theme.radii.md}px"
+        bg_col = theme.colors.windowBackground
+        text_col = theme.colors.labelPrimary
+
+        self._central.setStyleSheet(f"""
+            QWidget#macOSRootCanvas {{
+                background-color: {bg_col};
+                border: {border_spec};
+                border-radius: {radius_spec};
+                color: {text_col};
+                font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+            }}
+            QScrollBar:vertical {{
+                background: transparent;
+                width: 7px;
+                margin: 2px 0 2px 0;
+            }}
+            QScrollBar::handle:vertical {{
+                background: rgba(255, 255, 255, 0.22);
+                min-height: 24px;
+                border-radius: 3px;
+            }}
+            QScrollBar::handle:vertical:hover {{
+                background: rgba(255, 255, 255, 0.45);
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                height: 0px;
+                background: transparent;
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                background: transparent;
+            }}
+            QScrollBar:horizontal {{
+                background: transparent;
+                height: 7px;
+                margin: 0 2px 0 2px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background: rgba(255, 255, 255, 0.22);
+                min-width: 24px;
+                border-radius: 3px;
+            }}
+            QScrollBar::handle:horizontal:hover {{
+                background: rgba(255, 255, 255, 0.45);
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+                width: 0px;
+                background: transparent;
+            }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+                background: transparent;
+            }}
+            QToolTip {{
+                background: {theme.colors.controlBackground};
+                color: {theme.colors.labelPrimary};
+                border: 1px solid {theme.colors.separator};
+                border-radius: 6px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }}
+        """)
+
+    def mouseMoveEvent(self, event):
+        if not self.isMaximized():
+            MacOSFramelessHelper.update_cursor_for_pos(self, event.pos())
+        super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event):
+        if not self.isMaximized() and event.button() == Qt.MouseButton.LeftButton:
+            if MacOSFramelessHelper.handle_mouse_press(self, event.pos()):
+                event.accept()
+                return
+        super().mousePressEvent(event)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.WindowStateChange:
+            self._update_window_frame_style()
+        super().changeEvent(event)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        try:
+            from core.theme_provider import theme
+            apply_macos_vibrancy(int(self.winId()), is_dark=theme.is_dark)
+        except Exception:
+            pass
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -5970,6 +6032,9 @@ class MainWindow(QMainWindow):
             self._on_hero_command("Pause focus music, Boss")
 
     def _on_nav_tab_changed(self, tab: str):
+        if hasattr(self, "_unified_toolbar"):
+            disp = (getattr(self, "_assistant_name", "NEO") or "NEO").upper()
+            self._unified_toolbar.set_title(disp if tab == "Home" else f"{disp} · {tab}")
         if tab == "Home":
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "hero_stage"):
                 self._hud_cam_stack.setCurrentWidget(self.hero_stage)
@@ -6040,97 +6105,23 @@ class MainWindow(QMainWindow):
             return w
 
     def _build_header(self) -> QWidget:
-        top = QWidget()
-        top.setFixedHeight(44)
-        top.setStyleSheet(f"background: {C.PANEL}; border-bottom: 1px solid {C.BORDER};")
-        t_lay = QHBoxLayout(top)
-        t_lay.setContentsMargins(14, 0, 14, 0)
-        t_lay.setSpacing(10)
+        # macOS Sequoia 48px Unified Titlebar & Toolbar
+        _cfg = _read_full_config()
+        self._assistant_name = (_cfg.get("assistant_name") or "JARVIS").strip()
+        _display = self._assistant_name.upper()
 
-        # ── macOS Window Traffic Lights (🔴 Close, 🟡 Minimize, 🟢 Maximize/Zoom) ──
-        traffic_cluster = QWidget()
-        traffic_cluster.setStyleSheet("background: transparent; border: none;")
-        traffic_lay = QHBoxLayout(traffic_cluster)
-        traffic_lay.setContentsMargins(2, 0, 6, 0)
-        traffic_lay.setSpacing(8)
+        self._unified_toolbar = MacOSUnifiedToolbar(title=_display or "NEO", parent=self)
 
-        # 🔴 Close
-        self.btn_traffic_close = QPushButton("×")
-        self.btn_traffic_close.setFixedSize(12, 12)
-        self.btn_traffic_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_traffic_close.setToolTip("Close")
-        self.btn_traffic_close.setStyleSheet("""
-            QPushButton {
-                background-color: #FF5F56;
-                border: 1px solid #E0443E;
-                border-radius: 6px;
-                color: transparent;
-                font-size: 8px;
-                font-weight: bold;
-                padding-bottom: 1px;
-            }
-            QPushButton:hover {
-                background-color: #FF5F56;
-                color: #4A0002;
-            }
-        """)
-        self.btn_traffic_close.clicked.connect(self.close)
-        traffic_lay.addWidget(self.btn_traffic_close)
+        # Wire Traffic Lights
+        self.btn_traffic_close = self._unified_toolbar.traffic_lights.btn_close
+        self.btn_traffic_min = self._unified_toolbar.traffic_lights.btn_min
+        self.btn_traffic_zoom = self._unified_toolbar.traffic_lights.btn_zoom
 
-        # 🟡 Minimize
-        self.btn_traffic_min = QPushButton("−")
-        self.btn_traffic_min.setFixedSize(12, 12)
-        self.btn_traffic_min.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_traffic_min.setToolTip("Minimize")
-        self.btn_traffic_min.setStyleSheet("""
-            QPushButton {
-                background-color: #FFBD2E;
-                border: 1px solid #DEA123;
-                border-radius: 6px;
-                color: transparent;
-                font-size: 9px;
-                font-weight: bold;
-                padding-bottom: 1px;
-            }
-            QPushButton:hover {
-                background-color: #FFBD2E;
-                color: #5B3C00;
-            }
-        """)
-        self.btn_traffic_min.clicked.connect(self.showMinimized)
-        traffic_lay.addWidget(self.btn_traffic_min)
-
-        # 🟢 Maximize / Zoom
-        self.btn_traffic_zoom = QPushButton("+")
-        self.btn_traffic_zoom.setFixedSize(12, 12)
-        self.btn_traffic_zoom.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_traffic_zoom.setToolTip("Zoom")
-        self.btn_traffic_zoom.setStyleSheet("""
-            QPushButton {
-                background-color: #27C93F;
-                border: 1px solid #1AAB29;
-                border-radius: 6px;
-                color: transparent;
-                font-size: 8px;
-                font-weight: bold;
-                padding-bottom: 1px;
-            }
-            QPushButton:hover {
-                background-color: #27C93F;
-                color: #0A4410;
-            }
-        """)
-        self.btn_traffic_zoom.clicked.connect(lambda: self.showNormal() if self.isMaximized() else self.showMaximized())
-        traffic_lay.addWidget(self.btn_traffic_zoom)
-
-        t_lay.addWidget(traffic_cluster)
-
-        # Divider between traffic lights and toolbar
-        traffic_sep = QFrame()
-        traffic_sep.setFrameShape(QFrame.Shape.VLine)
-        traffic_sep.setFixedSize(1, 16)
-        traffic_sep.setStyleSheet(f"background: {C.BORDER}; border: none;")
-        t_lay.addWidget(traffic_sep)
+        self._unified_toolbar.traffic_lights.close_clicked.connect(self.close)
+        self._unified_toolbar.traffic_lights.minimize_clicked.connect(self.showMinimized)
+        self._unified_toolbar.traffic_lights.zoom_clicked.connect(
+            lambda: self.showNormal() if self.isMaximized() else self.showMaximized()
+        )
 
         # macOS Tab pill: ⭘ NEO
         tab = QFrame()
@@ -6157,7 +6148,7 @@ class MainWindow(QMainWindow):
         tab_plus.setFont(QFont("Segoe UI", 11))
         tab_plus.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-left: 6px;")
         tab_l.addWidget(tab_plus)
-        t_lay.addWidget(tab)
+        self._unified_toolbar.left_slot.addWidget(tab)
 
         # macOS Status Pill (Interactive Online & Mic Mute Toggle)
         self._status_pill = QPushButton("● ONLINE · 🎙 MIC ACTIVE")
@@ -6174,7 +6165,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover { background: rgba(48, 209, 88, 0.25); }
         """)
         self._status_pill.clicked.connect(self._toggle_mute)
-        t_lay.addWidget(self._status_pill)
+        self._unified_toolbar.left_slot.addWidget(self._status_pill)
 
         # Live Voice & Engine Telemetry Pill
         self._live_engine_pill = QPushButton("⚡ 260ms · GEMINI 3.1 LIVE")
@@ -6191,7 +6182,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover { background: rgba(10, 132, 255, 0.25); color: #409CFF; }
         """)
         self._live_engine_pill.clicked.connect(self._open_providers)
-        t_lay.addWidget(self._live_engine_pill)
+        self._unified_toolbar.left_slot.addWidget(self._live_engine_pill)
 
         # Kerala Weather Pill
         self._weather_lbl = QLabel("⛅ KERALA  --°C")
@@ -6202,20 +6193,18 @@ class MainWindow(QMainWindow):
             padding: 3px 10px;
             font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
         """)
-        t_lay.addWidget(self._weather_lbl)
-
-        t_lay.addStretch()
+        self._unified_toolbar.left_slot.addWidget(self._weather_lbl)
 
         # Digital Clock & Date (macOS Typography)
         self._clock_lbl = QLabel(time.strftime("%H:%M:%S"))
         self._clock_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
         self._clock_lbl.setStyleSheet(f"color: {C.TEXT}; border: none; background: transparent; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
-        t_lay.addWidget(self._clock_lbl)
+        self._unified_toolbar.right_slot.addWidget(self._clock_lbl)
 
         self._date_lbl = QLabel(time.strftime("%a %d %b").upper())
         self._date_lbl.setFont(QFont("Segoe UI", 8))
         self._date_lbl.setStyleSheet(f"color: {C.TEXT_MED}; border: none; background: transparent; padding-right: 6px; font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif;")
-        t_lay.addWidget(self._date_lbl)
+        self._unified_toolbar.right_slot.addWidget(self._date_lbl)
 
         def _pill_btn(text: str, tip: str, cb) -> QPushButton:
             b = QPushButton(text)
@@ -6235,16 +6224,16 @@ class MainWindow(QMainWindow):
             b.clicked.connect(cb)
             return b
 
-        t_lay.addWidget(_pill_btn("📱 REMOTE", "Phone QR Code Remote Control", self._open_remote))
-        t_lay.addWidget(_pill_btn("🎛 TELEMETRY", "Subsystem Vitals & Controls", self._toggle_controls))
+        self._unified_toolbar.right_slot.addWidget(_pill_btn("📱 REMOTE", "Phone QR Code Remote Control", self._open_remote))
+        self._unified_toolbar.right_slot.addWidget(_pill_btn("🎛 TELEMETRY", "Subsystem Vitals & Controls", self._toggle_controls))
         self._drawer_btn = _pill_btn("⚙ CONFIG", "System Settings & Hardware", self._toggle_drawer)
-        t_lay.addWidget(self._drawer_btn)
+        self._unified_toolbar.right_slot.addWidget(self._drawer_btn)
 
         self._layout_mode_btn = _pill_btn("🕶 STEALTH", "Toggle Stealth / Command Mode [F8]", self._cycle_hud_layout)
-        t_lay.addWidget(self._layout_mode_btn)
+        self._unified_toolbar.right_slot.addWidget(self._layout_mode_btn)
 
         self._capsule_btn = _pill_btn("☁ CAPSULE", "Desktop Floating Island [F9]", self._toggle_floating_island)
-        t_lay.addWidget(self._capsule_btn)
+        self._unified_toolbar.right_slot.addWidget(self._capsule_btn)
 
         # Light / Dark Theme Toggle Button
         self._theme_toggle_btn = _pill_btn(
@@ -6252,9 +6241,9 @@ class MainWindow(QMainWindow):
             "Toggle Light / Dark Mode [F7]",
             self._on_toggle_theme
         )
-        t_lay.addWidget(self._theme_toggle_btn)
+        self._unified_toolbar.right_slot.addWidget(self._theme_toggle_btn)
 
-        return top
+        return self._unified_toolbar
 
     def _tick_clock(self):
         if hasattr(self, "_clock_lbl"):
@@ -6312,15 +6301,27 @@ class MainWindow(QMainWindow):
         threading.Thread(target=_fetch, daemon=True, name="kerala-weather-probe").start()
 
     def _build_left_panel(self) -> QWidget:
+        self._sidebar_container = MacOSSizingSidebarContainer(self)
         self._nav_sidebar = NeoNavSidebar()
         self._nav_sidebar.tab_changed.connect(self._on_nav_tab_changed)
         self._nav_sidebar.settings_requested.connect(self._show_setup)
         self._nav_sidebar.theme_toggled.connect(self._on_toggle_theme)
-        return self._nav_sidebar
+        if hasattr(self._nav_sidebar, "collapse_requested"):
+            self._nav_sidebar.collapse_requested.connect(self._sidebar_container.toggle_collapse)
+        self._sidebar_container.set_content_widget(self._nav_sidebar)
+        if hasattr(self, "_unified_toolbar"):
+            self._unified_toolbar.sidebar_toggle_requested.connect(self._sidebar_container.toggle_collapse)
+        return self._sidebar_container
 
     def _on_toggle_theme(self):
         """Toggle between Dark Graphite Mode and Crisp White Mode."""
         new_mode = toggle_ui_theme_mode(parent_win=self)
+        try:
+            from core.theme_provider import theme
+            apply_macos_vibrancy(int(self.winId()), is_dark=theme.is_dark)
+        except Exception:
+            pass
+        self._update_window_frame_style()
         return new_mode
 
     def _cycle_hud_layout(self):
@@ -6362,6 +6363,7 @@ class MainWindow(QMainWindow):
                 self._log.append_log("SYS: ⛶ Full Command Center restored.")
 
     def _build_right_panel(self) -> QWidget:
+        self._inspector_container = MacOSInspectorPanelContainer(self)
         self._widgets_sidebar = NeoWidgetsSidebar()
         self._widgets_sidebar.telemetry_requested.connect(self._toggle_controls)
         self._widgets_sidebar.engine_switch_requested.connect(self._open_providers)
@@ -6377,7 +6379,11 @@ class MainWindow(QMainWindow):
         self._bar_empathy = MetricBar("EMPATHY SYNC", "#ec4899")
         self._uptime_lbl = QLabel()
         self._proc_lbl = QLabel()
-        return self._widgets_sidebar
+
+        self._inspector_container.set_content_widget(self._widgets_sidebar)
+        if hasattr(self, "_unified_toolbar"):
+            self._unified_toolbar.inspector_toggle_requested.connect(self._inspector_container.toggle_collapse)
+        return self._inspector_container
 
     def _build_quick_drawer(self) -> QWidget:
         """Floating overlay panel shown when the ⚙ header button is toggled."""

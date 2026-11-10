@@ -1750,7 +1750,10 @@ class NeoWidgetsSidebar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(310)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setMinimumWidth(240)
+        self.setMaximumWidth(360)
+        self.setFixedWidth(280)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
         vbox = QVBoxLayout(self)
@@ -1788,10 +1791,14 @@ class NeoNavSidebar(QWidget):
     tab_changed = pyqtSignal(str)
     settings_requested = pyqtSignal()
     theme_toggled = pyqtSignal()
+    collapse_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(210)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setMinimumWidth(180)
+        self.setMaximumWidth(320)
+        self.setFixedWidth(220)
         self.setStyleSheet(f"""
             QWidget {{
                 background: {SIDEBAR_BG};
@@ -1816,17 +1823,18 @@ class NeoNavSidebar(QWidget):
         logo_row.addWidget(logo_title)
         logo_row.addStretch()
 
-        collapse_btn = QPushButton("􀏛")
-        collapse_btn.setText("◫")
+        collapse_btn = QPushButton("◫")
         collapse_btn.setFixedSize(22, 22)
         collapse_btn.setFont(font_text(9))
         collapse_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        collapse_btn.setToolTip("Toggle Sidebar [⌘1 / Ctrl+1]")
         collapse_btn.setStyleSheet(f"""
             QPushButton {{
                 background: transparent; color: {TEXT_DIM}; border: none; border-radius: 4px;
             }}
             QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
         """)
+        collapse_btn.clicked.connect(self.collapse_requested.emit)
         logo_row.addWidget(collapse_btn)
         lay.addLayout(logo_row)
 
