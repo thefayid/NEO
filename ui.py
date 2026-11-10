@@ -5836,8 +5836,32 @@ class MainWindow(QMainWindow):
 
 
 
-    def _on_task_action_triggered(self, text: str):
-        """Dispatched from Task Engine (Execute with NEO / Sync / Architect) — switches view to Chat so user sees real-time AI execution."""
+    def _on_task_action_triggered(self, payload):
+        """Dispatched from Task Engine (Execute with NEO / Sync / Architect). Reloads tasks if open."""
+        if hasattr(self, "tasks_view") and hasattr(self.tasks_view, "_reload_from_disk"):
+            try:
+                self.tasks_view._reload_from_disk()
+            except Exception:
+                pass
+
+        if isinstance(payload, dict):
+            from core.tasks_db import add_task
+            t = add_task(
+                title=payload.get("title", "New Task"),
+                category=payload.get("category", "General"),
+                priority=payload.get("priority", "High"),
+                notes=payload.get("notes", "")
+            )
+            text = f"Execute task: {t['title']}"
+        else:
+            text = str(payload)
+
+        # If it's an informational sync notification, log to system feed without forcing tab switch
+        if text.startswith("Task created") or text.startswith("Swarm action item"):
+            if hasattr(self, "_log") and self._log:
+                self._log.append_log(f"SYSTEM: {text}")
+            return
+
         if hasattr(self, "_nav_sidebar") and self._nav_sidebar:
             self._nav_sidebar.select_tab("Chat")
         self._on_hero_command(text)

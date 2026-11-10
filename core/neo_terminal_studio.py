@@ -1,11 +1,13 @@
 """
 core/neo_terminal_studio.py — Embedded Dev Terminal & Autonomous Agent Shell for NEO.
-Provides an interactive PowerShell / system terminal, live command execution,
-script runner presets, and AI error diagnosis.
+Provides an interactive PowerShell / system terminal, live streaming command execution,
+persistent working directory tracking (cd/pwd/cls emulation),
+quick script runners, and AI error diagnosis bridge.
 """
 from __future__ import annotations
 
 import os
+import re
 import sys
 import subprocess
 import threading
@@ -19,7 +21,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QTextBrowser, QFrame, QScrollArea
 )
 
-# Shared styling tokens
+# Shared executive styling tokens
 CARD_BG = "#1B1F26"
 CARD_BORDER = "#262B34"
 CARD_HOVER = "#222731"
@@ -141,31 +143,31 @@ class NeoTerminalStudio(QWidget):
         preset_row.addWidget(p_lbl)
 
         presets = [
-            ("git status", "git status"),
-            ("git log -5", "git log -n 5 --oneline"),
-            ("ps top cpu", "Get-Process | Sort-Object CPU -Descending | Select-Object -First 5"),
-            ("python test", "python -m unittest discover -s . -p \"*test*.py\""),
-            ("python version", "python --version; pip -V"),
-            ("ollama tags", "ollama list"),
+            ("📊 Git Status", "git status -s"),
+            ("🧪 Test Suite", "python -m unittest discover -s tests -p \"test_*.py\"" if (self.cwd / "tests").exists() else "python -c \"import main; print('Project Import OK')\""),
+            ("📁 File List", "Get-ChildItem" if sys.platform == "win32" else "ls -la"),
+            ("⚡ High CPU Tasks", "Get-Process | Sort-Object CPU -Descending | Select-Object -First 8 | Format-Table Id, ProcessName, CPU -AutoSize" if sys.platform == "win32" else "top -b -n 1 | head -n 12"),
         ]
+
         for label, cmd in presets:
-            pb = QPushButton(label)
-            pb.setFixedHeight(22)
-            pb.setFont(QFont("Segoe UI", 7))
-            pb.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            pb.setStyleSheet(f"""
+            btn = QPushButton(label)
+            btn.setFixedHeight(22)
+            btn.setFont(QFont("Segoe UI", 7))
+            btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            btn.setStyleSheet(f"""
                 QPushButton {{
-                    background: {CARD_BG}; color: {TEXT_MUTED};
+                    background: #14171C; color: {TEXT_WHITE};
                     border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
                 }}
-                QPushButton:hover {{ background: {CARD_HOVER}; border-color: {ACCENT_PRIMARY}; color: {TEXT_WHITE}; }}
+                QPushButton:hover {{ background: {CARD_HOVER}; border-color: {ACCENT_PRIMARY}; }}
             """)
-            pb.clicked.connect(lambda _, c=cmd: self.execute_command(c))
-            preset_row.addWidget(pb)
+            btn.clicked.connect(lambda ch, c=cmd: self.execute_command(c))
+            preset_row.addWidget(btn)
+
         preset_row.addStretch()
         main_lay.addLayout(preset_row)
 
-        # ── 3. Console Output Screen ─────────────────────────────────────────
+        # ── 3. Terminal Console Output Screen ────────────────────────────────
         self.console = QTextBrowser()
         self.console.setFont(QFont("Consolas", 9))
         self.console.setStyleSheet(f"""
@@ -174,54 +176,52 @@ class NeoTerminalStudio(QWidget):
                 color: #C8D1DC;
                 border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
-                padding: 12px;
+                padding: 10px;
                 line-height: 1.35;
             }}
         """)
         main_lay.addWidget(self.console, stretch=1)
 
-        # ── 4. AI Diagnosis Banner (Visible on Error) ────────────────────────
+        # ── 4. AI Error Diagnosis Banner (Hidden by default) ─────────────────
         self.diag_frame = QFrame()
         self.diag_frame.setVisible(False)
         self.diag_frame.setStyleSheet(f"""
             QFrame {{
-                background: rgba(217, 83, 79, 0.12);
-                border: 1px solid rgba(217, 83, 79, 0.35);
+                background: rgba(217, 83, 79, 0.1);
+                border: 1px solid rgba(217, 83, 79, 0.4);
                 border-radius: 6px;
             }}
         """)
-        d_lay = QHBoxLayout(self.diag_frame)
-        d_lay.setContentsMargins(12, 6, 12, 6)
-        d_lay.setSpacing(8)
+        diag_lay = QHBoxLayout(self.diag_frame)
+        diag_lay.setContentsMargins(10, 6, 10, 6)
 
-        d_icon = QLabel("⚠️")
-        d_icon.setFont(QFont("Segoe UI", 10))
-        d_lay.addWidget(d_icon)
+        d_icn = QLabel("⚠️")
+        d_icn.setFont(QFont("Segoe UI", 10))
+        diag_lay.addWidget(d_icn)
 
-        self.diag_msg = QLabel("Command failed with non-zero exit status.")
+        self.diag_msg = QLabel("Command failed with non-zero exit code.")
         self.diag_msg.setFont(QFont("Segoe UI", 8))
-        self.diag_msg.setStyleSheet(f"color: {SEMANTIC_ERROR};")
-        d_lay.addWidget(self.diag_msg, stretch=1)
+        self.diag_msg.setStyleSheet("color: #FCA5A5; border: none; background: transparent;")
+        diag_lay.addWidget(self.diag_msg, stretch=1)
 
-        self.diag_btn = QPushButton("🛠️ Diagnose & Auto-Fix with NEO")
-        self.diag_btn.setFixedHeight(26)
-        self.diag_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.diag_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.diag_btn.setStyleSheet(f"""
+        self.diag_fix_btn = QPushButton("🧠 Ask NEO to Auto-Fix")
+        self.diag_fix_btn.setFixedHeight(24)
+        self.diag_fix_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.diag_fix_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.diag_fix_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {SEMANTIC_ERROR}; color: #ffffff;
+                background: {ACCENT_PRIMARY}; color: #ffffff;
                 border: none; border-radius: 4px; padding: 0 10px;
             }}
-            QPushButton:hover {{ background: #e04440; }}
+            QPushButton:hover {{ background: #4a7fdc; }}
         """)
-        self.diag_btn.clicked.connect(self._trigger_ai_diagnosis)
-        d_lay.addWidget(self.diag_btn)
+        self.diag_fix_btn.clicked.connect(self._trigger_ai_diagnosis)
+        diag_lay.addWidget(self.diag_fix_btn)
 
         main_lay.addWidget(self.diag_frame)
 
-        # ── 5. Command Input Line ────────────────────────────────────────────
+        # ── 5. Command Input Box ─────────────────────────────────────────────
         inp_box = QFrame()
-        inp_box.setFixedHeight(38)
         inp_box.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};
@@ -230,18 +230,23 @@ class NeoTerminalStudio(QWidget):
             }}
         """)
         i_lay = QHBoxLayout(inp_box)
-        i_lay.setContentsMargins(10, 0, 8, 0)
+        i_lay.setContentsMargins(10, 4, 10, 4)
         i_lay.setSpacing(6)
 
-        p_icn = QLabel("PS >")
-        p_icn.setFont(QFont("Consolas", 9, QFont.Weight.Bold))
-        p_icn.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
-        i_lay.addWidget(p_icn)
+        self.prompt_lbl = QLabel(f"PS {self.cwd.name}&gt;")
+        self.prompt_lbl.setFont(QFont("Consolas", 9, QFont.Weight.Bold))
+        self.prompt_lbl.setStyleSheet(f"color: {ACCENT_PRIMARY}; border: none; background: transparent;")
+        i_lay.addWidget(self.prompt_lbl)
 
         self.cmd_input = _HistoryLineEdit()
         self.cmd_input.setFont(QFont("Consolas", 9))
-        self.cmd_input.setPlaceholderText("Enter PowerShell command or script...")
-        self.cmd_input.setStyleSheet("border: none; background: transparent; color: #E6E8EC;")
+        self.cmd_input.setPlaceholderText("Type command or script (e.g., git status, cd .., python script.py)...")
+        self.cmd_input.setStyleSheet("""
+            QLineEdit {
+                background: transparent; color: #ffffff;
+                border: none; padding: 2px 0;
+            }
+        """)
         self.cmd_input.returnPressed.connect(self._on_return_pressed)
         self.cmd_input.up_pressed.connect(self._history_up)
         self.cmd_input.down_pressed.connect(self._history_down)
@@ -270,7 +275,7 @@ class NeoTerminalStudio(QWidget):
             f"<span style='color: #64748B;'>Type any system command, script, or use quick presets above.</span><br><br>"
         )
 
-    # ── Execution Logic ───────────────────────────────────────────────────────
+    # ── Execution Logic & Shell Built-in Emulation ────────────────────────────
 
     def _on_return_pressed(self):
         cmd = self.cmd_input.text().strip()
@@ -287,11 +292,44 @@ class NeoTerminalStudio(QWidget):
             return
 
         self.diag_frame.setVisible(False)
+        self.console.append(f"<span style='color: #34D399; font-weight: bold;'>PS {self.cwd}&gt;</span> <span style='color: #ffffff;'>{cmd}</span><br>")
+
+        # ── Shell Built-in 1: cls / clear ──
+        if cmd.strip().lower() in ("cls", "clear"):
+            self.console.clear()
+            return
+
+        # ── Shell Built-in 2: pwd ──
+        if cmd.strip().lower() == "pwd":
+            self.console.append(f"<span style='color: #94A3B8;'>{self.cwd}</span><br><br>")
+            return
+
+        # ── Shell Built-in 3: cd / chdir / Set-Location ──
+        cd_match = re.match(r'^(?:cd|chdir|set-location)(?:\s+(.*))?$', cmd.strip(), re.IGNORECASE)
+        if cd_match:
+            target_str = (cd_match.group(1) or "").strip()
+            # Strip quotes if present
+            if (target_str.startswith('"') and target_str.endswith('"')) or (target_str.startswith("'") and target_str.endswith("'")):
+                target_str = target_str[1:-1]
+
+            if not target_str or target_str == "~":
+                new_path = Path.home()
+            else:
+                new_path = (self.cwd / target_str).resolve() if not Path(target_str).is_absolute() else Path(target_str).resolve()
+
+            if new_path.is_dir():
+                self.cwd = new_path
+                self.cwd_lbl.setText(f"Working Directory: {self.cwd}")
+                self.prompt_lbl.setText(f"PS {self.cwd.name}&gt;")
+                self.console.append(f"<span style='color: #94A3B8;'>Changed directory to: {self.cwd}</span><br><br>")
+            else:
+                self.console.append(f"<span style='color: #F87171;'>Cannot find path '{target_str}' because it does not exist.</span><br><br>")
+            return
+
+        # ── Subprocess Execution ──
         self.status_pill.setText("⚡ RUNNING")
         self.status_pill.setStyleSheet(f"color: {SEMANTIC_WARNING}; background: rgba(217, 164, 65, 0.15); border-radius: 10px; padding: 2px 8px;")
         self.abort_btn.setEnabled(True)
-
-        self.console.append(f"<span style='color: #34D399; font-weight: bold;'>PS {self.cwd}&gt;</span> <span style='color: #ffffff;'>{cmd}</span><br>")
 
         def work():
             shell_cmd = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd] if sys.platform == "win32" else ["bash", "-c", cmd]
@@ -365,7 +403,7 @@ class NeoTerminalStudio(QWidget):
             # Show AI Diagnosis Banner
             self.last_failed_cmd = cmd
             self.last_failed_err = stderr_content or f"Non-zero exit code {return_code}"
-            self.diag_msg.setText(f"Command '{cmd[:30]}...' failed with exit code {return_code}.")
+            self.diag_msg.setText(f"Command '{cmd[:35]}...' failed with exit code {return_code}.")
             self.diag_frame.setVisible(True)
 
     def _abort_command(self):

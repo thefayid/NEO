@@ -1,7 +1,8 @@
 """
 core/neo_files_view.py — Executive Files & Document Vault Studio for NEO.
-Provides file tree exploration, multi-format document previewing,
-instant RAG semantic analysis, task extraction, and memory ingestion.
+Provides workspace file exploration, multi-format document previewing,
+instant RAG semantic analysis via actions.document_analyzer,
+direct task extraction to memory/tasks.json, and memory ingestion.
 """
 from __future__ import annotations
 
@@ -17,10 +18,12 @@ from PyQt6.QtGui import QFont, QCursor, QColor, QAction
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
     QLineEdit, QTextBrowser, QFrame, QSplitter, QTreeWidget,
-    QTreeWidgetItem, QHeaderView, QFileDialog, QScrollArea
+    QTreeWidgetItem, QHeaderView, QFileDialog, QScrollArea, QComboBox
 )
 
-# Shared theme styling tokens
+from core.tasks_db import add_task
+
+# Shared executive theme tokens
 CARD_BG = "#1B1F26"
 CARD_BORDER = "#262B34"
 CARD_HOVER = "#222731"
@@ -37,7 +40,7 @@ SEMANTIC_ERROR = "#D9534F"
 class NeoFilesView(QWidget):
     """Executive File Explorer, Document Inspector, and RAG Semantic Analyzer."""
     file_action_requested = pyqtSignal(str, str)     # (action_type, file_path)
-    task_action_triggered = pyqtSignal(dict)        # (task_payload)
+    task_action_triggered = pyqtSignal(str)         # (notification_text)
     search_triggered = pyqtSignal(str)              # (query)
 
     def __init__(self, parent=None, initial_root: Optional[str] = None):
@@ -45,6 +48,7 @@ class NeoFilesView(QWidget):
         self.workspace_root = Path(initial_root or os.getcwd()).resolve()
         self.current_file: Optional[Path] = None
         self.active_filter: str = "All"
+        self._last_analysis_report: str = ""
 
         self.setStyleSheet(f"""
             QWidget {{
@@ -140,13 +144,13 @@ class NeoFilesView(QWidget):
         right_widget = self._build_intel_pane()
         self.splitter.addWidget(right_widget)
 
-        self.splitter.setSizes([260, 520, 320])
+        self.splitter.setSizes([260, 480, 360])
         main_lay.addWidget(self.splitter, stretch=1)
 
-        # Initial Population
+        # Populate file tree
         self._populate_tree()
 
-    # ── Left Pane: File Tree Explorer ─────────────────────────────────────────
+    # ── Left Pane: File Tree ──────────────────────────────────────────────────
 
     def _build_tree_pane(self) -> QWidget:
         w = QFrame()
@@ -158,64 +162,63 @@ class NeoFilesView(QWidget):
             }}
         """)
         lay = QVBoxLayout(w)
-        lay.setContentsMargins(12, 12, 12, 12)
+        lay.setContentsMargins(10, 10, 10, 10)
         lay.setSpacing(8)
 
-        # Search Bar
-        self.search_edit = QLineEdit()
-        self.search_edit.setFixedHeight(28)
-        self.search_edit.setPlaceholderText("Filter files...")
-        self.search_edit.setFont(QFont("Segoe UI", 8))
-        self.search_edit.setStyleSheet(f"""
+        # Search box
+        self.search_in = QLineEdit()
+        self.search_in.setFixedHeight(28)
+        self.search_in.setFont(QFont("Segoe UI", 8))
+        self.search_in.setPlaceholderText("Filter files...")
+        self.search_in.setStyleSheet(f"""
             QLineEdit {{
                 background: #14171C; color: {TEXT_WHITE};
                 border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
             }}
             QLineEdit:focus {{ border-color: {ACCENT_PRIMARY}; }}
         """)
-        self.search_edit.textChanged.connect(self._on_search_changed)
-        lay.addWidget(self.search_edit)
+        self.search_in.textChanged.connect(self._on_search_changed)
+        lay.addWidget(self.search_in)
 
         # Filter Pills
-        pills_row = QHBoxLayout()
-        pills_row.setSpacing(4)
-        for cat in ["All", "Code", "Docs", "Data"]:
+        filter_row = QHBoxLayout()
+        filter_row.setSpacing(4)
+        categories = ["All", "Code", "Docs", "Data"]
+        self.filter_buttons = {}
+        for cat in categories:
             btn = QPushButton(cat)
             btn.setFixedHeight(22)
-            btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold if cat == "All" else QFont.Weight.Normal))
+            btn.setFont(QFont("Segoe UI", 7))
             btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            btn.setStyleSheet(self._filter_pill_style(cat == "All"))
-            btn.clicked.connect(lambda _, c=cat: self._set_filter(c))
-            pills_row.addWidget(btn)
-        pills_row.addStretch()
-        lay.addLayout(pills_row)
+            is_active = (cat == "All")
+            btn.setStyleSheet(self._filter_btn_style(is_active))
+            btn.clicked.connect(lambda ch, c=cat: self._set_category_filter(c))
+            filter_row.addWidget(btn)
+            self.filter_buttons[cat] = btn
+        lay.addLayout(filter_row)
 
         # Tree Widget
         self.tree = QTreeWidget()
         self.tree.setHeaderLabels(["Name", "Size"])
         self.tree.header().resizeSection(0, 170)
-        self.tree.setFont(QFont("Segoe UI", 8))
+        self.tree.header().setStyleSheet(f"""
+            QHeaderView::section {{
+                background: #14171C; color: {TEXT_MUTED};
+                border: none; padding: 4px; font-size: 7pt; font-weight: bold;
+            }}
+        """)
         self.tree.setStyleSheet(f"""
             QTreeWidget {{
-                background: transparent;
-                border: none;
-                color: {TEXT_WHITE};
+                background: transparent; border: none; color: {TEXT_WHITE};
             }}
             QTreeWidget::item {{
-                padding: 3px 0;
+                padding: 3px 0; border-radius: 4px;
             }}
             QTreeWidget::item:hover {{
                 background: {CARD_HOVER};
             }}
             QTreeWidget::item:selected {{
-                background: rgba(91, 141, 239, 0.25);
-                color: #ffffff;
-            }}
-            QHeaderView::section {{
-                background: transparent;
-                color: {TEXT_MUTED};
-                border: none;
-                font-size: 8pt;
+                background: rgba(91, 141, 239, 0.25); color: #ffffff;
             }}
         """)
         self.tree.itemClicked.connect(self._on_tree_item_clicked)
@@ -223,13 +226,15 @@ class NeoFilesView(QWidget):
 
         return w
 
-    def _filter_pill_style(self, active: bool) -> str:
+    def _filter_btn_style(self, active: bool) -> str:
         if active:
-            return f"background: {ACCENT_PRIMARY}; color: #ffffff; border: none; border-radius: 4px; padding: 0 6px;"
-        return f"background: transparent; color: {TEXT_MUTED}; border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 6px;"
+            return f"background: {ACCENT_PRIMARY}; color: #ffffff; border: none; border-radius: 3px; padding: 0 6px;"
+        return f"background: transparent; color: {TEXT_MUTED}; border: 1px solid {CARD_BORDER}; border-radius: 3px; padding: 0 6px;"
 
-    def _set_filter(self, cat: str):
+    def _set_category_filter(self, cat: str):
         self.active_filter = cat
+        for c, btn in self.filter_buttons.items():
+            btn.setStyleSheet(self._filter_btn_style(c == cat))
         self._populate_tree()
 
     # ── Center Pane: Document Viewer ──────────────────────────────────────────
@@ -244,81 +249,77 @@ class NeoFilesView(QWidget):
             }}
         """)
         lay = QVBoxLayout(w)
-        lay.setContentsMargins(14, 12, 14, 12)
+        lay.setContentsMargins(12, 10, 12, 10)
         lay.setSpacing(8)
 
-        # Header bar with active file metadata
-        v_hdr = QHBoxLayout()
-        v_hdr.setSpacing(8)
+        # Viewer Header
+        vh = QHBoxLayout()
+        vh.setSpacing(8)
 
-        self.viewer_title = QLabel("Select a document or file to inspect")
-        self.viewer_title.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        self.viewer_title.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        v_hdr.addWidget(self.viewer_title)
+        self.viewer_title = QLabel("Select a document to inspect")
+        self.viewer_title.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.viewer_title.setStyleSheet(f"color: {TEXT_WHITE};")
+        vh.addWidget(self.viewer_title)
 
-        self.viewer_badge = QLabel("")
+        self.viewer_badge = QLabel("TEXT")
         self.viewer_badge.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        self.viewer_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.15); border-radius: 4px; padding: 1px 6px;")
+        self.viewer_badge.setStyleSheet(f"color: {TEXT_MUTED}; background: rgba(154, 161, 173, 0.15); border-radius: 4px; padding: 2px 6px;")
         self.viewer_badge.setVisible(False)
-        v_hdr.addWidget(self.viewer_badge)
+        vh.addWidget(self.viewer_badge)
 
-        v_hdr.addStretch()
+        vh.addStretch()
 
-        self.copy_btn = QPushButton("📋 Copy")
-        self.copy_btn.setFixedHeight(24)
-        self.copy_btn.setFont(QFont("Segoe UI", 7))
-        self.copy_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.copy_btn.setStyleSheet(f"""
+        copy_btn = QPushButton("📋 Copy")
+        copy_btn.setFixedHeight(24)
+        copy_btn.setFont(QFont("Segoe UI", 7))
+        copy_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        copy_btn.setStyleSheet(f"""
             QPushButton {{
-                background: transparent; color: {TEXT_MUTED};
+                background: transparent; color: {TEXT_WHITE};
                 border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
             }}
-            QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
+            QPushButton:hover {{ background: {CARD_HOVER}; }}
         """)
-        self.copy_btn.clicked.connect(self._copy_content)
-        v_hdr.addWidget(self.copy_btn)
+        copy_btn.clicked.connect(self._copy_content)
+        vh.addWidget(copy_btn)
 
-        self.open_ext_btn = QPushButton("↗ Open")
-        self.open_ext_btn.setFixedHeight(24)
-        self.open_ext_btn.setFont(QFont("Segoe UI", 7))
-        self.open_ext_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.open_ext_btn.setStyleSheet(f"""
+        open_os_btn = QPushButton("↗ Open Native")
+        open_os_btn.setFixedHeight(24)
+        open_os_btn.setFont(QFont("Segoe UI", 7))
+        open_os_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        open_os_btn.setStyleSheet(f"""
             QPushButton {{
-                background: transparent; color: {TEXT_MUTED};
+                background: transparent; color: {TEXT_WHITE};
                 border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
             }}
-            QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
+            QPushButton:hover {{ background: {CARD_HOVER}; }}
         """)
-        self.open_ext_btn.clicked.connect(self._open_in_os)
-        v_hdr.addWidget(self.open_ext_btn)
+        open_os_btn.clicked.connect(self._open_in_os)
+        vh.addWidget(open_os_btn)
 
-        lay.addLayout(v_hdr)
+        lay.addLayout(vh)
 
-        # Text / Document Browser
+        # Content Text Browser
         self.content_browser = QTextBrowser()
         self.content_browser.setFont(QFont("Consolas", 9))
-        self.content_browser.setOpenExternalLinks(True)
+        self.content_browser.setPlaceholderText("File contents and source previews will appear here...")
         self.content_browser.setStyleSheet(f"""
             QTextBrowser {{
-                background: #12151B;
-                color: #C8D1DC;
-                border: 1px solid {CARD_BORDER};
-                border-radius: 6px;
-                padding: 10px;
-                line-height: 1.4;
+                background: #12151B; color: #D1D5DB;
+                border: 1px solid {CARD_BORDER}; border-radius: 6px; padding: 8px;
             }}
         """)
         lay.addWidget(self.content_browser, stretch=1)
 
-        # Footer status line
+        # Status Footer
         self.viewer_status = QLabel("Ready")
-        self.viewer_status.setFont(QFont("Segoe UI", 7))
-        self.viewer_status.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
+        self.viewer_status.setFont(QFont("Segoe UI", 8))
+        self.viewer_status.setStyleSheet(f"color: {TEXT_DIM};")
         lay.addWidget(self.viewer_status)
 
         return w
 
-    # ── Right Pane: Intelligence & RAG Vault ──────────────────────────────────
+    # ── Right Pane: RAG Intelligence & Document Analysis ──────────────────────
 
     def _build_intel_pane(self) -> QWidget:
         w = QFrame()
@@ -330,45 +331,68 @@ class NeoFilesView(QWidget):
             }}
         """)
         lay = QVBoxLayout(w)
-        lay.setContentsMargins(14, 12, 14, 12)
-        lay.setSpacing(10)
+        lay.setContentsMargins(12, 10, 12, 10)
+        lay.setSpacing(8)
 
         # Header
-        i_hdr = QHBoxLayout()
-        i_icn = QLabel("🧠")
-        i_icn.setFont(QFont("Segoe UI", 11))
-        i_hdr.addWidget(i_icn)
-        i_txt = QLabel("Document Intelligence")
-        i_txt.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        i_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        i_hdr.addWidget(i_txt)
-        i_hdr.addStretch()
-        lay.addLayout(i_hdr)
+        ih = QHBoxLayout()
+        ih.setSpacing(6)
+        i_icon = QLabel("🧠")
+        i_icon.setFont(QFont("Segoe UI", 11))
+        ih.addWidget(i_icon)
+        i_title = QLabel("Document Intelligence")
+        i_title.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        i_title.setStyleSheet(f"color: {TEXT_WHITE};")
+        ih.addWidget(i_title)
+        ih.addStretch()
+        lay.addLayout(ih)
 
-        # AI Action Buttons
+        # Action Selector row
         act_row = QHBoxLayout()
         act_row.setSpacing(6)
+        act_lbl = QLabel("Action:")
+        act_lbl.setFont(QFont("Segoe UI", 8))
+        act_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
+        act_row.addWidget(act_lbl)
 
-        self.analyze_btn = QPushButton("⚡ Analyze Document")
+        self.action_combo = QComboBox()
+        self.action_combo.setFont(QFont("Segoe UI", 8))
+        self.action_combo.addItems([
+            "Executive Summary",
+            "Redline Contract & Audit",
+            "OCR Receipt & Financials",
+            "Extract Structured Tables"
+        ])
+        self.action_combo.setStyleSheet(f"""
+            QComboBox {{
+                background: #14171C; color: {TEXT_WHITE};
+                border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 2px 6px;
+            }}
+            QComboBox QAbstractItemView {{
+                background: {CARD_BG}; color: {TEXT_WHITE}; selection-background-color: {ACCENT_PRIMARY};
+            }}
+        """)
+        act_row.addWidget(self.action_combo, stretch=1)
+        lay.addLayout(act_row)
+
+        self.analyze_btn = QPushButton("⚡ Execute Analysis")
         self.analyze_btn.setFixedHeight(28)
         self.analyze_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.analyze_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.analyze_btn.setStyleSheet(f"""
             QPushButton {{
                 background: rgba(91, 141, 239, 0.2); color: {ACCENT_PRIMARY};
-                border: 1px solid {ACCENT_PRIMARY}; border-radius: 5px;
+                border: 1px solid {ACCENT_PRIMARY}; border-radius: 4px;
             }}
             QPushButton:hover {{ background: rgba(91, 141, 239, 0.35); color: #ffffff; }}
         """)
         self.analyze_btn.clicked.connect(self._run_document_analysis)
-        act_row.addWidget(self.analyze_btn, stretch=1)
+        lay.addWidget(self.analyze_btn)
 
-        lay.addLayout(act_row)
-
-        # Summary & Insights Output Area
+        # Analysis Result Browser
         self.analysis_browser = QTextBrowser()
         self.analysis_browser.setFont(QFont("Segoe UI", 8))
-        self.analysis_browser.setPlaceholderText("Click 'Analyze Document' to generate an executive AI summary, extract key functions, action items, and security findings.")
+        self.analysis_browser.setPlaceholderText("Document dossiers, redline findings, financial line items, and RAG semantic extractions will stream here...")
         self.analysis_browser.setStyleSheet(f"""
             QTextBrowser {{
                 background: #14171C; color: {TEXT_WHITE};
@@ -377,46 +401,45 @@ class NeoFilesView(QWidget):
         """)
         lay.addWidget(self.analysis_browser, stretch=1)
 
-        # Downstream Automation Buttons
-        btn_grid = QVBoxLayout()
-        btn_grid.setSpacing(6)
+        # Action Buttons
+        btn_box = QVBoxLayout()
+        btn_box.setSpacing(6)
 
-        self.ingest_mem_btn = QPushButton("💾 Ingest to Long-Term Memory")
-        self.ingest_mem_btn.setFixedHeight(26)
-        self.ingest_mem_btn.setFont(QFont("Segoe UI", 8))
-        self.ingest_mem_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.ingest_mem_btn.setStyleSheet(f"""
-            QPushButton {{
-                background: transparent; color: {TEXT_WHITE};
-                border: 1px solid {CARD_BORDER}; border-radius: 4px;
-            }}
-            QPushButton:hover {{ background: {CARD_HOVER}; border-color: {ACCENT_PRIMARY}; }}
-        """)
-        self.ingest_mem_btn.clicked.connect(self._ingest_to_memory)
-        btn_grid.addWidget(self.ingest_mem_btn)
-
-        self.extract_tasks_btn = QPushButton("☑ Extract Action Items to Tasks")
-        self.extract_tasks_btn.setFixedHeight(26)
-        self.extract_tasks_btn.setFont(QFont("Segoe UI", 8))
-        self.extract_tasks_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.extract_tasks_btn.setStyleSheet(f"""
+        self.extract_task_btn = QPushButton("☑ Extract Action Items as Tasks")
+        self.extract_task_btn.setFixedHeight(26)
+        self.extract_task_btn.setFont(QFont("Segoe UI", 8))
+        self.extract_task_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.extract_task_btn.setStyleSheet(f"""
             QPushButton {{
                 background: transparent; color: {TEXT_WHITE};
                 border: 1px solid {CARD_BORDER}; border-radius: 4px;
             }}
             QPushButton:hover {{ background: {CARD_HOVER}; border-color: {SEMANTIC_SUCCESS}; }}
         """)
-        self.extract_tasks_btn.clicked.connect(self._extract_tasks)
-        btn_grid.addWidget(self.extract_tasks_btn)
+        self.extract_task_btn.clicked.connect(self._extract_tasks)
+        btn_box.addWidget(self.extract_task_btn)
 
-        lay.addLayout(btn_grid)
+        self.ingest_btn = QPushButton("📥 Ingest Reference to Vault Memory")
+        self.ingest_btn.setFixedHeight(26)
+        self.ingest_btn.setFont(QFont("Segoe UI", 8))
+        self.ingest_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.ingest_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent; color: {TEXT_WHITE};
+                border: 1px solid {CARD_BORDER}; border-radius: 4px;
+            }}
+            QPushButton:hover {{ background: {CARD_HOVER}; border-color: {ACCENT_PRIMARY}; }}
+        """)
+        self.ingest_btn.clicked.connect(self._ingest_to_memory)
+        btn_box.addWidget(self.ingest_btn)
 
+        lay.addLayout(btn_box)
         return w
 
-    # ── Population & Interactions ─────────────────────────────────────────────
+    # ── Explorer Tree Logic ───────────────────────────────────────────────────
 
     def _browse_root(self):
-        new_dir = QFileDialog.getExistingDirectory(self, "Select Workspace Root", str(self.workspace_root))
+        new_dir = QFileDialog.getExistingDirectory(self, "Select Workspace Folder", str(self.workspace_root))
         if new_dir:
             self.workspace_root = Path(new_dir).resolve()
             self.root_btn.setText(f"📂 {self.workspace_root.name}")
@@ -428,69 +451,68 @@ class NeoFilesView(QWidget):
         if not self.workspace_root.exists():
             return
 
+        search = self.search_in.text().strip().lower()
         total_files = 0
-        search = self.search_edit.text().strip().lower()
 
-        # Folders to skip
-        SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "venv", ".idea", ".vscode"}
-
-        def matches_category(p: Path) -> bool:
-            ext = p.suffix.lower()
-            if self.active_filter == "Code":
-                return ext in [".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".rs", ".cpp", ".c", ".h"]
-            elif self.active_filter == "Docs":
-                return ext in [".md", ".txt", ".pdf", ".rst", ".doc", ".docx"]
-            elif self.active_filter == "Data":
-                return ext in [".json", ".csv", ".xml", ".yaml", ".yml", ".sql", ".sqlite"]
-            return True
-
-        def format_size(sz: int) -> str:
-            if sz < 1024:
-                return f"{sz} B"
-            elif sz < 1024 * 1024:
-                return f"{sz/1024:.1f} KB"
-            return f"{sz/(1024*1024):.1f} MB"
+        SKIP_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".pytest_cache", ".idea", ".vscode"}
 
         def get_icon(p: Path) -> str:
             if p.is_dir():
                 return "📁"
-            ext = p.suffix.lower()
-            if ext in [".py"]:
-                return "🐍"
-            elif ext in [".js", ".ts"]:
-                return "📜"
-            elif ext in [".md", ".txt"]:
-                return "📄"
-            elif ext in [".json", ".yaml", ".yml"]:
-                return "⚙"
-            elif ext in [".png", ".jpg", ".jpeg", ".svg"]:
-                return "🖼"
-            elif ext in [".csv"]:
-                return "📊"
-            return "🗎"
+            s = p.suffix.lower()
+            if s in (".py", ".pyw"): return "🐍"
+            if s in (".json", ".yaml", ".yml", ".toml"): return "⚙️"
+            if s in (".md", ".txt", ".rst"): return "📄"
+            if s in (".pdf", ".docx", ".doc"): return "📑"
+            if s in (".png", ".jpg", ".jpeg", ".webp"): return "🖼️"
+            return "📄"
+
+        def format_size(bytes_val: int) -> str:
+            if bytes_val < 1024:
+                return f"{bytes_val} B"
+            if bytes_val < 1024 * 1024:
+                return f"{bytes_val / 1024:.1f} KB"
+            return f"{bytes_val / (1024 * 1024):.1f} MB"
+
+        def matches_category(p: Path) -> bool:
+            if self.active_filter == "All":
+                return True
+            s = p.suffix.lower()
+            if self.active_filter == "Code":
+                return s in (".py", ".js", ".ts", ".html", ".css", ".cpp", ".c", ".h", ".ps1", ".bat", ".sh")
+            if self.active_filter == "Docs":
+                return s in (".md", ".txt", ".pdf", ".docx", ".rst")
+            if self.active_filter == "Data":
+                return s in (".json", ".csv", ".tsv", ".sqlite", ".db", ".yaml", ".yml")
+            return True
 
         try:
             for item in sorted(self.workspace_root.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
+                if item.name.startswith(".") and item.name != ".env":
+                    continue
                 if item.name in SKIP_DIRS:
                     continue
+
                 if item.is_dir():
-                    dir_node = QTreeWidgetItem([f"📁 {item.name}", ""])
+                    dir_node = QTreeWidgetItem([f"{get_icon(item)} {item.name}", ""])
                     dir_node.setData(0, Qt.ItemDataRole.UserRole, str(item))
-                    
-                    # Populate first level of files
+
                     has_children = False
-                    for sub in sorted(item.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
-                        if sub.name in SKIP_DIRS:
-                            continue
-                        if sub.is_file() and matches_category(sub):
-                            if search and search not in sub.name.lower():
+                    try:
+                        for sub in sorted(item.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
+                            if sub.name in SKIP_DIRS:
                                 continue
-                            sz_str = format_size(sub.stat().st_size)
-                            sub_node = QTreeWidgetItem([f"{get_icon(sub)} {sub.name}", sz_str])
-                            sub_node.setData(0, Qt.ItemDataRole.UserRole, str(sub))
-                            dir_node.addChild(sub_node)
-                            has_children = True
-                            total_files += 1
+                            if sub.is_file() and matches_category(sub):
+                                if search and search not in sub.name.lower():
+                                    continue
+                                sz_str = format_size(sub.stat().st_size)
+                                sub_node = QTreeWidgetItem([f"{get_icon(sub)} {sub.name}", sz_str])
+                                sub_node.setData(0, Qt.ItemDataRole.UserRole, str(sub))
+                                dir_node.addChild(sub_node)
+                                has_children = True
+                                total_files += 1
+                    except PermissionError:
+                        pass
 
                     if has_children or not search:
                         self.tree.addTopLevelItem(dir_node)
@@ -528,7 +550,7 @@ class NeoFilesView(QWidget):
         try:
             sz = p.stat().st_size
             if sz > 2 * 1024 * 1024:
-                self.content_browser.setPlainText(f"File is large ({sz/(1024*1024):.2f} MB). Rendering truncated preview.\n\n")
+                self.content_browser.setPlainText(f"File is large ({sz/(1024*1024):.2f} MB). Rendering preview:\n\n")
                 with open(p, "r", encoding="utf-8", errors="replace") as f:
                     preview = f.read(40000)
                     self.content_browser.append(preview)
@@ -543,7 +565,7 @@ class NeoFilesView(QWidget):
             lines = content.count("\n") + 1
             self.viewer_status.setText(f"Path: {p}  ·  Lines: {lines:,}  ·  Size: {sz:,} bytes")
         except Exception as e:
-            self.content_browser.setPlainText(f"Error opening file: {e}")
+            self.content_browser.setPlainText(f"Error reading file: {e}")
             self.viewer_status.setText(f"Failed to read {p.name}")
 
     def _copy_content(self):
@@ -573,19 +595,31 @@ class NeoFilesView(QWidget):
 
     def _run_document_analysis(self):
         if not self.current_file or not self.current_file.exists():
-            self.analysis_browser.setHtml("<span style='color: #fbbf24;'>Select a file from the explorer first.</span>")
+            self.analysis_browser.setHtml("<span style='color: #FBBF24;'>Select a document from the explorer first.</span>")
             return
 
-        self.analysis_browser.setHtml(f"<i>Analyzing <b>{self.current_file.name}</b> with NEO Intelligence...</i>")
-        import threading
+        choice = self.action_combo.currentText()
+        action_map = {
+            "Executive Summary": "summarize",
+            "Redline Contract & Audit": "redline",
+            "OCR Receipt & Financials": "ocr_receipt",
+            "Extract Structured Tables": "extract_tables",
+        }
+        chosen_action = action_map.get(choice, "summarize")
+
+        self.analysis_browser.setHtml(f"<i>Executing <b>{choice}</b> on {self.current_file.name} with Stark Document Intelligence...</i>")
+        self.analyze_btn.setEnabled(False)
+        self.analyze_btn.setText("Analyzing...")
 
         def work():
             try:
                 from actions.document_analyzer import document_analyzer
-                res = document_analyzer(parameters={"file_path": str(self.current_file), "task": "summarize"})
+                res = document_analyzer(parameters={"action": chosen_action, "file_path": str(self.current_file)})
+                self._last_analysis_report = res
+
                 formatted_html = f"""
-                <div style='color: #38bdf8; font-weight: bold; margin-bottom: 6px;'>
-                    📄 Analysis Dossier: {self.current_file.name}
+                <div style='color: #38BDF8; font-weight: bold; margin-bottom: 6px;'>
+                    📄 Analysis Dossier: {self.current_file.name} [{choice}]
                 </div>
                 <div style='color: #E6E8EC; font-size: 8pt; line-height: 1.4;'>
                     {res.replace('\n', '<br>')}
@@ -593,12 +627,12 @@ class NeoFilesView(QWidget):
                 """
                 QTimer.singleShot(0, lambda: self.analysis_browser.setHtml(formatted_html))
             except Exception as e:
-                # Fast fallback preview
+                # Fast structural fallback preview
                 try:
                     text = self.content_browser.toPlainText()[:1200]
                     lines = text.splitlines()
                     fallback = f"""
-                    <div style='color: #34d399; font-weight: bold;'>✓ Quick Structural Dossier</div>
+                    <div style='color: #34D399; font-weight: bold;'>✓ Quick Structural Dossier</div>
                     <ul style='color: #E6E8EC; font-size: 8pt;'>
                         <li><b>File:</b> {self.current_file.name}</li>
                         <li><b>Type:</b> {self.current_file.suffix}</li>
@@ -608,32 +642,48 @@ class NeoFilesView(QWidget):
                     """
                     QTimer.singleShot(0, lambda: self.analysis_browser.setHtml(fallback))
                 except Exception as ex:
-                    QTimer.singleShot(0, lambda: self.analysis_browser.setHtml(f"<span style='color: #f43f5e;'>Analysis error: {e}</span>"))
+                    QTimer.singleShot(0, lambda: self.analysis_browser.setHtml(f"<span style='color: #F87171;'>Analysis error: {e}</span>"))
+            finally:
+                QTimer.singleShot(0, self._reset_analyze_btn)
 
         threading.Thread(target=work, daemon=True, name="doc-analyzer").start()
 
+    def _reset_analyze_btn(self):
+        self.analyze_btn.setEnabled(True)
+        self.analyze_btn.setText("⚡ Execute Analysis")
+
     def _ingest_to_memory(self):
         if not self.current_file:
+            self.analysis_browser.append("<br><span style='color: #FBBF24;'>Select a file to ingest first.</span>")
             return
         try:
             from actions.knowledge_memory import store_fact
             key = f"doc_{self.current_file.stem}"
             val = f"Document {self.current_file.name}: Located at {self.current_file}. Ingested into vault memory on {time.strftime('%Y-%m-%d')}."
             store_fact(key, val, domain="workspace_documents")
-            self.analysis_browser.append(f"<br><span style='color: {SEMANTIC_SUCCESS};'>✓ Ingested document reference into Long-Term Memory.</span>")
+            self.analysis_browser.append(f"<br><span style='color: {SEMANTIC_SUCCESS}; font-weight: bold;'>✓ Ingested document reference into Long-Term Memory.</span>")
         except Exception as e:
             self.analysis_browser.append(f"<br><span style='color: {SEMANTIC_WARNING};'>Ingest note: {e}</span>")
 
     def _extract_tasks(self):
+        """Extracts actionable task items directly to memory/tasks.json."""
         if not self.current_file:
+            self.analysis_browser.append("<br><span style='color: #FBBF24;'>Select a file to extract tasks from first.</span>")
             return
-        task_title = f"Review & integrate {self.current_file.name}"
-        task_desc = f"Examine code structure and action items from {self.current_file.name} located at {self.current_file}"
-        self.task_action_triggered.emit({
-            "action": "create",
-            "title": task_title,
-            "category": "engineering",
-            "priority": "HIGH",
-            "notes": task_desc,
-        })
-        self.analysis_browser.append(f"<br><span style='color: {SEMANTIC_SUCCESS};'>✓ Created actionable task in Task Engine.</span>")
+
+        task_title = f"Review & Integrate: {self.current_file.name}"
+        task_desc = f"Examine code structure, contract terms, or action items from {self.current_file.name} located at {self.current_file}."
+
+        task = add_task(
+            title=task_title,
+            category="Engineering",
+            priority="High",
+            due_date="Today",
+            notes=task_desc,
+        )
+
+        self.analysis_browser.append(
+            f"<br><span style='color: {SEMANTIC_SUCCESS}; font-weight: bold;'>"
+            f"✓ Created actionable task '{task['title']}' directly in memory/tasks.json!</span>"
+        )
+        self.task_action_triggered.emit(f"Task created for document: {task['title']}")

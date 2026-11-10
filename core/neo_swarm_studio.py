@@ -1,7 +1,8 @@
 """
 core/neo_swarm_studio.py — Subagent Swarm Orchestrator & Autonomous Command Deck for NEO.
 Provides multi-agent mission planning, parallel subagent dispatching,
-live execution tracking, and synthesized artifact aggregation.
+live execution tracking via Stark Subagent Swarm (_TASK_REGISTRY),
+deep deliverable inspection, and persistent Task Engine integration.
 """
 from __future__ import annotations
 
@@ -20,7 +21,9 @@ from PyQt6.QtWidgets import (
     QCheckBox, QProgressBar
 )
 
-# Shared styling tokens
+from core.tasks_db import add_task
+
+# Shared executive styling tokens
 CARD_BG = "#1B1F26"
 CARD_BORDER = "#262B34"
 CARD_HOVER = "#222731"
@@ -36,11 +39,14 @@ SEMANTIC_ERROR = "#D9534F"
 class NeoSwarmStudio(QWidget):
     """Executive Subagent Swarm Orchestration Deck."""
     mission_dispatched = pyqtSignal(str, list)  # (objective, roles)
-    task_sync_requested = pyqtSignal(dict)      # (task_payload)
+    task_sync_requested = pyqtSignal(str)       # (task_notification_text)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.active_agents: List[dict] = []
+        self._monitored_task_ids: List[str] = []
+        self._selected_task_id: Optional[str] = None
+        self._last_objective: str = ""
 
         self.setStyleSheet(f"""
             QWidget {{
@@ -132,7 +138,7 @@ class NeoSwarmStudio(QWidget):
         """)
         d_lay.addWidget(self.goal_input)
 
-        # Specialized Agent Role Selectors
+        # Specialized Agent Role Selectors mapped directly to actions.subagent_swarm
         roles_row = QHBoxLayout()
         roles_row.setSpacing(12)
         r_lbl = QLabel("Agent Squad:")
@@ -142,12 +148,12 @@ class NeoSwarmStudio(QWidget):
 
         self.role_checks = {}
         squad_roles = [
-            ("inspector", "🕵️ Code Inspector", True),
-            ("scout", "🌐 Web Scout", True),
-            ("security", "🛡️ Security Auditor", True),
-            ("tester", "🧪 Test Engineer", False),
-            ("synthesizer", "📝 Doc Synthesizer", True),
+            ("code_reviewer", "🕵️ Code Reviewer & Security Auditor", True),
+            ("web_researcher", "🌐 Web Intelligence Scout", True),
+            ("data_analyst", "📊 Data & Threat Analyst", True),
+            ("doc_writer", "📝 Executive Doc Synthesizer", True),
         ]
+
         for key, label, checked in squad_roles:
             cb = QCheckBox(label)
             cb.setFont(QFont("Segoe UI", 8))
@@ -234,10 +240,10 @@ class NeoSwarmStudio(QWidget):
         d_icn = QLabel("📋")
         d_icn.setFont(QFont("Segoe UI", 10))
         dos_hdr.addWidget(d_icn)
-        d_lbl = QLabel("Synthesized Swarm Intelligence Dossier")
-        d_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
-        d_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        dos_hdr.addWidget(d_lbl)
+        self.dossier_title_lbl = QLabel("Synthesized Swarm Intelligence Dossier")
+        self.dossier_title_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        self.dossier_title_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
+        dos_hdr.addWidget(self.dossier_title_lbl)
         dos_hdr.addStretch()
 
         self.sync_task_btn = QPushButton("☑ Sync Action Items as Tasks")
@@ -256,9 +262,9 @@ class NeoSwarmStudio(QWidget):
         dos_lay.addLayout(dos_hdr)
 
         self.dossier_browser = QTextBrowser()
-        self.dossier_browser.setFont(QFont("Segoe UI", 8))
-        self.dossier_browser.setFixedHeight(110)
-        self.dossier_browser.setPlaceholderText("Swarm artifacts, combined analysis, and recommendations will be aggregated here once mission concludes.")
+        self.dossier_browser.setFont(QFont("Consolas", 8))
+        self.dossier_browser.setFixedHeight(130)
+        self.dossier_browser.setPlaceholderText("Swarm artifacts, real Gemini deliverables, and synthesized recommendations will stream here live as agents conclude.")
         self.dossier_browser.setStyleSheet(f"""
             QTextBrowser {{
                 background: #14171C; color: {TEXT_WHITE};
@@ -269,16 +275,22 @@ class NeoSwarmStudio(QWidget):
 
         main_lay.addWidget(self.dossier_box)
 
-    # ── Swarm Dispatch & Management ───────────────────────────────────────────
+        # Polling timer for real subagent background execution
+        self.poll_timer = QTimer(self)
+        self.poll_timer.setInterval(600)
+        self.poll_timer.timeout.connect(self._poll_swarm_registry)
+
+    # ── Swarm Dispatch & Deep Live Polling ────────────────────────────────────
 
     def _launch_swarm_mission(self):
         goal = self.goal_input.text().strip()
         if not goal:
-            goal = "Autonomous workspace code audit and test generation"
+            goal = "Autonomous workspace code audit, security review, and documentation synthesis"
+        self._last_objective = goal
 
         chosen_roles = [k for k, cb in self.role_checks.items() if cb.isChecked()]
         if not chosen_roles:
-            chosen_roles = ["inspector", "scout"]
+            chosen_roles = ["code_reviewer", "web_researcher"]
 
         self.launch_btn.setEnabled(False)
         self.launch_btn.setText("Dispatching...")
@@ -287,69 +299,79 @@ class NeoSwarmStudio(QWidget):
 
         self.empty_card.setVisible(False)
 
-        # Clear previous agent cards
+        # Clear previous cards
         for a in self.active_agents:
             if "widget" in a:
                 a["widget"].deleteLater()
         self.active_agents.clear()
+        self._monitored_task_ids.clear()
 
-        # Spawn visual cards for each agent
-        role_titles = {
-            "inspector": ("Code Inspector", "Static AST analysis & code structure"),
-            "scout": ("Web Scout", "Documentation research & best practices"),
-            "security": ("Security Auditor", "Vulnerability scans & permission checks"),
-            "tester": ("Test Engineer", "Unit test coverage & assertions"),
-            "synthesizer": ("Doc Synthesizer", "Artifact collation & executive summary"),
+        role_meta = {
+            "code_reviewer": ("Code Reviewer & Security Architect", "Deep AST parsing, concurrency flaws, and vulnerability scan"),
+            "web_researcher": ("Web Intelligence Scout", "Online documentation, ecosystem best practices, and architecture research"),
+            "data_analyst": ("Quantitative & Threat Analyst", "Performance metrics, memory leak analysis, and statistical summary"),
+            "doc_writer": ("Executive Doc Synthesizer", "Polished documentation, API specs, and executive briefings"),
         }
 
-        for idx, r in enumerate(chosen_roles):
-            name, desc = role_titles.get(r, (r.capitalize(), "Autonomous subagent"))
-            card = self._build_agent_card(idx + 1, name, desc)
+        # Dispatch real background workers via actions.subagent_swarm
+        from actions.subagent_swarm import spawn_subagent, _TASK_REGISTRY, _LOCK
+
+        for idx, role_key in enumerate(chosen_roles):
+            name, desc = role_meta.get(role_key, (role_key.capitalize(), "Autonomous subagent"))
+            instruction = f"Objective: {goal}. Focus specifically on role requirements as {name}."
+
+            # Spawn real task
+            before_keys = set()
+            with _LOCK:
+                before_keys = set(_TASK_REGISTRY.keys())
+
+            spawn_subagent(role=role_key, instruction=instruction, player=self)
+
+            # Discover newly generated task ID
+            new_task_id = None
+            with _LOCK:
+                diff = set(_TASK_REGISTRY.keys()) - before_keys
+                if diff:
+                    new_task_id = list(diff)[0]
+                else:
+                    new_task_id = f"task_{idx}_{int(time.time()*1000)}"
+
+            self._monitored_task_ids.append(new_task_id)
+
+            # Build reactive UI card
+            card = self._build_agent_card(idx + 1, new_task_id, name, desc)
             self.agents_lay.insertWidget(self.agents_lay.count() - 1, card)
-            self.active_agents.append({"id": idx + 1, "role": r, "name": name, "widget": card})
+            self.active_agents.append({
+                "id": idx + 1,
+                "task_id": new_task_id,
+                "role": role_key,
+                "name": name,
+                "widget": card,
+                "completed": False,
+            })
 
-        self.dossier_browser.setHtml(f"<i>Swarm Mission launched: <b>{goal}</b>. Dispatching {len(chosen_roles)} parallel subagents...</i>")
+        self.dossier_browser.setHtml(
+            f"<div style='color: #38BDF8; font-weight: bold;'>⚡ Mission Dispatched: {goal}</div>"
+            f"<div style='color: #9AA1AD; font-size: 8pt; margin-top: 4px;'>"
+            f"Active subagents: {', '.join(chosen_roles)}.<br>"
+            f"Workers running concurrently in background thread pool. Click any agent card to preview real deliverable.</div>"
+        )
 
-        # Asynchronous mission execution
-        def work():
-            try:
-                from actions.subagent_swarm import spawn_subagent
-                for agent_info in self.active_agents:
-                    time.sleep(0.4)
-                    role = agent_info["role"]
-                    instruction = f"Objective: {goal}. Focus specifically on role requirements as {agent_info['name']}."
-                    try:
-                        spawn_subagent(role=role, instruction=instruction)
-                    except Exception as ex:
-                        pass
-                    # Transition card state to completed
-                    QTimer.singleShot(0, lambda a=agent_info: self._mark_agent_complete(a))
+        # Start live registry polling
+        self.poll_timer.start()
 
-                # Aggregate synthesized briefing
-                dossier_html = f"""
-                <div style='color: #34D399; font-weight: bold;'>✓ Mission Completed: {goal}</div>
-                <ul style='color: #E6E8EC; font-size: 8pt; margin-top: 4px;'>
-                    <li><b>Code Inspector:</b> All project modules parsed; clean import graph verified.</li>
-                    <li><b>Security Auditor:</b> Zero hardcoded secrets detected in active tracking.</li>
-                    <li><b>Web Scout:</b> Latest framework guidelines verified and synced.</li>
-                    <li><b>Doc Synthesizer:</b> Artifacts collated and ready for Task Engine integration.</li>
-                </ul>
-                """
-                QTimer.singleShot(0, lambda: self._on_swarm_complete(dossier_html))
-            except Exception as e:
-                QTimer.singleShot(0, lambda: self.dossier_browser.setHtml(f"<span style='color: #f43f5e;'>Swarm execution note: {e}</span>"))
-            finally:
-                QTimer.singleShot(0, lambda: self._reset_launch_btn())
-
-        threading.Thread(target=work, daemon=True, name="swarm-runner").start()
-
-    def _build_agent_card(self, agent_id: int, title: str, desc: str) -> QFrame:
+    def _build_agent_card(self, agent_num: int, task_id: str, title: str, desc: str) -> QFrame:
         card = QFrame()
+        card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         card.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};
                 border: 1px solid {CARD_BORDER};
                 border-radius: 6px;
+            }}
+            QFrame:hover {{
+                border-color: {ACCENT_PRIMARY};
+                background: {CARD_HOVER};
             }}
         """)
         lay = QHBoxLayout(card)
@@ -362,7 +384,7 @@ class NeoSwarmStudio(QWidget):
 
         col = QVBoxLayout()
         col.setSpacing(2)
-        tl = QLabel(f"Subagent #{agent_id}: {title}")
+        tl = QLabel(f"Subagent #{agent_num}: {title} [{task_id}]")
         tl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
         tl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         col.addWidget(tl)
@@ -373,39 +395,183 @@ class NeoSwarmStudio(QWidget):
         col.addWidget(dl)
         lay.addLayout(col, stretch=1)
 
-        status_lbl = QLabel("EXECUTING...")
+        status_lbl = QLabel("QUEUED...")
         status_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
         status_lbl.setStyleSheet(f"color: {SEMANTIC_WARNING}; background: rgba(217, 164, 65, 0.15); border-radius: 4px; padding: 2px 8px;")
         lay.addWidget(status_lbl)
         card.status_lbl = status_lbl
 
+        # Clicking card displays deliverable
+        card.mousePressEvent = lambda ev, tid=task_id: self._inspect_agent_deliverable(tid)
         return card
 
-    def _mark_agent_complete(self, agent_info: dict):
-        card = agent_info.get("widget")
-        if card and hasattr(card, "status_lbl"):
-            card.status_lbl.setText("✓ COMPLETED")
-            card.status_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 4px; padding: 2px 8px;")
+    def _poll_swarm_registry(self):
+        """Polls Stark Subagent Swarm global registry for live Gemini updates."""
+        try:
+            from actions.subagent_swarm import _TASK_REGISTRY, _LOCK
+        except Exception:
+            return
 
-    def _on_swarm_complete(self, html: str):
-        self.dossier_browser.setHtml(html)
+        with _LOCK:
+            registry_copy = dict(_TASK_REGISTRY)
+
+        all_done = True
+        completed_outputs = []
+
+        for agent in self.active_agents:
+            tid = agent["task_id"]
+            card = agent.get("widget")
+            if tid in registry_copy:
+                tdata = registry_copy[tid]
+                status = tdata.get("status", "QUEUED")
+                output = tdata.get("output")
+
+                if card and hasattr(card, "status_lbl"):
+                    if status == "RUNNING":
+                        card.status_lbl.setText("● EXECUTING...")
+                        card.status_lbl.setStyleSheet(f"color: #38BDF8; background: rgba(56, 189, 248, 0.15); border-radius: 4px; padding: 2px 8px;")
+                        all_done = False
+                    elif status == "COMPLETED":
+                        card.status_lbl.setText("✓ COMPLETED")
+                        card.status_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 4px; padding: 2px 8px;")
+                        agent["completed"] = True
+                        if output:
+                            completed_outputs.append((agent["name"], output))
+                    elif status == "FAILED":
+                        card.status_lbl.setText("✕ FAILED")
+                        card.status_lbl.setStyleSheet(f"color: {SEMANTIC_ERROR}; background: rgba(217, 83, 79, 0.15); border-radius: 4px; padding: 2px 8px;")
+                        agent["completed"] = True
+                    else:
+                        all_done = False
+            else:
+                all_done = False
+
+        if all_done and self.active_agents:
+            self.poll_timer.stop()
+            self._on_all_subagents_finished(completed_outputs)
+
+    def _inspect_agent_deliverable(self, task_id: str):
+        """Inspect deliverable of a specific subagent."""
+        self._selected_task_id = task_id
+        try:
+            from actions.subagent_swarm import _TASK_REGISTRY, _LOCK
+            with _LOCK:
+                tdata = _TASK_REGISTRY.get(task_id, {})
+        except Exception:
+            tdata = {}
+
+        if not tdata:
+            self.dossier_browser.setHtml(f"<i>Task {task_id} details not yet available.</i>")
+            return
+
+        role = tdata.get("role", "subagent").upper()
+        status = tdata.get("status", "UNKNOWN")
+        output = tdata.get("output", "Awaiting deliverable...")
+        instr = tdata.get("instruction", "")
+
+        color = "#34D399" if status == "COMPLETED" else "#FBBF24"
+        clean_out = (output or "").replace("\n", "<br>")
+
+        self.dossier_title_lbl.setText(f"Deliverable: {task_id} ({role})")
+        self.dossier_browser.setHtml(
+            f"<div style='color: {color}; font-weight: bold;'>[{status}] Deliverable: {task_id} ({role})</div>"
+            f"<div style='color: #64748B; font-size: 7.5pt; margin-bottom: 6px;'><b>Prompt:</b> {instr}</div>"
+            f"<div style='color: #E6E8EC; font-size: 8pt; line-height: 1.4;'>{clean_out}</div>"
+        )
+
+    def _on_all_subagents_finished(self, deliverables: List[tuple[str, str]]):
+        self.launch_btn.setEnabled(True)
+        self.launch_btn.setText("🚀 Launch Swarm")
         self.swarm_badge.setText("● MISSION ACCOMPLISHED")
         self.swarm_badge.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 10px; padding: 2px 8px;")
 
-    def _reset_launch_btn(self):
-        self.launch_btn.setEnabled(True)
-        self.launch_btn.setText("🚀 Launch Swarm")
+        goal = self._last_objective or "Workspace Audit"
+        synth_html = [
+            f"<div style='color: #34D399; font-weight: bold;'>✓ Mission Completed: {goal}</div>",
+            "<div style='color: #9AA1AD; font-size: 8pt; margin: 4px 0;'>All parallel worker subagents returned deliverables:</div>"
+        ]
+
+        for name, out in deliverables:
+            snippet = (out or "No output").strip()
+            if len(snippet) > 280:
+                snippet = snippet[:280] + "..."
+            clean_snip = snippet.replace("\n", "<br>• ")
+            synth_html.append(
+                f"<div style='margin-top: 6px; padding: 4px; background: rgba(255,255,255,0.03); border-left: 2px solid {ACCENT_PRIMARY};'>"
+                f"<span style='color: {ACCENT_PRIMARY}; font-weight: bold;'>{name}:</span><br>"
+                f"<span style='color: #E6E8EC; font-size: 7.5pt;'>• {clean_snip}</span>"
+                f"</div>"
+            )
+
+        synth_html.append("<br><div style='color: #64748B; font-size: 7.5pt;'>Click any card above to view its full deliverable. Click 'Sync Action Items' to save to Task Engine.</div>")
+        self.dossier_title_lbl.setText("Synthesized Swarm Intelligence Dossier")
+        self.dossier_browser.setHtml("".join(synth_html))
 
     def _refresh_swarm_state(self):
-        self.dossier_browser.append(f"<span style='color: {TEXT_DIM};'>[State Refreshed: {len(self.active_agents)} subagents cached]</span>")
+        """Reads all active tasks from _TASK_REGISTRY and renders them."""
+        try:
+            from actions.subagent_swarm import _TASK_REGISTRY, _LOCK
+            with _LOCK:
+                tasks = list(_TASK_REGISTRY.values())
+        except Exception:
+            tasks = []
+
+        if not tasks:
+            self.empty_card.setVisible(True)
+            self.swarm_badge.setText("● IDLE (0 SWARMS)")
+            self.swarm_badge.setStyleSheet(f"color: {TEXT_MUTED}; background: rgba(154, 161, 173, 0.15); border-radius: 10px; padding: 2px 8px;")
+            return
+
+        self.empty_card.setVisible(False)
+        for a in self.active_agents:
+            if "widget" in a:
+                a["widget"].deleteLater()
+        self.active_agents.clear()
+        self._monitored_task_ids.clear()
+
+        running_cnt = 0
+        for idx, t in enumerate(tasks[-6:]):  # Most recent 6
+            tid = t.get("id", f"swarm-{idx}")
+            role = t.get("role", "worker")
+            status = t.get("status", "QUEUED")
+            instr = t.get("instruction", "")
+            if status == "RUNNING":
+                running_cnt += 1
+
+            card = self._build_agent_card(idx + 1, tid, role.upper(), instr)
+            if status == "COMPLETED":
+                card.status_lbl.setText("✓ COMPLETED")
+                card.status_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 4px; padding: 2px 8px;")
+            elif status == "RUNNING":
+                card.status_lbl.setText("● EXECUTING...")
+                card.status_lbl.setStyleSheet(f"color: #38BDF8; background: rgba(56, 189, 248, 0.15); border-radius: 4px; padding: 2px 8px;")
+
+            self.agents_lay.insertWidget(self.agents_lay.count() - 1, card)
+            self.active_agents.append({"id": idx + 1, "task_id": tid, "role": role, "name": role, "widget": card, "completed": status == "COMPLETED"})
+            self._monitored_task_ids.append(tid)
+
+        if running_cnt > 0:
+            self.swarm_badge.setText(f"● RUNNING ({running_cnt} ACTIVE)")
+            self.swarm_badge.setStyleSheet(f"color: {SEMANTIC_WARNING}; background: rgba(217, 164, 65, 0.15); border-radius: 10px; padding: 2px 8px;")
+            self.poll_timer.start()
+        else:
+            self.swarm_badge.setText(f"● READY ({len(tasks)} TOTAL TASKS)")
+            self.swarm_badge.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; background: rgba(76, 175, 125, 0.15); border-radius: 10px; padding: 2px 8px;")
 
     def _sync_swarm_tasks(self):
-        goal = self.goal_input.text().strip() or "Swarm Mission Follow-up"
-        self.task_sync_requested.emit({
-            "action": "create",
-            "title": f"Implement {goal} Swarm Recommendations",
-            "category": "engineering",
-            "priority": "HIGH",
-            "notes": "Action item generated autonomously by NEO Subagent Swarm Orchestrator.",
-        })
-        self.dossier_browser.append(f"<br><span style='color: {SEMANTIC_SUCCESS}; font-weight: bold;'>✓ Synced Swarm Action Items to Task Engine!</span>")
+        """Atomically saves swarm recommendations to memory/tasks.json."""
+        goal = self._last_objective or self.goal_input.text().strip() or "Swarm Mission Follow-up"
+
+        task = add_task(
+            title=f"Execute Swarm Recommendations: {goal[:50]}",
+            category="Engineering",
+            priority="High",
+            due_date="Today",
+            notes=f"Action items collated by NEO Swarm Orchestrator for objective: '{goal}' across {len(self.active_agents)} subagents.",
+        )
+
+        self.dossier_browser.append(
+            f"<br><span style='color: {SEMANTIC_SUCCESS}; font-weight: bold;'>"
+            f"✓ Synced '{task['title']}' directly to memory/tasks.json!</span>"
+        )
+        self.task_sync_requested.emit(f"Swarm action item synced to Task Engine: {task['title']}")

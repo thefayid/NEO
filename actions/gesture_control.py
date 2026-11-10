@@ -59,6 +59,8 @@ class GestureController:
         self._cooldown = 1.2  # seconds between gesture triggers
         self._prev_centroid_x = None
         self._prev_time = 0.0
+        self.last_detected_gesture: str = "STANDBY (No gesture)"
+        self.last_detected_time: float = 0.0
 
     def start(self, player=None) -> str:
         with self._lock:
@@ -90,11 +92,17 @@ class GestureController:
         st = "ACTIVE" if self._running else "INACTIVE"
         return f"Gesture Control: {st} | Palm = Pause/Mute, Swipe = Switch Tabs"
 
+    def get_last_gesture(self) -> tuple[str, float]:
+        with self._lock:
+            return self.last_detected_gesture, self.last_detected_time
+
     def _trigger_palm(self):
         now = time.monotonic()
         if now - self._last_trigger_time < self._cooldown:
             return
         self._last_trigger_time = now
+        self.last_detected_gesture = "🖐️ Open Palm (Interrupt / Pause)"
+        self.last_detected_time = now
         print("[Gesture] ✋ OPEN PALM DETECTED -> Triggering Interrupt / Pause")
         if self._player:
             if hasattr(self._player, "interrupt"):
@@ -123,6 +131,8 @@ class GestureController:
         if now - self._last_trigger_time < self._cooldown:
             return
         self._last_trigger_time = now
+        self.last_detected_gesture = f"💨 Swipe {direction.capitalize()} (Switch Tab)"
+        self.last_detected_time = now
         print(f"[Gesture] 💨 SWIPE {direction.upper()} DETECTED -> Switching Tab")
         if self._player and hasattr(self._player, "write_log"):
             try:
@@ -144,6 +154,8 @@ class GestureController:
         if now - self._last_trigger_time < self._cooldown:
             return
         self._last_trigger_time = now
+        self.last_detected_gesture = "✊ Fist (Resume / Unmute)"
+        self.last_detected_time = now
         print("[Gesture] ✊ FIST / CONFIRM DETECTED -> Unmute / Resume")
         if self._player:
             if hasattr(self._player, "_muted") and self._player._muted:
