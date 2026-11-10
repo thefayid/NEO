@@ -2521,6 +2521,14 @@ class JarvisLive:
 
             self._proactive.mark_triggered(reason)
 
+            # High-priority proactive alerts forwarded to mobile Telegram node
+            if any(k in reason for k in ("CRITICAL_RAM", "UPCOMING_AGENDA", "HIGH_PRIORITY_TASK")):
+                try:
+                    from actions.telegram_remote import send_remote_alert
+                    send_remote_alert(f"⚠️ *Proactive System Notice*: {reason}")
+                except Exception:
+                    pass
+
             try:
                 memory       = await asyncio.to_thread(load_memory)
                 monitors     = await asyncio.to_thread(list_monitors)
@@ -2601,7 +2609,19 @@ class JarvisLive:
                     )
                     self.ui.write_log(f"[Web]: {text}")
                 else:
-                    print(f"[Dashboard] Dropped command (no session): {text}")
+                    # Resilient Fallback: execute via Gemini REST so phone PWA never drops commands
+                    from core import gemini as _gemini
+                    self.ui.write_log(f"[Web]: {text}")
+                    reply = await asyncio.to_thread(_gemini.call, text, _gemini.SMART)
+                    if reply and reply.strip():
+                        self.ui.write_log(f"NEO (Web): {reply.strip()}")
+                        if hasattr(self.ui, "_speech_sig"):
+                            self.ui._speech_sig.emit("neo", reply.strip())
+                        if self._dashboard:
+                            self._dashboard.broadcast({
+                                "type": "assistant_reply",
+                                "text": reply.strip(),
+                            })
             except asyncio.TimeoutError:
                 pass
             except Exception as e:
@@ -2811,6 +2831,15 @@ class JarvisLive:
         except Exception as e:
             print(f"[Dashboard] Disabled: {e}")
             self._dashboard = None
+
+        # Start Autonomous Telegram Remote Gateway (full-time mobile ubiquity)
+        try:
+            from actions.telegram_remote import TelegramRemoteGateway
+            self._telegram_remote = TelegramRemoteGateway.get_instance()
+            self._telegram_remote.start()
+        except Exception as e:
+            print(f"[Telegram Remote] Disabled: {e}")
+            self._telegram_remote = None
 
         while True:
             try:

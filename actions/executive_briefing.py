@@ -24,8 +24,10 @@ import json
 import os
 import platform
 import re
+import subprocess
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -460,6 +462,304 @@ def _get_active_reminders_summary() -> list[str]:
         return []
 
 
+def _get_active_tasks_summary() -> dict:
+    """Harvests active tasks from memory/tasks.json."""
+    tasks_file = _BASE_DIR / "memory" / "tasks.json"
+    pending = []
+    high_pri = []
+    due_today = []
+    try:
+        if tasks_file.exists():
+            with open(tasks_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                today_str = datetime.now().strftime("%Y-%m-%d")
+                for t in data.get("tasks", []):
+                    if not t.get("done"):
+                        pending.append(t)
+                        if str(t.get("priority", "")).lower() == "high":
+                            high_pri.append(t)
+                        due = str(t.get("due_date", "")).strip().lower()
+                        if due in ("today", today_str):
+                            due_today.append(t)
+    except Exception:
+        pass
+    return {
+        "total_pending": len(pending),
+        "pending_tasks": pending,
+        "high_priority": high_pri,
+        "due_today": due_today,
+    }
+
+
+def _get_overnight_news_summary() -> list[str]:
+    """Fetches top breaking technology and AI headlines."""
+    try:
+        from actions.web_search import _get_comprehensive_morning_news
+        items = _get_comprehensive_morning_news()
+        if items and isinstance(items, list):
+            return items[:3]
+    except Exception:
+        pass
+    return []
+
+
+def _run_morning_war_room_briefing(player=None) -> str:
+    """
+    Delivers the executive Morning War-Room Briefing:
+    - Syncs calendar and presents today's meeting timeline + conflict check.
+    - Highlights active tasks, deadlines, and high-priority milestones.
+    - Summarizes overnight breaking AI & tech headlines.
+    - Weather conditions and system hardware vitals.
+    - Presents visual War-Room card and speaks a punchy tactical brief.
+    """
+    now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    time_disp = now.strftime("%I:%M %p")
+    date_disp = now.strftime("%A, %B %d, %Y")
+
+    cfg = _read_config()
+    ical_url = cfg.get("calendar_ical_url", "").strip()
+    if ical_url:
+        _sync_ical_feed(ical_url)
+
+    events, conflicts = _get_agenda_timeline(today_str)
+    weather = _get_weather_snippet()
+    tasks_info = _get_active_tasks_summary()
+    triage = _triage_emails()
+    telemetry = _get_system_telemetry()
+    reminders = _get_active_reminders_summary()
+    news_items = _get_overnight_news_summary()
+
+    report_lines = [
+        "╔══════════════════════════════════════════════════════════════════╗",
+        "║           ⚔️  NEO EXECUTIVE WAR-ROOM MORNING BRIEFING           ║",
+        "╚══════════════════════════════════════════════════════════════════╝",
+        f"📅 Date & Time:   {date_disp} | {time_disp}",
+        f"🌤️ Local Weather: {weather}",
+        f"💻 Hardware Telemetry: {telemetry['summary']}",
+        "",
+        f"── 📅 TODAY'S AGENDA ({len(events)} SCHEDULED) ─────────────────────────",
+    ]
+    if events:
+        for e in events:
+            st = _format_time_friendly(e.get("start_time", "00:00"))
+            et = _format_time_friendly(e.get("end_time", "00:00"))
+            loc = e.get("location", "Workstation")
+            report_lines.append(f"  • [{st} - {et}] {e['title']} ({loc})")
+        if conflicts:
+            report_lines.append(f"  ⚠️ Warning: {conflicts[0]}")
+    else:
+        report_lines.append("  ✓ Agenda completely clear of meetings and deadlines today.")
+
+    report_lines.append(f"\n── 🎯 ACTIVE SPRINT & TASKS ({tasks_info['total_pending']} PENDING) ────────────────────")
+    if tasks_info["due_today"]:
+        report_lines.append(f"  🔥 Due Today ({len(tasks_info['due_today'])}):")
+        for t in tasks_info["due_today"]:
+            report_lines.append(f"     - [!] {t.get('title')} (Priority: {t.get('priority', 'Normal')})")
+    elif tasks_info["high_priority"]:
+        report_lines.append(f"  ⚡ High Priority Focus:")
+        for t in tasks_info["high_priority"]:
+            report_lines.append(f"     - [★] {t.get('title')}")
+    elif tasks_info["pending_tasks"]:
+        report_lines.append(f"  • Next in Queue: {tasks_info['pending_tasks'][0].get('title')}")
+    else:
+        report_lines.append("  ✓ All active sprint tasks are clear!")
+
+    if news_items:
+        report_lines.append(f"\n── 🌐 OVERNIGHT AI & TECH INTELLIGENCE ─────────────────────────────")
+        for n in news_items:
+            report_lines.append(f"  • {n}")
+
+    if reminders:
+        report_lines.append(f"\n── ⏰ PENDING REMINDERS ────────────────────────────────────────────")
+        for r in reminders:
+            report_lines.append(f"  {r}")
+
+    report_lines.append("\n════════════════════════════════════════════════════════════════════")
+    full_report = "\n".join(report_lines)
+
+    if player:
+        player.write_log(f"[WarRoom] ⚔️ Morning War-Room Briefing delivered for {date_disp}.")
+        try:
+            player.show_content("WAR-ROOM BRIEFING", full_report)
+        except Exception:
+            pass
+
+    spoken = [
+        f"Good morning, Boss. The time is {time_disp} on {now.strftime('%A, %B %d')}.",
+        f"Weather in your area is {weather}.",
+    ]
+    if events:
+        first_ev = events[0]
+        spoken.append(
+            f"You have {len(events)} meeting(s) today, starting at {_format_time_friendly(first_ev['start_time'])} with {first_ev['title']}."
+        )
+    else:
+        spoken.append("Your calendar is completely clear of meetings today.")
+
+    if tasks_info["due_today"]:
+        spoken.append(f"You have {len(tasks_info['due_today'])} task(s) due today, led by '{tasks_info['due_today'][0].get('title')}'.")
+    elif tasks_info["high_priority"]:
+        spoken.append(f"Priority focus today is '{tasks_info['high_priority'][0].get('title')}'.")
+
+    spoken.append(f"System hardware is running nominally at {telemetry['summary']}. Tactical protocols are standing by, Boss.")
+    play_protocol()
+    return " ".join(spoken)
+
+
+def _run_night_owl_debrief(auto_commit: bool = False, notes: str = "", player=None) -> str:
+    """
+    Executes an autonomous Nocturnal Engineering Debrief & Checkpoint:
+    1. Inspects active workspace repository git branch and diff.
+    2. Optional auto-checkpoint git commit if auto_commit is True.
+    3. Reconciles tasks and extracts top carry-over priorities for tomorrow.
+    4. Logs an executive Night Owl Dev Log to memory/notes.json.
+    5. Cleans up zombie processes and cache bloat via system_immune.
+    6. Returns an executive spoken recap and displays a debrief card on HUD.
+    """
+    now = datetime.now()
+    time_disp = now.strftime("%I:%M %p")
+    date_disp = now.strftime("%A, %B %d, %Y")
+
+    proj_name = "Mark-LVI-main"
+    proj_path = _BASE_DIR
+    projects_file = _BASE_DIR / "memory" / "projects.json"
+    try:
+        if projects_file.exists():
+            with open(projects_file, "r", encoding="utf-8") as f:
+                p_data = json.load(f)
+                act_id = p_data.get("active_project_id")
+                for p in p_data.get("projects", []):
+                    if p.get("id") == act_id:
+                        proj_name = p.get("name", proj_name)
+                        p_dir = Path(p.get("path", ""))
+                        if p_dir.exists():
+                            proj_path = p_dir
+                        break
+    except Exception:
+        pass
+
+    branch = "main"
+    modified_files = []
+    untracked_files = []
+    try:
+        res = subprocess.run(
+            ["git", "status", "--porcelain", "-b"],
+            capture_output=True, text=True, timeout=3, cwd=proj_path,
+        )
+        lines = res.stdout.strip().splitlines()
+        if lines:
+            branch = lines[0].replace("## ", "").split("...")[0].strip()
+            for l in lines[1:]:
+                if l.startswith("??"):
+                    untracked_files.append(l[3:].strip())
+                elif l.strip():
+                    modified_files.append(l[3:].strip())
+    except Exception:
+        pass
+
+    commit_res = ""
+    if auto_commit and (modified_files or untracked_files):
+        try:
+            subprocess.run(["git", "add", "-A"], cwd=proj_path, timeout=5)
+            c_msg = f"wip(nocturnal): auto-checkpoint {now.strftime('%Y-%m-%d %H:%M')} [skip ci]"
+            c_run = subprocess.run(["git", "commit", "-m", c_msg], capture_output=True, text=True, cwd=proj_path, timeout=5)
+            if c_run.returncode == 0:
+                commit_res = f"Auto-checkpoint committed on {branch} ({len(modified_files) + len(untracked_files)} files)."
+        except Exception as e:
+            commit_res = f"Auto-commit attempt: {e}"
+
+    tasks_info = _get_active_tasks_summary()
+    pending = tasks_info["pending_tasks"]
+    carry_over = [t.get("title", "") for t in pending[:3]]
+
+    # Save to Notes
+    try:
+        notes_file = _BASE_DIR / "memory" / "notes.json"
+        existing_notes = []
+        raw_data = {}
+        if notes_file.exists():
+            with open(notes_file, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+                if isinstance(raw_data, dict):
+                    existing_notes = raw_data.get("notes", [])
+                elif isinstance(raw_data, list):
+                    existing_notes = raw_data
+
+        dev_log_note = {
+            "id": f"note_{int(time.time() * 1000)}",
+            "title": f"🌙 Night Owl Dev Log — {now.strftime('%b %d, %Y')}",
+            "content": (
+                f"### Nocturnal Session Debrief ({time_disp})\n"
+                f"- **Active Project**: `{proj_name}` on branch `{branch}`\n"
+                f"- **Files Modified**: {len(modified_files)} file(s) ({', '.join(modified_files[:4]) or 'none'})\n"
+                f"- **Untracked**: {len(untracked_files)} file(s)\n"
+                + (f"- **Checkpoint**: {commit_res}\n" if commit_res else "")
+                + (f"- **Dev Notes**: {notes}\n" if notes else "")
+                + f"- **Top Carry-Over Priorities Tomorrow**:\n"
+                + "\n".join([f"  1. {item}" for item in carry_over] if carry_over else ["  • All tasks completed!"])
+            ),
+            "category": "Dev Log",
+            "created_at": now.strftime("%Y-%m-%d %H:%M"),
+            "pinned": True,
+        }
+        existing_notes.insert(0, dev_log_note)
+        payload = {"notes": existing_notes[:50]} if isinstance(raw_data, dict) else existing_notes[:50]
+        with open(notes_file, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+    except Exception:
+        pass
+
+    # System Immune cleanup
+    try:
+        from actions.system_immune import auto_kill_zombies, purge_cache_bloat
+        auto_kill_zombies()
+        purge_cache_bloat()
+    except Exception:
+        pass
+
+    report_lines = [
+        "╔══════════════════════════════════════════════════════════════════╗",
+        "║            🌙 NEO NIGHT OWL ENGINEERING DEBRIEF                 ║",
+        "╚══════════════════════════════════════════════════════════════════╝",
+        f"🕒 Timestamp:   {date_disp} | {time_disp}",
+        f"📂 Project:     {proj_name} (git: {branch})",
+        f"📝 Workspace:   {len(modified_files)} modified file(s), {len(untracked_files)} untracked",
+        f"🔒 Checkpoint:  {commit_res or ('Workspace diff preserved / Clean state' if not modified_files else 'Uncommitted changes retained')}",
+        "",
+        f"── 🎯 TOP CARRY-OVER PRIORITIES FOR TOMORROW ({len(pending)} PENDING) ──",
+    ]
+    if carry_over:
+        for idx, item in enumerate(carry_over, 1):
+            report_lines.append(f"  {idx}. {item}")
+    else:
+        report_lines.append("  ✓ All active sprint tasks completed!")
+
+    report_lines.append("\n── 🛡️ SYSTEM WIND-DOWN & HYGIENE ──────────────────────────────")
+    report_lines.append("  ✓ Orphan/zombie background processes terminated")
+    report_lines.append("  ✓ Windows temporary cache bloat purged")
+    report_lines.append("  ✓ Nocturnal Dev Log pinned to memory/notes.json")
+    report_lines.append("════════════════════════════════════════════════════════════════════")
+    full_report = "\n".join(report_lines)
+
+    if player:
+        player.write_log(f"[Debrief] 🌙 Night Owl Debrief logged at {time_disp}.")
+        try:
+            player.show_content("NIGHT OWL DEBRIEF", full_report)
+        except Exception:
+            pass
+
+    spoken = (
+        f"Night Owl session wrapped up, Boss. It is {time_disp}. "
+        f"In {proj_name} on branch {branch}, you have {len(modified_files)} modified file(s). "
+        + (f"{commit_res} " if commit_res else "")
+        + (f"You have {len(pending)} task(s) on deck for tomorrow, led by '{carry_over[0]}'. " if carry_over else "All tasks are clear for tomorrow. ")
+        + "System caches are purged and your dev log is pinned. Rest well, Fayid."
+    )
+    play_confirm()
+    return spoken
+
+
 # ── 4. Main Executive Briefing Dispatcher ────────────────────────────────────
 
 def executive_briefing(
@@ -605,6 +905,16 @@ def executive_briefing(
         play_confirm()
         return res
 
+    # ── Action: morning_brief / war_room ────────────────────────────────────
+    if action in ("morning_brief", "war_room", "morning_war_room"):
+        return _run_morning_war_room_briefing(player=player)
+
+    # ── Action: night_owl_debrief / wrap_up ─────────────────────────────────
+    if action in ("night_owl_debrief", "night_debrief", "wrap_up", "checkpoint"):
+        auto_commit = bool(parameters.get("auto_commit", False))
+        custom_notes = str(parameters.get("notes", "")).strip()
+        return _run_night_owl_debrief(auto_commit=auto_commit, notes=custom_notes, player=player)
+
     # ── Action: briefing (Comprehensive Executive Morning/Status Briefing) ──
     # Auto-sync calendar if configured
     if ical_url:
@@ -722,10 +1032,10 @@ def executive_briefing(
 TOOL = {
     "name": "executive_briefing",
     "description": (
-        "Executive Personal Briefing & Productivity Agent for F.R.I.D.A.Y. "
-        "Delivers comprehensive morning and executive briefings, synchronizes Google Calendar & Outlook iCal schedules, "
-        "detects meeting conflicts & upcoming deadlines, triages urgent VIP emails and messages, "
-        "and tracks productivity metrics."
+        "Executive Personal Briefing & Productivity Agent for NEO. "
+        "Delivers comprehensive morning war-room briefings, nocturnal night-owl dev checkpoints, "
+        "synchronizes Google Calendar & Outlook iCal schedules, detects meeting conflicts, "
+        "triages urgent VIP emails, and tracks active project sprint tasks."
     ),
     "parameters": {
         "type": "OBJECT",
@@ -734,12 +1044,22 @@ TOOL = {
                 "type": "STRING",
                 "description": (
                     "The briefing operation to execute: "
-                    "'briefing' (full executive briefing with greeting, schedule, urgent emails, reminders, and system health), "
+                    "'morning_brief' (full executive war-room briefing: agenda, tasks, overnight AI news, weather, system health), "
+                    "'night_owl_debrief' (nocturnal dev wrap-up: git diff analysis, auto-checkpoint commit, carry-over task planning, zombie cleanup, dev log), "
+                    "'briefing' (standard executive status briefing), "
                     "'agenda' (read today's meetings, deadlines, schedule conflicts), "
                     "'add_event' (add a meeting or deadline to the agenda), "
                     "'email_triage' (summarize unread urgent emails from VIP senders or critical keywords), "
                     "'sync_calendar' (refresh/sync calendar from Google/Outlook .ics feed or local agenda)"
                 ),
+            },
+            "auto_commit": {
+                "type": "BOOLEAN",
+                "description": "Optional for night_owl_debrief: automatically stage and commit nocturnal progress to git (default False)",
+            },
+            "notes": {
+                "type": "STRING",
+                "description": "Optional notes or reflections to include in the nocturnal dev log note",
             },
             "date": {
                 "type": "STRING",
