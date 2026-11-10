@@ -773,6 +773,19 @@ def text(contents, tier: str = FAST, config=None,
     return (getattr(resp, "text", None) or "").strip() or default
 
 
+def multimodal(prompt: str, image_bytes: bytes, mime: str = "image/png",
+               tier: str = SMART, timeout_ms: int = DEFAULT_TIMEOUT_MS,
+               key: str = "", default: str = "") -> str:
+    """Convenience helper for multimodal vision & OCR queries with Gemini."""
+    try:
+        from google.genai import types as gtypes
+        part = gtypes.Part.from_bytes(data=image_bytes, mime_type=mime)
+        return text([prompt, part], tier=tier, timeout_ms=timeout_ms, key=key, default=default)
+    except Exception as e:
+        print(f"[Gemini] multimodal error: {e}")
+        return default
+
+
 def as_json(contents, tier: str = FAST, config=None,
             timeout_ms: int = DEFAULT_TIMEOUT_MS, key: str = "", default=None):
     """`text`, parsed as JSON, tolerating the fences and prose a model wraps it

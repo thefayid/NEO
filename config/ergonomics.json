@@ -1,0 +1,11 @@
+{
+    "enabled": true,
+    "hydration_interval_minutes": 45,
+    "eye_rest_interval_minutes": 20,
+    "sitting_break_minutes": 90,
+    "today_date": "2026-11-10",
+    "water_glasses": 1,
+    "breaks_taken": 0,
+    "eye_rests_completed": 0,
+    "total_active_minutes": 0
+}

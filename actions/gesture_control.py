@@ -61,6 +61,11 @@ class GestureController:
         self._prev_time = 0.0
         self.last_detected_gesture: str = "STANDBY (No gesture)"
         self.last_detected_time: float = 0.0
+        if _PYAUTOGUI_OK:
+            try:
+                pyautogui.FAILSAFE = False
+            except Exception:
+                pass
 
     def start(self, player=None) -> str:
         with self._lock:
@@ -174,148 +179,202 @@ class GestureController:
             except Exception:
                 pass
 
+    def _trigger_victory(self):
+        now = time.monotonic()
+        if now - self._last_trigger_time < self._cooldown:
+            return
+        self._last_trigger_time = now
+        self.last_detected_gesture = "✌️ Peace / Victory (Mute Mic Toggle)"
+        self.last_detected_time = now
+        print("[Gesture] ✌️ VICTORY / PEACE SIGN DETECTED -> Mute / Unmute Toggle")
+        if self._player:
+            if hasattr(self._player, "_toggle_mute"):
+                try:
+                    self._player._toggle_mute()
+                except Exception:
+                    pass
+            if hasattr(self._player, "write_log"):
+                try:
+                    self._player.write_log("GESTURE: ✌️ Peace Sign (Mute Mic Toggle)")
+                except Exception:
+                    pass
+
+    def _trigger_point(self):
+        now = time.monotonic()
+        if now - self._last_trigger_time < self._cooldown:
+            return
+        self._last_trigger_time = now
+        self.last_detected_gesture = "☝️ Point Up (Acknowledge)"
+        self.last_detected_time = now
+        print("[Gesture] ☝️ POINT UP DETECTED -> Acknowledged")
+        if self._player and hasattr(self._player, "write_log"):
+            try:
+                self._player.write_log("GESTURE: ☝️ Point Up (Acknowledge)")
+            except Exception:
+                pass
+
     def _gesture_loop(self):
         from core.camera_service import get_camera_service
         cam_srv = get_camera_service()
         cam_srv.register_consumer("gesture_control")
         print("[Gesture] 🖐️ Gesture detection loop running with Shared Camera Service")
 
+        # 1. Initialize MediaPipe Tasks GestureRecognizer with Google model
+        recognizer = None
         try:
-            # Try loading MediaPipe if installed
-            mp_hands = None
-            hands = None
-            try:
-                import mediapipe as mp
-                mp_hands = mp.solutions.hands
-                hands = mp_hands.Hands(
-                    static_image_mode=False,
-                    max_num_hands=1,
-                    model_complexity=0,
-                    min_detection_confidence=0.6,
-                    min_tracking_confidence=0.55,
-                )
-                print("[Gesture] 🚀 MediaPipe Hands neural engine initialized (model_complexity=0).")
-            except Exception:
-                print("[Gesture] ⚡ Using OpenCV contour convexity engine.")
+            import mediapipe as mp
+            model_path = _BASE_DIR / "models" / "gesture_recognizer.task"
+            if model_path.exists():
+                BaseOptions = mp.tasks.BaseOptions
+                GestureRecognizer = mp.tasks.vision.GestureRecognizer
+                GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
+                VisionRunningMode = mp.tasks.vision.RunningMode
 
+                options = GestureRecognizerOptions(
+                    base_options=BaseOptions(model_asset_path=str(model_path.resolve())),
+                    running_mode=VisionRunningMode.IMAGE,
+                    num_hands=1
+                )
+                recognizer = GestureRecognizer.create_from_options(options)
+                print("[Gesture] 🚀 MediaPipe Neural GestureRecognizer initialized with Google model.")
+        except Exception as mp_err:
+            print(f"[Gesture] ⚡ MediaPipe Tasks notice: {mp_err}. Using calibrated OpenCV fallback.")
+
+        # 2. Pre-load Face Cascade once for OpenCV fallback
+        face_cascade = None
+        if _CV2_OK:
+            face_cascade_path = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+            if os.path.exists(face_cascade_path):
+                try:
+                    face_cascade = cv2.CascadeClassifier(face_cascade_path)
+                except Exception:
+                    pass
+
+        try:
             while self._running:
                 ok, frame = cam_srv.get_frame(timeout=0.2)
                 if not ok or frame is None:
                     time.sleep(0.04)
                     continue
 
-                # Mirror frame for intuitive gesture direction
+                # Mirror frame horizontally for intuitive interaction
                 frame = cv2.flip(frame, 1)
                 now = time.monotonic()
 
-                if hands is not None:
-                    # ── Ultra-fast Neural MediaPipe Landmark Engine (<2% CPU) ──
-                    small = cv2.resize(frame, (480, 270))
-                    rgb = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
-                    results = hands.process(rgb)
+                # ── PRIMARY PATH: MediaPipe Neural Gesture Recognition ────────
+                if recognizer is not None:
+                    try:
+                        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+                        result = recognizer.recognize(mp_img)
 
-                    if results.multi_hand_landmarks:
-                        for hand_landmarks in results.multi_hand_landmarks:
-                            lm = hand_landmarks.landmark
-                            # Count extended fingers
-                            extended = 0
-                            for tip, pip in ((8, 6), (12, 10), (16, 14), (20, 18)):
-                                if lm[tip].y < lm[pip].y:
-                                    extended += 1
-                            if abs(lm[4].x - lm[2].x) > 0.05:
-                                extended += 1
+                        # Check recognized gestures
+                        if result.gestures and len(result.gestures[0]) > 0:
+                            top_g = result.gestures[0][0]
+                            g_name = top_g.category_name
+                            score = top_g.score
 
-                            cx = lm[9].x  # Palm center x (normalized 0.0 - 1.0)
+                            if score > 0.40:
+                                if g_name == "Open_Palm":
+                                    self._trigger_palm()
+                                elif g_name == "Closed_Fist":
+                                    self._trigger_fist()
+                                elif g_name == "Victory":
+                                    self._trigger_victory()
+                                elif g_name == "Pointing_Up":
+                                    self._trigger_point()
 
-                            # Directional swipe detection
+                        # Directional Swipes via Landmark 9 (middle knuckle / palm center)
+                        if result.hand_landmarks and len(result.hand_landmarks) > 0:
+                            cx = result.hand_landmarks[0][9].x
                             if self._prev_centroid_x is not None:
                                 dt = now - self._prev_time
-                                dist = cx - self._prev_centroid_x
-                                if 0.03 < dt < 0.35 and abs(dist) > 0.10:
-                                    dx = dist / dt
-                                    if dx > 1.5:
+                                if 0.04 < dt < 0.45:
+                                    dx = (cx - self._prev_centroid_x) / dt
+                                    if dx > 1.1:
                                         self._trigger_swipe("right")
-                                    elif dx < -1.5:
+                                    elif dx < -1.1:
                                         self._trigger_swipe("left")
-
                             self._prev_centroid_x = cx
                             self._prev_time = now
+                        else:
+                            self._prev_centroid_x = None
 
-                            # Palm vs Fist
-                            if extended >= 4:
-                                self._trigger_palm()
-                            elif extended == 0:
-                                self._trigger_fist()
-                    else:
-                        self._prev_centroid_x = None
+                        time.sleep(0.035)  # ~28 FPS
+                        continue
+                    except Exception:
+                        pass
 
+                # ── SECONDARY PATH: Calibrated OpenCV Contour & Convexity ─────
+                small = cv2.resize(frame, (320, 240))
+                hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
+                ycrcb = cv2.cvtColor(small, cv2.COLOR_BGR2YCrCb)
+
+                # Robust Dual-Space Skin Mask
+                mask_ycrcb = cv2.inRange(ycrcb, np.array([0, 130, 75]), np.array([255, 180, 135]))
+                mask_hsv = cv2.inRange(hsv, np.array([0, 20, 40]), np.array([30, 255, 255]))
+                mask = cv2.bitwise_and(mask_ycrcb, mask_hsv)
+                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+                mask = cv2.dilate(mask, kernel, iterations=1)
+
+                # Mask out face bounding box (do not mask torso or hands)
+                if face_cascade is not None:
+                    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+                    faces = face_cascade.detectMultiScale(gray, 1.3, 4, minSize=(35, 35))
+                    for (fx, fy, fw, fh) in faces:
+                        mask[max(0, fy):min(240, fy + fh), max(0, fx):min(320, fx + fw)] = 0
+
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                if contours:
+                    max_c = max(contours, key=cv2.contourArea)
+                    area = cv2.contourArea(max_c)
+
+                    # Calibrated Area: 1400px - 22000px on 320x240 frame
+                    if 1400 < area < 22000:
+                        hull = cv2.convexHull(max_c, returnPoints=False)
+                        if hull is not None and len(hull) > 3 and len(max_c) > 3:
+                            try:
+                                defects = cv2.convexityDefects(max_c, hull)
+                                finger_count = 0
+                                if defects is not None:
+                                    for i in range(defects.shape[0]):
+                                        s, e, f, d = defects[i, 0]
+                                        start = max_c[s][0]
+                                        end = max_c[e][0]
+                                        far = max_c[f][0]
+                                        a = np.linalg.norm(end - start)
+                                        b = np.linalg.norm(far - start)
+                                        c = np.linalg.norm(end - far)
+                                        angle = np.arccos(np.clip((b**2 + c**2 - a**2) / (2 * b * c + 1e-6), -1.0, 1.0))
+                                        # Calibrated finger defect depth: > 1000 (~4px) and acute angle (< 95 deg)
+                                        if angle <= np.pi * 0.53 and d > 1000:
+                                            finger_count += 1
+
+                                # Centroid tracking for directional swipes
+                                M = cv2.moments(max_c)
+                                if M["m00"] > 0:
+                                    cx = float(M["m10"] / M["m00"])
+                                    if self._prev_centroid_x is not None:
+                                        dt = now - self._prev_time
+                                        if 0.05 < dt < 0.40:
+                                            dx = (cx - self._prev_centroid_x) / dt
+                                            if dx > 110:
+                                                self._trigger_swipe("right")
+                                            elif dx < -110:
+                                                self._trigger_swipe("left")
+                                    self._prev_centroid_x = cx
+                                    self._prev_time = now
+
+                                # Gesture Classification
+                                if finger_count >= 3:
+                                    self._trigger_palm()
+                                elif finger_count == 0 and 1200 < area < 6500:
+                                    self._trigger_fist()
+                            except Exception:
+                                pass
                 else:
-                    # ── OpenCV Fast Contour & Convexity Defect Engine ──
-                    small = cv2.resize(frame, (320, 240))
-                    ycrcb = cv2.cvtColor(small, cv2.COLOR_BGR2YCrCb)
-                    # Skin color mask
-                    mask = cv2.inRange(ycrcb, np.array([0, 133, 77]), np.array([255, 173, 127]))
-                    mask = cv2.GaussianBlur(mask, (5, 5), 0)
-
-                    # Black out face & neck region so head/face movement NEVER triggers hand gestures
-                    face_cascade_path = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
-                    if os.path.exists(face_cascade_path):
-                        face_cascade = cv2.CascadeClassifier(face_cascade_path)
-                        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
-                        faces = face_cascade.detectMultiScale(gray, 1.25, 4, minSize=(35, 35))
-                        for (fx, fy, fw, fh) in faces:
-                            pad_w, pad_h = int(fw * 0.2), int(fh * 0.35)
-                            x0 = max(0, fx - pad_w)
-                            y0 = max(0, fy - pad_h)
-                            x1 = min(320, fx + fw + pad_w)
-                            y1 = min(240, fy + fh + pad_h * 2)
-                            mask[y0:y1, x0:x1] = 0
-
-                    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-                    if contours:
-                        max_c = max(contours, key=cv2.contourArea)
-                        area = cv2.contourArea(max_c)
-                        # Require a deliberate, sizable hand contour (exclude small skin patches or noise)
-                        if area > 6500:
-                            hull = cv2.convexHull(max_c, returnPoints=False)
-                            if hull is not None and len(hull) > 3 and len(max_c) > 3:
-                                try:
-                                    defects = cv2.convexityDefects(max_c, hull)
-                                    if defects is not None:
-                                        finger_count = 0
-                                        for i in range(defects.shape[0]):
-                                            s, e, f, d = defects[i, 0]
-                                            start = max_c[s][0]
-                                            end = max_c[e][0]
-                                            far = max_c[f][0]
-                                            a = np.linalg.norm(end - start)
-                                            b = np.linalg.norm(far - start)
-                                            c = np.linalg.norm(end - far)
-                                            angle = np.arccos(np.clip((b**2 + c**2 - a**2) / (2 * b * c + 1e-6), -1.0, 1.0))
-                                            if angle <= np.pi / 2.2 and d > 3500:
-                                                finger_count += 1
-
-                                        M = cv2.moments(max_c)
-                                        if M["m00"] > 0:
-                                            cx = float(M["m10"] / M["m00"])
-                                            if self._prev_centroid_x is not None:
-                                                dt = now - self._prev_time
-                                                if 0.06 < dt < 0.35:
-                                                    dx = (cx - self._prev_centroid_x) / dt
-                                                    # Only fast, deliberate swipes across the screen
-                                                    if dx > 260:
-                                                        self._trigger_swipe("right")
-                                                    elif dx < -260:
-                                                        self._trigger_swipe("left")
-                                            self._prev_centroid_x = cx
-                                            self._prev_time = now
-
-                                        if finger_count >= 4:
-                                            self._trigger_palm()
-                                        elif finger_count == 0 and area > 8000:
-                                            self._trigger_fist()
-                                except Exception:
-                                    pass
+                    self._prev_centroid_x = None
 
                 time.sleep(0.04)  # ~25 FPS loop
 

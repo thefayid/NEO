@@ -1,11 +1,12 @@
 """
-core/neo_vision_studio.py — Visual HUD & Spatial Gesture Studio for NEO.
+core/neo_vision_studio.py — Visual HUD, Gesture Spatial Controller & Deep OCR Studio for NEO.
 Provides real-time camera vision streaming via CameraService,
-live hand gesture recognition telemetry via Stark Air Gesture Control,
-screen region OCR capture, and Gemini Vision question answering (VQA).
+neural hand gesture recognition via Google MediaPipe & calibrated OpenCV fallback,
+screen/webcam high-precision OCR extraction, and Gemini Vision question answering (VQA).
 """
 from __future__ import annotations
 
+import io
 import os
 import sys
 import time
@@ -17,7 +18,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QRectF, QPointF
 from PyQt6.QtGui import QFont, QCursor, QColor, QImage, QPixmap, QPainter, QPen, QBrush
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
-    QFrame, QSplitter, QTextBrowser
+    QFrame, QSplitter, QTextBrowser, QApplication
 )
 
 try:
@@ -25,6 +26,8 @@ try:
     _CV2_OK = True
 except ImportError:
     _CV2_OK = False
+
+from core import gemini
 
 # Shared executive styling tokens
 CARD_BG = "#1B1F26"
@@ -50,6 +53,7 @@ class NeoVisionSpatialStudio(QWidget):
         self._last_fps_time: float = time.monotonic()
         self._current_fps: int = 30
         self._last_snapshot_path: Optional[Path] = None
+        self._last_ocr_text: str = ""
 
         self.setStyleSheet(f"""
             QWidget {{
@@ -74,7 +78,7 @@ class NeoVisionSpatialStudio(QWidget):
         title_col.setSpacing(1)
         t_row = QHBoxLayout()
         t_row.setSpacing(8)
-        title_lbl = QLabel("Visual HUD & Spatial Gesture Studio")
+        title_lbl = QLabel("Visual HUD, Gesture & Deep OCR Studio")
         title_lbl.setFont(QFont("Segoe UI", 13, QFont.Weight.Bold))
         t_row.addWidget(title_lbl)
 
@@ -85,7 +89,7 @@ class NeoVisionSpatialStudio(QWidget):
         t_row.addStretch()
         title_col.addLayout(t_row)
 
-        sub_lbl = QLabel("Real-time webcam computer vision, holographic HUD targeting, and hands-free optical gesture control")
+        sub_lbl = QLabel("Webcam optical targeting, Google MediaPipe neural gestures, and screen/camera text OCR extraction")
         sub_lbl.setFont(QFont("Segoe UI", 8))
         sub_lbl.setStyleSheet(f"color: {TEXT_MUTED};")
         title_col.addWidget(sub_lbl)
@@ -93,9 +97,23 @@ class NeoVisionSpatialStudio(QWidget):
 
         hdr.addStretch()
 
-        self.screen_cap_btn = QPushButton("📸 Capture Screen Region")
+        self.screen_ocr_btn = QPushButton("🔍 Extract Screen OCR")
+        self.screen_ocr_btn.setFixedHeight(30)
+        self.screen_ocr_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.screen_ocr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.screen_ocr_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: rgba(76, 175, 125, 0.2); color: {SEMANTIC_SUCCESS};
+                border: 1px solid {SEMANTIC_SUCCESS}; border-radius: 6px; padding: 0 12px;
+            }}
+            QPushButton:hover {{ background: rgba(76, 175, 125, 0.35); color: #ffffff; }}
+        """)
+        self.screen_ocr_btn.clicked.connect(self._capture_screen_ocr)
+        hdr.addWidget(self.screen_ocr_btn)
+
+        self.screen_cap_btn = QPushButton("📸 Screen VQA")
         self.screen_cap_btn.setFixedHeight(30)
-        self.screen_cap_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.screen_cap_btn.setFont(QFont("Segoe UI", 8))
         self.screen_cap_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.screen_cap_btn.setStyleSheet(f"""
             QPushButton {{
@@ -130,9 +148,9 @@ class NeoVisionSpatialStudio(QWidget):
         self.cam_timer.setInterval(33)
         self.cam_timer.timeout.connect(self._fetch_and_render_frame)
 
-        # Gesture & Telemetry Polling Timer (500ms)
+        # Gesture & Telemetry Polling Timer (400ms)
         self.telemetry_timer = QTimer(self)
-        self.telemetry_timer.setInterval(500)
+        self.telemetry_timer.setInterval(400)
         self.telemetry_timer.timeout.connect(self._refresh_telemetry)
         self.telemetry_timer.start()
 
@@ -164,9 +182,23 @@ class NeoVisionSpatialStudio(QWidget):
         ctrl_row.addWidget(v_title)
         ctrl_row.addStretch()
 
+        self.snap_ocr_btn = QPushButton("📷 Snapshot Cam OCR")
+        self.snap_ocr_btn.setFixedHeight(24)
+        self.snap_ocr_btn.setFont(QFont("Segoe UI", 8))
+        self.snap_ocr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.snap_ocr_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent; color: {TEXT_WHITE};
+                border: 1px solid {CARD_BORDER}; border-radius: 4px; padding: 0 8px;
+            }}
+            QPushButton:hover {{ background: {CARD_HOVER}; border-color: {SEMANTIC_SUCCESS}; }}
+        """)
+        self.snap_ocr_btn.clicked.connect(self._snapshot_camera_ocr)
+        ctrl_row.addWidget(self.snap_ocr_btn)
+
         self.stream_btn = QPushButton("▶ Start Camera")
         self.stream_btn.setFixedHeight(24)
-        self.stream_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        self.stream_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.stream_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.stream_btn.setStyleSheet(f"""
             QPushButton {{
@@ -193,7 +225,7 @@ class NeoVisionSpatialStudio(QWidget):
 
         # Telemetry footer
         self.stream_stat = QLabel("Resolution: Standby · FPS: 0 · Focus: Continuous Auto-Focus · Service: Shared Camera")
-        self.stream_stat.setFont(QFont("Segoe UI", 7))
+        self.stream_stat.setFont(QFont("Segoe UI", 8))
         self.stream_stat.setStyleSheet(f"color: {TEXT_DIM}; border: none; background: transparent;")
         lay.addWidget(self.stream_stat)
 
@@ -232,7 +264,7 @@ class NeoVisionSpatialStudio(QWidget):
 
         p.setPen(QColor("#64748B"))
         p.setFont(QFont("Segoe UI", 8))
-        p.drawText(QRectF(0, 164, 520, 20), Qt.AlignmentFlag.AlignCenter, "Click 'Start Camera' for Live Video Feed or 'Capture Screen' for OCR")
+        p.drawText(QRectF(0, 164, 520, 20), Qt.AlignmentFlag.AlignCenter, "Click 'Start Camera' for Live Video Feed or 'Extract Screen OCR' for Text")
 
         p.end()
         self.viewport.setPixmap(pix)
@@ -257,20 +289,20 @@ class NeoVisionSpatialStudio(QWidget):
         g_icn = QLabel("🖐️")
         g_icn.setFont(QFont("Segoe UI", 11))
         g_hdr.addWidget(g_icn)
-        g_txt = QLabel("Spatial Gestures & Vision QA")
+        g_txt = QLabel("Air Gestures & Deep OCR Engine")
         g_txt.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
         g_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         g_hdr.addWidget(g_txt)
         g_hdr.addStretch()
 
-        self.gesture_toggle_btn = QPushButton("Enabled")
+        self.gesture_toggle_btn = QPushButton("▶ Enable Gestures")
         self.gesture_toggle_btn.setFixedHeight(22)
-        self.gesture_toggle_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        self.gesture_toggle_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.gesture_toggle_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.gesture_toggle_btn.setStyleSheet(f"""
             QPushButton {{
-                background: rgba(76, 175, 125, 0.2); color: {SEMANTIC_SUCCESS};
-                border: 1px solid {SEMANTIC_SUCCESS}; border-radius: 4px; padding: 0 8px;
+                background: rgba(91, 141, 239, 0.2); color: {ACCENT_PRIMARY};
+                border: 1px solid {ACCENT_PRIMARY}; border-radius: 4px; padding: 0 8px;
             }}
         """)
         self.gesture_toggle_btn.clicked.connect(self._toggle_gestures)
@@ -286,9 +318,9 @@ class NeoVisionSpatialStudio(QWidget):
 
         gestures = [
             ("🖐️ Open Palm", "Pause Assistant Voice & Media (Interrupt)"),
-            ("💨 Swipe Right", "Switch Application Tab (Ctrl+Tab)"),
-            ("💨 Swipe Left", "Switch Previous Tab (Ctrl+Shift+Tab)"),
             ("✊ Closed Fist", "Unmute Microphone / Resume Playback"),
+            ("✌️ Victory / Peace", "Toggle Mute & Voice Mode"),
+            ("💨 Swipe Right / Left", "Switch Active Workstation Tabs"),
         ]
         self.gesture_rows = []
         for g_name, g_action in gestures:
@@ -319,20 +351,37 @@ class NeoVisionSpatialStudio(QWidget):
         ind_lay.addWidget(self.detected_lbl)
         ind_lay.addStretch()
         self.conf_lbl = QLabel("Air Gesture Engine: Active")
-        self.conf_lbl.setFont(QFont("Segoe UI", 7))
+        self.conf_lbl.setFont(QFont("Segoe UI", 8))
         self.conf_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; border: none; background: transparent;")
         ind_lay.addWidget(self.conf_lbl)
         lay.addWidget(ind_box)
 
         # Visual QA / OCR Inspector output
+        vqa_hdr = QHBoxLayout()
         vqa_lbl = QLabel("Visual Question Answering & OCR Output")
         vqa_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         vqa_lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        lay.addWidget(vqa_lbl)
+        vqa_hdr.addWidget(vqa_lbl)
+        vqa_hdr.addStretch()
+
+        self.copy_ocr_btn = QPushButton("📋 Copy Text")
+        self.copy_ocr_btn.setFixedHeight(20)
+        self.copy_ocr_btn.setFont(QFont("Segoe UI", 7))
+        self.copy_ocr_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.copy_ocr_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent; color: {TEXT_MUTED};
+                border: 1px solid {CARD_BORDER}; border-radius: 3px; padding: 0 6px;
+            }}
+            QPushButton:hover {{ background: {CARD_HOVER}; color: {TEXT_WHITE}; }}
+        """)
+        self.copy_ocr_btn.clicked.connect(self._copy_ocr_text)
+        vqa_hdr.addWidget(self.copy_ocr_btn)
+        lay.addLayout(vqa_hdr)
 
         self.vqa_browser = QTextBrowser()
-        self.vqa_browser.setFont(QFont("Segoe UI", 8))
-        self.vqa_browser.setPlaceholderText("Capture a screen region or take a camera snapshot to run OCR and visual semantic reasoning with Gemini Vision.")
+        self.vqa_browser.setFont(QFont("Consolas", 9))
+        self.vqa_browser.setPlaceholderText("Capture a screen region, extract OCR, or take a camera snapshot to transcribe text and reason with Gemini Vision.")
         self.vqa_browser.setStyleSheet(f"""
             QTextBrowser {{
                 background: #14171C; color: {TEXT_WHITE};
@@ -462,11 +511,15 @@ class NeoVisionSpatialStudio(QWidget):
             from actions.gesture_control import _gesture_ctl
             active = _gesture_ctl.is_active()
             if active:
-                self.gesture_toggle_btn.setText("Enabled")
+                self.gesture_toggle_btn.setText("⏹ Disable Gestures")
                 self.gesture_toggle_btn.setStyleSheet(f"background: rgba(76, 175, 125, 0.2); color: {SEMANTIC_SUCCESS}; border: 1px solid {SEMANTIC_SUCCESS}; border-radius: 4px; padding: 0 8px;")
+                self.detected_lbl.setText("Active Optical Stance: STANDBY (Awaiting gesture)")
+                self.conf_lbl.setText("Air Gesture Engine: Active")
             else:
-                self.gesture_toggle_btn.setText("Disabled")
-                self.gesture_toggle_btn.setStyleSheet(f"background: rgba(217, 83, 79, 0.2); color: {SEMANTIC_ERROR}; border: 1px solid {SEMANTIC_ERROR}; border-radius: 4px; padding: 0 8px;")
+                self.gesture_toggle_btn.setText("▶ Enable Gestures")
+                self.gesture_toggle_btn.setStyleSheet(f"background: rgba(91, 141, 239, 0.2); color: {ACCENT_PRIMARY}; border: 1px solid {ACCENT_PRIMARY}; border-radius: 4px; padding: 0 8px;")
+                self.detected_lbl.setText("Active Optical Stance: GESTURES MUTED (Click Enable)")
+                self.conf_lbl.setText("Engine: Muted")
         except Exception:
             pass
 
@@ -475,18 +528,18 @@ class NeoVisionSpatialStudio(QWidget):
             from actions.gesture_control import _gesture_ctl
             if _gesture_ctl.is_active():
                 _gesture_ctl.stop()
-                self.gesture_toggle_btn.setText("Disabled")
-                self.gesture_toggle_btn.setStyleSheet(f"background: rgba(217, 83, 79, 0.2); color: {SEMANTIC_ERROR}; border: 1px solid {SEMANTIC_ERROR}; border-radius: 4px; padding: 0 8px;")
+                self.gesture_toggle_btn.setText("▶ Enable Gestures")
+                self.gesture_toggle_btn.setStyleSheet(f"background: rgba(91, 141, 239, 0.2); color: {ACCENT_PRIMARY}; border: 1px solid {ACCENT_PRIMARY}; border-radius: 4px; padding: 0 8px;")
                 self.detected_lbl.setText("Active Optical Stance: GESTURES MUTED (Paused by user)")
-                self.conf_lbl.setText("Air Gesture Engine: Inactive")
+                self.conf_lbl.setText("Air Gesture Engine: Muted")
             else:
                 _gesture_ctl.start(player=self)
-                self.gesture_toggle_btn.setText("Enabled")
+                self.gesture_toggle_btn.setText("⏹ Disable Gestures")
                 self.gesture_toggle_btn.setStyleSheet(f"background: rgba(76, 175, 125, 0.2); color: {SEMANTIC_SUCCESS}; border: 1px solid {SEMANTIC_SUCCESS}; border-radius: 4px; padding: 0 8px;")
                 self.detected_lbl.setText("Active Optical Stance: STANDBY (Awaiting gesture)")
                 self.conf_lbl.setText("Air Gesture Engine: Active")
         except Exception as e:
-            self.vqa_browser.setHtml(f"<span style='color: #F87171;'>Gesture toggle note: {e}</span>")
+            self.vqa_browser.setHtml(f"<span style='color: #F87171;'>Gesture toggle error: {e}</span>")
 
     def _refresh_telemetry(self):
         """Polls gesture controller for live detection triggers."""
@@ -494,12 +547,12 @@ class NeoVisionSpatialStudio(QWidget):
             from actions.gesture_control import _gesture_ctl
             if not _gesture_ctl.is_active():
                 self.detected_lbl.setText("Active Optical Stance: GESTURES MUTED")
-                self.conf_lbl.setText("Engine: Idle")
+                self.conf_lbl.setText("Engine: Muted")
                 return
 
             last_gest, last_time = _gesture_ctl.get_last_gesture()
             now = time.monotonic()
-            if now - last_time < 3.0 and last_gest != "STANDBY (No gesture)":
+            if now - last_time < 2.5 and "STANDBY" not in last_gest:
                 self.detected_lbl.setText(f"Active Optical Stance: {last_gest}")
                 self.detected_lbl.setStyleSheet(f"color: {SEMANTIC_SUCCESS}; border: none; background: transparent; font-weight: bold;")
                 self.conf_lbl.setText("Detected (98%)")
@@ -510,12 +563,115 @@ class NeoVisionSpatialStudio(QWidget):
         except Exception:
             pass
 
-    # ── Screen Capture & Deep Gemini Vision Reasoning ─────────────────────────
+    # ── High-Precision OCR & Multimodal Vision Reasoning ─────────────────────
+
+    def _capture_screen_ocr(self):
+        """Captures full screen and runs verbatim Optical Character Recognition (OCR)."""
+        self.vqa_browser.setHtml("<i>Capturing screen surface and executing verbatim OCR transcription...</i>")
+        self.screen_ocr_btn.setEnabled(False)
+        self.screen_ocr_btn.setText("Extracting OCR...")
+
+        def work():
+            try:
+                from PIL import ImageGrab
+                shot = ImageGrab.grab()
+                tmp_path = Path("assets/temp_screen_snapshot.png")
+                tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                shot.save(str(tmp_path))
+                self._last_snapshot_path = tmp_path
+
+                # Display preview in viewport
+                qimg = QImage(str(tmp_path))
+                if not qimg.isNull():
+                    scaled = qimg.scaled(self.viewport.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                    QTimer.singleShot(0, lambda: self.viewport.setPixmap(QPixmap.fromImage(scaled)))
+
+                prompt = (
+                    "You are an ultra-high precision Optical Character Recognition (OCR) engine. "
+                    "Extract and transcribe ALL text, logs, code, menus, dialogs, and numbers visible on this screen exactly as written. "
+                    "Preserve indentation, code formatting, and structure verbatim. Output ONLY the pure extracted text."
+                )
+
+                img_bytes = tmp_path.read_bytes()
+                ocr_result = gemini.multimodal(prompt, img_bytes, mime="image/png")
+                self._last_ocr_text = ocr_result or ""
+
+                clean_res = (ocr_result or "No text was detected on the active screen.").replace("\n", "<br>")
+
+                result_html = f"""
+                <div style='color: #34D399; font-weight: bold;'>✓ Verbatim Screen OCR Extracted</div>
+                <div style='color: #64748B; font-size: 7.5pt; margin-bottom: 6px;'>
+                    <b>Target:</b> Workstation Display · <b>Dimensions:</b> {shot.size[0]}×{shot.size[1]} px · Click 'Copy Text' to copy.
+                </div>
+                <div style='color: #E6E8EC; font-size: 8pt; line-height: 1.4; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px;'>
+                    {clean_res}
+                </div>
+                """
+                QTimer.singleShot(0, lambda: self.vqa_browser.setHtml(result_html))
+            except Exception as e:
+                QTimer.singleShot(0, lambda: self.vqa_browser.setHtml(f"<span style='color: #F87171;'>OCR extraction error: {e}</span>"))
+            finally:
+                QTimer.singleShot(0, self._reset_ocr_btn)
+
+        threading.Thread(target=work, daemon=True, name="screen-ocr-thread").start()
+
+    def _reset_ocr_btn(self):
+        self.screen_ocr_btn.setEnabled(True)
+        self.screen_ocr_btn.setText("🔍 Extract Screen OCR")
+
+    def _snapshot_camera_ocr(self):
+        """Grabs the current webcam frame and transcribes any text/paper held in front of the lens."""
+        self.vqa_browser.setHtml("<i>Grabbing camera frame and running document & text OCR...</i>")
+        self.snap_ocr_btn.setEnabled(False)
+
+        def work():
+            try:
+                from core.camera_service import get_camera_service
+                cam = get_camera_service()
+                img_bytes, mime = cam.snapshot()
+                tmp_path = Path("assets/temp_camera_ocr_snapshot.png")
+                tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path.write_bytes(img_bytes)
+                self._last_snapshot_path = tmp_path
+
+                # Show preview in viewport
+                qimg = QImage(str(tmp_path))
+                if not qimg.isNull():
+                    scaled = qimg.scaled(self.viewport.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                    QTimer.singleShot(0, lambda: self.viewport.setPixmap(QPixmap.fromImage(scaled)))
+
+                prompt = (
+                    "Transcribe and extract ALL text, numbers, handwriting, or document text visible in this camera image verbatim. "
+                    "Format clearly. Output only the transcribed text."
+                )
+
+                ocr_result = gemini.multimodal(prompt, img_bytes, mime=mime or "image/jpeg")
+                self._last_ocr_text = ocr_result or ""
+
+                clean_res = (ocr_result or "No text was detected in the camera frame.").replace("\n", "<br>")
+
+                result_html = f"""
+                <div style='color: #34D399; font-weight: bold;'>✓ Camera Frame OCR Transcribed</div>
+                <div style='color: #64748B; font-size: 7.5pt; margin-bottom: 6px;'>
+                    <b>Source:</b> Optical Hardware Camera Frame · Click 'Copy Text' to copy.
+                </div>
+                <div style='color: #E6E8EC; font-size: 8pt; line-height: 1.4; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px;'>
+                    {clean_res}
+                </div>
+                """
+                QTimer.singleShot(0, lambda: self.vqa_browser.setHtml(result_html))
+            except Exception as e:
+                QTimer.singleShot(0, lambda: self.vqa_browser.setHtml(f"<span style='color: #F87171;'>Camera OCR error: {e}</span>"))
+            finally:
+                QTimer.singleShot(0, lambda: self.snap_ocr_btn.setEnabled(True))
+
+        threading.Thread(target=work, daemon=True, name="cam-ocr-thread").start()
 
     def _capture_screen_region(self):
+        """Captures full screen and executes semantic Visual Question Answering & UI Breakdown."""
         self.vqa_browser.setHtml("<i>Capturing screen surface and executing deep Gemini Vision analysis...</i>")
         self.screen_cap_btn.setEnabled(False)
-        self.screen_cap_btn.setText("Capturing...")
+        self.screen_cap_btn.setText("Analyzing...")
 
         def work():
             try:
@@ -533,20 +689,15 @@ class NeoVisionSpatialStudio(QWidget):
                     QTimer.singleShot(0, lambda: self.viewport.setPixmap(QPixmap.fromImage(scaled)))
 
                 # Perform actual visual reasoning via core.gemini
-                from core import gemini
                 prompt = (
                     "You are Tony Stark's executive visual intelligence analyst. "
                     "Analyze the user's active workstation screen: identify open applications, code files, "
                     "potential bugs, terminal messages, and provide a crisp 3-bullet executive briefing with action items."
                 )
 
-                # Send image bytes to Gemini Vision if available
                 img_bytes = tmp_path.read_bytes()
-                try:
-                    vision_result = gemini.multimodal(prompt, img_bytes, mime="image/png")
-                except Exception:
-                    # High quality fallback
-                    vision_result = gemini.text(f"{prompt} (Screen dimensions: {shot.size[0]}x{shot.size[1]})")
+                vision_result = gemini.multimodal(prompt, img_bytes, mime="image/png")
+                self._last_ocr_text = vision_result or ""
 
                 clean_res = (vision_result or "Screen captured successfully. Ready for targeted query.").replace("\n", "<br>")
 
@@ -569,7 +720,13 @@ class NeoVisionSpatialStudio(QWidget):
 
     def _reset_cap_btn(self):
         self.screen_cap_btn.setEnabled(True)
-        self.screen_cap_btn.setText("📸 Capture Screen Region")
+        self.screen_cap_btn.setText("📸 Screen VQA")
+
+    def _copy_ocr_text(self):
+        if self._last_ocr_text:
+            QApplication.clipboard().setText(self._last_ocr_text)
+            self.copy_ocr_btn.setText("✓ Copied!")
+            QTimer.singleShot(1500, lambda: self.copy_ocr_btn.setText("📋 Copy Text"))
 
     def _explain_frame_with_neo(self):
         """Passes active screen or frame to assistant for conversation dialogue."""
