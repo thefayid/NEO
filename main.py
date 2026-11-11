@@ -35,8 +35,6 @@ if _platform.system() == "Windows":
 # because most of these prints sit inside the receive loop it takes the session
 # down on startup. Reconfiguring to UTF-8 with a replacement fallback costs
 # nothing and makes the app launch the same way in every locale.
-import sys as _sys
-
 for _stream in ("stdout", "stderr"):
     try:
         _s = getattr(_sys, _stream, None)
@@ -48,15 +46,26 @@ for _stream in ("stdout", "stderr"):
 # ─────────────────────────────────────────────────────────────────────────────
 
 import asyncio
+import gc
+import json
 import re
+import socket
 import threading
 import time
-import json
-import sys
 import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime
-from pathlib import Path
+if _platform.system() == "Windows":
+    import ctypes
+    from ctypes import wintypes
+else:
+    ctypes = None
+    wintypes = None
+
+# Aliases for module-level usage
+os = _os
+sys = _sys
+Path = _Path
 
 import sounddevice as sd
 import numpy as np
@@ -91,9 +100,14 @@ from memory.config_manager     import (
     get_brief_enabled, get_last_briefing_date, save_last_briefing_date,
     get_media_resolution, get_proactive_audio_enabled,
     get_push_to_talk_enabled, get_thinking_enabled, get_turn_tuning, get_voice,
-    get_wake_word_enabled, save_wake_word_enabled,    get_input_device, get_output_device,
+    get_wake_word_enabled, save_wake_word_enabled, get_input_device, get_output_device,
+    get_pipeline, get_provider_config,
 )
+from providers                 import registry
+from core.audio_telemetry      import telemetry
+from core.neo_brain            import brain
 from core                     import gemini as _gemini
+from core                      import platform_support
 from core.plugin_loader        import discover_plugins
 from core                      import undo as undo_stack
 from core                      import confirm as confirm_gate
@@ -311,7 +325,6 @@ def _describe_limits(has_vision: bool, has_mic: bool) -> str:
     # happened, which is how "it does not work properly on Linux" was described
     # for a long time without anybody being able to name the failing part.
     try:
-        from core import platform_support
         out.extend(platform_support.describe_for_model(platform_support.detect()))
     except Exception as _e:
         print(f"[Limits] platform capabilities unavailable: {_e}")
@@ -865,7 +878,6 @@ class JarvisLive:
     async def _run_wan_recovery_watch(self) -> None:
         """Background task while in offline fallback mode: monitors for internet recovery and auto-reconnects to Gemini Live."""
         def _check_wan() -> bool:
-            import socket
             for host, port in [("1.1.1.1", 443), ("8.8.8.8", 53), ("www.google.com", 443)]:
                 try:
                     with socket.create_connection((host, port), timeout=1.0):
@@ -1238,8 +1250,6 @@ class JarvisLive:
         self.speak(f"Sir, {tool_name} encountered an error. {short}")
 
     def _build_config(self) -> types.LiveConnectConfig:
-        from datetime import datetime
-
         # Load customization from config
         try:
             _cfg = json.loads(open(API_CONFIG_PATH, encoding="utf-8").read())
@@ -1355,7 +1365,6 @@ class JarvisLive:
         if mem_str:
             parts.append(mem_str)
         try:
-            from core.neo_brain import brain
             brain_ctx = brain.synthesize_intelligence_prompt("")
             if brain_ctx:
                 parts.append(brain_ctx)
@@ -1486,7 +1495,6 @@ class JarvisLive:
             pass
 
         try:
-            from core.neo_brain import brain
             brain.episodic.log_event(
                 "TOOL_INVOCATION",
                 f"Assistant invoked tool '{name}' with args {args}",
@@ -1612,8 +1620,7 @@ class JarvisLive:
                 async def _do_fast_shutdown():
                     # Brief moment to allow UI speech, audio chime, and tool response to dispatch
                     await asyncio.sleep(0.35)
-                    import os as _os
-                    _os._exit(0)
+                    os._exit(0)
 
                 asyncio.create_task(_do_fast_shutdown())
 
@@ -1745,7 +1752,6 @@ class JarvisLive:
             except Exception:
                 pass
         try:
-            from core.audio_telemetry import telemetry
             in_d = self.audio_in_queue.qsize() if self.audio_in_queue else 0
             telemetry.update_buffer_stats(in_depth=in_d, out_depth=q.qsize(), overruns=dropped)
         except Exception:
@@ -1832,7 +1838,6 @@ class JarvisLive:
                     self._active_speech_frames = prev_f + 1
                     if self._active_speech_frames == 3:  # speech onset confirmed (~60ms)
                         try:
-                            from core.audio_telemetry import telemetry
                             telemetry.on_user_speech_start()
                         except Exception:
                             pass
@@ -1841,7 +1846,6 @@ class JarvisLive:
                     self._active_speech_frames = max(0, prev_f - 1)
                     if prev_f >= 3 and self._active_speech_frames == 0:  # speech offset confirmed
                         try:
-                            from core.audio_telemetry import telemetry
                             telemetry.on_user_speech_stop()
                         except Exception:
                             pass
@@ -1974,7 +1978,6 @@ class JarvisLive:
                             pass  # discard: interrupted
                         else:
                             try:
-                                from core.audio_telemetry import telemetry
                                 telemetry.on_server_packet_received()
                                 telemetry.on_first_audio_chunk()
                             except Exception:
@@ -1995,7 +1998,6 @@ class JarvisLive:
 
                         if sc.output_transcription and sc.output_transcription.text:
                             try:
-                                from core.audio_telemetry import telemetry
                                 telemetry.on_first_transcript()
                             except Exception:
                                 pass
@@ -2031,7 +2033,6 @@ class JarvisLive:
 
                         if sc.turn_complete:
                             try:
-                                from core.audio_telemetry import telemetry
                                 telemetry.on_turn_completed()
                             except Exception:
                                 pass
@@ -2098,13 +2099,11 @@ class JarvisLive:
                         for fc in response.tool_call.function_calls:
                             print(f"[JARVIS] 📞 {fc.name}")
                             try:
-                                from core.audio_telemetry import telemetry
                                 telemetry.on_tool_start(fc.name)
                             except Exception:
                                 pass
                             fr = await self._execute_tool(fc)
                             try:
-                                from core.audio_telemetry import telemetry
                                 telemetry.on_tool_end(fc.name)
                             except Exception:
                                 pass
@@ -2161,7 +2160,6 @@ class JarvisLive:
             print(f"[JARVIS] 🔊 Output latency {self._out_latency*1000:.0f} ms "
                   f"→ echo tail {(self._out_latency + _TAIL_MARGIN)*1000:.0f} ms")
             try:
-                from core.audio_telemetry import telemetry
                 telemetry.set_hardware_latency(self._out_latency)
             except Exception:
                 pass
@@ -2425,7 +2423,6 @@ class JarvisLive:
             return
         self._session_log = []
         try:
-            from memory.memory_manager import save_session_summary
             recent = [entry for entry in log[-8:] if entry and entry.strip()]
             if recent:
                 summary_line = " | ".join(recent)[-280:]
@@ -2475,10 +2472,8 @@ class JarvisLive:
             if _trim_counter >= 6:  # Every 60s
                 _trim_counter = 0
                 try:
-                    import gc
                     gc.collect(1)
-                    if _platform.system() == "Windows":
-                        import ctypes
+                    if _platform.system() == "Windows" and ctypes:
                         ctypes.windll.psapi.EmptyWorkingSet(ctypes.windll.kernel32.GetCurrentProcess())
                 except Exception:
                     pass
@@ -2584,7 +2579,6 @@ class JarvisLive:
                         turn_complete=True,
                     )
                 else:
-                    from core import gemini as _gemini
                     resp = await asyncio.to_thread(_gemini.call, prompt, _gemini.FAST)
                     if resp and resp.strip():
                         print(f"[NEO BRAIN] 💬 {resp.strip()}")
@@ -2663,7 +2657,6 @@ class JarvisLive:
                     self.ui.write_log(f"[Web]: {text}")
                 else:
                     # Resilient Fallback: execute via Gemini REST so phone PWA never drops commands
-                    from core import gemini as _gemini
                     self.ui.write_log(f"[Web]: {text}")
                     reply = await asyncio.to_thread(_gemini.call, text, _gemini.SMART)
                     if reply and reply.strip():
@@ -2692,7 +2685,6 @@ class JarvisLive:
     # before any of this existed.
     def _probe_local_llm(self) -> dict | None:
         """Scan local ports (Ollama: 11434, LM Studio: 1234, llama.cpp: 8080) for an active offline server."""
-        import socket
         import urllib.request
         endpoints = [
             ("Ollama", 11434, "http://127.0.0.1:11434/v1", "http://127.0.0.1:11434/api/tags"),
@@ -2736,9 +2728,6 @@ class JarvisLive:
         if self._engine_mode() != "pipeline":
             return None
         try:
-            from memory.config_manager import get_pipeline, get_provider_config
-            from providers import registry
-
             pipe = get_pipeline()
             llm_id = str(pipe.get("llm") or "").strip()
             
@@ -2809,8 +2798,6 @@ class JarvisLive:
                 yield session
             return
 
-        from memory.config_manager import get_pipeline, get_provider_config
-        from providers import registry
         from providers.engine_pipeline import PipelineEngine
 
         pipe = dict(get_pipeline())
@@ -2917,7 +2904,6 @@ class JarvisLive:
                 print(f"[JARVIS] Live model: {live_model}")
 
                 try:
-                    from core.audio_telemetry import telemetry
                     telemetry.set_engine_info(
                         mode=self._engine_mode(),
                         model=live_model,
@@ -3008,7 +2994,6 @@ class JarvisLive:
                     if not self._platform_notes_shown:
                         self._platform_notes_shown = True
                         try:
-                            from core import platform_support
                             for _line in platform_support.describe_for_user(
                                     platform_support.detect()):
                                 self.ui.write_log(_line)
@@ -3251,7 +3236,6 @@ def _enforce_single_instance() -> None:
     3. If another live instance exists, brings its window to the foreground and exits immediately.
     """
     global _SINGLETON_LOCK
-    import os, sys, platform
 
     # 1. Clean up stale/zombie Mark-LVI processes that have no window
     try:
@@ -3263,9 +3247,7 @@ def _enforce_single_instance() -> None:
                     cmd = ' '.join(p.info['cmdline'] or [])
                     if 'main.py' in cmd and ('mark-lvi' in cmd.lower() or 'jarvis' in cmd.lower()):
                         has_window = False
-                        if platform.system() == "Windows":
-                            import ctypes
-                            from ctypes import wintypes
+                        if _platform.system() == "Windows" and ctypes and wintypes:
                             user32 = ctypes.windll.user32
                             def _enum_cb(hwnd, _):
                                 nonlocal has_window
@@ -3288,9 +3270,7 @@ def _enforce_single_instance() -> None:
         print(f"[NEO Process Sentinel] Zombie scan note: {e}")
 
     # 2. Acquire system-wide singleton lock
-    if platform.system() == "Windows":
-        import ctypes
-        from ctypes import wintypes
+    if _platform.system() == "Windows" and ctypes and wintypes:
         mutex_name = "Global\\NEO_STARK_AI_SINGLETON_MUTEX"
         kernel32 = ctypes.windll.kernel32
         user32 = ctypes.windll.user32
@@ -3320,7 +3300,6 @@ def _enforce_single_instance() -> None:
                 pass
             os._exit(0)
     else:
-        import socket
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind(("127.0.0.1", 48123))
@@ -3331,7 +3310,6 @@ def _enforce_single_instance() -> None:
             os._exit(0)
 
 def main():
-    import os
     import signal
 
     _enforce_single_instance()

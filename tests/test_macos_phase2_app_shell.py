@@ -40,6 +40,11 @@ class TestMacOSPhase2AppShell(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         try:
+            from core.camera_service import get_camera_service
+            get_camera_service().stop()
+            from core.neo_central_coordinator import central_core
+            central_core.stop_proactive_subsystems()
+            cls.win.close()
             cls.win.deleteLater()
         except Exception:
             pass

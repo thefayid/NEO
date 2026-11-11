@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import os
+import platform
 import re
 import time
 import json
@@ -57,6 +58,16 @@ from core.neo_sentinel_hub import NeoSentinelHub
 from core.neo_terminal_studio import NeoTerminalStudio
 from core.neo_swarm_studio import NeoSwarmStudio
 from core.neo_vision_studio import NeoVisionSpatialStudio
+
+try:
+    from actions.executive_briefing import _load_agenda, _save_agenda, _sync_ical_feed
+except Exception:
+    _load_agenda = _save_agenda = _sync_ical_feed = None
+
+try:
+    from memory.memory_manager import remember, forget, load_memory, save_memory
+except Exception:
+    remember = forget = load_memory = save_memory = None
 
 EMOTION_PALETTES = {
     "listening": (QColor(91, 141, 239), QColor(122, 165, 245), "Listening"),
@@ -1183,17 +1194,15 @@ class CalendarSyncDialog(QDialog):
         self.url_input.setText(url)
         self.status_lbl.setText("Syncing feed...")
         try:
-            import json as _json
             cfg_p = os.path.join("config", "api_keys.json")
             if os.path.exists(cfg_p):
                 with open(cfg_p, "r", encoding="utf-8") as f:
-                    cfg = _json.load(f)
+                    cfg = json.load(f)
                 cfg["calendar_ical_url"] = url
                 with open(cfg_p, "w", encoding="utf-8") as f:
-                    _json.dump(cfg, f, indent=4)
+                    json.dump(cfg, f, indent=4)
 
-            from actions.executive_briefing import _sync_ical_feed
-            count = _sync_ical_feed(url)
+            count = _sync_ical_feed(url) if _sync_ical_feed else 0
             self.status_lbl.setText(f"✓ Synced {count} events successfully!" if count else "✓ Connected (0 events in feed)")
             self.feed_synced.emit(count)
         except Exception as e:
@@ -1215,12 +1224,12 @@ class CalendarSyncDialog(QDialog):
             "source": "local",
         }
         try:
-            from actions.executive_briefing import _load_agenda, _save_agenda
-            data = _load_agenda()
-            evs = data.get("events", [])
-            evs.append(new_ev)
-            data["events"] = evs
-            _save_agenda(data)
+            if _load_agenda and _save_agenda:
+                data = _load_agenda()
+                evs = data.get("events", [])
+                evs.append(new_ev)
+                data["events"] = evs
+                _save_agenda(data)
             self.title_input.clear()
             self.event_added.emit(new_ev)
             self.status_lbl.setText(f"✓ Added '{title}' to today's schedule!")
@@ -1334,17 +1343,16 @@ class UpcomingScheduleWidget(QFrame):
 
     def _auto_sync_calendar(self):
         try:
-            import json as _json
             cfg_p = os.path.join("config", "api_keys.json")
             if os.path.exists(cfg_p):
                 with open(cfg_p, "r", encoding="utf-8") as f:
-                    cfg = _json.load(f)
+                    cfg = json.load(f)
                 url = cfg.get("calendar_ical_url")
                 if url:
                     def _worker():
                         try:
-                            from actions.executive_briefing import _sync_ical_feed
-                            _sync_ical_feed(url)
+                            if _sync_ical_feed:
+                                _sync_ical_feed(url)
                             QTimer.singleShot(0, self.reload_events)
                         except Exception:
                             pass
@@ -1391,12 +1399,12 @@ class UpcomingScheduleWidget(QFrame):
 
         all_evs = []
         try:
-            from actions.executive_briefing import _load_agenda
-            agenda = _load_agenda()
-            raw_evs = agenda.get("events", [])
-            for ev in raw_evs:
-                if ev.get("title") not in DUMMY_TITLES:
-                    all_evs.append(ev)
+            if _load_agenda:
+                agenda = _load_agenda()
+                raw_evs = agenda.get("events", [])
+                for ev in raw_evs:
+                    if ev.get("title") not in DUMMY_TITLES:
+                        all_evs.append(ev)
         except Exception:
             pass
 
@@ -1711,36 +1719,27 @@ class MediaTransportWidget(QFrame):
         except Exception:
             pass
 
-    def _on_prev(self):
+    def _spotify_cmd(self, payload: dict):
         try:
             from actions.spotify_control import spotify_control
-            spotify_control({"action": "previous"})
-            QTimer.singleShot(400, self._poll_spotify)
+            spotify_control(payload)
         except Exception:
             pass
+
+    def _on_prev(self):
+        self._spotify_cmd({"action": "previous"})
+        QTimer.singleShot(400, self._poll_spotify)
 
     def _on_playpause(self):
-        try:
-            from actions.spotify_control import spotify_control
-            spotify_control({"action": "play"})
-            QTimer.singleShot(400, self._poll_spotify)
-        except Exception:
-            pass
+        self._spotify_cmd({"action": "play"})
+        QTimer.singleShot(400, self._poll_spotify)
 
     def _on_next(self):
-        try:
-            from actions.spotify_control import spotify_control
-            spotify_control({"action": "next"})
-            QTimer.singleShot(400, self._poll_spotify)
-        except Exception:
-            pass
+        self._spotify_cmd({"action": "next"})
+        QTimer.singleShot(400, self._poll_spotify)
 
     def _on_vol(self, change: str):
-        try:
-            from actions.spotify_control import spotify_control
-            spotify_control({"action": "volume", "change": change})
-        except Exception:
-            pass
+        self._spotify_cmd({"action": "volume", "change": change})
 
 
 class NeoWidgetsSidebar(QWidget):
@@ -2438,62 +2437,12 @@ class NeoHeroStage(QWidget):
                 )
             )
 
-    def _create_action_card(self, icon: str, title: str) -> QFrame:
-        card = QFrame()
-        card.setFixedSize(124, 76)
-        card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        card.setStyleSheet(f"""
-            QFrame {{
-                background: {CARD_BG};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 10px;
-            }}
-            QFrame:hover {{
-                background: rgba(255, 255, 255, 0.08);
-                border-color: rgba(10, 132, 255, 0.45);
-            }}
-        """)
-        lay = QVBoxLayout(card)
-        lay.setContentsMargins(8, 12, 8, 12)
-        lay.setSpacing(6)
-        lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        icn = QLabel(icon)
-        icn.setFont(QFont("Segoe UI", 16))
-        icn.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icn.setStyleSheet("border: none; background: transparent; color: #8e9eb5;")
-        lay.addWidget(icn)
-
-        lbl = QLabel(title)
-        lbl.setFont(font_text(12, QFont.Weight.Medium))
-        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
-        lay.addWidget(lbl)
-
-        card.mousePressEvent = lambda e, t=title: self._on_card_clicked(t)
-        return card
-
     def set_user_name(self, name: str):
         self.user_name = name or "Boss"
         hr = datetime.now().hour
         period = "Morning" if hr < 12 else ("Afternoon" if hr < 17 else "Evening")
         if hasattr(self, "title_lbl"):
             self.title_lbl.setText(f"Good {period}, {self.user_name}.")
-
-    def _on_card_clicked(self, title: str):
-        if title == "Plan My Day":
-            self.command_submitted.emit("Plan my day and review my schedule, Boss")
-        elif title == "Focus Mode":
-            self.command_submitted.emit("Activate focus mode and play calm focus vibe")
-        elif title == "Research":
-            self.input_edit.setText("Research ")
-            self.input_edit.setFocus()
-        elif title == "Write Code":
-            self.input_edit.setText("Write Python code for ")
-            self.input_edit.setFocus()
-        elif title == "Brainstorm":
-            self.input_edit.setText("Brainstorm ideas for ")
-            self.input_edit.setFocus()
 
     def toggle_subtitles(self):
         self._cc_enabled = not self._cc_enabled
@@ -7246,15 +7195,14 @@ class MemoryInjectionDialog(QDialog):
         if not key or not val:
             return
 
-        from memory.memory_manager import remember, forget
-
         # If editing and key or category changed, forget old
         if self.is_edit:
             old_cat = self.initial_data.get("category", "")
             old_key = self.initial_data.get("key", "")
             if old_cat and old_key and (old_cat != cat or old_key != key):
                 try:
-                    forget(old_key, old_cat)
+                    if forget:
+                        forget(old_key, old_cat)
                 except Exception:
                     pass
 
@@ -7604,8 +7552,7 @@ class NeoKnowledgeView(QWidget):
         # Load from disk
         items = []
         try:
-            from memory.memory_manager import load_memory
-            mem = load_memory()
+            mem = load_memory() if load_memory else {}
 
             for cat, data in mem.items():
                 if isinstance(data, dict):
@@ -7783,8 +7730,7 @@ class NeoKnowledgeView(QWidget):
         cat = item.get("category", "")
         key = item.get("key", "")
         try:
-            from memory.memory_manager import load_memory, save_memory, forget
-            if cat == "sessions":
+            if cat == "sessions" and load_memory and save_memory:
                 mem = load_memory()
                 sessions = mem.get("sessions", [])
                 try:
@@ -8019,7 +7965,6 @@ class NeoCalibrationOverlay(QFrame):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        import webbrowser
         self.setObjectName("NeoCalibrationOverlay")
         self.setFixedSize(self._OW, self._OH)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
@@ -8418,7 +8363,6 @@ class NeoCalibrationOverlay(QFrame):
 
         k_header.addStretch(1)
 
-        import webbrowser
         get_key_btn = QPushButton("Get Free API Key at Google AI Studio ↗")
         get_key_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         get_key_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -8530,8 +8474,6 @@ class NeoCalibrationOverlay(QFrame):
             self.toggle_eye_btn.setText("👁")
 
     def _load_existing_state(self):
-        import platform
-        import json
         det = {"darwin": "mac", "windows": "windows"}.get(platform.system().lower(), "linux")
         self.os_pills.set_selected_value(det)
 

@@ -80,6 +80,13 @@ class TestMacOSUIStandard(unittest.TestCase):
             self.assertIn("width: 7px", cw_ss)
             self.assertIn("-apple-system", cw_ss)
         finally:
+            try:
+                from core.camera_service import get_camera_service
+                get_camera_service().stop()
+                from core.neo_central_coordinator import central_core
+                central_core.stop_proactive_subsystems()
+            except Exception:
+                pass
             win.close()
 
     def test_03_macos_source_list_sidebar(self):

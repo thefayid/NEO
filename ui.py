@@ -15,8 +15,10 @@ import psutil
 
 if platform.system() == "Windows":
     _WIN_HIDE: dict = {"creationflags": subprocess.CREATE_NO_WINDOW}
+    import ctypes
 else:
     _WIN_HIDE: dict = {}
+    ctypes = None
 
 # Qt's video backend prints the ffmpeg stream banner — codec, bitrate, the
 # whole signed googlevideo URL — to the console for every stream it opens. That
@@ -33,7 +35,7 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QBrush, QColor, QConicalGradient, QDragEnterEvent, QDropEvent, QFont,
-    QFontDatabase, QKeySequence, QLinearGradient, QPainter, QPainterPath,
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPainter, QPainterPath,
     QPen, QPixmap, QRadialGradient, QShortcut,
 )
 # Video playback for the HUD. Part of PyQt6, so it costs no new dependency —
@@ -2790,7 +2792,6 @@ class AudioDeviceOverlay(_HudOverlay):
         stutter a drag, and there is no reason to make the interface wait for
         it.
         """
-        import threading
         value = self._vol.value()
         device = self._out_box.currentData() or ""
 
@@ -2834,8 +2835,6 @@ class AudioDeviceOverlay(_HudOverlay):
         Results come back by signal, not by timer. See the note on
         `_level_seen` above for why that distinction is the whole feature.
         """
-        import threading
-
         name = box.currentData() or ""
         self._active = (button, label, meter)
         button.setEnabled(False)
@@ -3374,8 +3373,6 @@ class ProvidersOverlay(_HudOverlay):
         later. Failure is silent: not reaching the endpoint yet is the normal
         state while somebody is still typing an address, and TEST is where a
         real answer about reachability belongs."""
-        import threading
-
         if not pid or pid in self._fetching:
             return
         try:
@@ -3409,8 +3406,6 @@ class ProvidersOverlay(_HudOverlay):
         Piper uses it to download the chosen voice. Generic on purpose: the
         panel asks whether the module has a `prepare`, and providers that do not
         need one are simply skipped — nothing here knows what a voice is."""
-        import threading
-
         try:
             decl = self._registry.get_declaration(pid)
             mod = __import__(f"providers.{decl['_module']}", fromlist=["prepare"])
@@ -4065,10 +4060,6 @@ class ProvidersOverlay(_HudOverlay):
     def _install(self, pid: str) -> None:
         """Fetch a provider's optional dependency, off the Qt thread — pip takes
         tens of seconds and a frozen window looks like a crashed one."""
-        import subprocess
-        import sys as _sys
-        import threading
-
         decl = self._registry.get_declaration(pid) or {}
         pkg = decl.get("install")
         if not pkg:
@@ -6162,6 +6153,7 @@ class MainWindow(QMainWindow):
 
     def _on_spotlight_command(self, command_id: str, query: str):
         """Dispatches commands triggered via the Spotlight Command Bar."""
+        from core.neo_central_coordinator import central_core
         nav_map = {
             "chat": "Chat", "swarm": "Swarm", "terminal": "Terminal",
             "vision": "Vision", "notes": "Notes", "files": "Files",
@@ -6209,7 +6201,6 @@ class MainWindow(QMainWindow):
         elif command_id == "swarm" or query.startswith("/swarm"):
             spec = query.removeprefix("/swarm").strip() if query.startswith("/swarm") else query
             try:
-                from core.neo_central_coordinator import central_core
                 mid = central_core.dispatch_swarm_mission(spec or "Collaborative multi-agent engineering review")
                 if hasattr(self, "_log") and self._log:
                     self._log.append_log(f"SWARM: Dispatched War Room mission [{mid[:8]}]")
@@ -6218,7 +6209,6 @@ class MainWindow(QMainWindow):
                     self._log.append_log(f"ERR: Swarm dispatch error — {e}")
         elif command_id == "heal" or query.startswith("/heal") or query.startswith("/audit"):
             try:
-                from core.neo_central_coordinator import central_core
                 res = central_core.run_workspace_self_healing()
                 if hasattr(self, "_log") and self._log:
                     self._log.append_log(f"HEAL: Scanned {res.get('files_scanned', 0)} files — {res.get('errors_found', 0)} syntax errors")
@@ -6227,7 +6217,6 @@ class MainWindow(QMainWindow):
                     self._log.append_log(f"ERR: Self-healing error — {e}")
         elif command_id == "commit" or query.startswith("/commit"):
             try:
-                from core.neo_central_coordinator import central_core
                 ok, msg = central_core.auto_commit_workspace()
                 if hasattr(self, "_log") and self._log:
                     self._log.append_log(f"GIT: {msg}")
@@ -6236,7 +6225,6 @@ class MainWindow(QMainWindow):
                     self._log.append_log(f"ERR: Auto-commit error — {e}")
         elif command_id == "scan" or query.startswith("/scan"):
             try:
-                from core.neo_central_coordinator import central_core
                 ok, title, _ = central_core.scan_physical_document()
                 if hasattr(self, "_log") and self._log:
                     self._log.append_log(f"SCAN: {title}")
@@ -6412,31 +6400,11 @@ class MainWindow(QMainWindow):
             self._on_toggle_theme
         )
         self._unified_toolbar.right_slot.addWidget(self._theme_toggle_btn)
-
-        # Keep legacy references alive for compatibility
-        self._weather_lbl = QLabel()
-        self._weather_lbl.hide()
-        self._clock_lbl = QLabel()
-        self._clock_lbl.hide()
-        self._date_lbl = QLabel()
-        self._date_lbl.hide()
-        self._layout_mode_btn = QPushButton()
-        self._layout_mode_btn.hide()
-        self._capsule_btn = QPushButton()
-        self._capsule_btn.hide()
-
         return self._unified_toolbar
 
     def _tick_clock(self):
-        if hasattr(self, "_clock_lbl"):
-            self._clock_lbl.setText(time.strftime("%H:%M:%S"))
-        if hasattr(self, "_date_lbl"):
-            self._date_lbl.setText(f"{time.strftime('%a %d %b %Y').upper()} // ONLINE")
         if hasattr(self, "_update_live_engine_pill"):
             self._update_live_engine_pill()
-        if not hasattr(self, '_last_weather_fetch') or (time.time() - self._last_weather_fetch > 900):
-            self._last_weather_fetch = time.time()
-            self._refresh_kerala_weather_async()
 
     def _update_live_engine_pill(self):
         if not hasattr(self, "_live_engine_pill"):
@@ -6459,28 +6427,6 @@ class MainWindow(QMainWindow):
             """)
         except Exception:
             pass
-
-    def _refresh_kerala_weather_async(self):
-        def _fetch():
-            try:
-                import urllib.request
-                import json as _j
-                req = urllib.request.Request(
-                    "https://wttr.in/Kerala?format=j1",
-                    headers={"User-Agent": "curl/7.68.0"}
-                )
-                with urllib.request.urlopen(req, timeout=3.5) as resp:
-                    data = _j.loads(resp.read().decode("utf-8"))
-                    cur = data.get("current_condition", [{}])[0]
-                    temp = cur.get("temp_C", "--")
-                    desc = cur.get("weatherDesc", [{}])[0].get("value", "Clear")
-                    desc_short = desc.split()[0].upper()[:8]
-                    text = f"⛅ KERALA  {temp}°C · {desc_short}"
-                    if hasattr(self, "_weather_lbl"):
-                        QTimer.singleShot(0, lambda: self._weather_lbl.setText(text))
-            except Exception:
-                pass
-        threading.Thread(target=_fetch, daemon=True, name="kerala-weather-probe").start()
 
     def _build_left_panel(self) -> QWidget:
         self._sidebar_container = MacOSSizingSidebarContainer(self)
@@ -6516,7 +6462,7 @@ class MainWindow(QMainWindow):
     def _set_hud_mode(self, mode: str):
         """Toggle HUD layout dynamically across Stealth, Command, and Dialogue modes."""
         self._current_hud_mode = mode
-        if hasattr(self, "_layout_mode_btn"):
+        if getattr(self, "_layout_mode_btn", None):
             labels = {
                 "stealth": "🕶 STEALTH",
                 "dialogue": "💬 DIALOGUE",
@@ -7840,7 +7786,6 @@ class MainWindow(QMainWindow):
         and a short timer closes it; held down, auto-repeat keeps pushing that
         timer out, which behaves like holding a key.
         """
-        from PyQt6.QtGui import QKeySequence, QShortcut
         from core.hotkey import qt_sequence
 
         if not needed:
@@ -8428,10 +8373,8 @@ class _RootShim:
 
 class JarvisUI:
     def __init__(self, face_path: str, size=None):
-        import platform
-        if platform.system() == "Windows":
+        if platform.system() == "Windows" and ctypes:
             try:
-                import ctypes
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("neo.stark.ai.commandcenter")
             except Exception:
                 pass
@@ -8441,7 +8384,6 @@ class JarvisUI:
         self._app.setStyle("Fusion")
         _ico_p = Path(__file__).resolve().parent / "config" / "neo.ico"
         if _ico_p.exists():
-            from PyQt6.QtGui import QIcon
             self._app.setWindowIcon(QIcon(str(_ico_p)))
         self._win = MainWindow(face_path)
         self.root = _RootShim(self._app)
