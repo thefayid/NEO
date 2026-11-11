@@ -187,28 +187,28 @@ def apply_ui_accent(accent_hex: str) -> bool:
 
 
 DARK_MODE_PALETTE: dict[str, str] = {
-    "BG":       "#0E1013",
-    "PANEL":    "#14171C",
-    "PANEL2":   "#1B1F26",
-    "BORDER":   "#262B34",
-    "BORDER_A": "#262B34",
-    "BORDER_B": "#5B8DEF",
-    "PRI":      "#5B8DEF",
-    "ACCENT":   "#5B8DEF",
-    "PRI_DIM":  "#4376D6",
-    "PRI_GHO":  "rgba(91, 141, 239, 0.12)",
-    "ACC":      "#7AA5F5",
-    "ACC2":     "#D9A441",
-    "GREEN":    "#4CAF7D",
-    "GREEN_D":  "#388E3C",
-    "RED":      "#D9534F",
-    "MUTED_C":  "#D9534F",
-    "TEXT":     "#E6E8EC",
-    "TEXT_DIM": "#5F6672",
-    "TEXT_MED": "#9AA1AD",
-    "WHITE":    "#E6E8EC",
-    "DARK":     "#0E1013",
-    "BAR_BG":   "#14171C",
+    "BG":       "#161618",
+    "PANEL":    "#1C1C1E",
+    "PANEL2":   "#252529",
+    "BORDER":   "#2F2F34",
+    "BORDER_A": "#38383E",
+    "BORDER_B": "#0A84FF",
+    "PRI":      "#0A84FF",
+    "ACCENT":   "#0A84FF",
+    "PRI_DIM":  "#0071E3",
+    "PRI_GHO":  "#1E293B",
+    "ACC":      "#409CFF",
+    "ACC2":     "#FFD60A",
+    "GREEN":    "#30D158",
+    "GREEN_D":  "#248A3D",
+    "RED":      "#FF453A",
+    "MUTED_C":  "#FF453A",
+    "TEXT":     "#F5F5F7",
+    "TEXT_DIM": "#636366",
+    "TEXT_MED": "#98989D",
+    "WHITE":    "#F5F5F7",
+    "DARK":     "#161618",
+    "BAR_BG":   "#1C1C1E",
 }
 
 WHITE_MODE_PALETTE: dict[str, str] = {
@@ -217,21 +217,21 @@ WHITE_MODE_PALETTE: dict[str, str] = {
     "PANEL2":   "#FFFFFF",
     "BORDER":   "#DFE2E7",
     "BORDER_A": "#DFE2E7",
-    "BORDER_B": "#3F6FD1",
-    "PRI":      "#3F6FD1",
-    "ACCENT":   "#3F6FD1",
-    "PRI_DIM":  "#2C53A3",
-    "PRI_GHO":  "rgba(63, 111, 209, 0.12)",
-    "ACC":      "#5B8DEF",
-    "ACC2":     "#D9A441",
-    "GREEN":    "#4CAF7D",
-    "GREEN_D":  "#388E3C",
-    "RED":      "#D9534F",
-    "MUTED_C":  "#D9534F",
-    "TEXT":     "#1A1D23",
-    "TEXT_DIM": "#8E95A2",
-    "TEXT_MED": "#5F6672",
-    "WHITE":    "#1A1D23",
+    "BORDER_B": "#007AFF",
+    "PRI":      "#007AFF",
+    "ACCENT":   "#007AFF",
+    "PRI_DIM":  "#0062CC",
+    "PRI_GHO":  "rgba(0, 122, 255, 0.12)",
+    "ACC":      "#409CFF",
+    "ACC2":     "#FFD60A",
+    "GREEN":    "#30D158",
+    "GREEN_D":  "#248A3D",
+    "RED":      "#FF453A",
+    "MUTED_C":  "#FF453A",
+    "TEXT":     "#1D1D1F",
+    "TEXT_DIM": "#86868B",
+    "TEXT_MED": "#6E6E73",
+    "WHITE":    "#1D1D1F",
     "DARK":     "#DFE2E7",
     "BAR_BG":   "#FFFFFF",
 }
@@ -7512,14 +7512,12 @@ class MainWindow(QMainWindow):
                     exe = str(pythonw if pythonw.exists() else sys.executable)
                     winreg.SetValueEx(reg, "NEO_AI", 0, winreg.REG_SZ,
                                       f'"{exe}" "{script}"')
-                    # Also write Startup folder .lnk with explicit working directory
-                    try:
-                        ico_path = Path(__file__).resolve().parent / "config" / "neo.ico"
-                        icon_loc = str(ico_path) if ico_path.exists() else f"{exe},0"
-                        self._create_lnk_windows(str(startup_lnk), exe, str(script),
-                                                 str(Path(script).parent), icon_loc)
-                    except Exception:
-                        pass
+                    # Clean up any duplicate Startup folder .lnk so only one single instance starts
+                    if startup_lnk.exists():
+                        try:
+                            startup_lnk.unlink()
+                        except Exception:
+                            pass
                 winreg.CloseKey(reg)
             elif _OS == "Darwin":
                 plist_dir = Path.home() / "Library" / "LaunchAgents"
@@ -8413,6 +8411,8 @@ class MainWindow(QMainWindow):
             get_camera_service().stop()
         except Exception:
             pass
+        if "unittest" in sys.modules or os.environ.get("QT_QPA_PLATFORM") == "offscreen":
+            return
         import os
         os._exit(0)
 
@@ -8436,6 +8436,8 @@ class JarvisUI:
             except Exception:
                 pass
         self._app = QApplication.instance() or QApplication(sys.argv)
+        self._app.setQuitOnLastWindowClosed(True)
+        self._app.aboutToQuit.connect(lambda: os._exit(0))
         self._app.setStyle("Fusion")
         _ico_p = Path(__file__).resolve().parent / "config" / "neo.ico"
         if _ico_p.exists():

@@ -2467,9 +2467,22 @@ class JarvisLive:
     # ── System monitor ──────────────────────────────────────────────────────────
 
     async def _run_system_monitor(self) -> None:
-        """Background task: voice alerts when metrics exceed thresholds."""
+        """Background task: voice alerts when metrics exceed thresholds and periodic RAM optimization."""
+        _trim_counter = 0
         while True:
             await asyncio.sleep(10)
+            _trim_counter += 1
+            if _trim_counter >= 6:  # Every 60s
+                _trim_counter = 0
+                try:
+                    import gc
+                    gc.collect(1)
+                    if _platform.system() == "Windows":
+                        import ctypes
+                        ctypes.windll.psapi.EmptyWorkingSet(ctypes.windll.kernel32.GetCurrentProcess())
+                except Exception:
+                    pass
+
             alert = await asyncio.to_thread(self._sys_monitor.check)
             if not alert or not self.session or not self._awake:
                 continue
@@ -3228,9 +3241,100 @@ class JarvisLive:
             print(f"[JARVIS] Reconnecting in {delay}s...")
             await asyncio.sleep(delay)
 
+_SINGLETON_LOCK = None
+
+def _enforce_single_instance() -> None:
+    """
+    Guarantees strictly ONE instance of NEO runs at any given time across the system.
+    1. Detects and terminates any headless zombie pythonw.exe processes of NEO.
+    2. Uses a Named Mutex on Windows (or bound local socket on Unix) to prevent duplicate runs.
+    3. If another live instance exists, brings its window to the foreground and exits immediately.
+    """
+    global _SINGLETON_LOCK
+    import os, sys, platform
+
+    # 1. Clean up stale/zombie Mark-LVI processes that have no window
+    try:
+        import psutil
+        my_pid = os.getpid()
+        for p in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if p.pid != my_pid and 'python' in (p.info['name'] or '').lower():
+                    cmd = ' '.join(p.info['cmdline'] or [])
+                    if 'main.py' in cmd and ('mark-lvi' in cmd.lower() or 'jarvis' in cmd.lower()):
+                        has_window = False
+                        if platform.system() == "Windows":
+                            import ctypes
+                            from ctypes import wintypes
+                            user32 = ctypes.windll.user32
+                            def _enum_cb(hwnd, _):
+                                nonlocal has_window
+                                if user32.IsWindowVisible(hwnd):
+                                    lp = wintypes.DWORD()
+                                    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(lp))
+                                    if lp.value == p.pid:
+                                        has_window = True
+                                        return False
+                                return True
+                            WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+                            user32.EnumWindows(WNDENUMPROC(_enum_cb), 0)
+
+                        if not has_window:
+                            print(f"[NEO Process Sentinel] 🧹 Reclaiming dead zombie process PID {p.pid}")
+                            p.kill()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+    except Exception as e:
+        print(f"[NEO Process Sentinel] Zombie scan note: {e}")
+
+    # 2. Acquire system-wide singleton lock
+    if platform.system() == "Windows":
+        import ctypes
+        from ctypes import wintypes
+        mutex_name = "Global\\NEO_STARK_AI_SINGLETON_MUTEX"
+        kernel32 = ctypes.windll.kernel32
+        user32 = ctypes.windll.user32
+        ERROR_ALREADY_EXISTS = 183
+
+        _SINGLETON_LOCK = kernel32.CreateMutexW(None, False, mutex_name)
+        last_err = kernel32.GetLastError()
+        if last_err == ERROR_ALREADY_EXISTS:
+            print("[NEO] ⚠️ Another instance of NEO is already running. Focusing existing window and exiting.")
+            def _find_neo(hwnd, _):
+                if user32.IsWindowVisible(hwnd):
+                    length = user32.GetWindowTextLengthW(hwnd)
+                    if length > 0:
+                        buff = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(hwnd, buff, length + 1)
+                        t = buff.value.upper()
+                        if "NEO" in t or "JARVIS" in t:
+                            SW_RESTORE = 9
+                            user32.ShowWindow(hwnd, SW_RESTORE)
+                            user32.SetForegroundWindow(hwnd)
+                            return False
+                return True
+            try:
+                WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+                user32.EnumWindows(WNDENUMPROC(_find_neo), 0)
+            except Exception:
+                pass
+            os._exit(0)
+    else:
+        import socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(("127.0.0.1", 48123))
+            s.listen(1)
+            _SINGLETON_LOCK = s
+        except socket.error:
+            print("[NEO] ⚠️ Another instance of NEO is already running. Exiting.")
+            os._exit(0)
+
 def main():
     import os
     import signal
+
+    _enforce_single_instance()
 
     def _sig_handler(sig, frame):
         print("\n🔴 Terminating NEO cleanly...")

@@ -105,7 +105,7 @@ class AmbientErrorWatchdog:
 
         while self._running:
             try:
-                time.sleep(2.0)
+                time.sleep(4.0)
                 now = time.monotonic()
 
                 win_info = _get_active_window_info()
@@ -142,11 +142,15 @@ class AmbientErrorWatchdog:
                 # Differential hash check: skip if screen pixels are identical
                 img_hash = hashlib.md5(img_bytes[:4096]).hexdigest()
                 if img_hash == self._last_img_hash:
+                    del img_bytes
                     continue
                 self._last_img_hash = img_hash
 
                 # Fast VLM Error Inspection
-                self._inspect_frame_for_errors(img_bytes, cur_title)
+                try:
+                    self._inspect_frame_for_errors(img_bytes, cur_title)
+                finally:
+                    del img_bytes
 
             except Exception as e:
                 _LOGGER.debug(f"Watchdog iteration error: {e}")

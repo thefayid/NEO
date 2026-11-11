@@ -94,31 +94,31 @@ def font_text(size: int = 12, weight: QFont.Weight = QFont.Weight.Normal, letter
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     return f
 
-# ── Base Surfaces & Steel Blue Pro Design System ──────────────────────────────
-BG_OBSIDIAN    = "#0E1013"   # Cool graphite background (not pure black)
-SIDEBAR_BG     = "#14171C"   # Surface 1 (panels, sidebars)
-CARD_BG        = "#1B1F26"   # Surface 2 (cards, inputs)
-CARD_BORDER    = "#262B34"   # 1px subtle divider
-CARD_HOVER     = "#222731"   # Subtle hover
-NAV_ACTIVE_BG  = "rgba(91, 141, 239, 0.12)"   # Refined steel blue active capsule
-NAV_ACTIVE_TXT = "#5B8DEF"   # Signature steel blue text
-TEXT_WHITE     = "#E6E8EC"   # Primary text (no pure #FFFFFF glare)
-TEXT_MUTED     = "#9AA1AD"   # Secondary text
-TEXT_DIM       = "#5F6672"   # Disabled / hint
+# ── Base Surfaces & Apple macOS Dark Vibrancy Design System ──────────────────
+BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas / Background
+SIDEBAR_BG     = "#1C1C1E"   # macOS Surface 1 (panels, sidebars)
+CARD_BG        = "#232327"   # macOS Surface 2 (cards, inputs)
+CARD_BORDER    = "#2F2F34"   # 1px subtle divider
+CARD_HOVER     = "#2A2A2F"   # Hover
+NAV_ACTIVE_BG  = "rgba(10, 132, 255, 0.16)"   # macOS System Accent Blue tint
+NAV_ACTIVE_TXT = "#0A84FF"   # macOS System Accent Blue
+TEXT_WHITE     = "#F5F5F7"   # Primary text (crisp Apple off-white)
+TEXT_MUTED     = "#98989D"   # Secondary text
+TEXT_DIM       = "#636366"   # Disabled / hint
 
-# Steel Blue Signature Accents (pairs with graphite)
-ACCENT_PRIMARY = "#5B8DEF"   # Steel blue signature
-ACCENT_HOVER   = "#7AA5F5"   # Softer hover variant
-ACCENT_PRESSED = "#4376D6"   # Active / pressed variant
-ACCENT_BLUE    = "#5B8DEF"
-ACCENT_CYAN    = "#5B8DEF"
-SEND_BTN_BG    = "#5B8DEF"
+# Apple macOS Sequoia System Blue Signature Accents
+ACCENT_PRIMARY = "#0A84FF"   # macOS System Accent Blue
+ACCENT_HOVER   = "#409CFF"   # Softer hover variant
+ACCENT_PRESSED = "#0071E3"   # Active / pressed variant
+ACCENT_BLUE    = "#0A84FF"
+ACCENT_CYAN    = "#64D2FF"
+SEND_BTN_BG    = "#0A84FF"
 
-# Semantic Colours (desaturated)
-SEMANTIC_SUCCESS = "#4CAF7D"
-SEMANTIC_WARNING = "#D9A441"
-SEMANTIC_ERROR   = "#D9534F"
-SEMANTIC_INFO    = "#5B8DEF"
+# Semantic Colours (Apple HIG)
+SEMANTIC_SUCCESS = "#30D158"
+SEMANTIC_WARNING = "#FFD60A"
+SEMANTIC_ERROR   = "#FF453A"
+SEMANTIC_INFO    = "#0A84FF"
 
 CURRENT_NEO_THEME = "dark"
 
@@ -137,32 +137,32 @@ def set_neo_ui_theme(mode: str) -> None:
         CARD_BG        = "#FFFFFF"   # Surface 2
         CARD_BORDER    = "#DFE2E7"   # 1px subtle border
         CARD_HOVER     = "#EBEDF2"   # Hover
-        NAV_ACTIVE_BG  = "rgba(63, 111, 209, 0.12)"   # Light active tint
-        NAV_ACTIVE_TXT = "#3F6FD1"   # Darker accent for contrast
-        TEXT_WHITE     = "#1A1D23"   # Primary text (high contrast dark)
-        TEXT_MUTED     = "#5F6672"   # Secondary text
-        TEXT_DIM       = "#8E95A2"   # Disabled / hint
-        ACCENT_PRIMARY = "#3F6FD1"   # Shifted slightly darker for contrast
-        ACCENT_HOVER   = "#5B8DEF"
-        ACCENT_PRESSED = "#2C53A3"
-        ACCENT_BLUE    = "#3F6FD1"
-        ACCENT_CYAN    = "#3F6FD1"
-        SEND_BTN_BG    = "#3F6FD1"
+        NAV_ACTIVE_BG  = "rgba(0, 122, 255, 0.12)"   # Light active tint
+        NAV_ACTIVE_TXT = "#007AFF"   # Darker accent for contrast
+        TEXT_WHITE     = "#1D1D1F"   # Primary text (high contrast dark)
+        TEXT_MUTED     = "#6E6E73"   # Secondary text
+        TEXT_DIM       = "#86868B"   # Disabled / hint
+        ACCENT_PRIMARY = "#007AFF"   # macOS System Blue
+        ACCENT_HOVER   = "#409CFF"
+        ACCENT_PRESSED = "#0062CC"
+        ACCENT_BLUE    = "#007AFF"
+        ACCENT_CYAN    = "#007AFF"
+        SEND_BTN_BG    = "#007AFF"
     else:
-        BG_OBSIDIAN    = "#0E1013"   # Cool graphite
-        SIDEBAR_BG     = "#14171C"   # Surface 1
-        CARD_BG        = "#1B1F26"   # Surface 2
-        CARD_BORDER    = "#262B34"   # 1px subtle divider
-        CARD_HOVER     = "#222731"   # Hover
-        NAV_ACTIVE_BG  = "rgba(91, 141, 239, 0.12)"   # Refined steel blue tint
-        NAV_ACTIVE_TXT = "#5B8DEF"   # Signature steel blue
-        TEXT_WHITE     = "#E6E8EC"   # Primary text
-        TEXT_MUTED     = "#9AA1AD"   # Secondary text
-        TEXT_DIM       = "#5F6672"   # Disabled / hint
-        ACCENT_PRIMARY = "#5B8DEF"   # Steel blue
-        ACCENT_HOVER   = "#7AA5F5"
-        ACCENT_PRESSED = "#4376D6"
-        ACCENT_BLUE    = "#5B8DEF"
+        BG_OBSIDIAN    = "#161618"   # macOS Dark Canvas / Background
+        SIDEBAR_BG     = "#1C1C1E"   # Surface 1
+        CARD_BG        = "#232327"   # Surface 2
+        CARD_BORDER    = "#2F2F34"   # 1px subtle divider
+        CARD_HOVER     = "#2A2A2F"   # Hover
+        NAV_ACTIVE_BG  = "rgba(10, 132, 255, 0.16)"   # macOS System Accent Blue tint
+        NAV_ACTIVE_TXT = "#0A84FF"   # macOS System Accent Blue
+        TEXT_WHITE     = "#F5F5F7"   # Primary text
+        TEXT_MUTED     = "#98989D"   # Secondary text
+        TEXT_DIM       = "#636366"   # Disabled / hint
+        ACCENT_PRIMARY = "#0A84FF"   # macOS System Accent Blue
+        ACCENT_HOVER   = "#409CFF"
+        ACCENT_PRESSED = "#0071E3"
+        ACCENT_BLUE    = "#0A84FF"
         ACCENT_CYAN    = "#5B8DEF"
         SEND_BTN_BG    = "#5B8DEF"
 
@@ -1930,7 +1930,7 @@ class NeoNavSidebar(QWidget):
                 QPushButton {{
                     background: {NAV_ACTIVE_BG};
                     color: {NAV_ACTIVE_TXT};
-                    border: 1px solid rgba(91, 141, 239, 0.28);
+                    border: 1px solid rgba(10, 132, 255, 0.28);
                     border-radius: 6px;
                     text-align: left;
                     padding-left: 12px;
