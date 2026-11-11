@@ -446,6 +446,15 @@ class NeoBrain:
         except Exception:
             pass
 
+        # Ingest Reinforcement Learning Q-Optimized Policy Prior
+        try:
+            from core.neo_reinforcement_learning import rl_learner
+            rl_ctx = rl_learner.synthesize_rl_prompt(current_prompt, summary.get("active_window", ""))
+            if rl_ctx:
+                lines.append(rl_ctx)
+        except Exception:
+            pass
+
         return "\n".join(lines)
 
 

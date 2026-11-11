@@ -761,6 +761,7 @@ class JarvisLive:
         self._last_user_speech = time.monotonic()  # updated on every user utterance
         self._session_log: list[str] = []          # conversation turns for end-of-session summary
         self._recent_turn_tools: list[dict] = []   # tool invocations in the current turn for self-training
+        self._last_user_speech_text: str = ""      # latest user utterance text for RL state-action attribution
 
         self._enhanced_live = True  # proactive audio; auto-disabled if the server rejects it
         self._tuned_live    = True  # turn-taking / media / thinking knobs; same fallback
@@ -1083,7 +1084,10 @@ class JarvisLive:
             self.ui.write_log("SYS: I'm asleep — say 'Hey Jarvis' or tap WAKE NOW first.")
             return
         self._last_user_speech = time.monotonic()
+        self._last_user_speech_text = text
         try:
+            from core.neo_reinforcement_learning import rl_learner
+            rl_learner.record_user_feedback(text)
             from core.neo_self_training import self_trainer
             self_trainer.record_user_input(text)
             from core.neo_habit_learner import habit_learner
@@ -1394,6 +1398,13 @@ class JarvisLive:
                 parts.append(st_ctx)
         except Exception:
             pass
+        try:
+            from core.neo_reinforcement_learning import rl_learner
+            rl_ctx = rl_learner.synthesize_rl_prompt()
+            if rl_ctx:
+                parts.append(rl_ctx)
+        except Exception:
+            pass
         parts.append(sys_prompt)
 
         cfg = dict(
@@ -1528,6 +1539,12 @@ class JarvisLive:
                 self._recent_turn_tools.append({"name": name, "args": dict(args)})
             from core.neo_habit_learner import habit_learner
             habit_learner.record_action("TOOL", f"{name} {json.dumps(args)[:60]}")
+            from core.neo_reinforcement_learning import rl_learner
+            rl_learner.record_tool_start(
+                name,
+                user_command=getattr(self, "_last_user_speech_text", ""),
+                active_app=getattr(self.ui, "_last_active_app", "")
+            )
         except Exception:
             pass
 
@@ -1717,6 +1734,17 @@ class JarvisLive:
             pass
 
         print(f"[JARVIS] 📤 {name} → {str(result)[:80]}")
+
+        try:
+            from core.neo_reinforcement_learning import rl_learner
+            rl_learner.record_tool_outcome(
+                name,
+                str(result),
+                user_command=getattr(self, "_last_user_speech_text", ""),
+                active_app=getattr(self.ui, "_last_active_app", "")
+            )
+        except Exception:
+            pass
 
         # A tool that declared itself NON_BLOCKING also says when its answer may
         # re-enter the conversation. Without this the model finishes whatever it
@@ -2132,6 +2160,9 @@ class JarvisLive:
                                     from core.neo_self_training import self_trainer
                                     from core.neo_habit_learner import habit_learner
                                     if full_in:
+                                        self._last_user_speech_text = full_in
+                                        from core.neo_reinforcement_learning import rl_learner
+                                        rl_learner.record_user_feedback(full_in)
                                         self_trainer.record_command_turn(
                                             full_in, full_out, getattr(self, "_recent_turn_tools", [])
                                         )

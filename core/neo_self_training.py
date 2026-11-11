@@ -231,3 +231,4 @@ class NEOSelfTrainingEngine:
 
 # Global Singleton Self-Training Engine
 self_trainer = NEOSelfTrainingEngine()
+
