@@ -4755,7 +4755,7 @@ class MainWindow(QMainWindow):
     _review_sig     = pyqtSignal(str, str, object, object)  # document review payload
     _tool_sig       = pyqtSignal(str)        # active tool execution badge trigger
     _chips_sig      = pyqtSignal(list)       # proactive smart affordance chips (thread-safe)
-    _toast_sig      = pyqtSignal(str, str, str)  # proactive toast notification (title, msg, variant)
+    _toast_sig      = pyqtSignal(str, str, str, str)  # proactive toast (title, msg, variant, payload)
 
     def __init__(self, face_path: str):
         super().__init__()
@@ -5174,7 +5174,7 @@ class MainWindow(QMainWindow):
             precognitive_engine.chips_updated.connect(lambda opps: self._chips_sig.emit(opps))
             # Proactive macOS Notification Center toasts (thread-safe routed to GUI main thread)
             precognitive_engine.toast_requested.connect(
-                lambda t, m, v="primary": self._toast_sig.emit(str(t), str(m), str(v))
+                lambda t, m, v="primary", p="": self._toast_sig.emit(str(t), str(m), str(v), str(p))
             )
             # Superhuman Frontiers event wiring
             central_core.swarm_event.connect(
@@ -6340,7 +6340,7 @@ class MainWindow(QMainWindow):
         self.raise_()
         self.activateWindow()
 
-    def _on_proactive_toast(self, title: str, message: str, variant: str, payload: str):
+    def _on_proactive_toast(self, title: str, message: str, variant: str = "primary", payload: str = ""):
         """Displays native Apple Notification Center toast with 1-click execution affordance."""
         try:
             from core.macos_components import MacOSToast
@@ -8335,9 +8335,9 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
 
-    def _apply_proactive_toast(self, title: str, message: str, variant: str = "primary"):
+    def _apply_proactive_toast(self, title: str, message: str, variant: str = "primary", payload: str = ""):
         """Thread-safe GUI slot: display macOS toast on Main GUI thread."""
-        self._on_proactive_toast(title, message, variant=variant)
+        self._on_proactive_toast(title, message, variant=variant, payload=payload)
 
     def _check_config(self) -> bool:
         if not API_FILE.exists(): return False
