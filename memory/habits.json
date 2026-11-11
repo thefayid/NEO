@@ -223,6 +223,1038 @@
       "hour": 12,
       "weekday": 2,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794425608.1606822,
+      "action_type": "USER_COMMAND",
+      "command": "new",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425618.2602634,
+      "action_type": "USER_COMMAND",
+      "command": "I came back to test you again.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425629.2602696,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"WhatsApp\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425629.3616297,
+      "action_type": "TOOL",
+      "command": "companion_core {\"action\": \"set_vibe\", \"vibe\": \"beast_mode\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425639.7814622,
+      "action_type": "USER_COMMAND",
+      "command": "What's up and take me as set.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425643.1383069,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Spotify\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425651.7719667,
+      "action_type": "USER_COMMAND",
+      "command": "No, I don't want a song now. Just close Spotify.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425655.5605822,
+      "action_type": "TOOL",
+      "command": "read_messages {\"receiver\": \"Vihas\", \"platform\": \"whatsapp\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425670.3506544,
+      "action_type": "USER_COMMAND",
+      "command": "Yes. Take TV as chat on WhatsApp.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425676.1629808,
+      "action_type": "TOOL",
+      "command": "undo {\"action\": \"list\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425687.0266497,
+      "action_type": "USER_COMMAND",
+      "command": "What more I can say?",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425689.661493,
+      "action_type": "TOOL",
+      "command": "knowledge_memory {\"action\": \"remember\", \"fact\": \"Vihas's chat on WhatsApp con",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425695.2290237,
+      "action_type": "USER_COMMAND",
+      "command": "know that about that sad.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425715.6917558,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, about the chat on behalf what should I send him?",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425719.113641,
+      "action_type": "TOOL",
+      "command": "companion_core {\"action\": \"sync_phone\", \"note\": \"Fayid decided against esca",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425728.1781812,
+      "action_type": "USER_COMMAND",
+      "command": "You are absolutely right. Neo",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425731.5506887,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"briefing\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425732.8797004,
+      "action_type": "USER_COMMAND",
+      "command": "Yes.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425737.6602557,
+      "action_type": "TOOL",
+      "command": "computer_control {\"app_name\": \"WhatsApp\", \"action\": \"close_app\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425743.8477926,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"play\", \"query\": \"Tamil melody movie songs\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425759.3962111,
+      "action_type": "USER_COMMAND",
+      "command": "Close the WhatsApp and open Spotify. And play songs from Tamil Murali movie.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425762.661362,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425762.6869073,
+      "action_type": "TOOL",
+      "command": "knowledge_memory {\"fact\": \"User prefers system app over browser for PDFs.\", \"",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425762.7127612,
+      "action_type": "TOOL",
+      "command": "knowledge_memory {\"action\": \"remember\", \"fact\": \"Mistake correction: when ask",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425762.7409272,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"Uploaded user image 'WhatsApp Image 2025-05-16 at",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425771.554808,
+      "action_type": "USER_COMMAND",
+      "command": "WhatsApp is closed.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425779.4334614,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"query\": \"Minnal Murali movie songs\", \"action\": \"play\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425789.6613941,
+      "action_type": "USER_COMMAND",
+      "command": "Change the music like I don't want this Tamil song. I want the song from the movie Minnal Murali.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425791.2617369,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"next\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425795.9216988,
+      "action_type": "USER_COMMAND",
+      "command": "Another song.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425801.4925168,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"right\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425810.0249074,
+      "action_type": "USER_COMMAND",
+      "command": "Can you just make little more forward this song?",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425811.7852216,
+      "action_type": "TOOL",
+      "command": "computer_control {\"key\": \"right\", \"action\": \"press\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425816.0068889,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, do it once more.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425823.011589,
+      "action_type": "TOOL",
+      "command": "workspace_master {\"action\": \"snap\", \"target\": \"spotify\", \"position\": \"minimiz",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425827.1566997,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, sure. Just minimize Spotify window.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425829.5005481,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"go_to\", \"url\": \"about:blank\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425837.011084,
+      "action_type": "USER_COMMAND",
+      "command": "Open Chrome.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425841.4144616,
+      "action_type": "TOOL",
+      "command": "save_memory {\"key\": \"browser_opening_error\", \"value\": \"User wanted Chrom",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425841.998639,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425849.2481666,
+      "action_type": "USER_COMMAND",
+      "command": "I think you did it wrong. You opened the Firefox.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425851.5333984,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Firefox\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425860.4927022,
+      "action_type": "USER_COMMAND",
+      "command": "Close the Firefox",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425864.5670924,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"Chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425868.9289687,
+      "action_type": "USER_COMMAND",
+      "command": "Open Chrome.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425876.2444718,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"new_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425879.9646225,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just make take a new tab.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425883.8611333,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"search\", \"query\": \"Zenon City\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425893.2978683,
+      "action_type": "USER_COMMAND",
+      "command": "Zenon City",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425897.465575,
+      "action_type": "TOOL",
+      "command": "browser_control {\"selector\": \"input[name='q'], textarea[name='q']\", \"clear_f",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.084932,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"press\", \"key\": \"Enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.158998,
+      "action_type": "USER_COMMAND",
+      "command": "No, you type wrong. Just Jain University.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.1751606,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"User wanted 'Jain University', not 'Zenon City'.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.2037857,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"close_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.223555,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"Jain University\", \"action\": \"search\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425920.8026738,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"Google Chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425921.4500713,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"type\", \"text\": \"Jain University\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425922.9041495,
+      "action_type": "TOOL",
+      "command": "computer_control {\"key\": \"enter\", \"action\": \"key\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425923.4707673,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425940.1376462,
+      "action_type": "USER_COMMAND",
+      "command": "Close the new pop-up tab you opened. I don't need that.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425945.2908523,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"new_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425945.3677003,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"type\", \"text\": \"Jain University\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425946.2050607,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425952.175031,
+      "action_type": "USER_COMMAND",
+      "command": "Type it once more in the new tab.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425954.9760442,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425966.1688929,
+      "action_type": "USER_COMMAND",
+      "command": "Take that program offer.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425968.5315123,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"corrections\", \"value\": \"User did not want Chro",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425969.128808,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425980.8995078,
+      "action_type": "USER_COMMAND",
+      "command": "I didn't tell you to close it right.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425983.7940497,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+shift+w\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425990.5410256,
+      "action_type": "USER_COMMAND",
+      "command": "Take that second user.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425994.937993,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"type\", \"text\": \"Rahman\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425996.0569685,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794425996.7826269,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"User prefers Chrome to be opened with user accoun",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426004.7811854,
+      "action_type": "USER_COMMAND",
+      "command": "No, just open it by Rahman account.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426008.0517159,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"close_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426013.2829633,
+      "action_type": "USER_COMMAND",
+      "command": "No, I just closed the tab. New tab, okay.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426015.1113367,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"new_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426018.9179294,
+      "action_type": "USER_COMMAND",
+      "command": "Take new tab",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426034.3281443,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"best personal AI assistant for PC comparison 2026",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426059.5898454,
+      "action_type": "USER_COMMAND",
+      "command": "Research on a personal assistant best in PC.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426064.0481122,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"best personal AI assistant for PC comparison 2026",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426064.6748948,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"Google Chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426065.824135,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+t\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426067.0102794,
+      "action_type": "TOOL",
+      "command": "computer_control {\"type\": \"best personal AI assistant for PC comparison 2026\"",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426068.4434335,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426080.6949084,
+      "action_type": "USER_COMMAND",
+      "command": "I knew due to search by by Chrome through Chrome.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426083.5775611,
+      "action_type": "TOOL",
+      "command": "computer_control {\"text\": \"best personal AI assistant for PC comparison 2026\"",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426085.4813287,
+      "action_type": "USER_COMMAND",
+      "command": "Actually you didn't type it. Type it.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426085.5014791,
+      "action_type": "TOOL",
+      "command": "computer_control {\"text\": \"best personal AI assistant for PC comparison 2026\"",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426087.963202,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426095.7287414,
+      "action_type": "USER_COMMAND",
+      "command": "end up",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426099.2935255,
+      "action_type": "TOOL",
+      "command": "screen_process {\"text\": \"Provide a concise summary of the visual search res",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426100.2489207,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just read that a overview.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426129.931995,
+      "action_type": "TOOL",
+      "command": "computer_control {\"app_name\": \"Spotify\", \"action\": \"close_app\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426138.8761303,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, I need to focus more. Just close the Spotify window for me.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426145.1766129,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"scroll_down\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426148.8987164,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, it's closed. Just scroll down the win the search like Google.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426150.5549452,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"scroll_down\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426154.1708999,
+      "action_type": "USER_COMMAND",
+      "command": "I can't move.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426156.0084207,
+      "action_type": "TOOL",
+      "command": "screen_process {\"text\": \"User wants me to read the content currently displa",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426156.7018082,
+      "action_type": "USER_COMMAND",
+      "command": "read that",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426220.6513858,
+      "action_type": "USER_COMMAND",
+      "command": "Just tell me what do you suggest?",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426242.2532525,
+      "action_type": "USER_COMMAND",
+      "command": "What do you think about Gemini?",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426254.6803205,
+      "action_type": "USER_COMMAND",
+      "command": "Oh yeah, I will decide later okay.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426257.1025805,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"close_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426260.44867,
+      "action_type": "USER_COMMAND",
+      "command": "Don't yak. Log sign your tap now.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426262.2270033,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"volume_up\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426266.2702155,
+      "action_type": "USER_COMMAND",
+      "command": "disturbers of",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426268.6609638,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"close_tab\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426273.3472855,
+      "action_type": "USER_COMMAND",
+      "command": "No, just lost this tab also.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426277.1066177,
+      "action_type": "USER_COMMAND",
+      "command": "Saurabh",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426280.3904421,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"scroll_up\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426283.7845256,
+      "action_type": "USER_COMMAND",
+      "command": "Scroll up. Scroll up.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426285.338951,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"scroll_up\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426289.15766,
+      "action_type": "USER_COMMAND",
+      "command": "powerful league",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426292.4612648,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"scroll_top\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426298.280166,
+      "action_type": "USER_COMMAND",
+      "command": "not still not called up. called fully.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426300.9449782,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"query\", \"query\": \"profile\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426301.5562663,
+      "action_type": "TOOL",
+      "command": "recall_memory {\"query\": \"identity\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426320.7771,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just take my profile.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426325.3530374,
+      "action_type": "TOOL",
+      "command": "screen_process {\"angle\": \"screen\", \"text\": \"Analyze the current active wind",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426326.015068,
+      "action_type": "USER_COMMAND",
+      "command": "Now that just take with my profile from this window.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426340.9263554,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"go_to\", \"url\": \"https://github.com\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426341.6866932,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"Google Chrome\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426342.4058607,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"type\", \"text\": \"https://github.com\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426344.0320184,
+      "action_type": "TOOL",
+      "command": "computer_control {\"key\": \"enter\", \"action\": \"press\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426356.0123255,
+      "action_type": "USER_COMMAND",
+      "command": "Let's go to home page of GitHub.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794426361.8549933,
+      "action_type": "TOOL",
+      "command": "visual_screen_grounding {\"action\": \"click\", \"query\": \"thefayid profile dropdown near",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -246,7 +1278,14 @@
       "occurrences": 3,
       "first_seen": 1794330884.3470273,
       "synthesized": false
+    },
+    "computer_control_action_press_ke": {
+      "name": "computer_control_action_press_ke",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "occurrences": 3,
+      "first_seen": 1794425996.058147,
+      "synthesized": false
     }
   },
-  "updated_at": 1794381675.3907955
+  "updated_at": 1794426361.8551612
 }

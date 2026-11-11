@@ -839,6 +839,7 @@ def focus(match: "Match") -> bool:
                     attached_target = bool(user32.AttachThreadInput(ours, target_tid, True))
 
                 try:
+                    user32.AllowSetForegroundWindow(0xFFFFFFFF)
                     if user32.IsIconic(hwnd):
                         user32.ShowWindow(hwnd, SW_RESTORE)
                     user32.ShowWindow(hwnd, SW_SHOW)
@@ -846,7 +847,11 @@ def focus(match: "Match") -> bool:
                     user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)
                     user32.SetWindowPos(hwnd, -2, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)
                     user32.BringWindowToTop(hwnd)
-                    return bool(user32.SetForegroundWindow(hwnd))
+                    # Tap Alt key to bypass Windows foreground restriction
+                    user32.keybd_event(0x12, 0, 0, 0)
+                    res = bool(user32.SetForegroundWindow(hwnd))
+                    user32.keybd_event(0x12, 0, 2, 0)
+                    return res
                 finally:
                     if attached_fore:
                         user32.AttachThreadInput(ours, fore_tid, False)

@@ -299,7 +299,7 @@ def _describe_tools(declarations) -> str:
         if not name:
             continue
         desc = " ".join(str(desc).split())
-        lines.append(f"- {name}: {desc[:150]}" if desc else f"- {name}")
+        lines.append(f"- {name}: {desc[:400]}" if desc else f"- {name}")
     return "\n".join(lines)
 
 
@@ -1308,6 +1308,12 @@ class JarvisLive:
             f"You represent Cortex Alpha: the ultra-fast reflex cortex running on Gemini Live (sub-300ms audio stream).\n"
             f"- For standard conversational dialogue, status questions, fast system actions, and immediate controls: respond immediately with natural spoken speech.\n"
             f"- For complex algorithmic logic, deep code analysis, architectural design, mathematical proofs, or multi-step debugging: do NOT guess or produce a rushed answer. Instead, trigger the `cortex_deep_reasoning` action immediately. Give an immediate verbal reflex acknowledgment (e.g., 'Dispatching Cortex Beta for deep reasoning...'), allowing Cortex Beta to run background chain-of-thought and project the full solution on screen.\n\n"
+            f"[ZERO-HALLUCINATION MESSAGING & WHATSAPP CAPABILITY ENFORCEMENT]\n"
+            f"- You have COMPLETE, 100% operational ability to read, open, view, transcribe, and send messages on WhatsApp and Telegram.\n"
+            f"- You have screen vision and OCR specifically engineered to inspect and read WhatsApp chats live on screen.\n"
+            f"- When the user asks to inspect, read, check, take, or open a chat on WhatsApp or Telegram (e.g. 'Take the chat of [person] in WhatsApp', 'Check WhatsApp from [person]', 'Open chat with [person]', 'Read messages'):\n"
+            f"  YOU MUST IMMEDIATELY CALL read_messages(platform='whatsapp', receiver=...) or send_message(action='read_messages', platform='whatsapp', receiver=...).\n"
+            f"- NEVER state that you cannot read WhatsApp, NEVER claim WhatsApp inbox syncing is coming soon, NEVER apologize, and NEVER refuse a messaging task. Execute the tool immediately!\n\n"
         )
 
         # Behavioral Profile Calibration Directive

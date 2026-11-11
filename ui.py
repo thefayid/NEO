@@ -5081,6 +5081,13 @@ class MainWindow(QMainWindow):
         self._tool_sig.connect(self._apply_tool_execution)
         self._chips_sig.connect(self._apply_proactive_chips)
         self._toast_sig.connect(self._apply_proactive_toast)
+
+        # Visual Screen Grounding Overlay Connection (Main GUI thread safe)
+        try:
+            from core.neo_visual_grounding import visual_grounding
+            visual_grounding.highlight_requested.connect(self._show_screen_highlight)
+        except Exception as _e:
+            print(f"[UI] Grounding overlay signal connection notice: {_e}")
         self._cam_stop = threading.Event()
 
         # Camera preview overlay (child of central widget, positioned in resizeEvent)
@@ -8348,6 +8355,17 @@ class MainWindow(QMainWindow):
     def _apply_proactive_toast(self, title: str, message: str, variant: str = "primary", payload: str = ""):
         """Thread-safe GUI slot: display macOS toast on Main GUI thread."""
         self._on_proactive_toast(title, message, variant=variant, payload=payload)
+
+    def _show_screen_highlight(self, bbox: Any, label: str = "", linger_ms: int = 1500) -> None:
+        """Safely creates and displays the macOS Sequoia screen highlight overlay on Main GUI thread."""
+        try:
+            from core.neo_visual_grounding import MacOSScreenHighlightOverlay
+            if not hasattr(self, "_grounding_overlay") or self._grounding_overlay is None:
+                self._grounding_overlay = MacOSScreenHighlightOverlay(None)
+            if bbox and isinstance(bbox, (list, tuple)) and len(bbox) == 4:
+                self._grounding_overlay.highlight_target(tuple(bbox), label=label, linger_ms=linger_ms)
+        except Exception as e:
+            print(f"[UI] Screen highlight overlay display notice: {e}")
 
     def _check_config(self) -> bool:
         if not API_FILE.exists(): return False

@@ -341,12 +341,18 @@ def _desktop_send(app_name: str, receiver: str, message: str, media_path: str = 
 def _ensure_whatsapp_focused() -> Optional[int]:
     """Ensures WhatsApp is running, restored from minimized/tray state, and raised to foreground."""
     try:
+        if platform.system() == "Windows":
+            # Direct Windows shell protocol activation brings UWP/WinUI app out of tray/suspension
+            try:
+                os.startfile("whatsapp:")
+            except Exception:
+                pass
+            time.sleep(0.6)
+
         from core import appidentity
         matches = appidentity.running("WhatsApp")
-        if not matches and platform.system() == "Windows":
-            os.startfile("whatsapp:")
-            time.sleep(2.0)
-            matches = appidentity.running("WhatsApp")
+        if not matches:
+            matches = appidentity.running("WhatsApp.Root")
         if matches:
             appidentity.focus(matches[0])
             hwnds = appidentity._hwnds_for(matches[0].pid)
@@ -488,11 +494,23 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
         except Exception:
             pass
     elif target_name and target_name.lower() not in ("inbox", "recent", "unread", "messages", "whatsapp"):
-        # Search and open that contact conversation via keyboard hotkeys
+        # Search and open that contact conversation via keyboard hotkeys in WhatsApp Desktop
         try:
             if _PYAUTOGUI:
-                pyautogui.hotkey("ctrl", "f")
-                time.sleep(0.35)
+                # Clear any existing modal, dialog, or active chat search
+                pyautogui.press("esc")
+                time.sleep(0.15)
+                pyautogui.press("esc")
+                time.sleep(0.15)
+                # Jump to WhatsApp Desktop chat search
+                pyautogui.hotkey("ctrl", "e")
+                time.sleep(0.3)
+                # Clear search input
+                pyautogui.hotkey("ctrl", "a")
+                time.sleep(0.1)
+                pyautogui.press("backspace")
+                time.sleep(0.1)
+                # Paste target name
                 _paste_text(target_name)
                 time.sleep(0.6)
                 pyautogui.press("enter")
@@ -546,7 +564,7 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
 
     display_name = target_name or "Recent Chat"
     if not transcript:
-        return f"[WhatsApp] Opened WhatsApp chat with '{display_name}'. The chat window is now visible on your screen."
+        return outcome.done("read_messages", platform="WhatsApp", to=display_name, verified=True, info=f"Opened WhatsApp chat with '{display_name}'. The chat window is now visible on your screen.")
 
     # Update UI panel if player is available
     if player:
@@ -560,7 +578,7 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
         except Exception:
             pass
 
-    return f"[WhatsApp Chat with {display_name}]\n{transcript}"
+    return outcome.done("read_messages", platform="WhatsApp", to=display_name, verified=True, transcript=transcript)
 
 
 # -- Telegram Direct Dispatcher & Inbox Reader --------------------------------

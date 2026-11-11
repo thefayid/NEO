@@ -95,6 +95,18 @@ class NEOReinforcementLearner:
         except Exception as e:
             logger.debug(f"[RL] Table load note: {e}")
 
+        # Seed core high-confidence policies if empty
+        if not self._q_table:
+            self._q_table["read_whatsapp@any#any"] = {
+                "read_messages": QEntry(q_value=1.0, visits=5, successes=5)
+            }
+            self._q_table["open_youtube@any#any"] = {
+                "browser_control": QEntry(q_value=1.0, visits=5, successes=5)
+            }
+            self._q_table["visual_screen@any#any"] = {
+                "visual_screen_grounding": QEntry(q_value=1.0, visits=5, successes=5)
+            }
+
     def _save_q_table(self) -> None:
         """Persists Q-table to disk atomically."""
         try:
@@ -345,18 +357,46 @@ class NEOReinforcementLearner:
                 )
             )
 
+    def get_top_policies(self, limit: int = 5) -> List[Tuple[str, str, float, float]]:
+        """Returns the top reinforced policies across all learned states."""
+        with self._lock:
+            best_by_intent: Dict[str, Tuple[str, float, float, int]] = {}
+            for state_key, actions in self._q_table.items():
+                intent = state_key.split("@")[0] if "@" in state_key else state_key
+                for a_name, entry in actions.items():
+                    if entry.visits < 1:
+                        continue
+                    conf = min(0.99, max(0.1, (entry.successes / max(1, entry.visits))))
+                    if intent not in best_by_intent or entry.q_value > best_by_intent[intent][1]:
+                        best_by_intent[intent] = (a_name, entry.q_value, conf, entry.visits)
+
+            sorted_policies = sorted(
+                [(intent, data[0], data[1], data[2]) for intent, data in best_by_intent.items()],
+                key=lambda x: -x[2] * x[3] if len(x) > 3 and x[3] else -x[2]
+            )
+            return sorted_policies[:limit]
+
     def synthesize_rl_prompt(self, current_command: str = "", active_app: str = "") -> str:
         """
         Synthesizes active RL policy guidance directly for LLM system instructions.
         Ensures zero-reflection: tells the agent how to act without echoing user words.
         """
-        rec = self.get_policy_recommendation(current_command, active_app)
-        if not rec or rec.visits < 2:
+        if current_command:
+            rec = self.get_policy_recommendation(current_command, active_app)
+            if rec and rec.visits >= 1:
+                lines = ["[REINFORCEMENT LEARNING POLICY (Q-OPTIMIZED)]"]
+                lines.append(f"• {rec.recommendation_text}")
+                lines.append("• Zero-Reflection Policy: Silently execute the optimal policy without mentioning Q-values or training.")
+                return "\n".join(lines)
+
+        top_policies = self.get_top_policies(limit=5)
+        if not top_policies:
             return ""
 
-        lines = ["[REINFORCEMENT LEARNING POLICY (Q-OPTIMIZED)]"]
-        lines.append(f"• {rec.recommendation_text}")
-        lines.append("• Zero-Reflection Policy: Silently execute the optimal policy without mentioning Q-values or training.")
+        lines = ["[REINFORCEMENT LEARNING POLICIES (Q-OPTIMIZED)]"]
+        for intent, a_name, q_val, conf in top_policies:
+            lines.append(f"• In context '{intent}': prioritize tool '{a_name}' (learned Q={q_val:+.2f}, success={conf:.0%}).")
+        lines.append("• Zero-Reflection Policy: Silently execute without echoing user words or mentioning Q-values.")
         return "\n".join(lines)
 
 

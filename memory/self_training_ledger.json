@@ -1,0 +1,610 @@
+{
+  "command_patterns": {
+    "new": {
+      "pattern": "new",
+      "sample": "new",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794425608.13945
+    },
+    "i came back to test you again.": {
+      "pattern": "i came back to test you again.",
+      "sample": "I came back to test you again.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794425618.244181
+    },
+    "what's up and take me as set.": {
+      "pattern": "what's up and take me as set.",
+      "sample": "What's up and take me as set.",
+      "count": 1,
+      "tools": [
+        "open_app",
+        "companion_core"
+      ],
+      "last_used": 1794425639.7627645
+    },
+    "no, i don't want a song now. close spotify.": {
+      "pattern": "no, i don't want a song now. close spotify.",
+      "sample": "No, I don't want a song now. Just close Spotify.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425651.7566123
+    },
+    "yes. take tv as chat on whatsapp.": {
+      "pattern": "yes. take tv as chat on whatsapp.",
+      "sample": "Yes. Take TV as chat on WhatsApp.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794425670.333207
+    },
+    "what more i can say?": {
+      "pattern": "what more i can say?",
+      "sample": "What more I can say?",
+      "count": 1,
+      "tools": [
+        "undo"
+      ],
+      "last_used": 1794425687.0037806
+    },
+    "know that about that sad.": {
+      "pattern": "know that about that sad.",
+      "sample": "know that about that sad.",
+      "count": 1,
+      "tools": [
+        "knowledge_memory"
+      ],
+      "last_used": 1794425695.2067778
+    },
+    ", about the chat on behalf what should i send hi": {
+      "pattern": ", about the chat on behalf what should i send hi",
+      "sample": "Yeah, about the chat on behalf what should I send him?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794425715.6767027
+    },
+    "you are absolutely right.": {
+      "pattern": "you are absolutely right.",
+      "sample": "You are absolutely right. Neo",
+      "count": 1,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794425728.1607783
+    },
+    "yes.": {
+      "pattern": "yes.",
+      "sample": "Yes.",
+      "count": 1,
+      "tools": [
+        "executive_briefing"
+      ],
+      "last_used": 1794425732.8681774
+    },
+    "close the whatsapp and open spotify. and play so": {
+      "pattern": "close the whatsapp and open spotify. and play so",
+      "sample": "Close the WhatsApp and open Spotify. And play songs from Tamil Murali movie.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "spotify_control"
+      ],
+      "last_used": 1794425759.375728
+    },
+    "whatsapp is closed.": {
+      "pattern": "whatsapp is closed.",
+      "sample": "WhatsApp is closed.",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory",
+        "knowledge_memory",
+        "save_memory"
+      ],
+      "last_used": 1794425771.5384455
+    },
+    "change the music like i don't want this tamil so": {
+      "pattern": "change the music like i don't want this tamil so",
+      "sample": "Change the music like I don't want this Tamil song. I want the song from the movie Minnal Murali.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794425789.6441302
+    },
+    "another song.": {
+      "pattern": "another song.",
+      "sample": "Another song.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794425795.904974
+    },
+    "make little more forward this song?": {
+      "pattern": "make little more forward this song?",
+      "sample": "Can you just make little more forward this song?",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425810.0077426
+    },
+    ", do it once more.": {
+      "pattern": ", do it once more.",
+      "sample": "Yeah, do it once more.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425815.977531
+    },
+    ", sure. minimize spotify window.": {
+      "pattern": ", sure. minimize spotify window.",
+      "sample": "Yeah, sure. Just minimize Spotify window.",
+      "count": 1,
+      "tools": [
+        "workspace_master"
+      ],
+      "last_used": 1794425827.136108
+    },
+    "open chrome.": {
+      "pattern": "open chrome.",
+      "sample": "Open Chrome.",
+      "count": 2,
+      "tools": [
+        "browser_control",
+        "open_app"
+      ],
+      "last_used": 1794425868.9015057
+    },
+    "i think you did it wrong. you opened the firefox": {
+      "pattern": "i think you did it wrong. you opened the firefox",
+      "sample": "I think you did it wrong. You opened the Firefox.",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "open_app"
+      ],
+      "last_used": 1794425849.2304604
+    },
+    "close the firefox": {
+      "pattern": "close the firefox",
+      "sample": "Close the Firefox",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425860.4695194
+    },
+    ", make take a new tab.": {
+      "pattern": ", make take a new tab.",
+      "sample": "Yeah, just make take a new tab.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794425879.9491737
+    },
+    "zenon city": {
+      "pattern": "zenon city",
+      "sample": "Zenon City",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794425893.282393
+    },
+    "no, you type wrong. jain university.": {
+      "pattern": "no, you type wrong. jain university.",
+      "sample": "No, you type wrong. Just Jain University.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794425920.139911
+    },
+    "close the new pop-up tab you opened. i don't nee": {
+      "pattern": "close the new pop-up tab you opened. i don't nee",
+      "sample": "Close the new pop-up tab you opened. I don't need that.",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "browser_control",
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794425940.1213164
+    },
+    "type it once more in the new tab.": {
+      "pattern": "type it once more in the new tab.",
+      "sample": "Type it once more in the new tab.",
+      "count": 1,
+      "tools": [
+        "computer_settings",
+        "computer_control"
+      ],
+      "last_used": 1794425952.151219
+    },
+    "take that program offer.": {
+      "pattern": "take that program offer.",
+      "sample": "Take that program offer.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425966.1540983
+    },
+    "i didn't tell you to close it right.": {
+      "pattern": "i didn't tell you to close it right.",
+      "sample": "I didn't tell you to close it right.",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "open_app"
+      ],
+      "last_used": 1794425980.8818111
+    },
+    "take that second user.": {
+      "pattern": "take that second user.",
+      "sample": "Take that second user.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794425990.5244114
+    },
+    "no, open it by rahman account.": {
+      "pattern": "no, open it by rahman account.",
+      "sample": "No, just open it by Rahman account.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "save_memory"
+      ],
+      "last_used": 1794426004.762599
+    },
+    "no, i closed the tab. new tab, okay.": {
+      "pattern": "no, i closed the tab. new tab, okay.",
+      "sample": "No, I just closed the tab. New tab, okay.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426013.2641563
+    },
+    "take new tab": {
+      "pattern": "take new tab",
+      "sample": "Take new tab",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426018.8953452
+    },
+    "research on a personal assistant best in pc.": {
+      "pattern": "research on a personal assistant best in pc.",
+      "sample": "Research on a personal assistant best in PC.",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794426059.5737336
+    },
+    "i knew due to search by by chrome through chrome": {
+      "pattern": "i knew due to search by by chrome through chrome",
+      "sample": "I knew due to search by by Chrome through Chrome.",
+      "count": 1,
+      "tools": [
+        "browser_control",
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794426080.6781845
+    },
+    "actually you didn't type it. type it.": {
+      "pattern": "actually you didn't type it. type it.",
+      "sample": "Actually you didn't type it. Type it.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794426085.4744132
+    },
+    "end up": {
+      "pattern": "end up",
+      "sample": "end up",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794426095.7116766
+    },
+    ", read that a overview.": {
+      "pattern": ", read that a overview.",
+      "sample": "Yeah, just read that a overview.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794426100.2318351
+    },
+    ", i need to focus more. close the spotify window": {
+      "pattern": ", i need to focus more. close the spotify window",
+      "sample": "Yeah, I need to focus more. Just close the Spotify window for me.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794426138.8545866
+    },
+    ", it's closed. scroll down the win the search li": {
+      "pattern": ", it's closed. scroll down the win the search li",
+      "sample": "Yeah, it's closed. Just scroll down the win the search like Google.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426148.881067
+    },
+    "i can't move.": {
+      "pattern": "i can't move.",
+      "sample": "I can't move.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426154.148215
+    },
+    "read that": {
+      "pattern": "read that",
+      "sample": "read that",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794426156.6938636
+    },
+    "tell me what do you suggest?": {
+      "pattern": "tell me what do you suggest?",
+      "sample": "Just tell me what do you suggest?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794426220.637038
+    },
+    "what do you think about gemini?": {
+      "pattern": "what do you think about gemini?",
+      "sample": "What do you think about Gemini?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794426242.2003381
+    },
+    "oh , i will decide later okay.": {
+      "pattern": "oh , i will decide later okay.",
+      "sample": "Oh yeah, I will decide later okay.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794426254.66526
+    },
+    "don't yak. log sign your tap now.": {
+      "pattern": "don't yak. log sign your tap now.",
+      "sample": "Don't yak. Log sign your tap now.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426260.4306066
+    },
+    "disturbers of": {
+      "pattern": "disturbers of",
+      "sample": "disturbers of",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426266.2540329
+    },
+    "no, lost this tab also.": {
+      "pattern": "no, lost this tab also.",
+      "sample": "No, just lost this tab also.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426273.3314385
+    },
+    "saurabh": {
+      "pattern": "saurabh",
+      "sample": "Saurabh",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794426277.0889244
+    },
+    "scroll up. scroll up.": {
+      "pattern": "scroll up. scroll up.",
+      "sample": "Scroll up. Scroll up.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426283.764142
+    },
+    "powerful league": {
+      "pattern": "powerful league",
+      "sample": "powerful league",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426289.1379309
+    },
+    "not still not called up. called fully.": {
+      "pattern": "not still not called up. called fully.",
+      "sample": "not still not called up. called fully.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794426298.2625413
+    },
+    ", take my profile.": {
+      "pattern": ", take my profile.",
+      "sample": "Yeah, just take my profile.",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory",
+        "recall_memory"
+      ],
+      "last_used": 1794426320.7589908
+    },
+    "now that take with my profile from this window.": {
+      "pattern": "now that take with my profile from this window.",
+      "sample": "Now that just take with my profile from this window.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794426326.007018
+    },
+    "let's go to home page of github.": {
+      "pattern": "let's go to home page of github.",
+      "sample": "Let's go to home page of GitHub.",
+      "count": 1,
+      "tools": [
+        "browser_control",
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794426355.9936848
+    }
+  },
+  "preferences": {},
+  "correction_rules": [
+    {
+      "trigger_command": "What's up and take me as set.",
+      "previous_tools": [
+        "open_app",
+        "companion_core"
+      ],
+      "correction": "No, I don't want a song now. Just close Spotify.",
+      "rule": "When user says 'What's up and take me as set.': corrected with 'No, I don't want a song now. Just close '",
+      "timestamp": 1794425651.756595
+    },
+    {
+      "trigger_command": "WhatsApp is closed.",
+      "previous_tools": [
+        "manage_neo_memory",
+        "knowledge_memory",
+        "knowledge_memory",
+        "save_memory"
+      ],
+      "correction": "Change the music like I don't want this Tamil song. I want the song from the movie Minnal Murali.",
+      "rule": "When user says 'WhatsApp is closed.': corrected with 'Change the music like I don't want this '",
+      "timestamp": 1794425789.6441038
+    },
+    {
+      "trigger_command": "Zenon City",
+      "previous_tools": [
+        "browser_control"
+      ],
+      "correction": "No, you type wrong. Just Jain University.",
+      "rule": "When user says 'Zenon City': corrected with 'No, you type wrong. Just Jain University'",
+      "timestamp": 1794425920.1397138
+    },
+    {
+      "trigger_command": "No, you type wrong. Just Jain University.",
+      "previous_tools": [
+        "browser_control",
+        "browser_control"
+      ],
+      "correction": "Close the new pop-up tab you opened. I don't need that.",
+      "rule": "When user says 'No, you type wrong. Just Jain ': corrected with 'Close the new pop-up tab you opened. I d'",
+      "timestamp": 1794425940.12128
+    },
+    {
+      "trigger_command": "Take that second user.",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "No, just open it by Rahman account.",
+      "rule": "When user says 'Take that second user.': corrected with 'No, just open it by Rahman account.'",
+      "timestamp": 1794426004.7625716
+    },
+    {
+      "trigger_command": "No, just open it by Rahman account.",
+      "previous_tools": [
+        "computer_control",
+        "computer_control",
+        "save_memory"
+      ],
+      "correction": "No, I just closed the tab. New tab, okay.",
+      "rule": "When user says 'No, just open it by Rahman acc': corrected with 'No, I just closed the tab. New tab, okay'",
+      "timestamp": 1794426013.264131
+    },
+    {
+      "trigger_command": "I knew due to search by by Chrome through Chrome.",
+      "previous_tools": [
+        "browser_control",
+        "open_app",
+        "computer_control",
+        "computer_control",
+        "computer_control"
+      ],
+      "correction": "Actually you didn't type it. Type it.",
+      "rule": "When user says 'I knew due to search by by Chr': corrected with 'Actually you didn't type it. Type it.'",
+      "timestamp": 1794426085.4743953
+    },
+    {
+      "trigger_command": "Oh yeah, I will decide later okay.",
+      "previous_tools": [],
+      "correction": "Don't yak. Log sign your tap now.",
+      "rule": "When user says 'Oh yeah, I will decide later o': corrected with 'Don't yak. Log sign your tap now.'",
+      "timestamp": 1794426260.43056
+    },
+    {
+      "trigger_command": "disturbers of",
+      "previous_tools": [
+        "computer_settings"
+      ],
+      "correction": "No, just lost this tab also.",
+      "rule": "When user says 'disturbers of': corrected with 'No, just lost this tab also.'",
+      "timestamp": 1794426273.331413
+    },
+    {
+      "trigger_command": "powerful league",
+      "previous_tools": [
+        "computer_settings"
+      ],
+      "correction": "not still not called up. called fully.",
+      "rule": "When user says 'powerful league': corrected with 'not still not called up. called fully.'",
+      "timestamp": 1794426298.2625258
+    },
+    {
+      "trigger_command": "Yeah, just take my profile.",
+      "previous_tools": [
+        "manage_neo_memory",
+        "recall_memory"
+      ],
+      "correction": "Now that just take with my profile from this window.",
+      "rule": "When user says 'Yeah, just take my profile.': corrected with 'Now that just take with my profile from '",
+      "timestamp": 1794426326.006998
+    }
+  ],
+  "learned_directives": [
+    "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '.",
+    "Avoid previous misstep for 'powerful league': execute preferred action 'not still not called up. called ful'.",
+    "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'.",
+    "Avoid previous misstep for 'Oh yeah, I will decide la': execute preferred action 'Don't yak. Log sign your tap now.'.",
+    "Avoid previous misstep for 'I knew due to search by b': execute preferred action 'Actually you didn't type it. Type i'.",
+    "Avoid previous misstep for 'No, just open it by Rahma': execute preferred action 'No, I just closed the tab. New tab,'.",
+    "Avoid previous misstep for 'Take that second user.': execute preferred action 'No, just open it by Rahman account.'.",
+    "Avoid previous misstep for 'No, you type wrong. Just ': execute preferred action 'Close the new pop-up tab you opened'.",
+    "Avoid previous misstep for 'Zenon City': execute preferred action 'No, you type wrong. Just Jain Unive'.",
+    "Avoid previous misstep for 'WhatsApp is closed.': execute preferred action 'Change the music like I don't want '.",
+    "Avoid previous misstep for 'What's up and take me as ': execute preferred action 'No, I don't want a song now. Just c'."
+  ],
+  "updated_at": 1794426355.9978018
+}

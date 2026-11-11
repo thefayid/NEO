@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from PyQt6.QtCore import QPoint, QRect, QRectF, Qt, QTimer, QVariantAnimation, pyqtSignal, QObject
+from PyQt6.QtCore import QPoint, QRect, QRectF, Qt, QTimer, QVariantAnimation, pyqtSignal, QObject, QThread
 from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
@@ -229,20 +229,22 @@ class VisualGroundingEngine(QObject):
     """
     Coordinates multimodal vision, UI element grounding, OS cursor clicks, and reverse-engineering.
     """
-    target_grounded = pyqtSignal(str, int, int)      # label, center_x, center_y
-    action_executed = pyqtSignal(str, bool, str)     # action, success, detail
+    target_grounded = pyqtSignal(str, int, int)          # label, center_x, center_y
+    action_executed = pyqtSignal(str, bool, str)         # action, success, detail
+    highlight_requested = pyqtSignal(object, str, int)   # bbox, label, linger_ms (thread-safe signal)
 
     def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent)
         self._overlay: Optional[MacOSScreenHighlightOverlay] = None
 
-    def _ensure_overlay(self) -> MacOSScreenHighlightOverlay:
-        if self._overlay is None:
-            # Must run on main thread or Qt GUI thread
-            app = QApplication.instance()
-            if app:
+    def _ensure_overlay(self) -> Optional[MacOSScreenHighlightOverlay]:
+        """Ensures the overlay widget is created strictly on the main Qt GUI thread."""
+        app = QApplication.instance()
+        if app and QThread.currentThread() == app.thread():
+            if self._overlay is None:
                 self._overlay = MacOSScreenHighlightOverlay()
-        return self._overlay
+            return self._overlay
+        return None
 
     # -------------------------------------------------------------------------
     # Screen Capture
@@ -375,7 +377,7 @@ Return ONLY a JSON object with this exact structure:
 where coordinates in bbox_norm are floats normalized between 0.0 and 1.0.
 If the element cannot be found, return {{"found": false}}.
 """
-            raw = gemini.multimodal(prompt, img_bytes, mime="image/png")
+            raw = gemini.multimodal(prompt, img_bytes, mime="image/png", timeout_ms=12000)
             cleaned = re.sub(r"^```json\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
             data = json.loads(cleaned)
 
@@ -404,10 +406,15 @@ If the element cannot be found, return {{"found": false}}.
     # Visual Highlighting & Interaction
     # -------------------------------------------------------------------------
     def highlight_element(self, element: UIElement, linger_ms: int = 1500) -> None:
-        """Paints an animated macOS accent highlight over the element."""
-        overlay = self._ensure_overlay()
-        if overlay:
-            overlay.highlight_target(element.bbox, label=element.label, linger_ms=linger_ms)
+        """Paints an animated macOS accent highlight over the element (strictly thread-safe)."""
+        app = QApplication.instance()
+        if app and QThread.currentThread() == app.thread():
+            overlay = self._ensure_overlay()
+            if overlay:
+                overlay.highlight_target(element.bbox, label=element.label, linger_ms=linger_ms)
+        else:
+            # Emit thread-safe queued signal to Main GUI thread
+            self.highlight_requested.emit(element.bbox, element.label, linger_ms)
 
     def click_element(
         self,
@@ -534,5 +541,7 @@ Output ONLY valid JSON inside ```json ... ``` fences.
         return result.strip()
 
 
-# Singleton Instance
+# Singleton Instance & Aliases
+VisualGrounding = VisualGroundingEngine
+NEOVisualGrounding = VisualGroundingEngine
 visual_grounding = VisualGroundingEngine()

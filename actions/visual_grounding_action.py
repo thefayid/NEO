@@ -12,6 +12,7 @@ from typing import Dict, Optional
 
 from core.neo_visual_grounding import visual_grounding
 from core.neo_brain import brain
+from core import outcome
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,17 +26,17 @@ def visual_screen_grounding(parameters: dict, **kwargs) -> str:
     if action == "reverse_engineer":
         img, _ = visual_grounding.capture_screen()
         if not img:
-            return "Failed to capture screen frame for reverse engineering."
+            return outcome.failed("visual_screen_grounding", "Failed to capture screen frame for reverse engineering.")
         result = visual_grounding.reverse_engineer_visual(img, target_format=fmt)
-        return result
+        return outcome.done("visual_screen_grounding", format=fmt, result=result)
 
     if not query:
-        return "Error: 'query' parameter is required to locate or click a UI element on screen."
+        return outcome.failed("visual_screen_grounding", "Error: 'query' parameter is required to locate or click a UI element on screen.")
 
-    # Ground element on active display
+    # Ground element on active display (highlight is sent via safe Qt signal)
     elem = visual_grounding.ground_target_on_screen(query, highlight=True)
     if not elem:
-        return f"Could not locate UI element '{query}' on active display."
+        return outcome.failed("visual_screen_grounding", f"Could not locate UI element '{query}' on active display.")
 
     cx, cy = elem.center
     brain.episodic.log_event("VISUAL_GROUNDED", f"Located '{elem.label}' on screen at ({cx}, {cy})")
@@ -46,13 +47,18 @@ def visual_screen_grounding(parameters: dict, **kwargs) -> str:
         ok = visual_grounding.click_element(elem, double_click=is_dbl, right_click=is_right)
         action_verb = "Double-clicked" if is_dbl else ("Right-clicked" if is_right else "Clicked")
         if ok:
-            return f"Successfully {action_verb.lower()} '{elem.label}' at screen coordinates ({cx}, {cy})."
+            return outcome.done("visual_screen_grounding", action=action, label=elem.label, x=cx, y=cy, verified=True)
         else:
-            return f"Located '{elem.label}' at ({cx}, {cy}) but click execution failed."
+            return outcome.failed("visual_screen_grounding", f"Located '{elem.label}' at ({cx}, {cy}) but click execution failed.")
 
-    return (
-        f"Located '{elem.label}' ({elem.element_type}) on display at ({cx}, {cy}) "
-        f"with confidence {elem.confidence:.2f}. Visual highlight badge displayed."
+    return outcome.done(
+        "visual_screen_grounding",
+        action="locate",
+        label=elem.label,
+        type=elem.element_type,
+        x=cx,
+        y=cy,
+        confidence=round(elem.confidence, 2),
     )
 
 

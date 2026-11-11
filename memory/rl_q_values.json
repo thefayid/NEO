@@ -1,0 +1,523 @@
+{
+  "states": {
+    "came_back@desktop#night": {
+      "open_app": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425629.3493006
+      },
+      "companion_core": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794425633.187929
+      }
+    },
+    "what_and@desktop#night": {
+      "computer_control": {
+        "q_value": -0.8549999999999999,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794425651.7559307
+      }
+    },
+    "media_playback@desktop#night": {
+      "read_messages": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794425662.757
+      },
+      "spotify_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425791.3288908
+      },
+      "computer_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425811.836185
+      },
+      "browser_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425829.6593204
+      },
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794426145.2333481
+      }
+    },
+    "read_whatsapp@desktop#night": {
+      "undo": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425676.165812
+      },
+      "read_messages": {
+        "q_value": 2.1836581548684015,
+        "visits": 5,
+        "successes": 5,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794427360.6680048
+      }
+    },
+    "what_more@desktop#night": {
+      "knowledge_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425689.6658328
+      }
+    },
+    "about_the@desktop#night": {
+      "companion_core": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425719.1173005
+      }
+    },
+    "you_are@desktop#night": {
+      "executive_briefing": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794425732.8618906
+      }
+    },
+    "yes@desktop#night": {
+      "computer_control": {
+        "q_value": -0.9,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -2.0,
+        "last_updated": 1794425743.836878
+      },
+      "spotify_control": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794425750.1813529
+      }
+    },
+    "send_whatsapp@desktop#night": {
+      "manage_neo_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425762.67415
+      },
+      "knowledge_memory": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425762.730874
+      },
+      "spotify_control": {
+        "q_value": -1.22625,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794425789.6389775
+      }
+    },
+    "once_more@desktop#night": {
+      "workspace_master": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425823.085698
+      }
+    },
+    "web_navigation@desktop#night": {
+      "open_app": {
+        "q_value": 1.60425,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794426064.73713
+      },
+      "computer_settings": {
+        "q_value": 1.0462500000000001,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794426150.6102853
+      },
+      "browser_control": {
+        "q_value": -0.765,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -1.7,
+        "last_updated": 1794426064.0662642
+      },
+      "computer_control": {
+        "q_value": 0.5917950000000001,
+        "visits": 4,
+        "successes": 4,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794426085.469593
+      }
+    },
+    "think_you@desktop#night": {
+      "computer_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425852.4882002
+      }
+    },
+    "close_the@desktop#night": {
+      "open_app": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425864.6258137
+      },
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794425945.3502803
+      },
+      "computer_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425946.2573547
+      }
+    },
+    "make_take@desktop#night": {
+      "browser_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425883.9217205
+      }
+    },
+    "zenon_city@desktop#night": {
+      "browser_control": {
+        "q_value": -2.070225,
+        "visits": 3,
+        "successes": 0,
+        "failures": 3,
+        "last_reward": -3.0,
+        "last_updated": 1794425920.1357033
+      }
+    },
+    "you_type@desktop#night": {
+      "browser_control": {
+        "q_value": -0.567,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -1.7,
+        "last_updated": 1794425920.232418
+      },
+      "open_app": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794425920.8602624
+      },
+      "computer_control": {
+        "q_value": -0.9832050000000001,
+        "visits": 4,
+        "successes": 3,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794425940.1188018
+      }
+    },
+    "type_once@desktop#night": {
+      "computer_control": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794425957.73155
+      }
+    },
+    "take_that@desktop#night": {
+      "open_app": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794425971.2880516
+      },
+      "computer_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425996.1031413
+      },
+      "save_memory": {
+        "q_value": -1.35,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426004.7604759
+      }
+    },
+    "didn_tell@desktop#night": {
+      "computer_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794425983.8513458
+      }
+    },
+    "open_rahman@desktop#night": {
+      "computer_settings": {
+        "q_value": -0.97875,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426013.2627902
+      }
+    },
+    "closed_the@desktop#night": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794426015.1842024
+      }
+    },
+    "take_new@desktop#night": {
+      "web_search": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794426038.5796926
+      }
+    },
+    "actually_you@desktop#night": {
+      "computer_control": {
+        "q_value": 0.48375,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426088.021301
+      }
+    },
+    "end@desktop#night": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426099.387839
+      }
+    },
+    "read_that@desktop#night": {
+      "computer_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794426130.7051058
+      }
+    },
+    "can_move@desktop#night": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426156.0650153
+      }
+    },
+    "will_decide@desktop#night": {
+      "computer_settings": {
+        "q_value": -0.97875,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426260.4288611
+      }
+    },
+    "don_yak@desktop#night": {
+      "computer_settings": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794426262.6377563
+      }
+    },
+    "disturbers@desktop#night": {
+      "computer_settings": {
+        "q_value": -0.97875,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426273.3276355
+      }
+    },
+    "saurabh@desktop#night": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794426280.453205
+      }
+    },
+    "scroll_scroll@desktop#night": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794426285.396075
+      }
+    },
+    "powerful_league@desktop#night": {
+      "computer_settings": {
+        "q_value": -0.97875,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426298.261876
+      }
+    },
+    "not_still@desktop#night": {
+      "manage_neo_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426300.951051
+      },
+      "recall_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426301.5613332
+      }
+    },
+    "take_profile@desktop#night": {
+      "screen_process": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794426326.005692
+      }
+    },
+    "now_that@desktop#night": {
+      "browser_control": {
+        "q_value": -0.765,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -1.7,
+        "last_updated": 1794426340.952314
+      },
+      "open_app": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794426341.7406328
+      },
+      "computer_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794426344.0786633
+      }
+    }
+  },
+  "updated_at": 1794427360.6681054
+}
