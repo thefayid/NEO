@@ -46,6 +46,7 @@ for _stream in ("stdout", "stderr"):
 # ─────────────────────────────────────────────────────────────────────────────
 
 import asyncio
+import concurrent.futures
 import gc
 import json
 import re
@@ -69,6 +70,8 @@ Path = _Path
 
 import sounddevice as sd
 import numpy as np
+
+_audio_stream_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="neo-spk-out")
 from google import genai
 from google.genai import types
 from ui import JarvisUI
@@ -2255,7 +2258,25 @@ class JarvisLive:
                     pass
 
                 try:
-                    await asyncio.to_thread(stream.write, bytes(batch))
+                    loop = asyncio.get_running_loop()
+                    await asyncio.wait_for(
+                        loop.run_in_executor(_audio_stream_executor, stream.write, bytes(batch)),
+                        timeout=1.5
+                    )
+                except asyncio.TimeoutError:
+                    print("[JARVIS] ⚠️ Audio stream write backpressure timeout — resetting stream.")
+                    try:
+                        stream.stop()
+                        stream.close()
+                    except Exception:
+                        pass
+                    try:
+                        stream = _open_spk(_spk_dev)
+                    except Exception:
+                        try:
+                            stream = _open_spk(None)
+                        except Exception:
+                            pass
                 except (RuntimeError, asyncio.CancelledError):
                     break   # executor shutting down — exit cleanly
                 except Exception as stream_err:

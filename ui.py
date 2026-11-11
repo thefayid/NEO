@@ -589,6 +589,11 @@ class _SysMetrics:
         # connection each time and is very slow. Give up after one failure.
         if _OS == "Windows" and self._wmi_ok is not False:
             try:
+                try:
+                    import pythoncom
+                    pythoncom.CoInitialize()
+                except Exception:
+                    pass
                 if self._wmi_conn is None:
                     import wmi  # type: ignore
                     self._wmi_conn = wmi.WMI(namespace="root/wmi")
@@ -5177,15 +5182,10 @@ class MainWindow(QMainWindow):
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
 
-        # Proactive Process Memory & Working Set Optimizer
+        # Proactive Process Memory & Working Set Optimizer (Background Daemon)
         try:
-            from core.memory_optimizer import memory_trimmer, trim_memory
+            from core.memory_optimizer import memory_trimmer
             memory_trimmer.start()
-            QTimer.singleShot(1500, trim_memory)
-            self._ram_opt_timer = QTimer(self)
-            self._ram_opt_timer.setInterval(25000)
-            self._ram_opt_timer.timeout.connect(trim_memory)
-            self._ram_opt_timer.start()
         except Exception:
             pass
 

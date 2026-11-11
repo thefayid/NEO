@@ -45,10 +45,11 @@ class NEOAmbientSensor(QObject):
     clipboard_detected = pyqtSignal(str, str)  # content_type, text
     meeting_imminent = pyqtSignal(str, int)    # event_title, minutes_until
 
-    def __init__(self, sample_interval_ms: int = 3500, parent: Optional[QObject] = None):
+    def __init__(self, sample_interval_ms: int = 12000, parent: Optional[QObject] = None):
         super().__init__(parent)
         self._sample_interval_ms = sample_interval_ms
         self._is_running = False
+        self._sampling_in_progress = False
         self._lock = threading.Lock()
 
         # Telemetry State
@@ -101,7 +102,11 @@ class NEOAmbientSensor(QObject):
     # ─────────────────────────────────────────────────────────────────────────
 
     def _on_tick(self) -> None:
-        """Background tick sampling all OS sensors in a worker thread."""
+        """Background tick sampling all OS sensors in a single worker thread."""
+        if getattr(self, "_sampling_in_progress", False):
+            return
+        self._sampling_in_progress = True
+
         def _worker():
             try:
                 snap = self._collect_snapshot()
@@ -110,6 +115,8 @@ class NEOAmbientSensor(QObject):
                 self.telemetry_updated.emit(snap)
             except Exception as e:
                 pass
+            finally:
+                self._sampling_in_progress = False
 
         threading.Thread(target=_worker, daemon=True, name="neo-ambient-sampler").start()
 
@@ -268,7 +275,11 @@ class NEOAmbientSensor(QObject):
     # ─────────────────────────────────────────────────────────────────────────
 
     def _get_git_state(self) -> Dict[str, Any]:
-        """Checks uncommitted files and branch status in active project workspace."""
+        """Checks uncommitted files and branch status in active project workspace (cached 60s)."""
+        now = time.time()
+        if hasattr(self, "_cached_git") and (now - getattr(self, "_last_git_t", 0.0) < 60.0):
+            return self._cached_git
+
         proj_dir = _BASE_DIR
         try:
             p_file = _BASE_DIR / "memory" / "projects.json"
@@ -301,13 +312,16 @@ class NEOAmbientSensor(QObject):
         except Exception:
             pass
 
-        return {
+        out = {
             "project_path": str(proj_dir),
             "branch": branch,
             "dirty": len(modified_files) > 0,
             "modified_count": len(modified_files),
             "modified_sample": modified_files[:4],
         }
+        self._cached_git = out
+        self._last_git_t = now
+        return out
 
     # ─────────────────────────────────────────────────────────────────────────
     # 4. Calendar & Agenda Sentinel

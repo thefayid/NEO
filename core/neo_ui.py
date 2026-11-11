@@ -23,6 +23,7 @@ import os
 import platform
 import re
 import time
+import threading
 import json
 import subprocess
 import webbrowser
@@ -380,6 +381,17 @@ class NeoEclipseCanvas(QWidget):
             self.ripple_alpha = max(0.0, self.ripple_alpha - dt * 260.0)
 
         self.update()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        if hasattr(self, "timer") and self.timer.isActive():
+            self.timer.stop()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if hasattr(self, "timer") and not self.timer.isActive():
+            self._last_t = time.time()
+            self.timer.start(33)
 
     def mouseMoveEvent(self, event):
         cx = self.width() / 2.0
@@ -767,7 +779,15 @@ class SystemStatusWidget(QFrame):
         try:
             cpu = int(psutil.cpu_percent())
             mem = int(psutil.virtual_memory().percent)
-            disk = int(psutil.disk_usage("/").percent) if hasattr(psutil, "disk_usage") else 27
+
+            now = time.monotonic()
+            if not hasattr(self, "_cached_disk") or (now - getattr(self, "_last_disk_t", 0.0) > 60.0):
+                try:
+                    self._cached_disk = int(psutil.disk_usage("/").percent) if hasattr(psutil, "disk_usage") else 27
+                except Exception:
+                    self._cached_disk = 27
+                self._last_disk_t = now
+            disk = self._cached_disk
 
             self.cpu_bar.setValue(cpu)
             self.cpu_pct.setText(f"{cpu}%")
@@ -1693,17 +1713,33 @@ class MediaTransportWidget(QFrame):
         lay.addLayout(controls)
 
         self._poll_tmr = QTimer(self)
-        self._poll_tmr.setInterval(3000)
+        self._poll_tmr.setInterval(4500)
         self._poll_tmr.timeout.connect(self._poll_spotify)
         self._poll_tmr.start()
         self._poll_spotify()
 
     def _poll_spotify(self):
+        if getattr(self, "_polling_active", False):
+            return
+        self._polling_active = True
+
+        def _worker():
+            try:
+                from actions.spotify_control import _get_current_song_desktop
+                desc = _get_current_song_desktop()
+                QTimer.singleShot(0, lambda: self._apply_spotify_info(desc))
+            except Exception:
+                pass
+            finally:
+                self._polling_active = False
+
+        threading.Thread(target=_worker, daemon=True, name="SpotifyPollWorker").start()
+
+    def _apply_spotify_info(self, desc: str):
+        if not desc:
+            return
         try:
-            from actions.spotify_control import _get_current_song_desktop
-            desc = _get_current_song_desktop()
             if "Currently playing" in desc:
-                # E.g. "Currently playing 'Starboy' by The Weeknd on Spotify, Boss."
                 parts = desc.split("'")
                 if len(parts) >= 2:
                     self.track_lbl.setText(parts[1][:28])

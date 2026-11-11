@@ -28,6 +28,10 @@ class TestMacOSUIStandard(unittest.TestCase):
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication(sys.argv)
 
+    def setUp(self):
+        from core.theme_provider import theme
+        theme.set_accent("blue")
+
     def test_01_macos_palette_tokens(self):
         from ui import C, DARK_MODE_PALETTE, WHITE_MODE_PALETTE
 

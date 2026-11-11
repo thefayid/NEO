@@ -120,8 +120,11 @@ def _get_desktop_spotify_window() -> Optional[Tuple[int, str]]:
 
     _attach_desktop()
     found = []
+    global _cached_spotify_pid
+    cached_pid = globals().get("_cached_spotify_pid", None)
 
     def enum_cb(hwnd, lparam):
+        nonlocal cached_pid
         length = user32.GetWindowTextLengthW(hwnd)
         if length == 0:
             return True
@@ -129,16 +132,27 @@ def _get_desktop_spotify_window() -> Optional[Tuple[int, str]]:
         user32.GetWindowTextW(hwnd, buff, length + 1)
         title = buff.value.strip()
 
+        # Quick reject if title is irrelevant
+        title_lower = title.lower()
+        if not (" - " in title or "spotify" in title_lower):
+            return True
+
         pid = w.DWORD()
         user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
-        try:
-            p = psutil.Process(pid.value)
-            if "spotify" in p.name().lower():
-                # Ignore invisible/system helper windows
-                if user32.IsWindowVisible(hwnd) and title:
-                    found.append((hwnd, title))
-        except Exception:
-            pass
+        pid_val = pid.value
+
+        is_spotify = (cached_pid is not None and pid_val == cached_pid)
+        if not is_spotify:
+            try:
+                p = psutil.Process(pid_val)
+                if "spotify" in p.name().lower():
+                    is_spotify = True
+                    globals()["_cached_spotify_pid"] = pid_val
+            except Exception:
+                pass
+
+        if is_spotify and user32.IsWindowVisible(hwnd) and title:
+            found.append((hwnd, title))
         return True
 
     CB_T = ctypes.WINFUNCTYPE(ctypes.c_bool, w.HWND, w.LPARAM)
@@ -161,13 +175,9 @@ def _get_current_song_desktop() -> str:
     """Extract currently playing artist and song title from Windows window title."""
     win = _get_desktop_spotify_window()
     if not win:
-        # Check if process is running
-        for p in psutil.process_iter():
-            try:
-                if "spotify" in p.name().lower():
-                    return "Spotify is running in the background, but no track is currently playing, Boss."
-            except Exception:
-                pass
+        cached_pid = globals().get("_cached_spotify_pid", None)
+        if cached_pid and psutil.pid_exists(cached_pid):
+            return "Spotify is open, but playback is currently paused, Boss."
         return "Spotify is not currently running, Boss."
 
     hwnd, title = win

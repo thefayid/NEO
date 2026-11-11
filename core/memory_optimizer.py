@@ -51,9 +51,9 @@ if _IS_LINUX:
         _LIBC_TRIM = None
 
 
-def trim_memory() -> Dict[str, Any]:
+def trim_memory(force: bool = False) -> Dict[str, Any]:
     """
-    Executes an immediate full-generation garbage collection and trims physical working set.
+    Executes generational garbage collection and trims physical working set when elevated.
     Returns memory stats before and after trimming in MB.
     """
     proc = psutil.Process(os.getpid())
@@ -61,6 +61,16 @@ def trim_memory() -> Dict[str, Any]:
         rss_before = proc.memory_info().rss / (1024 * 1024)
     except Exception:
         rss_before = 0.0
+
+    # Avoid thrashing working set pages if process footprint is already low (< 90MB)
+    if not force and rss_before < 90.0:
+        gc.collect(1)
+        return {
+            "rss_before_mb": round(rss_before, 2),
+            "rss_after_mb": round(rss_before, 2),
+            "reclaimed_mb": 0.0,
+            "os_trimmed": False,
+        }
 
     # 1. Full Python generational garbage collection
     gc.collect(2)
@@ -97,7 +107,7 @@ def trim_memory() -> Dict[str, Any]:
 class BackgroundMemoryTrimmer:
     """Daemon thread that periodically runs memory trimming in the background."""
 
-    def __init__(self, interval_seconds: int = 30):
+    def __init__(self, interval_seconds: int = 60):
         self._interval = interval_seconds
         self._running = False
         self._thread: Optional[threading.Thread] = None

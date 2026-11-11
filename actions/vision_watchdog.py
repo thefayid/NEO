@@ -105,7 +105,7 @@ class AmbientErrorWatchdog:
 
         while self._running:
             try:
-                time.sleep(4.0)
+                time.sleep(6.0)
                 now = time.monotonic()
 
                 win_info = _get_active_window_info()
@@ -122,16 +122,21 @@ class AmbientErrorWatchdog:
                 title_changed = (cur_title != self._last_window_title)
                 error_in_title = any(k in cur_title.lower() for k in ("error", "fail", "fatal", "traceback"))
 
-                # Only sample if title changed or after 40s in the same dev window
-                since_last_change = now - self._last_window_change
-                if not title_changed and not error_in_title and since_last_change < 40.0:
+                # Only inspect if active window actually changed or shows an error in title
+                if not title_changed and not error_in_title:
+                    continue
+
+                # Enforce a calm 60-second cooldown between VLM screen inspections to prevent RAM/API churn
+                if (now - getattr(self, "_last_inspection_t", 0.0)) < 60.0:
                     continue
 
                 if title_changed:
                     self._last_window_title = cur_title
                     self._last_window_change = now
-                    # Give the terminal 1.2s to render output before capturing
-                    time.sleep(1.2)
+                    # Give the terminal a moment to render output before capturing
+                    time.sleep(1.0)
+
+                self._last_inspection_t = now
 
                 # Capture screen frame
                 capture_res = _capture_screen("full")
