@@ -131,6 +131,51 @@ class TestNeoSuperhumanFrontiers(unittest.TestCase):
             commit_msg = central_core.generate_git_commit()
             self.assertIsInstance(commit_msg, str)
 
+    # ── Superhuman Actions Discovery & Invocations ───────────────────────────
+
+    def test_action_run_swarm_war_room(self):
+        """Verifies actions/swarm_war_room_action.py adapter handler."""
+        from actions.swarm_war_room_action import run_swarm_war_room
+        from unittest.mock import patch
+        with patch.object(swarm_war_room, "_query_agent_llm", return_value="Fast mocked test"):
+            res = run_swarm_war_room({"action_type": "dispatch", "objective": "Design secure authentication service"})
+            self.assertIn("launched successfully", res)
+            self.assertIn("Swarm War Room Mission", res)
+
+            list_res = run_swarm_war_room({"action_type": "list"})
+            self.assertIn("Swarm Missions", list_res)
+
+    def test_action_mobile_telepathy(self):
+        """Verifies actions/mobile_telepathy_action.py adapter handler."""
+        from actions.mobile_telepathy_action import mobile_telepathy_command
+        # Test paired status check
+        p_res = mobile_telepathy_command({"operation": "check_paired"})
+        self.assertIsInstance(p_res, str)
+
+        # Test push dispatch
+        push_res = mobile_telepathy_command({
+            "operation": "send_push",
+            "title": "Build Passed",
+            "message": "All unit tests succeeded"
+        })
+        self.assertIn("dispatched", push_res.lower())
+
+    def test_action_self_healing_codebase(self):
+        """Verifies actions/self_healing_action.py adapter handler."""
+        from actions.self_healing_action import self_healing_codebase
+        audit_res = self_healing_codebase({"operation": "audit"})
+        self.assertIn("Workspace", audit_res)
+        self.assertIn("Scanned", audit_res)
+
+        suggest_res = self_healing_codebase({"operation": "suggest_commit"})
+        self.assertIn("Suggested", suggest_res)
+
+    def test_action_spatial_document_scanner(self):
+        """Verifies actions/spatial_vision_action.py adapter handler."""
+        from actions.spatial_vision_action import spatial_document_scanner
+        pres_res = spatial_document_scanner({"operation": "check_presence"})
+        self.assertIn("presence confidence", pres_res)
+
 
 if __name__ == "__main__":
     unittest.main()

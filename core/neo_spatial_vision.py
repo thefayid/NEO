@@ -71,6 +71,10 @@ class NEOSpatialVisionSuite(QObject):
             except Exception:
                 pass
 
+    def get_presence_status(self) -> Tuple[bool, float]:
+        """Returns (is_present, confidence)."""
+        return self.is_present, (0.95 if self.is_present else 0.0)
+
     # ─────────────────────────────────────────────────────────────────────────
     # 1. Biometric Presence & Fatigue Detection
     # ─────────────────────────────────────────────────────────────────────────
