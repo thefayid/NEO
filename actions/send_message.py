@@ -443,6 +443,136 @@ def _send_whatsapp(receiver: str, message: str, media_path: str = "") -> str:
     # 3. Fallback: Desktop app search by contact name
     return _desktop_send("WhatsApp", contact["name"], message)
 
+
+# ── WhatsApp Chat Reader & Transcriber ──────────────────────────────────────
+
+def _read_whatsapp_chat(receiver: str, player=None) -> str:
+    """Brings WhatsApp to the front, opens the chat with receiver, and reads visible messages via Multimodal Vision."""
+    contact = _resolve_contact(receiver) if receiver else {}
+    target_name = contact.get("name") or receiver or ""
+    phone = contact.get("phone", "")
+
+    # Ensure desktop window station is attached on Windows
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            hwinsta = ctypes.windll.user32.OpenWindowStationW("WinSta0", False, 0x0000037F)
+            if hwinsta:
+                ctypes.windll.user32.SetProcessWindowStation(hwinsta)
+                hdesk = ctypes.windll.user32.OpenDesktopW("Default", 0, False, 0x01FF)
+                if hdesk:
+                    ctypes.windll.user32.SetThreadDesktop(hdesk)
+        except Exception:
+            pass
+
+    # 1. Bring WhatsApp window to front
+    wa_opened = False
+    if phone and platform.system() == "Windows":
+        try:
+            os.startfile(f"whatsapp://send?phone={phone}")
+            wa_opened = True
+            time.sleep(1.2)
+        except Exception:
+            pass
+
+    if not wa_opened:
+        try:
+            import win32gui
+            import ctypes
+            wa_hwnd = None
+            def _find_wa(hwnd, extra):
+                nonlocal wa_hwnd
+                t = win32gui.GetWindowText(hwnd)
+                c = win32gui.GetClassName(hwnd)
+                if ("whatsapp" in t.lower() or "winui" in c.lower()) and "whatsapp" in t.lower():
+                    wa_hwnd = hwnd
+                return True
+            win32gui.EnumWindows(_find_wa, None)
+            if wa_hwnd:
+                user32 = ctypes.windll.user32
+                user32.ShowWindow(wa_hwnd, 9)  # SW_RESTORE
+                fg = user32.GetForegroundWindow()
+                if fg != wa_hwnd:
+                    fg_tid = user32.GetWindowThreadProcessId(fg, None)
+                    cur_tid = ctypes.windll.kernel32.GetCurrentThreadId()
+                    user32.AttachThreadInput(cur_tid, fg_tid, True)
+                    user32.SetForegroundWindow(wa_hwnd)
+                    user32.BringWindowToTop(wa_hwnd)
+                    user32.AttachThreadInput(cur_tid, fg_tid, False)
+                wa_opened = True
+                time.sleep(0.5)
+            else:
+                os.startfile("whatsapp:")
+                wa_opened = True
+                time.sleep(1.8)
+        except Exception as e:
+            print(f"[WhatsApp] Focus notice: {e}")
+            try:
+                os.startfile("whatsapp:")
+                time.sleep(1.8)
+                wa_opened = True
+            except Exception:
+                pass
+
+    # 2. If a contact name was specified, search and open that conversation
+    if target_name and target_name.lower() not in ("inbox", "recent", "unread", "messages", "whatsapp"):
+        try:
+            if _PYAUTOGUI:
+                pyautogui.hotkey("ctrl", "f")
+                time.sleep(0.35)
+                _paste_text(target_name)
+                time.sleep(0.6)
+                pyautogui.press("enter")
+                time.sleep(1.0)
+                _LAST_DISPATCH_CACHE["whatsapp"] = target_name.lower()
+        except Exception as e:
+            print(f"[WhatsApp] Search navigation notice: {e}")
+
+    # 3. Capture screen and transcribe via Multimodal Vision
+    transcript = ""
+    try:
+        from PIL import ImageGrab
+        import io
+        from core import gemini
+
+        img = ImageGrab.grab()
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        image_bytes = buf.getvalue()
+
+        prompt = (
+            f"You are inspecting the active WhatsApp chat window on screen.\n"
+            f"Target Contact: '{target_name or 'Current Chat'}'.\n"
+            f"1. Transcribe the visible chat messages in chronological order.\n"
+            f"2. For each message, clearly list: Sender name (e.g. '{target_name}' or 'You/Me'), Timestamp (if shown), and exact Message Text.\n"
+            f"3. Conclude with a crisp 1-sentence summary of the conversation's current state.\n"
+            f"Format cleanly with bullet points."
+        )
+        transcript = gemini.multimodal(prompt, image_bytes, tier=gemini.SMART, timeout_ms=18000)
+    except Exception as e:
+        print(f"[WhatsApp] Multimodal vision OCR error: {e}")
+
+    _play_sfx("confirm")
+
+    display_name = target_name or "Recent Chat"
+    if not transcript:
+        return f"[WhatsApp] Opened WhatsApp chat with '{display_name}'. The chat is now displayed on your screen."
+
+    # Update UI panel if player is available
+    if player:
+        try:
+            if hasattr(player, "show_content"):
+                player.show_content(f"WHATSAPP · {display_name.upper()}", transcript)
+            if hasattr(player, "_on_live_speech"):
+                player._on_live_speech("NEO", f"**WhatsApp Chat with {display_name}:**\n\n{transcript}")
+            elif hasattr(player, "write_log"):
+                player.write_log(f"[WhatsApp] Read chat with {display_name}")
+        except Exception:
+            pass
+
+    return f"[WhatsApp Chat with {display_name}]\n{transcript}"
+
+
 # -- Telegram Direct Dispatcher & Inbox Reader --------------------------------
 
 def _send_telegram(receiver: str, message: str, media_path: str = "") -> str:
@@ -653,17 +783,18 @@ def send_message(parameters: dict, response=None, player=None, session_memory=No
     if action in ("list_contacts", "get_contacts"):
         return _list_contacts_summary()
 
-    # 2. Reading Unread Messages
-    if action in ("read", "check", "inbox", "read_messages"):
+    # 2. Reading Unread Messages & Chat Inspection
+    if action in ("read", "check", "inbox", "read_messages", "open_chat", "take_chat", "view_chat", "chat"):
         if "telegram" in platform_name.lower():
             return _read_telegram_messages()
-        return "[Messages] Currently, direct message inbox triage is supported for Telegram Bot. WhatsApp inbox sync coming soon."
+        return _read_whatsapp_chat(receiver, player=player)
 
     # 3. Message Dispatch
     if not receiver:
         return outcome.failed("send_message", "No recipient specified, Boss.")
     if not message_text and not media_path:
-        return outcome.failed("send_message", "No message text or image attachment provided.", to=receiver)
+        # If no message text and no attachment was provided, open & read the chat with the contact
+        return _read_whatsapp_chat(receiver, player=player)
 
     preview = (message_text[:40] + "...") if message_text else f"[attachment: {os.path.basename(media_path)}]"
     print(f"[SendMessage] {platform_name} -> {receiver}: {preview}")
@@ -714,8 +845,12 @@ TOOL = {
     "name": "send_message",
     "description": (
         "Sends a message or media (images, screenshots, photos, files) via WhatsApp, Telegram, or another platform, "
-        "checks incoming unread messages, or manages your contact book. "
+        "or reads/opens/transcribes incoming WhatsApp and Telegram chats, or manages your contact book. "
         "Supports natural speech like: "
+        "'Take the chat of Vias in WhatsApp', "
+        "'Open the chat of Vihas on WhatsApp', "
+        "'Read messages from Vihas on WhatsApp', "
+        "'What did Vihas send on WhatsApp?', "
         "'Send a WhatsApp to Rahul saying I will join in 10 minutes', "
         "'Send this screenshot to Razin on WhatsApp', "
         "'Send photo to Razin on WhatsApp', "
@@ -745,7 +880,7 @@ TOOL = {
             },
             "action": {
                 "type": "STRING",
-                "description": "'send' (default), 'read_messages', 'save_contact', 'list_contacts'"
+                "description": "'send' (default), 'read_messages', 'open_chat', 'save_contact', 'list_contacts'"
             },
             "phone": {
                 "type": "STRING",
