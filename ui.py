@@ -6141,6 +6141,11 @@ class MainWindow(QMainWindow):
 
     def _on_chat_command(self, text: str):
         """Executed when user submits from NEO Chat bar — command is already added to chat UI, so do not duplicate."""
+        try:
+            from core.neo_self_training import self_trainer
+            self_trainer.record_user_input(text)
+        except Exception:
+            pass
         if self.on_text_command:
             threading.Thread(target=self.on_text_command, args=(text,), daemon=True).start()
 
@@ -8290,6 +8295,11 @@ class MainWindow(QMainWindow):
         if not txt: return
         self._input.clear()
         self._log.append_log(f"You: {txt}")
+        try:
+            from core.neo_self_training import self_trainer
+            self_trainer.record_user_input(txt)
+        except Exception:
+            pass
         if self.on_text_command:
             threading.Thread(target=self.on_text_command, args=(txt,), daemon=True).start()
 

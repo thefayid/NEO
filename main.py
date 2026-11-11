@@ -760,6 +760,7 @@ class JarvisLive:
         self._proactive        = ProactiveEngine()
         self._last_user_speech = time.monotonic()  # updated on every user utterance
         self._session_log: list[str] = []          # conversation turns for end-of-session summary
+        self._recent_turn_tools: list[dict] = []   # tool invocations in the current turn for self-training
 
         self._enhanced_live = True  # proactive audio; auto-disabled if the server rejects it
         self._tuned_live    = True  # turn-taking / media / thinking knobs; same fallback
@@ -1082,6 +1083,13 @@ class JarvisLive:
             self.ui.write_log("SYS: I'm asleep — say 'Hey Jarvis' or tap WAKE NOW first.")
             return
         self._last_user_speech = time.monotonic()
+        try:
+            from core.neo_self_training import self_trainer
+            self_trainer.record_user_input(text)
+            from core.neo_habit_learner import habit_learner
+            habit_learner.record_action("TEXT_COMMAND", text)
+        except Exception:
+            pass
         asyncio.run_coroutine_threadsafe(
             self.session.send_client_content(
                 turns={"role": "user", "parts": [{"text": text}]},
@@ -1379,6 +1387,13 @@ class JarvisLive:
                 parts.append(brain_ctx)
         except Exception:
             pass
+        try:
+            from core.neo_self_training import self_trainer
+            st_ctx = self_trainer.synthesize_self_training_directives()
+            if st_ctx:
+                parts.append(st_ctx)
+        except Exception:
+            pass
         parts.append(sys_prompt)
 
         cfg = dict(
@@ -1509,6 +1524,10 @@ class JarvisLive:
                 f"Assistant invoked tool '{name}' with args {args}",
                 metadata={"tool": name, "args": args}
             )
+            if hasattr(self, "_recent_turn_tools"):
+                self._recent_turn_tools.append({"name": name, "args": dict(args)})
+            from core.neo_habit_learner import habit_learner
+            habit_learner.record_action("TOOL", f"{name} {json.dumps(args)[:60]}")
         except Exception:
             pass
 
@@ -2106,6 +2125,21 @@ class JarvisLive:
                                         "ts": datetime.now().isoformat(),
                                     }))
                             out_buf = []
+
+                            # Autonomous Silent Self-Training on user commands (zero-reflection)
+                            if full_in or full_out:
+                                try:
+                                    from core.neo_self_training import self_trainer
+                                    from core.neo_habit_learner import habit_learner
+                                    if full_in:
+                                        self_trainer.record_command_turn(
+                                            full_in, full_out, getattr(self, "_recent_turn_tools", [])
+                                        )
+                                        brain.learn_interaction(full_in, full_out)
+                                        habit_learner.record_action("USER_COMMAND", full_in)
+                                except Exception:
+                                    pass
+                                self._recent_turn_tools = []
 
                             if self._vision_close_pending:
                                 # This turn_complete IS the vision answer — close camera + release busy flag

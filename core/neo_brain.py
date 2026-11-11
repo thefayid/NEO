@@ -437,6 +437,15 @@ class NeoBrain:
                 rel_str = ", ".join([f"{r['relation_type']} {r['target_name']}" for r in related[:3]])
                 lines.append(f"  - {ent['name']} ({ent['entity_type']}): {rel_str or 'Indexed'}")
 
+        # Ingest autonomously learned self-training directives (zero-reflection)
+        try:
+            from core.neo_self_training import self_trainer
+            st_ctx = self_trainer.synthesize_self_training_directives()
+            if st_ctx:
+                lines.append(st_ctx)
+        except Exception:
+            pass
+
         return "\n".join(lines)
 
 
