@@ -2469,12 +2469,11 @@ class JarvisLive:
         while True:
             await asyncio.sleep(10)
             _trim_counter += 1
-            if _trim_counter >= 6:  # Every 60s
+            if _trim_counter >= 3:  # Every 30s
                 _trim_counter = 0
                 try:
-                    gc.collect(1)
-                    if _platform.system() == "Windows" and ctypes:
-                        ctypes.windll.psapi.EmptyWorkingSet(ctypes.windll.kernel32.GetCurrentProcess())
+                    from core.memory_optimizer import trim_memory
+                    trim_memory()
                 except Exception:
                     pass
 
@@ -3308,6 +3307,13 @@ def _enforce_single_instance() -> None:
         except socket.error:
             print("[NEO] ⚠️ Another instance of NEO is already running. Exiting.")
             os._exit(0)
+
+    # 3. Start proactive system memory optimizer
+    try:
+        from core.memory_optimizer import memory_trimmer
+        memory_trimmer.start()
+    except Exception:
+        pass
 
 def main():
     import signal

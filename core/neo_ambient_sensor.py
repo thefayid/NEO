@@ -200,6 +200,8 @@ class NEOAmbientSensor(QObject):
                     "timestamp": time.time(),
                 }
                 self._recent_errors.append(err_record)
+                if len(self._recent_errors) > 20:
+                    self._recent_errors = self._recent_errors[-20:]
                 self.error_detected.emit(kw.upper(), title[:80])
                 break
 
@@ -242,6 +244,8 @@ class NEOAmbientSensor(QObject):
                     "title": text.splitlines()[-1][:80] if text.splitlines() else "Traceback",
                     "timestamp": time.time(),
                 })
+                if len(self._recent_errors) > 20:
+                    self._recent_errors = self._recent_errors[-20:]
                 self.error_detected.emit("STACK_TRACE", text[:120])
             elif text.startswith("pip install ") or text.startswith("npm i ") or text.startswith("npm install "):
                 content_type = "package_install"

@@ -4989,66 +4989,25 @@ class MainWindow(QMainWindow):
 
         self._chat_container = self._build_chat_container()
 
-        self.tasks_view = NeoTasksView()
-        self.tasks_view.task_action_triggered.connect(self._on_task_action_triggered)
-
-        self.notes_view = NeoNotesView()
-        self.notes_view.note_saved.connect(self._on_hero_command)
-        if hasattr(self.notes_view, "note_action_triggered"):
-            self.notes_view.note_action_triggered.connect(self._on_task_action_triggered)
-
-        self.projects_view = NeoProjectsView()
-        self.projects_view.file_open_requested.connect(self._on_file_selected)
-        if hasattr(self.projects_view, "project_action_triggered"):
-            self.projects_view.project_action_triggered.connect(self._on_task_action_triggered)
-
-        self.knowledge_view = NeoKnowledgeView()
-        self.knowledge_view.search_triggered.connect(self._on_hero_command)
-        if hasattr(self.knowledge_view, "knowledge_action_triggered"):
-            self.knowledge_view.knowledge_action_triggered.connect(self._on_task_action_triggered)
-
-        # ── Specialized Autonomous Studios ────────────────────────────────────
-        self.files_view = NeoFilesView()
-        self.files_view.task_action_triggered.connect(self._on_task_action_triggered)
-        self.files_view.search_triggered.connect(self._on_hero_command)
-
-        self.sentinel_hub = NeoSentinelHub()
-        self.sentinel_hub.action_requested.connect(self._on_hero_command)
-
-        self.terminal_studio = NeoTerminalStudio()
-        self.terminal_studio.diagnose_requested.connect(
-            lambda cmd, err: self._on_hero_command(f"Diagnose and provide the terminal fix for this command: '{cmd}'. Error received: {err}")
-        )
-
-        self.swarm_studio = NeoSwarmStudio()
-        self.swarm_studio.task_sync_requested.connect(self._on_task_action_triggered)
-
-        self.vision_studio = NeoVisionSpatialStudio()
-        self.vision_studio.command_requested.connect(self._on_hero_command)
-
-        from core.macos_gallery import MacOSComponentGallery
-        self.gallery_view = MacOSComponentGallery()
-
-        from core.macos_settings_view import MacOSSettingsView
-        self.settings_view = MacOSSettingsView()
+        # Lazy Studio Views — Instantiated on-demand to save >100MB RAM
+        self.tasks_view = None
+        self.notes_view = None
+        self.projects_view = None
+        self.knowledge_view = None
+        self.files_view = None
+        self.sentinel_hub = None
+        self.terminal_studio = None
+        self.swarm_studio = None
+        self.vision_studio = None
+        self.gallery_view = None
+        self.settings_view = None
 
         self._hud_cam_stack = QStackedWidget()
-        self._hud_cam_stack.addWidget(self.hero_stage)        # Index 0: Hero
-        self._hud_cam_stack.addWidget(self._chat_container)   # Index 1: Chat
-        self._hud_cam_stack.addWidget(self.tasks_view)        # Index 2: Tasks
-        self._hud_cam_stack.addWidget(self.notes_view)        # Index 3: Notes
-        self._hud_cam_stack.addWidget(self.projects_view)     # Index 4: Projects
-        self._hud_cam_stack.addWidget(self.knowledge_view)    # Index 5: Knowledge
-        self._hud_cam_stack.addWidget(self.files_view)        # Index 6: Files
-        self._hud_cam_stack.addWidget(self.sentinel_hub)      # Index 7: Sentinels
-        self._hud_cam_stack.addWidget(self.terminal_studio)   # Index 8: Terminal
-        self._hud_cam_stack.addWidget(self.swarm_studio)      # Index 9: Swarm
-        self._hud_cam_stack.addWidget(self.vision_studio)     # Index 10: Vision
-        self._hud_cam_stack.addWidget(self.gallery_view)      # Index 11: Living Gallery
-        self._hud_cam_stack.addWidget(self.settings_view)     # Index 12: System Settings
-        self._hud_cam_stack.addWidget(self.hud)               # Index 13: Legacy HUD
-        self._hud_cam_stack.addWidget(_cam_cont)              # Index 14: Camera
-        self._hud_cam_stack.addWidget(self._video_cont)       # Index 15: Video
+        self._hud_cam_stack.addWidget(self.hero_stage)        # Primary: Hero
+        self._hud_cam_stack.addWidget(self._chat_container)   # Primary: Chat
+        self._hud_cam_stack.addWidget(self.hud)               # Primary: Legacy HUD
+        self._hud_cam_stack.addWidget(_cam_cont)              # Overlay: Camera
+        self._hud_cam_stack.addWidget(self._video_cont)       # Overlay: Video
 
         self._center_split = QSplitter(Qt.Orientation.Vertical)
         self._center_split.setStyleSheet(f"""
@@ -5218,6 +5177,120 @@ class MainWindow(QMainWindow):
         # Enforce dark graphite theme as pristine default
         set_ui_theme_mode("dark", self)
 
+        # Proactive Process Memory & Working Set Optimizer
+        try:
+            from core.memory_optimizer import memory_trimmer, trim_memory
+            memory_trimmer.start()
+            QTimer.singleShot(1500, trim_memory)
+            self._ram_opt_timer = QTimer(self)
+            self._ram_opt_timer.setInterval(25000)
+            self._ram_opt_timer.timeout.connect(trim_memory)
+            self._ram_opt_timer.start()
+        except Exception:
+            pass
+
+    def _trim_ram(self):
+        try:
+            from core.memory_optimizer import trim_memory
+            trim_memory()
+        except Exception:
+            pass
+
+    def _get_or_create_tasks_view(self):
+        if self.tasks_view is None:
+            from core.neo_ui import NeoTasksView
+            self.tasks_view = NeoTasksView()
+            self.tasks_view.task_action_triggered.connect(self._on_task_action_triggered)
+            self._hud_cam_stack.addWidget(self.tasks_view)
+        return self.tasks_view
+
+    def _get_or_create_notes_view(self):
+        if self.notes_view is None:
+            from core.neo_ui import NeoNotesView
+            self.notes_view = NeoNotesView()
+            self.notes_view.note_saved.connect(self._on_hero_command)
+            if hasattr(self.notes_view, "note_action_triggered"):
+                self.notes_view.note_action_triggered.connect(self._on_task_action_triggered)
+            self._hud_cam_stack.addWidget(self.notes_view)
+        return self.notes_view
+
+    def _get_or_create_projects_view(self):
+        if self.projects_view is None:
+            from core.neo_ui import NeoProjectsView
+            self.projects_view = NeoProjectsView()
+            self.projects_view.file_open_requested.connect(self._on_file_selected)
+            if hasattr(self.projects_view, "project_action_triggered"):
+                self.projects_view.project_action_triggered.connect(self._on_task_action_triggered)
+            self._hud_cam_stack.addWidget(self.projects_view)
+        return self.projects_view
+
+    def _get_or_create_knowledge_view(self):
+        if self.knowledge_view is None:
+            from core.neo_ui import NeoKnowledgeView
+            self.knowledge_view = NeoKnowledgeView()
+            self.knowledge_view.search_triggered.connect(self._on_hero_command)
+            if hasattr(self.knowledge_view, "knowledge_action_triggered"):
+                self.knowledge_view.knowledge_action_triggered.connect(self._on_task_action_triggered)
+            self._hud_cam_stack.addWidget(self.knowledge_view)
+        return self.knowledge_view
+
+    def _get_or_create_files_view(self):
+        if self.files_view is None:
+            from core.neo_files_view import NeoFilesView
+            self.files_view = NeoFilesView()
+            self.files_view.task_action_triggered.connect(self._on_task_action_triggered)
+            self.files_view.search_triggered.connect(self._on_hero_command)
+            self._hud_cam_stack.addWidget(self.files_view)
+        return self.files_view
+
+    def _get_or_create_sentinel_hub(self):
+        if self.sentinel_hub is None:
+            from core.neo_sentinel_hub import NeoSentinelHub
+            self.sentinel_hub = NeoSentinelHub()
+            self.sentinel_hub.action_requested.connect(self._on_hero_command)
+            self._hud_cam_stack.addWidget(self.sentinel_hub)
+        return self.sentinel_hub
+
+    def _get_or_create_terminal_studio(self):
+        if self.terminal_studio is None:
+            from core.neo_terminal_studio import NeoTerminalStudio
+            self.terminal_studio = NeoTerminalStudio()
+            self.terminal_studio.diagnose_requested.connect(
+                lambda cmd, err: self._on_hero_command(f"Diagnose and provide the terminal fix for this command: '{cmd}'. Error received: {err}")
+            )
+            self._hud_cam_stack.addWidget(self.terminal_studio)
+        return self.terminal_studio
+
+    def _get_or_create_swarm_studio(self):
+        if self.swarm_studio is None:
+            from core.neo_swarm_studio import NeoSwarmStudio
+            self.swarm_studio = NeoSwarmStudio()
+            self.swarm_studio.task_sync_requested.connect(self._on_task_action_triggered)
+            self._hud_cam_stack.addWidget(self.swarm_studio)
+        return self.swarm_studio
+
+    def _get_or_create_vision_studio(self):
+        if self.vision_studio is None:
+            from core.neo_vision_studio import NeoVisionSpatialStudio
+            self.vision_studio = NeoVisionSpatialStudio()
+            self.vision_studio.command_requested.connect(self._on_hero_command)
+            self._hud_cam_stack.addWidget(self.vision_studio)
+        return self.vision_studio
+
+    def _get_or_create_gallery_view(self):
+        if self.gallery_view is None:
+            from core.macos_gallery import MacOSComponentGallery
+            self.gallery_view = MacOSComponentGallery()
+            self._hud_cam_stack.addWidget(self.gallery_view)
+        return self.gallery_view
+
+    def _get_or_create_settings_view(self):
+        if self.settings_view is None:
+            from core.macos_settings_view import MacOSSettingsView
+            self.settings_view = MacOSSettingsView()
+            self._hud_cam_stack.addWidget(self.settings_view)
+        return self.settings_view
+
     def _update_window_frame_style(self):
         if not hasattr(self, "_central") or not self._central:
             return
@@ -5304,6 +5377,8 @@ class MainWindow(QMainWindow):
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
             self._update_window_frame_style()
+            if self.isMinimized():
+                self._trim_ram()
         super().changeEvent(event)
 
     def showEvent(self, event):
@@ -5313,6 +5388,7 @@ class MainWindow(QMainWindow):
             apply_macos_vibrancy(int(self.winId()), is_dark=theme.is_dark)
         except Exception:
             pass
+        QTimer.singleShot(1000, self._trim_ram)
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -6102,42 +6178,42 @@ class MainWindow(QMainWindow):
             if hasattr(self, "_hud_cam_stack") and hasattr(self, "_chat_container"):
                 self._hud_cam_stack.setCurrentWidget(self._chat_container)
         elif tab == "Tasks":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "tasks_view"):
-                self._hud_cam_stack.setCurrentWidget(self.tasks_view)
+            w = self._get_or_create_tasks_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Notes":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "notes_view"):
-                self._hud_cam_stack.setCurrentWidget(self.notes_view)
+            w = self._get_or_create_notes_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Projects":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "projects_view"):
-                self._hud_cam_stack.setCurrentWidget(self.projects_view)
+            w = self._get_or_create_projects_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Knowledge":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "knowledge_view"):
-                if hasattr(self.knowledge_view, "refresh_memory"):
-                    self.knowledge_view.refresh_memory()
-                self._hud_cam_stack.setCurrentWidget(self.knowledge_view)
+            w = self._get_or_create_knowledge_view()
+            if hasattr(w, "refresh_memory"):
+                w.refresh_memory()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Files":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "files_view"):
-                self._hud_cam_stack.setCurrentWidget(self.files_view)
+            w = self._get_or_create_files_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Sentinels":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "sentinel_hub"):
-                self._hud_cam_stack.setCurrentWidget(self.sentinel_hub)
+            w = self._get_or_create_sentinel_hub()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Terminal":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "terminal_studio"):
-                self._hud_cam_stack.setCurrentWidget(self.terminal_studio)
-                if hasattr(self.terminal_studio, "cmd_input"):
-                    self.terminal_studio.cmd_input.setFocus()
+            w = self._get_or_create_terminal_studio()
+            self._hud_cam_stack.setCurrentWidget(w)
+            if hasattr(w, "cmd_input"):
+                w.cmd_input.setFocus()
         elif tab == "Swarm":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "swarm_studio"):
-                self._hud_cam_stack.setCurrentWidget(self.swarm_studio)
+            w = self._get_or_create_swarm_studio()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Vision":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "vision_studio"):
-                self._hud_cam_stack.setCurrentWidget(self.vision_studio)
+            w = self._get_or_create_vision_studio()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Gallery":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "gallery_view"):
-                self._hud_cam_stack.setCurrentWidget(self.gallery_view)
+            w = self._get_or_create_gallery_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Settings":
-            if hasattr(self, "_hud_cam_stack") and hasattr(self, "settings_view"):
-                self._hud_cam_stack.setCurrentWidget(self.settings_view)
+            w = self._get_or_create_settings_view()
+            self._hud_cam_stack.setCurrentWidget(w)
         elif tab == "Summarize":
             self._on_hero_command("Summarize my current notifications, active projects, and latest context, Boss")
         elif tab == "Research":
@@ -6150,6 +6226,9 @@ class MainWindow(QMainWindow):
                 self.hero_stage.input_edit.setText("Write Python code for ")
                 self._hud_cam_stack.setCurrentWidget(self.hero_stage)
                 self.hero_stage.input_edit.setFocus()
+
+        # Trigger proactive memory trim after tab transition settles
+        QTimer.singleShot(600, self._trim_ram)
 
     def _on_spotlight_command(self, command_id: str, query: str):
         """Dispatches commands triggered via the Spotlight Command Bar."""
