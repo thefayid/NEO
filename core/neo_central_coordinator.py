@@ -59,6 +59,8 @@ class NEOCentralCore(QObject):
     mobile_event = pyqtSignal(str, str)               # channel, message
     self_healing_event = pyqtSignal(str, str)         # event_type, details
     spatial_vision_event = pyqtSignal(str, str)       # event_type, details
+    deep_reasoning_started = pyqtSignal(str)          # query
+    deep_reasoning_completed = pyqtSignal(str, str, str)  # query, solution, summary
 
     def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent)
@@ -303,6 +305,41 @@ class NEOCentralCore(QObject):
                     self._assistant_ref.interrupt()
                 except Exception:
                     pass
+
+    def dispatch_deep_reasoning(self, query: str, context: str = "") -> Dict[str, str]:
+        """Dispatches complex cognitive problems to Cortex Beta deep thinking ladder."""
+        from core import gemini
+        from core import memory_optimizer
+
+        self.deep_reasoning_started.emit(query)
+        prompt = f"Problem / Architectural Challenge:\n{query}"
+        if context:
+            prompt += f"\n\nContext / Code / Telemetry:\n{context}"
+
+        solution = gemini.deep_reason(prompt, thinking_budget=2048, timeout_ms=45000)
+        if not solution:
+            solution = "Cortex Beta was unable to formulate a solution within the allocated thinking budget."
+
+        # Fast executive summary for Cortex Alpha voice reflex
+        summ_prompt = (
+            f"You are Cortex Alpha summarizing a deep reasoning result for the user in 1 or 2 crisp sentences.\n"
+            f"Original query: {query}\n"
+            f"Full Solution: {solution[:1200]}\n"
+            f"Provide only the executive takeaway to speak to the user. No markdown, no filler."
+        )
+        summary = gemini.text(summ_prompt, tier=gemini.FAST, timeout_ms=10000)
+        if not summary:
+            summary = "I have reasoned through the problem and projected the step-by-step breakdown onto your display."
+
+        self.deep_reasoning_completed.emit(query, solution, summary)
+
+        # Free working set memory after heavy reasoning
+        try:
+            memory_optimizer.trim_memory()
+        except Exception:
+            pass
+
+        return {"query": query, "solution": solution, "summary": summary}
 
     def get_full_telemetry_snapshot(self) -> Dict[str, Any]:
         """Returns unified telemetry across all 4 pillars and host system."""

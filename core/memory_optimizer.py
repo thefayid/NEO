@@ -124,3 +124,4 @@ class BackgroundMemoryTrimmer:
 
 # Global shared singleton
 memory_trimmer = BackgroundMemoryTrimmer(interval_seconds=30)
+

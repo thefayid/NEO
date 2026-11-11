@@ -83,6 +83,7 @@ _KEY_FILE = _BASE / "config" / "api_keys.json"
 FAST = "fast"      # short classification, extraction, one-line decisions
 SMART = "smart"    # reasoning, generation, long documents, images
 SEARCH = "search"  # grounded search — REST only, see below
+DEEP = "deep"      # Cortex Beta: multi-step deep reasoning with thinking budget
 
 # A rung that means "ask the Live model instead", through a short throwaway
 # session rather than the REST text API.
@@ -167,8 +168,12 @@ _LADDERS = {
     # Grounded search needs response.candidates[...].grounding_metadata, which a
     # Live turn does not produce. REST only, and it says so rather than silently
     # returning an answer with no sources behind it.
-    SEARCH: ("gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-flash-lite",
-             "gemini-flash-latest"),
+    SEARCH: ("gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash",
+             "gemini-2.5-flash-lite", "gemini-flash-latest"),
+    # Cortex Beta: Deep reasoning ladder using thinking budget (1024-4096 tokens).
+    # REST-only since thinking tokens are not supported on standard Live turns.
+    DEEP: ("gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite",
+           "gemini-flash-lite-latest"),
 }
 
 # The conversation's own model, and ONE careful fallback behind it.
@@ -680,7 +685,8 @@ def _provider_call(model: str, contents, config, timeout_ms: int):
 
 
 def call(contents, tier: str = FAST, config=None,
-         timeout_ms: int = DEFAULT_TIMEOUT_MS, key: str = ""):
+         timeout_ms: int = DEFAULT_TIMEOUT_MS, key: str = "",
+         thinking_budget: int = 0):
     """Run one generation, walking the ladder until one answers.
 
     Returns the SDK's own response object, so callers that need more than the
@@ -689,6 +695,29 @@ def call(contents, tier: str = FAST, config=None,
     a silent None during a session nobody can debug is how the original problem
     stayed hidden.
     """
+    if tier == DEEP:
+        if timeout_ms == DEFAULT_TIMEOUT_MS:
+            timeout_ms = 35_000
+        if thinking_budget <= 0:
+            thinking_budget = 2048
+
+    if thinking_budget > 0:
+        if config is None:
+            try:
+                from google.genai import types as gtypes
+                config = gtypes.GenerateContentConfig(
+                    thinking_config=gtypes.ThinkingConfig(thinking_budget=thinking_budget),
+                    http_options={"timeout": timeout_ms}
+                )
+            except Exception:
+                pass
+        elif hasattr(config, "thinking_config") and config.thinking_config is None:
+            try:
+                from google.genai import types as gtypes
+                config.thinking_config = gtypes.ThinkingConfig(thinking_budget=thinking_budget)
+            except Exception:
+                pass
+
     # `tier` is normally FAST or SMART. Anything else is taken to be an explicit
     # model name — screen_agent lets the user pick one in its settings — and it
     # is tried first, with the reasoning ladder behind it. So a user's choice is
@@ -764,13 +793,25 @@ def call(contents, tier: str = FAST, config=None,
 
 
 def text(contents, tier: str = FAST, config=None,
-         timeout_ms: int = DEFAULT_TIMEOUT_MS, key: str = "", default: str = "") -> str:
+         timeout_ms: int = DEFAULT_TIMEOUT_MS, key: str = "", default: str = "",
+         thinking_budget: int = 0) -> str:
     """`call`, reduced to the reply text. `default` when nothing answered."""
     resp = call(contents, tier=tier, config=config,
-                timeout_ms=timeout_ms, key=key)
+                timeout_ms=timeout_ms, key=key, thinking_budget=thinking_budget)
     if resp is None:
         return default
     return (getattr(resp, "text", None) or "").strip() or default
+
+
+def deep_reason(contents, thinking_budget: int = 2048, timeout_ms: int = 35_000,
+                key: str = "", default: str = "") -> str:
+    """Cortex Beta: executes deep cognitive reasoning with a dedicated thinking budget.
+    
+    Routes through the DEEP ladder (Gemini thinking models) and returns
+    full synthesized reasoning, step-by-step proofs, and architectural solutions.
+    """
+    return text(contents, tier=DEEP, thinking_budget=thinking_budget,
+                timeout_ms=timeout_ms, key=key, default=default)
 
 
 def multimodal(prompt: str, image_bytes: bytes, mime: str = "image/png",

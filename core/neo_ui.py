@@ -583,7 +583,7 @@ class FocusSessionWidget(QFrame):
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setContentsMargins(12, 10, 12, 10)
         lay.setSpacing(3)
 
         hdr = QHBoxLayout()
@@ -591,7 +591,7 @@ class FocusSessionWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Focus Session")
-        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(11, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -684,7 +684,7 @@ class SystemStatusWidget(QFrame):
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setContentsMargins(12, 10, 12, 10)
         lay.setSpacing(6)
 
         hdr = QHBoxLayout()
@@ -692,7 +692,7 @@ class SystemStatusWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("System Status")
-        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(11, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -795,7 +795,7 @@ class VoiceTelemetryWidget(QFrame):
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setContentsMargins(12, 10, 12, 10)
         lay.setSpacing(6)
 
         # Header
@@ -804,7 +804,7 @@ class VoiceTelemetryWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Voice & Live Engine")
-        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(11, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -1256,7 +1256,7 @@ class UpcomingScheduleWidget(QFrame):
         self.setObjectName("UpcomingScheduleWidget")
 
         self.root_lay = QVBoxLayout(self)
-        self.root_lay.setContentsMargins(14, 10, 14, 10)
+        self.root_lay.setContentsMargins(12, 10, 12, 10)
         self.root_lay.setSpacing(6)
 
         # 1. Header
@@ -1266,7 +1266,7 @@ class UpcomingScheduleWidget(QFrame):
         icn.setFont(QFont("Segoe UI", 12))
         hdr.addWidget(icn)
         hdr_txt = QLabel("Upcoming")
-        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(11, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
 
@@ -1622,7 +1622,7 @@ class MediaTransportWidget(QFrame):
             }}
         """)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(14, 10, 14, 10)
+        lay.setContentsMargins(12, 10, 12, 10)
         lay.setSpacing(4)
 
         hdr = QHBoxLayout()
@@ -1631,7 +1631,7 @@ class MediaTransportWidget(QFrame):
         icn.setStyleSheet("color: #1ed760; border: none; background: transparent;")
         hdr.addWidget(icn)
         hdr_txt = QLabel("Media Transport")
-        hdr_txt.setFont(font_display(12, QFont.Weight.Bold))
+        hdr_txt.setFont(font_display(11, QFont.Weight.Bold))
         hdr_txt.setStyleSheet(f"color: {TEXT_WHITE}; border: none; background: transparent;")
         hdr.addWidget(hdr_txt)
         hdr.addStretch()
@@ -1753,9 +1753,9 @@ class NeoWidgetsSidebar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setMinimumWidth(260)
+        self.setMinimumWidth(280)
         self.setMaximumWidth(380)
-        self.setFixedWidth(295)
+        self.setFixedWidth(312)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
         vbox = QVBoxLayout(self)
