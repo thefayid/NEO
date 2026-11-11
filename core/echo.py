@@ -84,12 +84,12 @@ _HEAD_MULT = 1.15     # ...with this much headroom above it
 # so a level test can never be passed. Time can: echo wobbles around its median
 # while a person talking holds above it, so such rooms hold the evidence longer.
 _UNRELIABLE_FLOOR = 0.22
-_BLOCKS_NORMAL = 5    # ~320 ms of sustained evidence
-_BLOCKS_NOISY = 12    # ~770 ms when the room is this hard
+_BLOCKS_NORMAL = 3    # ~150-180 ms of sustained evidence
+_BLOCKS_NOISY = 6     # ~300-360 ms when the room is noisy
 
 _FLOOR_WINDOW = 60    # blocks kept to characterise the room's echo
 _FLOOR_Q = 35         # percentile taken as "typical echo here"
-_WARMUP = 16          # blocks (~1 s) of listening before judging anyone
+_WARMUP = 6           # blocks (~300 ms) of listening before judging anyone
 _RELEARN_RUN = 28     # a 'voice' lasting this long means the room changed
 
 
@@ -265,9 +265,9 @@ class EchoGuard:
                     self._residuals.clear()
                     self._run = 0
                     return False
-                return True
+                return self._run >= self.required_blocks
 
-            self._run = 0
+            self._run = max(0, self._run - 1)
             self._residuals.append(best_res)
             if len(self._residuals) > _FLOOR_WINDOW:
                 del self._residuals[:-_FLOOR_WINDOW]
@@ -286,3 +286,43 @@ class EchoGuard:
             return False
         except Exception:
             return False      # any doubt: do not interrupt
+
+    def check_vocal_barge_in(
+        self,
+        pcm,
+        sr: int,
+        level: float,
+        when: float | None = None,
+    ) -> bool:
+        """
+        Evaluates whether the microphone signal contains intentional user speech
+        interrupting the assistant mid-sentence.
+
+        Returns True ONLY when sustained, non-echo user speech has been confirmed
+        for consecutive required_blocks.
+        Upon returning True, automatically resets consecutive run counter so a single
+        utterance triggers exactly once.
+        """
+        if level < max(_MIN_LEVEL, 0.04):
+            self._run = max(0, self._run - 1)
+            return False
+
+        is_speech = self.is_user_speech(pcm, sr, level, when)
+        if is_speech:
+            self._run = 0  # reset so we don't trigger repeatedly in subsequent frames
+            return True
+        return False
+
+    def set_sensitivity(self, mode: str = "balanced") -> None:
+        """Configures barge-in sensitivity ('high', 'balanced', 'low')."""
+        global _BLOCKS_NORMAL, _MIN_USER
+        if mode == "high":
+            _BLOCKS_NORMAL = 2
+            _MIN_USER = 0.03
+        elif mode == "low":
+            _BLOCKS_NORMAL = 5
+            _MIN_USER = 0.06
+        else:  # balanced
+            _BLOCKS_NORMAL = 3
+            _MIN_USER = 0.04
+

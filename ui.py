@@ -4754,6 +4754,8 @@ class MainWindow(QMainWindow):
     _quiz_hide_sig  = pyqtSignal()
     _review_sig     = pyqtSignal(str, str, object, object)  # document review payload
     _tool_sig       = pyqtSignal(str)        # active tool execution badge trigger
+    _chips_sig      = pyqtSignal(list)       # proactive smart affordance chips (thread-safe)
+    _toast_sig      = pyqtSignal(str, str, str)  # proactive toast notification (title, msg, variant)
 
     def __init__(self, face_path: str):
         super().__init__()
@@ -5077,6 +5079,8 @@ class MainWindow(QMainWindow):
         self._quiz_hide_sig.connect(self._hide_quiz)
         self._review_sig.connect(self._show_review)
         self._tool_sig.connect(self._apply_tool_execution)
+        self._chips_sig.connect(self._apply_proactive_chips)
+        self._toast_sig.connect(self._apply_proactive_toast)
         self._cam_stop = threading.Event()
 
         # Camera preview overlay (child of central widget, positioned in resizeEvent)
@@ -5085,12 +5089,24 @@ class MainWindow(QMainWindow):
         # Subagent Swarm floating micro-cards overlay (top-left of HUD area)
         self._swarm_cards = SwarmCardsOverlay(self.centralWidget())
 
-        # Desktop Floating Voice Capsule (stays on desktop when minimized or via F9)
+        # Desktop Floating Dynamic Island Capsule (stays on desktop when minimized or via F9)
         from core.floating_island import NeoFloatingIsland
         self._floating_island = NeoFloatingIsland(None)
         self._floating_island.restore_requested.connect(self._restore_from_floating_island)
         self._floating_island.mic_toggled.connect(self._toggle_mute)
+        self._floating_island.command_submitted.connect(self._on_spotlight_command)
+        self._floating_island.lens_requested.connect(self._toggle_screen_lens)
+        self._floating_island.chip_action_requested.connect(self._on_spotlight_command)
         self._floating_island.hide()
+
+        # Omnipresent Screen Lens HUD Overlay (F10 or Ctrl+Shift+L)
+        from core.neo_screen_lens import get_screen_lens
+        self._screen_lens = get_screen_lens(None)
+        self._screen_lens.speak_requested.connect(lambda txt: self.speak_text(txt) if hasattr(self, "speak_text") else None)
+        sc_lens_f10 = QShortcut(QKeySequence("F10"), self)
+        sc_lens_f10.activated.connect(self._toggle_screen_lens)
+        sc_lens_chord = QShortcut(QKeySequence("Ctrl+Shift+L"), self)
+        sc_lens_chord.activated.connect(self._toggle_screen_lens)
 
         # Clipboard panel (child of central widget, bottom-center)
         self._clipboard_panel = ClipboardPanel(self.centralWidget())
@@ -5154,13 +5170,12 @@ class MainWindow(QMainWindow):
             central_core.gesture_event.connect(
                 lambda gest, ts: self.write_log(f"GESTURE DETECTED: {gest}") if hasattr(self, "write_log") else None
             )
-            # Proactive smart affordance chips
-            precognitive_engine.chips_updated.connect(
-                lambda opps: self.hero_stage.smart_chips.set_opportunities(opps)
-                if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "smart_chips") else None
+            # Proactive smart affordance chips (thread-safe routed to GUI main thread)
+            precognitive_engine.chips_updated.connect(lambda opps: self._chips_sig.emit(opps))
+            # Proactive macOS Notification Center toasts (thread-safe routed to GUI main thread)
+            precognitive_engine.toast_requested.connect(
+                lambda t, m, v="primary": self._toast_sig.emit(str(t), str(m), str(v))
             )
-            # Proactive macOS Notification Center toasts
-            precognitive_engine.toast_requested.connect(self._on_proactive_toast)
             # Superhuman Frontiers event wiring
             central_core.swarm_event.connect(
                 lambda mid, role, msg: self.write_log(f"SWARM [{mid[:8]}] {role}: {msg[:60]}") if hasattr(self, "write_log") else None
@@ -8291,6 +8306,8 @@ class MainWindow(QMainWindow):
         self.hud.speaking = (state == "SPEAKING")
         if hasattr(self, "hero_stage") and self.hero_stage is not None:
             self.hero_stage.set_state(state)
+        if hasattr(self, "_floating_island") and self._floating_island is not None:
+            self._floating_island.set_state(state)
 
     def _apply_tool_execution(self, tool_name: str):
         self.hud.active_tool = str(tool_name or "")
@@ -8301,6 +8318,26 @@ class MainWindow(QMainWindow):
         if hasattr(self, "_log") and self._log is not None:
             if hasattr(self._log, "add_tool_execution"):
                 self._log.add_tool_execution(tool_name)
+
+    def _apply_proactive_chips(self, opps: list):
+        """Thread-safe GUI slot: update proactive smart affordance chips on Main GUI thread."""
+        try:
+            if hasattr(self, "hero_stage") and hasattr(self.hero_stage, "smart_chips"):
+                self.hero_stage.smart_chips.set_opportunities(opps)
+            if hasattr(self, "_floating_island") and self._floating_island is not None:
+                if opps:
+                    top = opps[0]
+                    title = top.get("title", "") if isinstance(top, dict) else getattr(top, "title", str(top))
+                    payload = top.get("payload", title) if isinstance(top, dict) else getattr(top, "payload", title)
+                    self._floating_island.set_proactive_chip(title, payload)
+                else:
+                    self._floating_island.set_proactive_chip("")
+        except Exception:
+            pass
+
+    def _apply_proactive_toast(self, title: str, message: str, variant: str = "primary"):
+        """Thread-safe GUI slot: display macOS toast on Main GUI thread."""
+        self._on_proactive_toast(title, message, variant=variant)
 
     def _check_config(self) -> bool:
         if not API_FILE.exists(): return False
@@ -8398,6 +8435,10 @@ class MainWindow(QMainWindow):
             play_hud_boot()
         except Exception:
             pass
+
+    def _toggle_screen_lens(self):
+        if hasattr(self, "_screen_lens") and self._screen_lens is not None:
+            self._screen_lens.toggle()
 
     def _toggle_floating_island(self):
         if hasattr(self, "_floating_island"):
@@ -8578,6 +8619,8 @@ class JarvisUI:
             self._win.hud.set_audio_level(level)
             if hasattr(self._win, "hero_stage"):
                 self._win.hero_stage.set_audio_level(level)
+            if hasattr(self._win, "_floating_island") and self._win._floating_island is not None:
+                self._win._floating_island.set_audio_level(level)
         except Exception:
             pass
 
@@ -8637,12 +8680,10 @@ class JarvisUI:
         self._win._log_sig.emit(text)
         try:
             if text.startswith("You: "):
-                if hasattr(self._win, "hero_stage") and self._win.hero_stage is not None:
-                    self._win.hero_stage.set_speech("user", text[5:].strip())
+                self._win._speech_sig.emit("user", text[5:].strip())
             elif ": " in text and not text.startswith("SYS:") and not text.startswith("ERR:"):
                 spk, val = text.split(": ", 1)
-                if hasattr(self._win, "hero_stage") and self._win.hero_stage is not None:
-                    self._win.hero_stage.set_speech(spk, val.strip())
+                self._win._speech_sig.emit(spk, val.strip())
         except Exception:
             pass
 

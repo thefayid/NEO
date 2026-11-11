@@ -714,6 +714,8 @@ class JarvisLive:
         self._ptt                  = None    # core.hotkey.PushToTalk
         self._out_level            = 0.0     # level of the audio being played right now
         self._echo                 = EchoGuard()
+        self._voice_barge_in_enabled = True   # Hands-free vocal interruption of assistant speech
+        self._barge_in_cooldown_until = 0.0   # monotonic cooldown deadline after vocal barge-in
         # `stream.write()` returns when the buffer accepts the audio, not when the
         # speaker has finished with it, so sound is still in the room after the
         # speaking flag drops. Streaming the microphone during that gap is how an
@@ -1796,13 +1798,26 @@ class JarvisLive:
                 self.set_speaking(False)
                 jarvis_speaking = False
 
-            # ── While Assistant Speaks ───────────────────────────────────────
-            # Do NOT interrupt on microphone noise. When NEO is speaking, sound coming out
-            # of your laptop speakers easily leaks back into the microphone, creating an
-            # acoustic feedback loop that triggers false interrupts ("Interrupted - listening...").
-            # The assistant speaks continuously without interrupting itself.
-            # To interrupt intentionally, tap [ESC] or the red [ABORT SPEECH] button.
+            # ── While Assistant Speaks: Adaptive Neural Vocal Barge-In ────────
+            # Allows the user to interrupt the assistant mid-speech hands-free.
+            # EchoGuard projects and cancels speaker audio reflections from the mic.
+            # If the user speaks over the assistant with sustained vocal formants,
+            # we execute an immediate vocal interrupt without requiring [ESC].
             if jarvis_speaking:
+                if getattr(self, "_voice_barge_in_enabled", True) and not self.ui.muted:
+                    now = time.monotonic()
+                    # 350ms stabilization grace period from speech onset
+                    if (now - speaking_since > 0.35) and (now > getattr(self, "_barge_in_cooldown_until", 0.0)):
+                        lvl = _pcm_level(indata)
+                        if lvl >= 0.045:
+                            if self._echo.check_vocal_barge_in(indata, SEND_SAMPLE_RATE, lvl, when=now):
+                                self._barge_in_cooldown_until = now + 1.2
+                                print("[JARVIS] 🎙️ Vocal Barge-In confirmed — interrupting speech hands-free!")
+                                self.interrupt()
+                                try:
+                                    self.ui.write_log("🎙️ Vocal Barge-In: Interrupted — listening to Boss...")
+                                except Exception:
+                                    pass
                 return
 
             # ── Echo tail ────────────────────────────────────────────────────

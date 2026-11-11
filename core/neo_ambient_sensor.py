@@ -61,23 +61,49 @@ class NEOAmbientSensor(QObject):
         # Win32 Helpers
         self._is_windows = sys.platform.startswith("win")
 
-        # Timer for polling
-        self._timer = QTimer(self)
-        self._timer.setInterval(self._sample_interval_ms)
-        self._timer.timeout.connect(self._on_tick)
+        # Background Polling State
+        self._stop_event = threading.Event()
+        self._worker_thread: Optional[threading.Thread] = None
 
     def start(self) -> None:
-        """Starts ambient sensory sampling."""
+        """Starts ambient sensory sampling on a dedicated background worker."""
         if not self._is_running:
             self._is_running = True
-            self._timer.start()
-            # Perform initial synchronous scan
-            self._on_tick()
+            self._stop_event.clear()
+            self._worker_thread = threading.Thread(
+                target=self._run_sampling_loop,
+                daemon=True,
+                name="neo-ambient-sampler",
+            )
+            self._worker_thread.start()
 
     def stop(self) -> None:
         """Stops ambient sensory sampling."""
         self._is_running = False
-        self._timer.stop()
+        self._stop_event.set()
+
+    def _run_sampling_loop(self) -> None:
+        """Continuous background sampling loop using threading.Event."""
+        self._do_sample()
+        while self._is_running and not self._stop_event.is_set():
+            if self._stop_event.wait(self._sample_interval_ms / 1000.0):
+                break
+            self._do_sample()
+
+    def _do_sample(self) -> None:
+        """Performs a single telemetry snapshot pass with reentrancy protection."""
+        if getattr(self, "_sampling_in_progress", False):
+            return
+        self._sampling_in_progress = True
+        try:
+            snap = self._collect_snapshot()
+            with self._lock:
+                self._last_snapshot = snap
+            self.telemetry_updated.emit(snap)
+        except Exception:
+            pass
+        finally:
+            self._sampling_in_progress = False
 
     def record_user_input(self) -> None:
         """Called whenever the user types or clicks inside the UI."""
@@ -102,23 +128,8 @@ class NEOAmbientSensor(QObject):
     # ─────────────────────────────────────────────────────────────────────────
 
     def _on_tick(self) -> None:
-        """Background tick sampling all OS sensors in a single worker thread."""
-        if getattr(self, "_sampling_in_progress", False):
-            return
-        self._sampling_in_progress = True
-
-        def _worker():
-            try:
-                snap = self._collect_snapshot()
-                with self._lock:
-                    self._last_snapshot = snap
-                self.telemetry_updated.emit(snap)
-            except Exception as e:
-                pass
-            finally:
-                self._sampling_in_progress = False
-
-        threading.Thread(target=_worker, daemon=True, name="neo-ambient-sampler").start()
+        """Tick sampling OS sensors (backward compatible)."""
+        self._do_sample()
 
     def _collect_snapshot(self) -> Dict[str, Any]:
         """Collects full multi-sensor ambient state."""
@@ -223,14 +234,20 @@ class NEOAmbientSensor(QObject):
 
         try:
             import win32clipboard
-            win32clipboard.OpenClipboard()
+            try:
+                win32clipboard.OpenClipboard()
+            except Exception:
+                return {"type": "unchanged", "content": ""}
             try:
                 if win32clipboard.IsClipboardFormatAvailable(win32clipboard.CF_UNICODETEXT):
                     text = win32clipboard.GetClipboardData(win32clipboard.CF_UNICODETEXT)
                 else:
                     text = ""
             finally:
-                win32clipboard.CloseClipboard()
+                try:
+                    win32clipboard.CloseClipboard()
+                except Exception:
+                    pass
 
             text = (text or "").strip()
             if not text or text == self._last_clipboard_text:
@@ -299,9 +316,11 @@ class NEOAmbientSensor(QObject):
         branch = "main"
         modified_files: List[str] = []
         try:
+            cflags = 0x08000000 if sys.platform.startswith("win") else 0
             res = subprocess.run(
                 ["git", "status", "--porcelain", "-b"],
                 capture_output=True, text=True, timeout=1.8, cwd=proj_dir,
+                creationflags=cflags,
             )
             lines = res.stdout.strip().splitlines()
             if lines:

@@ -749,15 +749,38 @@ def _hwnds_for(pid: int) -> list[int]:
         from ctypes import wintypes
 
         user32 = ctypes.WinDLL("user32", use_last_error=True)
+
+        # Attach interactive desktop window station so EnumWindows succeeds across threads
+        hwinsta = user32.OpenWindowStationW("WinSta0", False, 0x0000037F)
+        if hwinsta:
+            user32.SetProcessWindowStation(hwinsta)
+            hdesk = user32.OpenDesktopW("Default", 0, False, 0x01FF)
+            if hdesk:
+                user32.SetThreadDesktop(hdesk)
+
         found: list[int] = []
         WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND,
                                          wintypes.LPARAM)
 
+        _IGNORE_CLASSES = {
+            "IME", "MSCTFIME UI", "Default IME", "WorkerW",
+            "Shell_TrayWnd", "Progman",
+        }
+
         def _collect(hwnd, _lparam):
-            if user32.IsWindowVisible(hwnd):
-                owner = wintypes.DWORD()
-                user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
-                if int(owner.value) == pid:
+            owner = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
+            if int(owner.value) == pid:
+                cls_buff = ctypes.create_unicode_buffer(256)
+                user32.GetClassNameW(hwnd, cls_buff, 256)
+                cls_name = cls_buff.value
+                if cls_name in _IGNORE_CLASSES or cls_name.startswith(".NET") or "NotifyIcon" in cls_name:
+                    return True
+
+                # Include windows that are visible, iconic, or modern WinUI/UWP parked windows
+                if user32.IsWindowVisible(hwnd) or user32.IsIconic(hwnd) or "WinUI" in cls_name or "ApplicationFrameWindow" in cls_name:
+                    found.append(int(hwnd))
+                elif cls_name:
                     found.append(int(hwnd))
             return True
 
@@ -797,42 +820,38 @@ def focus(match: "Match") -> bool:
             user32 = ctypes.WinDLL("user32", use_last_error=True)
             kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
             SW_RESTORE = 9
+            SW_SHOW = 5
 
             # WINDOWS REFUSES TO LET A BACKGROUND PROCESS STEAL FOCUS.
-            #
-            # SetForegroundWindow only succeeds when the calling process
-            # already owns the foreground — a rule that exists so a background
-            # program cannot yank the screen away mid-sentence. It is also
-            # exactly our situation: the user says "open WhatsApp" while
-            # working in something else, so the assistant is NOT in front and
-            # the call is refused. Seen directly in testing — the same code
-            # succeeded twelve times in a row with the HUD in front, and failed
-            # every time with another window focused.
-            #
-            # The documented way through is to borrow the foreground thread's
-            # input queue for the length of the call: while two threads share
-            # one queue, Windows treats them as the same context and allows the
-            # change. Attach, raise, detach.
+            # Attach input queues to foreground and target threads, restore,
+            # pop topmost to shake off minimized park rect, and raise to front.
             def _raise(hwnd) -> bool:
-                if user32.IsIconic(hwnd):
-                    user32.ShowWindow(hwnd, SW_RESTORE)
-                if user32.SetForegroundWindow(hwnd):
-                    return True
-
                 fore = user32.GetForegroundWindow()
-                if not fore:
-                    return False
-                their = user32.GetWindowThreadProcessId(fore, None)
+                fore_tid = user32.GetWindowThreadProcessId(fore, None) if fore else 0
+                target_tid = user32.GetWindowThreadProcessId(hwnd, None)
                 ours = kernel32.GetCurrentThreadId()
-                if their == ours:
-                    return False
-                if not user32.AttachThreadInput(ours, their, True):
-                    return False
+
+                attached_fore = False
+                attached_target = False
+                if fore_tid and ours != fore_tid:
+                    attached_fore = bool(user32.AttachThreadInput(ours, fore_tid, True))
+                if target_tid and ours != target_tid:
+                    attached_target = bool(user32.AttachThreadInput(ours, target_tid, True))
+
                 try:
+                    if user32.IsIconic(hwnd):
+                        user32.ShowWindow(hwnd, SW_RESTORE)
+                    user32.ShowWindow(hwnd, SW_SHOW)
+                    # Shake off minimized park coordinates (-25600, -25600)
+                    user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)
+                    user32.SetWindowPos(hwnd, -2, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)
                     user32.BringWindowToTop(hwnd)
                     return bool(user32.SetForegroundWindow(hwnd))
                 finally:
-                    user32.AttachThreadInput(ours, their, False)
+                    if attached_fore:
+                        user32.AttachThreadInput(ours, fore_tid, False)
+                    if attached_target:
+                        user32.AttachThreadInput(ours, target_tid, False)
 
             for hwnd in hwnds:
                 if _raise(hwnd):

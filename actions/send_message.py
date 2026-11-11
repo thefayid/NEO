@@ -338,7 +338,30 @@ def _desktop_send(app_name: str, receiver: str, message: str, media_path: str = 
 
 # ── WhatsApp Direct Dispatcher ───────────────────────────────────────────────
 
+def _ensure_whatsapp_focused() -> Optional[int]:
+    """Ensures WhatsApp is running, restored from minimized/tray state, and raised to foreground."""
+    try:
+        from core import appidentity
+        matches = appidentity.running("WhatsApp")
+        if not matches and platform.system() == "Windows":
+            os.startfile("whatsapp:")
+            time.sleep(2.0)
+            matches = appidentity.running("WhatsApp")
+        if matches:
+            appidentity.focus(matches[0])
+            hwnds = appidentity._hwnds_for(matches[0].pid)
+            if hwnds:
+                return hwnds[0]
+    except Exception as exc:
+        print(f"[WhatsApp] Focus notice: {exc}")
+    return None
+
+
 def _send_whatsapp(receiver: str, message: str, media_path: str = "") -> str:
+    # If no message and no media, user wants to inspect/read the chat!
+    if not message and not media_path:
+        return _read_whatsapp_chat(receiver)
+
     contact = _resolve_contact(receiver)
     phone = contact.get("phone", "")
     url_msg = urllib.parse.quote(message) if message else ""
@@ -452,70 +475,20 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
     target_name = contact.get("name") or receiver or ""
     phone = contact.get("phone", "")
 
-    # Ensure desktop window station is attached on Windows
-    if platform.system() == "Windows":
-        try:
-            import ctypes
-            hwinsta = ctypes.windll.user32.OpenWindowStationW("WinSta0", False, 0x0000037F)
-            if hwinsta:
-                ctypes.windll.user32.SetProcessWindowStation(hwinsta)
-                hdesk = ctypes.windll.user32.OpenDesktopW("Default", 0, False, 0x01FF)
-                if hdesk:
-                    ctypes.windll.user32.SetThreadDesktop(hdesk)
-        except Exception:
-            pass
+    # 1. Bring WhatsApp window to front (restored from minimized or tray)
+    wa_hwnd = _ensure_whatsapp_focused()
+    time.sleep(0.4)
 
-    # 1. Bring WhatsApp window to front
-    wa_opened = False
+    # 2. If a phone number exists, launch direct chat URI if not already open
     if phone and platform.system() == "Windows":
         try:
             os.startfile(f"whatsapp://send?phone={phone}")
-            wa_opened = True
             time.sleep(1.2)
+            _ensure_whatsapp_focused()
         except Exception:
             pass
-
-    if not wa_opened:
-        try:
-            import win32gui
-            import ctypes
-            wa_hwnd = None
-            def _find_wa(hwnd, extra):
-                nonlocal wa_hwnd
-                t = win32gui.GetWindowText(hwnd)
-                c = win32gui.GetClassName(hwnd)
-                if ("whatsapp" in t.lower() or "winui" in c.lower()) and "whatsapp" in t.lower():
-                    wa_hwnd = hwnd
-                return True
-            win32gui.EnumWindows(_find_wa, None)
-            if wa_hwnd:
-                user32 = ctypes.windll.user32
-                user32.ShowWindow(wa_hwnd, 9)  # SW_RESTORE
-                fg = user32.GetForegroundWindow()
-                if fg != wa_hwnd:
-                    fg_tid = user32.GetWindowThreadProcessId(fg, None)
-                    cur_tid = ctypes.windll.kernel32.GetCurrentThreadId()
-                    user32.AttachThreadInput(cur_tid, fg_tid, True)
-                    user32.SetForegroundWindow(wa_hwnd)
-                    user32.BringWindowToTop(wa_hwnd)
-                    user32.AttachThreadInput(cur_tid, fg_tid, False)
-                wa_opened = True
-                time.sleep(0.5)
-            else:
-                os.startfile("whatsapp:")
-                wa_opened = True
-                time.sleep(1.8)
-        except Exception as e:
-            print(f"[WhatsApp] Focus notice: {e}")
-            try:
-                os.startfile("whatsapp:")
-                time.sleep(1.8)
-                wa_opened = True
-            except Exception:
-                pass
-
-    # 2. If a contact name was specified, search and open that conversation
-    if target_name and target_name.lower() not in ("inbox", "recent", "unread", "messages", "whatsapp"):
+    elif target_name and target_name.lower() not in ("inbox", "recent", "unread", "messages", "whatsapp"):
+        # Search and open that contact conversation via keyboard hotkeys
         try:
             if _PYAUTOGUI:
                 pyautogui.hotkey("ctrl", "f")
@@ -523,25 +496,42 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
                 _paste_text(target_name)
                 time.sleep(0.6)
                 pyautogui.press("enter")
-                time.sleep(1.0)
+                time.sleep(0.8)
                 _LAST_DISPATCH_CACHE["whatsapp"] = target_name.lower()
         except Exception as e:
             print(f"[WhatsApp] Search navigation notice: {e}")
 
-    # 3. Capture screen and transcribe via Multimodal Vision
+    # 3. Capture screen (WhatsApp window crop or full display) and transcribe via Multimodal Vision
     transcript = ""
     try:
         from PIL import ImageGrab
         import io
         from core import gemini
 
-        img = ImageGrab.grab()
+        img = None
+        if wa_hwnd and platform.system() == "Windows":
+            try:
+                import ctypes
+                from ctypes import wintypes
+                r = wintypes.RECT()
+                ctypes.windll.user32.GetWindowRect(wa_hwnd, ctypes.byref(r))
+                w = r.right - r.left
+                h = r.bottom - r.top
+                if w > 300 and h > 300 and r.left >= -50 and r.top >= -50:
+                    bbox = (max(0, r.left), max(0, r.top), r.right, r.bottom)
+                    img = ImageGrab.grab(bbox=bbox)
+            except Exception:
+                img = None
+
+        if img is None:
+            img = ImageGrab.grab()
+
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         image_bytes = buf.getvalue()
 
         prompt = (
-            f"You are inspecting the active WhatsApp chat window on screen.\n"
+            f"You are inspecting the active WhatsApp desktop chat window on screen.\n"
             f"Target Contact: '{target_name or 'Current Chat'}'.\n"
             f"1. Transcribe the visible chat messages in chronological order.\n"
             f"2. For each message, clearly list: Sender name (e.g. '{target_name}' or 'You/Me'), Timestamp (if shown), and exact Message Text.\n"
@@ -556,15 +546,15 @@ def _read_whatsapp_chat(receiver: str, player=None) -> str:
 
     display_name = target_name or "Recent Chat"
     if not transcript:
-        return f"[WhatsApp] Opened WhatsApp chat with '{display_name}'. The chat is now displayed on your screen."
+        return f"[WhatsApp] Opened WhatsApp chat with '{display_name}'. The chat window is now visible on your screen."
 
     # Update UI panel if player is available
     if player:
         try:
             if hasattr(player, "show_content"):
                 player.show_content(f"WHATSAPP · {display_name.upper()}", transcript)
-            if hasattr(player, "_on_live_speech"):
-                player._on_live_speech("NEO", f"**WhatsApp Chat with {display_name}:**\n\n{transcript}")
+            if hasattr(player, "show_live_speech"):
+                player.show_live_speech("NEO", f"WhatsApp Chat with {display_name}:\n{transcript}")
             elif hasattr(player, "write_log"):
                 player.write_log(f"[WhatsApp] Read chat with {display_name}")
         except Exception:
