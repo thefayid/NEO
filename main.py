@@ -2662,6 +2662,18 @@ class JarvisLive:
 
             self._proactive.mark_triggered(reason)
 
+            # Autonomous Morning Mobile Dispatch (8:30 AM Stark Executive Briefing)
+            if "AUTONOMOUS_MORNING_MOBILE_DISPATCH" in reason:
+                try:
+                    from actions.executive_briefing import dispatch_morning_briefing
+                    disp_res = await asyncio.to_thread(dispatch_morning_briefing, platform="auto", player=self.ui)
+                    chan = " & ".join(disp_res.get("delivered_channels", [])) or "Mobile"
+                    self.ui.write_log(f"SYS: 📱 Morning Executive Briefing dispatched to {chan}.")
+                    if hasattr(self.ui, "_toast_sig"):
+                        self.ui._toast_sig.emit("Morning Briefing Dispatched", f"Delivered to {chan} for Fayid.", "primary", "")
+                except Exception as e:
+                    print(f"[Proactive] Morning mobile dispatch notice: {e}")
+
             # High-priority proactive alerts forwarded to mobile Telegram node
             if any(k in reason for k in ("CRITICAL_RAM", "UPCOMING_AGENDA", "HIGH_PRIORITY_TASK")):
                 try:

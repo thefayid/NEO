@@ -1,62 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794323082.4432287,
-      "action_type": "GOAL",
-      "command": "deploy_test_service_1794323082",
-      "hour": 20,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794323082.4436877,
-      "action_type": "GOAL",
-      "command": "deploy_test_service_1794323082",
-      "hour": 20,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794323082.4439275,
-      "action_type": "GOAL",
-      "command": "deploy_test_service_1794323082",
-      "hour": 20,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794330756.8429556,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794330765.8512888,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794330806.203104,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794330827.5540602,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794330877.8207974,
       "action_type": "SWARM_MISSION",
       "command": "Quick verification objective",
@@ -1255,6 +1199,406 @@
       "hour": 1,
       "weekday": 3,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794427721.5177636,
+      "action_type": "USER_COMMAND",
+      "command": "neo",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427724.977626,
+      "action_type": "TOOL",
+      "command": "read_messages {\"receiver\": \"Jouk\", \"platform\": \"whatsapp\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427732.6121936,
+      "action_type": "USER_COMMAND",
+      "command": "Open WhatsApp and take Juk chat.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427732.6235049,
+      "action_type": "TOOL",
+      "command": "read_messages {\"receiver\": \"Jouk\", \"platform\": \"whatsapp\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427740.2693672,
+      "action_type": "USER_COMMAND",
+      "command": "Ssh.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427740.2880056,
+      "action_type": "TOOL",
+      "command": "read_messages {\"receiver\": \"JUK\", \"platform\": \"whatsapp\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427747.7732408,
+      "action_type": "USER_COMMAND",
+      "command": "JUK",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427747.7921684,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"JUK\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427770.494633,
+      "action_type": "USER_COMMAND",
+      "command": "not bias I don't need bias. Just close that search bar.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427773.4024525,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"JUK\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427793.950612,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, I closed the search bar. Now, take that.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427797.0860941,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"JUK\"}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427813.544687,
+      "action_type": "USER_COMMAND",
+      "command": "It brings the heart to my senses.",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794427816.5251248,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 1,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477553.095988,
+      "action_type": "USER_COMMAND",
+      "command": "new",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477557.10276,
+      "action_type": "TOOL",
+      "command": "companion_core {\"action\": \"check_in\"}",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477562.741448,
+      "action_type": "USER_COMMAND",
+      "command": "I can't hear you.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477584.9508762,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, how is your day going?",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477594.9607387,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just finished my college and came home.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477604.9703634,
+      "action_type": "USER_COMMAND",
+      "command": "Let me do it myself.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477609.458693,
+      "action_type": "USER_COMMAND",
+      "command": "\u90e8\u5c4b \u3057\u3087",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477627.6319814,
+      "action_type": "USER_COMMAND",
+      "command": "Did you say good night? It's evening, yaar.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477642.2693741,
+      "action_type": "USER_COMMAND",
+      "command": "I think you are not catching up with time. What's the time now?",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477650.3227904,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"open_settings\"}",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477650.3881977,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"current time kochi india\", \"action\": \"search\"}",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477668.8048267,
+      "action_type": "USER_COMMAND",
+      "command": "That's actually wrong. It's not 10:00 a.m. It's like 5:00. Let me check.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477678.1955674,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"User reported 4:40 PM when system said 11:10 AM U",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477689.2995515,
+      "action_type": "USER_COMMAND",
+      "command": "But just set it up in your machine like correct time whenever whenever I am asking the time just tell me okay.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477704.4487476,
+      "action_type": "USER_COMMAND",
+      "command": "Shit.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794477714.3212206,
+      "action_type": "USER_COMMAND",
+      "command": "n\u00e3o tem.",
+      "hour": 15,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794479981.0773208,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 16,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794484612.8119376,
+      "action_type": "TOOL",
+      "command": "subagent_swarm {\"instruction\": \"Run all unit tests on the Mark-LVI-main pro",
+      "hour": 17,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794486487.3228705,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 17,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794486488.0134792,
+      "action_type": "TOOL",
+      "command": "self_healing_codebase {\"operation\": \"suggest_commit\"}",
+      "hour": 17,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794487099.404002,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 18,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794487751.0609412,
+      "action_type": "TOOL",
+      "command": "self_healing_codebase {\"operation\": \"audit\"}",
+      "hour": 18,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794487752.952891,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 18,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794487753.645363,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 18,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794487754.9306948,
+      "action_type": "TOOL",
+      "command": "cortex_deep_reasoning {\"query\": \"Analyze current user context (Cyber Security, Jai",
+      "hour": 18,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794491529.230072,
+      "action_type": "TOOL",
+      "command": "workspace_master {\"preset\": \"dev\", \"action\": \"preset\"}",
+      "hour": 19,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794493403.2071362,
+      "action_type": "TOOL",
+      "command": "self_healing_codebase {\"operation\": \"audit\"}",
+      "hour": 19,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794493404.283022,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 19,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794494052.4582663,
+      "action_type": "TOOL",
+      "command": "self_healing_codebase {\"operation\": \"audit\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794495316.4410298,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794495316.5538085,
+      "action_type": "TOOL",
+      "command": "file_controller {\"action\": \"disk_usage\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794495316.5668297,
+      "action_type": "TOOL",
+      "command": "local_rag {\"query\": \"Mark-LVI-main git status\", \"action\": \"query\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794495317.133958,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"purge_cache\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794495923.1038785,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794496068.1423821,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"open_run\"}",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794496070.6042712,
+      "action_type": "USER_COMMAND",
+      "command": "A new",
+      "hour": 20,
+      "weekday": 3,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1285,7 +1629,35 @@
       "occurrences": 3,
       "first_seen": 1794425996.058147,
       "synthesized": false
+    },
+    "read_messages_platform_whatsapp_": {
+      "name": "read_messages_platform_whatsapp_",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"JUK\"}",
+      "occurrences": 3,
+      "first_seen": 1794427797.0874836,
+      "synthesized": false
+    },
+    "executive_briefing_action_agenda": {
+      "name": "executive_briefing_action_agenda",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "occurrences": 3,
+      "first_seen": 1794487752.9546828,
+      "synthesized": false
+    },
+    "self_healing_codebase_operation_": {
+      "name": "self_healing_codebase_operation_",
+      "command": "self_healing_codebase {\"operation\": \"audit\"}",
+      "occurrences": 3,
+      "first_seen": 1794494052.4604235,
+      "synthesized": false
+    },
+    "system_immune_action_audit": {
+      "name": "system_immune_action_audit",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "occurrences": 3,
+      "first_seen": 1794495316.4433236,
+      "synthesized": false
     }
   },
-  "updated_at": 1794426361.8551612
+  "updated_at": 1794496070.6046715
 }

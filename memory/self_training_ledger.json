@@ -3,9 +3,9 @@
     "new": {
       "pattern": "new",
       "sample": "new",
-      "count": 1,
+      "count": 2,
       "tools": [],
-      "last_used": 1794425608.13945
+      "last_used": 1794477553.0730293
     },
     "i came back to test you again.": {
       "pattern": "i came back to test you again.",
@@ -479,6 +479,153 @@
         "computer_control"
       ],
       "last_used": 1794426355.9936848
+    },
+    "open whatsapp and take juk chat.": {
+      "pattern": "open whatsapp and take juk chat.",
+      "sample": "Open WhatsApp and take Juk chat.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427732.6022546
+    },
+    "ssh.": {
+      "pattern": "ssh.",
+      "sample": "Ssh.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427740.257312
+    },
+    "juk": {
+      "pattern": "juk",
+      "sample": "JUK",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427747.7639751
+    },
+    "not bias i don't need bias. close that search ba": {
+      "pattern": "not bias i don't need bias. close that search ba",
+      "sample": "not bias I don't need bias. Just close that search bar.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427770.4785433
+    },
+    ", i closed the search bar. now, take that.": {
+      "pattern": ", i closed the search bar. now, take that.",
+      "sample": "Yeah, I closed the search bar. Now, take that.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427793.93376
+    },
+    "it brings the heart to my senses.": {
+      "pattern": "it brings the heart to my senses.",
+      "sample": "It brings the heart to my senses.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794427813.5282402
+    },
+    "i can't hear you.": {
+      "pattern": "i can't hear you.",
+      "sample": "I can't hear you.",
+      "count": 1,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794477562.7256784
+    },
+    ", how is your day going?": {
+      "pattern": ", how is your day going?",
+      "sample": "Yeah, how is your day going?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477584.9334018
+    },
+    ", finished my college and came home.": {
+      "pattern": ", finished my college and came home.",
+      "sample": "Yeah, just finished my college and came home.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477594.9427807
+    },
+    "let me do it myself.": {
+      "pattern": "let me do it myself.",
+      "sample": "Let me do it myself.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477604.9566667
+    },
+    "\u90e8\u5c4b \u3057\u3087": {
+      "pattern": "\u90e8\u5c4b \u3057\u3087",
+      "sample": "\u90e8\u5c4b \u3057\u3087",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477609.4388888
+    },
+    "did you say good night? it's evening, yaar.": {
+      "pattern": "did you say good night? it's evening, yaar.",
+      "sample": "Did you say good night? It's evening, yaar.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477627.6177063
+    },
+    "i think you are not catching up with time. what'": {
+      "pattern": "i think you are not catching up with time. what'",
+      "sample": "I think you are not catching up with time. What's the time now?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477642.249783
+    },
+    "that's actually wrong. it's not 10:00 a.m. it's ": {
+      "pattern": "that's actually wrong. it's not 10:00 a.m. it's ",
+      "sample": "That's actually wrong. It's not 10:00 a.m. It's like 5:00. Let me check.",
+      "count": 1,
+      "tools": [
+        "computer_settings",
+        "browser_control"
+      ],
+      "last_used": 1794477668.790927
+    },
+    "but set it up in your machine like correct time ": {
+      "pattern": "but set it up in your machine like correct time ",
+      "sample": "But just set it up in your machine like correct time whenever whenever I am asking the time just tell me okay.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794477689.2827158
+    },
+    "shit.": {
+      "pattern": "shit.",
+      "sample": "Shit.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477704.4247282
+    },
+    "n\u00e3o tem.": {
+      "pattern": "n\u00e3o tem.",
+      "sample": "n\u00e3o tem.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794477714.3074348
+    },
+    "a new": {
+      "pattern": "a new",
+      "sample": "A new",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794496070.5890608
     }
   },
   "preferences": {},
@@ -591,9 +738,27 @@
       "correction": "Now that just take with my profile from this window.",
       "rule": "When user says 'Yeah, just take my profile.': corrected with 'Now that just take with my profile from '",
       "timestamp": 1794426326.006998
+    },
+    {
+      "trigger_command": "JUK",
+      "previous_tools": [
+        "read_messages"
+      ],
+      "correction": "not bias I don't need bias. Just close that search bar.",
+      "rule": "When user says 'JUK': corrected with 'not bias I don't need bias. Just close t'",
+      "timestamp": 1794427770.4785135
+    },
+    {
+      "trigger_command": "I think you are not catching up with time. What's the time now?",
+      "previous_tools": [],
+      "correction": "That's actually wrong. It's not 10:00 a.m. It's like 5:00. Let me check.",
+      "rule": "When user says 'I think you are not catching u': corrected with 'That's actually wrong. It's not 10:00 a.'",
+      "timestamp": 1794477668.7908967
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'I think you are not catch': execute preferred action 'That's actually wrong. It's not 10:'.",
+    "Avoid previous misstep for 'JUK': execute preferred action 'not bias I don't need bias. Just cl'.",
     "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '.",
     "Avoid previous misstep for 'powerful league': execute preferred action 'not still not called up. called ful'.",
     "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'.",
@@ -606,5 +771,5 @@
     "Avoid previous misstep for 'WhatsApp is closed.': execute preferred action 'Change the music like I don't want '.",
     "Avoid previous misstep for 'What's up and take me as ': execute preferred action 'No, I don't want a song now. Just c'."
   ],
-  "updated_at": 1794426355.9978018
+  "updated_at": 1794496070.5910861
 }

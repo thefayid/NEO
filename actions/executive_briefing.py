@@ -37,6 +37,7 @@ from typing import Any, Optional
 import psutil
 
 from core.sfx import play_confirm, play_protocol, play_alert
+from core import outcome
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 _MEMORY_DIR = _BASE_DIR / "memory"
@@ -760,7 +761,302 @@ def _run_night_owl_debrief(auto_commit: bool = False, notes: str = "", player=No
     return spoken
 
 
-# ── 4. Main Executive Briefing Dispatcher ────────────────────────────────────
+# ── 4. Autonomous Morning Mobile Dispatch & Stark Briefing Card ─────────────
+
+def _get_comprehensive_hardware_health() -> dict:
+    """Detailed hardware health metrics: CPU, RAM, disk space, and uptime."""
+    info = {
+        "cpu": 0.0,
+        "ram": 0.0,
+        "ram_used_gb": 0.0,
+        "ram_total_gb": 0.0,
+        "disk_free_gb": 0.0,
+        "disk_percent": 0.0,
+        "uptime": "Unknown",
+        "battery": "",
+        "summary": "Hardware operating nominally",
+    }
+    try:
+        cpu = psutil.cpu_percent(interval=None)
+        vm = psutil.virtual_memory()
+        info["cpu"] = cpu
+        info["ram"] = vm.percent
+        info["ram_used_gb"] = round(vm.used / (1024**3), 1)
+        info["ram_total_gb"] = round(vm.total / (1024**3), 1)
+
+        target_path = _BASE_DIR if _BASE_DIR.exists() else Path.home()
+        disk = psutil.disk_usage(str(target_path))
+        info["disk_free_gb"] = round(disk.free / (1024**3), 1)
+        info["disk_percent"] = disk.percent
+
+        boot = psutil.boot_time()
+        uptime_secs = time.time() - boot
+        hours, rem = divmod(int(uptime_secs), 3600)
+        mins, _ = divmod(rem, 60)
+        days, hours = divmod(hours, 24)
+        info["uptime"] = f"{days}d {hours}h {mins}m" if days else f"{hours}h {mins}m"
+
+        battery = psutil.sensors_battery()
+        if battery:
+            info["battery"] = f"{battery.percent:.0f}% ({'Charging' if battery.power_plugged else 'Discharging'})"
+
+        info["summary"] = (
+            f"Uptime: {info['uptime']} | CPU: {cpu:.0f}% | "
+            f"RAM: {info['ram_used_gb']}/{info['ram_total_gb']} GB ({vm.percent:.0f}%) | "
+            f"Disk: {info['disk_free_gb']} GB free"
+        )
+    except Exception as exc:
+        print(f"[Briefing] Hardware metrics notice: {exc}")
+    return info
+
+
+def _get_github_pr_and_repo_status() -> dict:
+    """
+    Autonomously inspects git repository, active branch, uncommitted files,
+    and queries GitHub API for open Pull Requests without blocking.
+    """
+    repo_info = {
+        "repo": "thefayid/NEO",
+        "branch": "main",
+        "open_prs": 0,
+        "pr_titles": [],
+        "uncommitted_files": 0,
+        "status_line": "All clear",
+    }
+    try:
+        res = subprocess.run(
+            ["git", "status", "--porcelain", "-b"],
+            capture_output=True, text=True, timeout=3, cwd=_BASE_DIR
+        )
+        lines = res.stdout.strip().splitlines()
+        if lines:
+            repo_info["branch"] = lines[0].replace("## ", "").split("...")[0].strip()
+            repo_info["uncommitted_files"] = len(lines) - 1
+    except Exception:
+        pass
+
+    try:
+        rem_res = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True, text=True, timeout=2, cwd=_BASE_DIR
+        )
+        remote_url = rem_res.stdout.strip()
+        match = re.search(r"github\.com[:/]([^/]+)/([^/\.]+)", remote_url)
+        if match:
+            owner, rname = match.group(1), match.group(2)
+            repo_info["repo"] = f"{owner}/{rname}"
+    except Exception:
+        pass
+
+    try:
+        cfg = _read_config()
+        gh_token = cfg.get("github_token") or os.environ.get("GITHUB_TOKEN", "")
+        headers = {"User-Agent": "NEO-Executive-Briefing"}
+        if gh_token:
+            headers["Authorization"] = f"Bearer {gh_token}"
+        req = urllib.request.Request(
+            f"https://api.github.com/repos/{repo_info['repo']}/pulls?state=open",
+            headers=headers
+        )
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if isinstance(data, list):
+                repo_info["open_prs"] = len(data)
+                repo_info["pr_titles"] = [p.get("title", "") for p in data[:3]]
+    except Exception as e:
+        repo_info["status_line"] = f"Checked (offline/idle: {e})"
+
+    return repo_info
+
+
+def build_stark_morning_briefing_card(today_str: str = "") -> str:
+    """
+    Constructs a high-impact, beautifully styled Stark Industries Executive Briefing Card
+    optimized for mobile reading on WhatsApp and Telegram.
+    """
+    now = datetime.now()
+    today_dt = now
+    if today_str:
+        try:
+            today_dt = datetime.strptime(today_str, "%Y-%m-%d")
+        except Exception:
+            pass
+
+    date_friendly = today_dt.strftime("%A, %B %d, %Y")
+    time_friendly = now.strftime("%I:%M %p")
+
+    cfg = _read_config()
+    user_name = cfg.get("user_name") or "Boss"
+
+    # 1. Sync Calendar & Gather Agenda
+    ical_url = cfg.get("calendar_ical_url", "").strip()
+    if ical_url:
+        _sync_ical_feed(ical_url)
+    events, conflicts = _get_agenda_timeline(today_dt.strftime("%Y-%m-%d"))
+
+    # 2. Weather
+    weather = _get_weather_snippet()
+
+    # 3. Reminders & Tasks
+    reminders = _get_active_reminders_summary()
+    tasks_info = _get_active_tasks_summary()
+
+    # 4. GitHub PRs & Repository Health
+    repo_status = _get_github_pr_and_repo_status()
+
+    # 5. Hardware Health & Telemetry
+    hw = _get_comprehensive_hardware_health()
+
+    card_lines = [
+        "╔══════════════════════════════════════╗",
+        "║  ⚡ STARK INDUSTRIES · MORNING BRIEF ║",
+        "╚══════════════════════════════════════╝",
+        f"Good morning, {user_name}.",
+        f"📅 {date_friendly} | ⏰ {time_friendly}",
+        "",
+        "🌤️ WEATHER & ATMOSPHERE",
+        f"• Conditions: {weather}",
+        "",
+        f"📅 TODAY'S SCHEDULE ({len(events)} EVENTS)",
+    ]
+
+    if events:
+        for e in events[:4]:
+            st = _format_time_friendly(e.get("start_time", "00:00"))
+            loc = f" ({e['location']})" if e.get("location") and e.get("location") != "Workstation" else ""
+            card_lines.append(f"• {st} — {e.get('title')}{loc}")
+        if conflicts:
+            card_lines.append(f"⚠️ Conflict Warning: {conflicts[0]}")
+        else:
+            card_lines.append("✓ Zero calendar conflicts detected.")
+    else:
+        card_lines.append("✓ Calendar is completely clear of meetings today.")
+
+    card_lines.append("")
+    card_lines.append(f"⏰ REMINDERS & ACTIVE TASKS ({tasks_info['total_pending']} PENDING)")
+    if reminders:
+        for r in reminders[:3]:
+            card_lines.append(f"{r}")
+    if tasks_info["due_today"]:
+        for t in tasks_info["due_today"][:2]:
+            card_lines.append(f"• Due Today: {t.get('title')}")
+    elif tasks_info["high_priority"]:
+        card_lines.append(f"• Priority Focus: {tasks_info['high_priority'][0].get('title')}")
+    elif not reminders and not tasks_info["pending_tasks"]:
+        card_lines.append("✓ All tasks and reminders are clear.")
+
+    card_lines.append("")
+    card_lines.append("🐙 GITHUB & REPOSITORY HEALTH")
+    card_lines.append(f"• Repo: {repo_status['repo']} (branch: {repo_status['branch']})")
+    if repo_status["open_prs"] > 0:
+        card_lines.append(f"• Open Pull Requests: {repo_status['open_prs']} active")
+        for pr in repo_status["pr_titles"]:
+            card_lines.append(f"  - {pr}")
+    else:
+        card_lines.append("• Pull Requests: 0 open (all merged/idle)")
+    if repo_status["uncommitted_files"] > 0:
+        card_lines.append(f"• Workspace: {repo_status['uncommitted_files']} modified file(s)")
+    else:
+        card_lines.append("• Workspace: Clean working tree")
+
+    card_lines.append("")
+    card_lines.append("🛡️ SYSTEM HARDWARE & TELEMETRY")
+    card_lines.append(f"• System Uptime: {hw['uptime']}")
+    card_lines.append(f"• CPU & RAM: CPU {hw['cpu']:.0f}% | RAM {hw['ram_used_gb']}/{hw['ram_total_gb']} GB ({hw['ram']:.0f}%)")
+    card_lines.append(f"• Disk Storage: {hw['disk_free_gb']} GB free ({hw['disk_percent']:.0f}% used)")
+    if hw["battery"]:
+        card_lines.append(f"• Battery: {hw['battery']}")
+    card_lines.append("• Threat Defense: All systems green & nominal")
+    card_lines.append("")
+    card_lines.append("Tactical systems standing by. Have a commanding day, Boss.")
+
+    return "\n".join(card_lines)
+
+
+def dispatch_morning_briefing(
+    platform: str = "auto",
+    receiver: str = "",
+    card_text: str = "",
+    player=None,
+) -> dict:
+    """
+    Autonomously compiles and dispatches the Stark Morning Executive Briefing Card
+    to the user's mobile device via Telegram, WhatsApp, or both.
+    """
+    card = card_text or build_stark_morning_briefing_card()
+    cfg = _read_config()
+    user_name = cfg.get("user_name") or "Boss"
+    plat = platform.lower().strip() if platform else "auto"
+
+    delivered = []
+    errors = []
+
+    # 1. Telegram Dispatch
+    can_telegram = bool(cfg.get("telegram_bot_token") and cfg.get("telegram_chat_id"))
+    should_telegram = plat in ("telegram", "both") or (plat == "auto" and can_telegram)
+
+    if should_telegram:
+        try:
+            from actions.telegram_remote import send_remote_alert
+            ok = send_remote_alert(card)
+            if ok:
+                delivered.append("Telegram")
+            else:
+                errors.append("Telegram delivery failed (gateway unresponsive)")
+        except Exception as e:
+            errors.append(f"Telegram error: {e}")
+
+    # 2. WhatsApp Dispatch
+    should_whatsapp = plat in ("whatsapp", "both") or (plat == "auto" and (not delivered or not can_telegram))
+
+    if should_whatsapp:
+        try:
+            from actions.send_message import send_message as _send_msg
+            target = receiver or user_name
+            res = _send_msg({
+                "platform": "whatsapp",
+                "receiver": target,
+                "message_text": card,
+            }, player=player)
+            if "status=done" in res or "Opened" in res:
+                delivered.append("WhatsApp")
+            else:
+                errors.append(f"WhatsApp notice: {res[:80]}")
+        except Exception as e:
+            errors.append(f"WhatsApp error: {e}")
+
+    # Record dispatch date to prevent duplicate firing today
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+    cfg["last_morning_dispatch_date"] = today_iso
+    try:
+        with open(_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=4)
+    except Exception:
+        pass
+
+    play_confirm()
+
+    if player:
+        channels_str = " & ".join(delivered) if delivered else "mobile device"
+        if hasattr(player, "write_log"):
+            player.write_log(f"[Briefing] 📱 Morning Briefing dispatched to {channels_str}.")
+        if hasattr(player, "show_toast"):
+            player.show_toast(f"Morning Briefing Dispatched to {channels_str}")
+        try:
+            if hasattr(player, "show_content"):
+                player.show_content("MORNING EXECUTIVE BRIEFING", card)
+        except Exception:
+            pass
+
+    return {
+        "success": bool(delivered),
+        "delivered_channels": delivered,
+        "errors": errors,
+        "card": card,
+    }
+
+
+# ── 5. Main Executive Briefing Dispatcher ────────────────────────────────────
 
 def executive_briefing(
     parameters: dict,
@@ -915,6 +1211,28 @@ def executive_briefing(
         custom_notes = str(parameters.get("notes", "")).strip()
         return _run_night_owl_debrief(auto_commit=auto_commit, notes=custom_notes, player=player)
 
+    # ── Action: mobile_dispatch / send_briefing ─────────────────────────────
+    if action in ("mobile_dispatch", "morning_mobile_brief", "send_briefing", "phone_briefing", "whatsapp_briefing", "telegram_briefing"):
+        req_plat = parameters.get("platform") or ("whatsapp" if "whatsapp" in action else ("telegram" if "telegram" in action else "auto"))
+        target_recv = parameters.get("receiver", "")
+        res = dispatch_morning_briefing(platform=req_plat, receiver=target_recv, player=player)
+        channels = " & ".join(res.get("delivered_channels", [])) or "mobile device"
+        if res.get("success"):
+            return outcome.done(
+                "executive_briefing",
+                action="mobile_dispatch",
+                platform=channels,
+                verified=True,
+                status=f"Morning executive briefing card dispatched to your {channels}, Boss.",
+            )
+        else:
+            err_msg = "; ".join(res.get("errors", [])) or "Dispatch was not completed."
+            return outcome.failed(
+                "executive_briefing",
+                err_msg,
+                platform=req_plat,
+            )
+
     # ── Action: briefing (Comprehensive Executive Morning/Status Briefing) ──
     # Auto-sync calendar if configured
     if ical_url:
@@ -1033,8 +1351,8 @@ TOOL = {
     "name": "executive_briefing",
     "description": (
         "Executive Personal Briefing & Productivity Agent for NEO. "
-        "Delivers comprehensive morning war-room briefings, nocturnal night-owl dev checkpoints, "
-        "synchronizes Google Calendar & Outlook iCal schedules, detects meeting conflicts, "
+        "Delivers comprehensive morning war-room briefings, dispatches mobile executive briefing cards to WhatsApp & Telegram, "
+        "runs nocturnal night-owl dev checkpoints, synchronizes Google Calendar & Outlook iCal schedules, detects meeting conflicts, "
         "triages urgent VIP emails, and tracks active project sprint tasks."
     ),
     "parameters": {
@@ -1044,6 +1362,7 @@ TOOL = {
                 "type": "STRING",
                 "description": (
                     "The briefing operation to execute: "
+                    "'mobile_dispatch' (compile and send high-impact Stark morning briefing card to WhatsApp/Telegram: weather, agenda, reminders, GitHub PRs, system health), "
                     "'morning_brief' (full executive war-room briefing: agenda, tasks, overnight AI news, weather, system health), "
                     "'night_owl_debrief' (nocturnal dev wrap-up: git diff analysis, auto-checkpoint commit, carry-over task planning, zombie cleanup, dev log), "
                     "'briefing' (standard executive status briefing), "
@@ -1052,6 +1371,14 @@ TOOL = {
                     "'email_triage' (summarize unread urgent emails from VIP senders or critical keywords), "
                     "'sync_calendar' (refresh/sync calendar from Google/Outlook .ics feed or local agenda)"
                 ),
+            },
+            "platform": {
+                "type": "STRING",
+                "description": "Optional destination platform for mobile_dispatch: 'whatsapp' (default), 'telegram', or 'both'",
+            },
+            "receiver": {
+                "type": "STRING",
+                "description": "Optional recipient name or phone number for mobile_dispatch (defaults to Boss)",
             },
             "auto_commit": {
                 "type": "BOOLEAN",

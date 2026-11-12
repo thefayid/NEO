@@ -1,8 +1,14 @@
 {
     "coding": {
         "description": "Developer high-performance mode with IDE, terminal, and focused audio",
-        "launch_apps": ["code", "wt"],
-        "close_apps": ["discord", "slack"],
+        "launch_apps": [
+            "code",
+            "wt"
+        ],
+        "close_apps": [
+            "discord",
+            "slack"
+        ],
         "volume": 25,
         "mute_system_alerts": false,
         "power_plan": "high_performance",
@@ -11,7 +17,11 @@
     "gaming": {
         "description": "Maximum GPU/CPU allocation, distraction suppression, immersive audio",
         "launch_apps": [],
-        "close_apps": ["teams", "outlook", "slack"],
+        "close_apps": [
+            "teams",
+            "outlook",
+            "slack"
+        ],
         "volume": 75,
         "mute_system_alerts": true,
         "power_plan": "high_performance",
@@ -29,7 +39,11 @@
     "focus": {
         "description": "Deep work combat mode: suppress distractions, low ambient volume, lock focus",
         "launch_apps": [],
-        "close_apps": ["discord", "telegram", "spotify"],
+        "close_apps": [
+            "discord",
+            "telegram",
+            "spotify"
+        ],
         "minimize_all_except": "code",
         "volume": 20,
         "mute_system_alerts": true,
@@ -62,7 +76,9 @@
     "red_team": {
         "description": "Cyber security combat mode: arm network radar, launch terminal, engage stealth cybersecurity monitoring",
         "action": "red_team",
-        "launch_apps": ["wt"],
+        "launch_apps": [
+            "wt"
+        ],
         "volume": 20,
         "mute_system_alerts": true,
         "voice_feedback": "Red Team Protocol active, Boss. Network defenses armed, threat intel radar scanning, and terminal deployed. We are vigilant."

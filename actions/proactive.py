@@ -24,6 +24,16 @@ from pathlib import Path
 from typing import Optional
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
+_CONFIG_FILE = _BASE_DIR / "config" / "api_keys.json"
+
+
+def _read_config() -> dict:
+    try:
+        if _CONFIG_FILE.exists():
+            return json.loads(_CONFIG_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
 
 
 def _get_system_telemetry() -> dict:
@@ -206,6 +216,26 @@ class ProactiveEngine:
                     return True, f"PRECOGNITIVE:{top_opp.get('category')}:{top_opp.get('title')}", snapshot
         except Exception:
             pass
+
+        # 0.5 Level 0: Autonomous Morning Mobile Dispatch Window (8:30 AM)
+        now_dt = datetime.now()
+        hr = now_dt.hour
+        mn = now_dt.minute
+        today_iso = now_dt.strftime("%Y-%m-%d")
+        cfg = _read_config()
+        brief_hr, brief_mn = 8, 30
+        try:
+            b_time = str(cfg.get("briefing_time", "08:30")).strip()
+            if ":" in b_time:
+                brief_hr, brief_mn = map(int, b_time.split(":")[:2])
+        except Exception:
+            pass
+
+        if hr == brief_hr and mn >= brief_mn and cfg.get("morning_brief_enabled", True):
+            last_disp = getattr(self, "_last_morning_mobile_dispatch", "") or cfg.get("last_morning_dispatch_date", "")
+            if last_disp != today_iso:
+                self._last_morning_mobile_dispatch = today_iso
+                return True, "AUTONOMOUS_MORNING_MOBILE_DISPATCH", snapshot
 
         # 1. Level 1: URGENT — Imminent Calendar Event (in <= 20 mins)
         if agenda:
