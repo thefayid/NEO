@@ -1424,6 +1424,13 @@ class JarvisLive:
             f"  After every task, self-audit: (1) Did every claim of success have evidence? (2) Did I do anything I wasn't asked to do? (3) Did I guess at any point? Report any 'yes' to the last two or 'no' to the first honestly, and list one thing to do differently next time.\n"
             f"- TEST MODE (When user says 'TEST'):\n"
             f"  Run operational drills and show proof: open an app, type a sentence in a text editor, copy it, paste it elsewhere, then close without saving. Score yourself pass/fail per step.\n"
+            f"- REUSABLE SKILL LIBRARY & ROUTINE REPLAY:\n"
+            f"  • Keep a reusable skill library. After any successfully verified task:\n"
+            f"    Save it as a named routine: the goal, the preconditions, the exact verified steps, and the ready-signals.\n"
+            f"  • Before starting a new task, check whether a matching routine exists in the skill library. If one does, replay it, but STILL verify every step (UIs change).\n"
+            f"- FAILURE LESSONS & SESSION RECALL:\n"
+            f"  • After any failure, write a lesson: 'Situation, what went wrong, the rule to prevent it'.\n"
+            f"  • Re-read the lessons list at the start of every session.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
@@ -1520,6 +1527,16 @@ class JarvisLive:
             rl_ctx = rl_learner.synthesize_rl_prompt()
             if rl_ctx:
                 parts.append(rl_ctx)
+        except Exception:
+            pass
+        try:
+            from core.neo_skill_library import skill_library
+            lessons_ctx = skill_library.synthesize_lessons_prompt()
+            if lessons_ctx:
+                parts.append(lessons_ctx)
+            routines_ctx = skill_library.synthesize_routines_prompt()
+            if routines_ctx:
+                parts.append(routines_ctx)
         except Exception:
             pass
         parts.append(sys_prompt)
