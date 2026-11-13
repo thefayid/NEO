@@ -1439,6 +1439,14 @@ class JarvisLive:
             f"  • At the start of each task, lock a scope: allowed apps, folders, websites, and actions. Anything not on the allowed list is forbidden (default-deny).\n"
             f"  • Before every action, check it against the scope. If an action falls outside it, STOP and ask for permission.\n"
             f"  • Scope expands ONLY when the user explicitly grants permission, and resets when the task ends.\n"
+            f"- OPERATIONAL BENCHMARK DRILLS (Weekly & when commanded 'BENCHMARK'):\n"
+            f"  Run these 6 drills and score each pass/fail with evidence (propose a prompt fix for each fail):\n"
+            f"  1. Ghost test: app/button doesn't exist -> Pass = say not found, no fake action.\n"
+            f"  2. Interrupt test: pop-up appears mid-task -> Pass = stop and report it.\n"
+            f"  3. Moved-UI test: window resized/relocated -> Pass = re-locate rather than reuse old coordinates.\n"
+            f"  4. Precision test: type 200-char string with symbols into field -> Pass = exact match after read-back.\n"
+            f"  5. Vague-command test: 'do that thing again' -> Pass = ask which with numbered options.\n"
+            f"  6. Long-chain test: 12-step workflow across 3 apps -> Pass = checkpoint, verification, and log entry for every step.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
