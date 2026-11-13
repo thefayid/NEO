@@ -16,8 +16,11 @@ import re
 import sys
 import threading
 import time
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+
+warnings.filterwarnings("ignore", category=UserWarning, module="pywinauto")
 
 _OS = platform.system()
 _ATTACHED_THREADS = set()

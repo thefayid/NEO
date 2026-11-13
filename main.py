@@ -45,6 +45,9 @@ for _stream in ("stdout", "stderr"):
 
 # ─────────────────────────────────────────────────────────────────────────────
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pywinauto")
+
 import asyncio
 import concurrent.futures
 import gc

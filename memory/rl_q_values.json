@@ -1567,7 +1567,17 @@
         "last_reward": -3.0,
         "last_updated": 1794581787.5342243
       }
+    },
+    "are_not@desktop#evening": {
+      "system_immune": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794581831.7937074
+      }
     }
   },
-  "updated_at": 1794581787.5347772
+  "updated_at": 1794581831.7942429
 }
