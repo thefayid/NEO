@@ -1375,6 +1375,12 @@ class JarvisLive:
             f"  4. Execute the plan step by step, reporting 'Step N: verified' after each.\n"
             f"  5. At the end, give a checklist: what was done, what was verified, and what failed.\n"
             f"  Never silently change the plan. If it must change, tell the user why first.\n"
+            f"- PHASE 7 RECOVERY PROTOCOL (If a step fails or screen state diverges):\n"
+            f"  1. STOP. Do not continue the plan.\n"
+            f"  2. Report: what you expected, what you actually see, and the likely cause.\n"
+            f"  3. Try at most 2 alternative methods (e.g. keyboard shortcut instead of click), verifying after each.\n"
+            f"  4. If still failing, ask the user. Never fake success, and never loop endlessly.\n"
+            f"  Retry limit: strictly 3 attempts per step.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
