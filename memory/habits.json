@@ -1,190 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794513746.059288,
-      "action_type": "TOOL",
-      "command": "computer_control {\"app_name\": \"Chrome\", \"action\": \"close_app\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513748.3750083,
-      "action_type": "USER_COMMAND",
-      "command": "closing the",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513750.0035677,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Chrome\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513758.4816136,
-      "action_type": "USER_COMMAND",
-      "command": "dost is chrome ah chrome ah chrome",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513763.3429499,
-      "action_type": "TOOL",
-      "command": "computer_control {\"app_name\": \"Chrome\", \"action\": \"close_app\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513781.0564184,
-      "action_type": "USER_COMMAND",
-      "command": "send hote hai. Are you",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513790.9683988,
-      "action_type": "USER_COMMAND",
-      "command": "\uc544\ub2c8\ub77c\uc694. \uad1c\ucc2e\uc544\uc694.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513797.806116,
-      "action_type": "TOOL",
-      "command": "web_search {\"mode\": \"news\", \"query\": \"major sports events today\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513816.496235,
-      "action_type": "USER_COMMAND",
-      "command": "en hora. Just say about a other thing like sports.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513820.679395,
-      "action_type": "USER_COMMAND",
-      "command": "Hello.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513826.315713,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Anirudh and Kavya marriage latest news\", \"mode\":",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513847.0522614,
-      "action_type": "USER_COMMAND",
-      "command": "What about the marriage between Anirudh and Kavya?",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794515282.7291107,
-      "action_type": "TOOL",
-      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794517199.791637,
-      "action_type": "TOOL",
-      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
-      "hour": 2,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551323.7848556,
-      "action_type": "TEXT_COMMAND",
-      "command": "hey ther e",
-      "hour": 11,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551342.6496341,
-      "action_type": "TEXT_COMMAND",
-      "command": "read todays news once more",
-      "hour": 11,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551768.6276443,
-      "action_type": "TEXT_COMMAND",
-      "command": "i just finished those",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551769.4464447,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"copy\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551769.5132658,
-      "action_type": "TOOL",
-      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551780.4806938,
-      "action_type": "TEXT_COMMAND",
-      "command": "i will do it",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551953.884458,
-      "action_type": "TEXT_COMMAND",
-      "command": "ya",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551955.257967,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"kill_zombies\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551957.9557147,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"purge_cache\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794551985.3538043,
       "action_type": "TEXT_COMMAND",
       "command": "yaaa",
@@ -1599,6 +1415,190 @@
       "hour": 20,
       "weekday": 4,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794583205.3480222,
+      "action_type": "USER_COMMAND",
+      "command": "bylingual wa wa wa wa",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583210.2477074,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583214.6504192,
+      "action_type": "USER_COMMAND",
+      "command": "Nothing for now. Say it okay.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583255.2809517,
+      "action_type": "TOOL",
+      "command": "local_rag {\"query\": \"Sem Exam preparation subjects Cyber Security Jain",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583255.3320086,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583276.6281567,
+      "action_type": "TOOL",
+      "command": "local_rag {\"query\": \"cyber security exam syllabus Jain University\", \"a",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583276.6884563,
+      "action_type": "TOOL",
+      "command": "workspace_master {\"action\": \"preset\", \"preset\": \"focus\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583295.0783732,
+      "action_type": "USER_COMMAND",
+      "command": "put down to its cyber security exam",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583298.3759563,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"Jain University Kochi Cyber Security final year s",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583313.1133404,
+      "action_type": "USER_COMMAND",
+      "command": "I'll do it, yeah.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583315.2605276,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583342.0147657,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583344.2597995,
+      "action_type": "TOOL",
+      "command": "system_status {}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583344.5598733,
+      "action_type": "USER_COMMAND",
+      "command": "\uc18c\ub9ac",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583345.6543577,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583347.836075,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583363.1811,
+      "action_type": "USER_COMMAND",
+      "command": "Do it you.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583366.6633368,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"close_tab\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583387.1956646,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583390.4488778,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583399.8512192,
+      "action_type": "USER_COMMAND",
+      "command": "I close the entire browser.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583413.9639442,
+      "action_type": "USER_COMMAND",
+      "command": "No, I will study for the exam later. Okay? Don't worry.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583416.3967507,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1720,7 +1720,14 @@
       "occurrences": 3,
       "first_seen": 1794581467.6443725,
       "synthesized": false
+    },
+    "system_immune_action_kill_zombie": {
+      "name": "system_immune_action_kill_zombie",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "occurrences": 3,
+      "first_seen": 1794583315.2639892,
+      "synthesized": false
     }
   },
-  "updated_at": 1794582859.887149
+  "updated_at": 1794583416.3969564
 }

@@ -643,9 +643,10 @@ class _ReconnectSignal(Exception):
     new session must genuinely start clean (see the voice-change note in
     _on_voice_change)."""
 
-    def __init__(self, keep_context: bool = True):
+    def __init__(self, keep_context: bool = True, reason: str = ""):
         super().__init__()
         self.keep_context = keep_context
+        self.reason = reason
 
 
 def _is_reconnect_signal(exc: BaseException) -> bool:
@@ -669,6 +670,27 @@ def _keep_context_of(exc: BaseException) -> bool:
             if _is_reconnect_signal(sub):
                 return _keep_context_of(sub)
     return True
+
+
+def _reason_of(exc: BaseException) -> str:
+    """Read `reason` off a reconnect signal, unwrapping the group the
+    TaskGroup put it in."""
+    if isinstance(exc, _ReconnectSignal):
+        return getattr(exc, "reason", "")
+    if isinstance(exc, BaseExceptionGroup):
+        for sub in exc.exceptions:
+            if _is_reconnect_signal(sub):
+                return _reason_of(sub)
+    return ""
+
+
+def _is_go_away_or_session_abort(exc: BaseException) -> bool:
+    """Returns True if the exception or any nested sub-exception was caused by a
+    GoAway signal or session duration timeout (WebSocket close 1008)."""
+    if isinstance(exc, BaseExceptionGroup):
+        return any(_is_go_away_or_session_abort(sub) for sub in exc.exceptions)
+    t_low = str(exc).lower()
+    return "goaway" in t_low or "go away" in t_low or ("1008" in t_low and "session durat" in t_low)
 
 
 class JarvisLive:
@@ -756,6 +778,7 @@ class JarvisLive:
         # conversation that never ends never produces a summary, and the
         # "yesterday we talked about…" line silently disappears.
         self._resume_handle: str | None = None
+        self._pending_go_away: bool = False
         self._turn_done_event: asyncio.Event | None = None
         self._dashboard     = None
         self._briefing_sent    = False          # morning briefing fires once per process
@@ -1050,7 +1073,7 @@ class JarvisLive:
             f"SYS: Applying {reason} — reconnecting"
             + ("..." if keep else " (starting a fresh conversation)...")
         )
-        raise _ReconnectSignal(keep_context=keep)
+        raise _ReconnectSignal(keep_context=keep, reason=reason)
 
     def _make_remote_key(self):
         """Called from Qt main thread when user presses Remote Control."""
@@ -2065,6 +2088,33 @@ class JarvisLive:
                                 print("[JARVIS] 🔗 Session resumption armed")
                             self._resume_handle = _sru.new_handle
 
+                    # ── Server GoAway Signal (Session duration limit) ─────────
+                    # The server notifies the client before forcefully closing
+                    # the session due to maximum session duration (e.g. 15-30m).
+                    # If we don't close the connection ourselves before `time_left`
+                    # expires, Google terminates the socket with 1008 policy violation.
+                    _go_away = getattr(response, "go_away", None)
+                    if _go_away is not None:
+                        _tl = getattr(_go_away, "time_left", "") or "soon"
+                        print(f"[JARVIS] 🔄 Server GoAway signal received (time left: {_tl}). Initiating graceful session rollover...")
+                        if not in_buf and not out_buf and (not self._turn_done_event or self._turn_done_event.is_set()):
+                            self.request_reconnect(keep_context=True, reason="session duration limit (seamless rollover)")
+                        else:
+                            self._pending_go_away = True
+                            _wait_s = 7.0
+                            if isinstance(_tl, str) and _tl.endswith("s"):
+                                try:
+                                    _wait_s = max(2.0, float(_tl[:-1]) - 3.0)
+                                except Exception:
+                                    _wait_s = 7.0
+                            async def _delayed_rollover(delay):
+                                await asyncio.sleep(delay)
+                                if getattr(self, "_pending_go_away", False):
+                                    self._pending_go_away = False
+                                    print("[JARVIS] 🔄 GoAway deadline approaching. Executing proactive session rollover...")
+                                    self.request_reconnect(keep_context=True, reason="session duration limit (seamless rollover)")
+                            asyncio.create_task(_delayed_rollover(_wait_s))
+
                     if response.data:
                         if self._interrupted:
                             pass  # discard: interrupted
@@ -2204,6 +2254,11 @@ class JarvisLive:
                                     self.ui.stop_camera_stream()
                                 asyncio.create_task(_cam_close())
 
+                            if getattr(self, "_pending_go_away", False):
+                                self._pending_go_away = False
+                                print("[JARVIS] 🔄 Turn complete after GoAway. Executing seamless rollover...")
+                                self.request_reconnect(keep_context=True, reason="session duration limit (seamless rollover)")
+
                     if response.tool_call:
                         fn_responses = []
                         for fc in response.tool_call.function_calls:
@@ -2223,6 +2278,9 @@ class JarvisLive:
                         )
                         await self._flush_pending_vision()
         except Exception as e:
+            if _is_go_away_or_session_abort(e):
+                print("[JARVIS] 🔄 Server closed session due to session duration (GoAway/1008). Seamless session resumption in progress...")
+                raise _ReconnectSignal(keep_context=True, reason="session duration GoAway")
             print(f"[JARVIS] ❌ Recv: {e}")
             traceback.print_exc()
             raise
@@ -3102,6 +3160,7 @@ class JarvisLive:
                     self._vision_busy          = False
                     self._vision_last_time     = 0.0
                     self._interrupted          = False
+                    self._pending_go_away      = False
 
                     print("[JARVIS] Connected.")
                     if _resumed_with:
@@ -3209,11 +3268,22 @@ class JarvisLive:
                 # Voluntary reconnect (voice change) — not an error. Rebuild the
                 # session immediately with no backoff and no scary logs.
                 if _is_reconnect_signal(e):
-                    print("[JARVIS] Voluntary reconnect requested.")
+                    _reason = _reason_of(e)
+                    if _reason:
+                        print(f"[JARVIS] Reconnect requested ({_reason}).")
+                    else:
+                        print("[JARVIS] Voluntary reconnect requested.")
                     if not _keep_context_of(e):
                         # A deliberate clean slate (voice change) — drop the
                         # handle so the next connect really does start empty.
                         self._resume_handle = None
+                    self._conn_backoff = 0
+                    continue
+
+                # Server GoAway signal or 1008 session duration limit reached
+                if _is_go_away_or_session_abort(e):
+                    print("[JARVIS] 🔄 Session duration reached (GoAway / 1008). Rebuilding live session with resumption...")
+                    self.ui.write_log("SYS: Session duration reached — refreshing live connection seamlessly...")
                     self._conn_backoff = 0
                     continue
 

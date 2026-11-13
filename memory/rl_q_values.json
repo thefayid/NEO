@@ -794,12 +794,12 @@
         "last_updated": 1794580287.6672704
       },
       "system_immune": {
-        "q_value": 0.225,
-        "visits": 1,
-        "successes": 1,
-        "failures": 0,
-        "last_reward": 0.5,
-        "last_updated": 1794580957.7038963
+        "q_value": -0.7066172776830602,
+        "visits": 7,
+        "successes": 6,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794583413.9397674
       },
       "computer_control": {
         "q_value": 0.5319,
@@ -824,6 +824,14 @@
         "failures": 0,
         "last_reward": 0.5,
         "last_updated": 1794582066.053434
+      },
+      "system_status": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794583344.503947
       }
     },
     "actually_now@desktop#evening": {
@@ -1679,7 +1687,73 @@
         "last_reward": 2.0,
         "last_updated": 1794582802.9290156
       }
+    },
+    "bylingual@desktop#evening": {
+      "manage_neo_memory": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794583214.6250181
+      }
+    },
+    "nothing_for@desktop#evening": {
+      "local_rag": {
+        "q_value": -1.18575,
+        "visits": 2,
+        "successes": 0,
+        "failures": 2,
+        "last_reward": -1.7,
+        "last_updated": 1794583276.6737106
+      },
+      "system_immune": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794583255.4380589
+      },
+      "workspace_master": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794583277.8586056
+      }
+    },
+    "put_down@desktop#evening": {
+      "browser_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794583298.4439275
+      }
+    },
+    "you@desktop#evening": {
+      "browser_control": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794583376.6437345
+      }
+    },
+    "will_study@desktop#evening": {
+      "shutdown_jarvis": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794583416.4062696
+      }
     }
   },
-  "updated_at": 1794582802.9306705
+  "updated_at": 1794583416.408401
 }

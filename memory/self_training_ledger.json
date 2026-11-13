@@ -1276,14 +1276,15 @@
     ".": {
       "pattern": ".",
       "sample": "Hey.",
-      "count": 3,
+      "count": 4,
       "tools": [
         "computer_control",
         "visual_screen_grounding",
         "companion_core",
-        "open_app"
+        "open_app",
+        "browser_control"
       ],
-      "last_used": 1794581438.0553808
+      "last_used": 1794583387.1794794
     },
     ", killing all the background process, okay?": {
       "pattern": ", killing all the background process, okay?",
@@ -1693,6 +1694,66 @@
       "count": 1,
       "tools": [],
       "last_used": 1794582802.9302769
+    },
+    "bylingual wa wa wa wa": {
+      "pattern": "bylingual wa wa wa wa",
+      "sample": "bylingual wa wa wa wa",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794583205.3186848
+    },
+    "nothing for now. say it okay.": {
+      "pattern": "nothing for now. say it okay.",
+      "sample": "Nothing for now. Say it okay.",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory"
+      ],
+      "last_used": 1794583214.6257868
+    },
+    "put down to its cyber security exam": {
+      "pattern": "put down to its cyber security exam",
+      "sample": "put down to its cyber security exam",
+      "count": 1,
+      "tools": [
+        "local_rag",
+        "workspace_master"
+      ],
+      "last_used": 1794583295.0505843
+    },
+    "i'll do it, .": {
+      "pattern": "i'll do it, .",
+      "sample": "I'll do it, yeah.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794583313.0789793
+    },
+    "do it you.": {
+      "pattern": "do it you.",
+      "sample": "Do it you.",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794583363.1527007
+    },
+    "i close the entire browser.": {
+      "pattern": "i close the entire browser.",
+      "sample": "I close the entire browser.",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794583399.8304646
+    },
+    "no, i will study for the exam later. okay? don't": {
+      "pattern": "no, i will study for the exam later. okay? don't",
+      "sample": "No, I will study for the exam later. Okay? Don't worry.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794583413.942561
     }
   },
   "preferences": {},
@@ -1999,9 +2060,27 @@
       "correction": "Nothing, I will let you know.",
       "rule": "When user says 'So what should I know?': corrected with 'Nothing, I will let you know.'",
       "timestamp": 1794582137.902005
+    },
+    {
+      "trigger_command": "bylingual wa wa wa wa",
+      "previous_tools": [],
+      "correction": "Nothing for now. Say it okay.",
+      "rule": "When user says 'bylingual wa wa wa wa': corrected with 'Nothing for now. Say it okay.'",
+      "timestamp": 1794583214.6257563
+    },
+    {
+      "trigger_command": "I close the entire browser.",
+      "previous_tools": [
+        "system_immune"
+      ],
+      "correction": "No, I will study for the exam later. Okay? Don't worry.",
+      "rule": "When user says 'I close the entire browser.': corrected with 'No, I will study for the exam later. Oka'",
+      "timestamp": 1794583413.942533
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'I close the entire browse': execute preferred action 'No, I will study for the exam later'.",
+    "Avoid previous misstep for 'bylingual wa wa wa wa': execute preferred action 'Nothing for now. Say it okay.'.",
     "Avoid previous misstep for 'So what should I know?': execute preferred action 'Nothing, I will let you know.'.",
     "Avoid previous misstep for 'penio': execute preferred action 'not many new a new'.",
     "Avoid previous misstep for 'We are not doing anything': execute preferred action 'are only having doubt and all but w'.",
@@ -2024,9 +2103,7 @@
     "Avoid previous misstep for 'Save my phone number as 9': execute preferred action 'nothing yet'.",
     "Avoid previous misstep for 'I think you are not catch': execute preferred action 'That's actually wrong. It's not 10:'.",
     "Avoid previous misstep for 'JUK': execute preferred action 'not bias I don't need bias. Just cl'.",
-    "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '.",
-    "Avoid previous misstep for 'powerful league': execute preferred action 'not still not called up. called ful'.",
-    "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'."
+    "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '."
   ],
-  "updated_at": 1794582802.9314508
+  "updated_at": 1794583413.9446888
 }
