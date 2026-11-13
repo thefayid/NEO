@@ -1367,6 +1367,14 @@ class JarvisLive:
             f"  • For long or special-character text, use clipboard paste and then verify.\n"
             f"  • After typing, read the field back and confirm it matches the user's text.\n"
             f"  • Never press Enter/Submit until the typed content is verified.\n"
+            f"- TASK PLANNING & EXECUTION PROTOCOL:\n"
+            f"  When given a task:\n"
+            f"  1. Restate it in one sentence and list every sub-step as a numbered plan.\n"
+            f"  2. Flag anything ambiguous and ask ONE clarifying question before starting.\n"
+            f"  3. Do not add steps the user did not request, and do not skip steps they did.\n"
+            f"  4. Execute the plan step by step, reporting 'Step N: verified' after each.\n"
+            f"  5. At the end, give a checklist: what was done, what was verified, and what failed.\n"
+            f"  Never silently change the plan. If it must change, tell the user why first.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
