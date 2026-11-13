@@ -1435,6 +1435,10 @@ class JarvisLive:
             f"  • Log every action in this format: [time] | step | tool called | parameters | result | evidence (screenshot ID or output) | verified: yes/no\n"
             f"  • On request ('show log'), print the last N entries from the action log.\n"
             f"  • If the user asks 'what did you do?', answer ONLY from the log, never from memory or inference. If an entry is missing, say so.\n"
+            f"- TASK SCOPE LOCKING & PERMISSION GATE:\n"
+            f"  • At the start of each task, lock a scope: allowed apps, folders, websites, and actions. Anything not on the allowed list is forbidden (default-deny).\n"
+            f"  • Before every action, check it against the scope. If an action falls outside it, STOP and ask for permission.\n"
+            f"  • Scope expands ONLY when the user explicitly grants permission, and resets when the task ends.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
@@ -1664,6 +1668,25 @@ class JarvisLive:
         self.ui.set_state("THINKING")
         try:
             self.ui.set_active_tool(name)
+        except Exception:
+            pass
+
+        try:
+            from core.neo_scope_sentinel import scope_sentinel
+            is_allowed, scope_reason = scope_sentinel.is_action_allowed(name, args)
+            if not is_allowed:
+                print(f"[JARVIS] 🛑 SCOPE VIOLATION: {scope_reason}")
+                if not self.ui.muted:
+                    self.ui.set_state("LISTENING")
+                return types.FunctionResponse(
+                    id=fc.id, name=name,
+                    response={
+                        "status": "scope_violation",
+                        "error": scope_reason,
+                        "permission_required": True,
+                        "instruction": "STOP. You are outside the locked task scope. Ask the user for explicit permission to expand scope before continuing.",
+                    }
+                )
         except Exception:
             pass
 
