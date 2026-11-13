@@ -108,7 +108,7 @@ class NEOReinforcementLearner:
             }
 
     def _save_q_table(self) -> None:
-        """Persists Q-table to disk atomically."""
+        """Persists Q-table to disk atomically using temporary file + rename."""
         try:
             self.store_path.parent.mkdir(parents=True, exist_ok=True)
             export_data: Dict[str, Any] = {"states": {}, "updated_at": time.time()}
@@ -116,8 +116,10 @@ class NEOReinforcementLearner:
                 export_data["states"][s_key] = {
                     a_name: asdict(entry) for a_name, entry in actions.items()
                 }
-            with open(self.store_path, "w", encoding="utf-8") as f:
+            tmp_path = self.store_path.with_suffix(".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(export_data, f, indent=2)
+            os.replace(tmp_path, self.store_path)
         except Exception as e:
             logger.debug(f"[RL] Table save note: {e}")
 

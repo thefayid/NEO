@@ -176,7 +176,17 @@ def _user_profile() -> dict:
 def _type(text: str, interval: float = 0.03) -> str:
     _require_pyautogui()
     time.sleep(0.3)
-    pyautogui.typewrite(text, interval=interval)
+    has_non_ascii = any(ord(c) > 127 for c in text)
+    if has_non_ascii and _require_pyperclip():
+        pyperclip.copy(text)
+        time.sleep(0.05)
+        paste_key = "command" if _get_os() == "mac" else "ctrl"
+        pyautogui.hotkey(paste_key, "v")
+    else:
+        try:
+            pyautogui.write(text, interval=interval)
+        except Exception:
+            pyautogui.typewrite(text, interval=interval)
     return f"Typed: {text[:60]}{'…' if len(text) > 60 else ''}"
 
 
@@ -193,21 +203,34 @@ def _smart_type(text: str, clear_first: bool = True) -> str:
         pyautogui.hotkey(paste_key, "v")
         return f"Smart-typed (clipboard): {text[:60]}{'…' if len(text) > 60 else ''}"
 
+    has_non_ascii = any(ord(c) > 127 for c in text)
+    if has_non_ascii and _require_pyperclip():
+        pyperclip.copy(text)
+        time.sleep(0.05)
+        paste_key = "command" if _get_os() == "mac" else "ctrl"
+        pyautogui.hotkey(paste_key, "v")
+        return f"Smart-typed (clipboard): {text[:60]}{'…' if len(text) > 60 else ''}"
+
     pyautogui.typewrite(text, interval=0.04)
     return f"Smart-typed: {text[:60]}{'…' if len(text) > 60 else ''}"
 
 
-def _clamp_coords(x: int | float | None, y: int | float | None) -> tuple[int, int] | tuple[None, None]:
+def _clamp_coords(x: int | float | str | None, y: int | float | str | None) -> tuple[int, int] | tuple[None, None]:
     if x is None or y is None:
         return None, None
     try:
+        ix = int(float(x))
+        iy = int(float(y))
         _require_pyautogui()
         sw, sh = pyautogui.size()
-        cx = max(0, min(sw - 1, int(x)))
-        cy = max(0, min(sh - 1, int(y)))
+        cx = max(0, min(sw - 1, ix))
+        cy = max(0, min(sh - 1, iy))
         return cx, cy
     except Exception:
-        return int(x), int(y)
+        try:
+            return int(float(x)), int(float(y))
+        except Exception:
+            return None, None
 
 
 def _click(x=None, y=None, button: str = "left", clicks: int = 1) -> str:
@@ -332,13 +355,32 @@ def _focus_window(title: str) -> str:
 
     if os_name == "windows":
         try:
-            script = f'(New-Object -ComObject WScript.Shell).AppActivate("{title}")'
-            subprocess.run(
-                ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, timeout=5, **_WIN_HIDE,
-            )
-            time.sleep(0.3)
-            return f"Focused window: {title}"
+            import ctypes
+            from ctypes import wintypes
+            user32 = ctypes.windll.user32
+            found_hwnd = [0]
+            target_lower = title.strip().lower()
+
+            def _enum_win(hwnd, lParam):
+                if user32.IsWindowVisible(hwnd):
+                    buf = ctypes.create_unicode_buffer(512)
+                    user32.GetWindowTextW(hwnd, buf, 512)
+                    w_title = buf.value.strip().lower()
+                    if w_title and target_lower in w_title:
+                        found_hwnd[0] = hwnd
+                        return False
+                return True
+
+            WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+            user32.EnumWindows(WNDENUMPROC(_enum_win), 0)
+
+            if found_hwnd[0]:
+                h = found_hwnd[0]
+                user32.ShowWindow(h, 9)  # SW_RESTORE
+                user32.SetForegroundWindow(h)
+                time.sleep(0.1)
+                return f"Focused window: {title}"
+            return f"Window not found: {title}"
         except Exception as e:
             return f"focus_window (Windows) failed: {e}"
 

@@ -1681,7 +1681,14 @@ class JarvisLive:
                     args["file_path"] = self.ui.current_file
                 _ctx = {"player": self.ui, "speak": self.speak,
                         "response": None, "session_memory": None}
-                r = await loop.run_in_executor(None, lambda: self._action_registry.run(name, args, _ctx))
+                try:
+                    r = await asyncio.wait_for(
+                        loop.run_in_executor(None, lambda: self._action_registry.run(name, args, _ctx)),
+                        timeout=25.0
+                    )
+                except asyncio.TimeoutError:
+                    print(f"[JARVIS] ⚠️ Tool '{name}' timed out after 25s")
+                    r = f"Tool '{name}' timed out after 25 seconds."
                 result = r or "Done."
                 # web_search: mirror results to the on-screen content panel
                 if (name == "web_search" and r
@@ -1697,10 +1704,17 @@ class JarvisLive:
 
             else:
                 if self._plugin_registry.has(name):
-                    r = await loop.run_in_executor(
-                        None,
-                        lambda: self._plugin_registry.run(name, args, player=self.ui, session_memory=None)
-                    )
+                    try:
+                        r = await asyncio.wait_for(
+                            loop.run_in_executor(
+                                None,
+                                lambda: self._plugin_registry.run(name, args, player=self.ui, session_memory=None)
+                            ),
+                            timeout=25.0
+                        )
+                    except asyncio.TimeoutError:
+                        print(f"[JARVIS] ⚠️ Plugin tool '{name}' timed out after 25s")
+                        r = f"Plugin tool '{name}' timed out after 25 seconds."
                     result = r or "Done."
                 else:
                     result = f"Unknown tool: {name}"

@@ -1042,6 +1042,529 @@
       "count": 1,
       "tools": [],
       "last_used": 1794552482.1399853
+    },
+    "venio.": {
+      "pattern": "venio.",
+      "sample": "Venio.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794580209.1040883
+    },
+    "how are you doing actually?": {
+      "pattern": "how are you doing actually?",
+      "sample": "How are you doing actually?",
+      "count": 1,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794580225.880747
+    },
+    "what's the time now in new york?": {
+      "pattern": "what's the time now in new york?",
+      "sample": "What's the time now in New York?",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794580256.316129
+    },
+    "open telegram and find for e for entertainments.": {
+      "pattern": "open telegram and find for e for entertainments.",
+      "sample": "Open Telegram and find for E for Entertainments.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794580296.5544674
+    },
+    "so you do do the same with whatsapp?": {
+      "pattern": "so you do do the same with whatsapp?",
+      "sample": "So you do can you do the same with WhatsApp?",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794580333.8397095
+    },
+    ", check again.": {
+      "pattern": ", check again.",
+      "sample": "Yeah, check again.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794580346.3589952
+    },
+    "bird ne ho chuke hai": {
+      "pattern": "bird ne ho chuke hai",
+      "sample": "bird ne ho chuke hai",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794580355.162049
+    },
+    "\u00bfah? da, da, da, selfie, lee.": {
+      "pattern": "\u00bfah? da, da, da, selfie, lee.",
+      "sample": "\u00bfAh? Da, da, da, selfie, lee.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794580372.5919344
+    },
+    "genio.": {
+      "pattern": "genio.",
+      "sample": "Genio.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794580547.2494905
+    },
+    "so it's for a for a day with cigars the": {
+      "pattern": "so it's for a for a day with cigars the",
+      "sample": "So it's for a for a day with cigars the",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794580561.0696754
+    },
+    "mio": {
+      "pattern": "mio",
+      "sample": "mio",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794580575.4731357
+    },
+    "how much you can count on my system?": {
+      "pattern": "how much you can count on my system?",
+      "sample": "How much you can count on my system?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794580618.6677768
+    },
+    ", reduce my brightness.": {
+      "pattern": ", reduce my brightness.",
+      "sample": "Yeah, reduce my brightness.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580628.2014077
+    },
+    ", some more.": {
+      "pattern": ", some more.",
+      "sample": "Yeah, some more.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580637.6086717
+    },
+    "no, it's not actually dropping it down.": {
+      "pattern": "no, it's not actually dropping it down.",
+      "sample": "No, it's not actually dropping it down.",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "open_app"
+      ],
+      "last_used": 1794580652.0097845
+    },
+    "no, you should do it right.": {
+      "pattern": "no, you should do it right.",
+      "sample": "No, you should do it right.",
+      "count": 1,
+      "tools": [
+        "cortex_deep_reasoning"
+      ],
+      "last_used": 1794580659.7544904
+    },
+    "would know it. it will not work that.": {
+      "pattern": "would know it. it will not work that.",
+      "sample": "Would know it. It will not work that.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794580720.0368714
+    },
+    "no, no, no, no. we should do it.": {
+      "pattern": "no, no, no, no. we should do it.",
+      "sample": "No, no, no, no. We should do it.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580733.6993694
+    },
+    "no, i am not saying. do it once more.": {
+      "pattern": "no, i am not saying. do it once more.",
+      "sample": "No, I am not saying. Do it once more.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580742.1460238
+    },
+    "nope. nope. nope. nope. do it.": {
+      "pattern": "nope. nope. nope. nope. do it.",
+      "sample": "Nope. Nope. Nope. Nope. Do it.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580764.0281155
+    },
+    ", now english to fullest.": {
+      "pattern": ", now english to fullest.",
+      "sample": "Yeah, now English to fullest.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794580776.074785
+    },
+    "note that this increase the brightness into maxi": {
+      "pattern": "note that this increase the brightness into maxi",
+      "sample": "Note that this increase the brightness into maximum.",
+      "count": 1,
+      "tools": [
+        "computer_settings",
+        "save_memory"
+      ],
+      "last_used": 1794580794.465564
+    },
+    "brightness up": {
+      "pattern": "brightness up",
+      "sample": "brightness up",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580801.5060809
+    },
+    "more": {
+      "pattern": "more",
+      "sample": "more",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794580814.8101568
+    },
+    ". kill all the zombie process in background.": {
+      "pattern": ". kill all the zombie process in background.",
+      "sample": "Yeah. Just kill all the zombie process in background.",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794580849.8423302
+    },
+    ", there are many phase in application the backgr": {
+      "pattern": ", there are many phase in application the backgr",
+      "sample": "Yeah, there are many phase in application the background is killed it.",
+      "count": 1,
+      "tools": [
+        "computer_settings",
+        "save_memory"
+      ],
+      "last_used": 1794580862.0953922
+    },
+    ".": {
+      "pattern": ".",
+      "sample": "Hey.",
+      "count": 3,
+      "tools": [
+        "computer_control",
+        "visual_screen_grounding",
+        "companion_core",
+        "open_app"
+      ],
+      "last_used": 1794581438.0553808
+    },
+    ", killing all the background process, okay?": {
+      "pattern": ", killing all the background process, okay?",
+      "sample": "Yeah, just killing all the background process, okay?",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794580966.8819575
+    },
+    "kill fx sound": {
+      "pattern": "kill fx sound",
+      "sample": "Kill FX sound",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794580986.6715972
+    },
+    "exactly, your system configuration.": {
+      "pattern": "exactly, your system configuration.",
+      "sample": "Exactly, your system configuration.",
+      "count": 1,
+      "tools": [
+        "system_status"
+      ],
+      "last_used": 1794581110.3158891
+    },
+    "i need a demo to demonstrate to me.": {
+      "pattern": "i need a demo to demonstrate to me.",
+      "sample": "I need a demo to demonstrate to me.",
+      "count": 1,
+      "tools": [
+        "render_hud_widget"
+      ],
+      "last_used": 1794581123.7227046
+    },
+    "not that you heard it wrong. i asked you": {
+      "pattern": "not that you heard it wrong. i asked you",
+      "sample": "Not that you heard it wrong. I asked you",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794581128.8025935
+    },
+    "how much tablet you are having with my computer?": {
+      "pattern": "how much tablet you are having with my computer?",
+      "sample": "How much tablet you are having with my computer? Like how much control you are having with my computer?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581134.198671
+    },
+    "need a proof like do something to know to get kn": {
+      "pattern": "need a proof like do something to know to get kn",
+      "sample": "need a proof like can you do something to know to get know me.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581150.6459632
+    },
+    "yes, sure do it.": {
+      "pattern": "yes, sure do it.",
+      "sample": "Yes, sure do it.",
+      "count": 1,
+      "tools": [
+        "file_controller",
+        "open_app"
+      ],
+      "last_used": 1794581163.0130475
+    },
+    "i can't see it.": {
+      "pattern": "i can't see it.",
+      "sample": "I can't see it.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581165.4734135
+    },
+    "till now": {
+      "pattern": "till now",
+      "sample": "till now",
+      "count": 2,
+      "tools": [
+        "save_memory",
+        "computer_control"
+      ],
+      "last_used": 1794581325.4094524
+    },
+    "i knew.": {
+      "pattern": "i knew.",
+      "sample": "I knew.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "screen_process"
+      ],
+      "last_used": 1794581220.8459558
+    },
+    "but not what you said to": {
+      "pattern": "but not what you said to",
+      "sample": "but not what you said to",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794581245.3981123
+    },
+    "i can't see it now.": {
+      "pattern": "i can't see it now.",
+      "sample": "I can't see it now.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794581264.3005216
+    },
+    "ya, it still didn't open.": {
+      "pattern": "ya, it still didn't open.",
+      "sample": "Ya, it still didn't open.",
+      "count": 1,
+      "tools": [
+        "execute_autonomous_goal"
+      ],
+      "last_used": 1794581268.2139893
+    },
+    "sit still smoke": {
+      "pattern": "sit still smoke",
+      "sample": "sit still smoke",
+      "count": 1,
+      "tools": [
+        "execute_autonomous_goal"
+      ],
+      "last_used": 1794581290.694832
+    },
+    "show": {
+      "pattern": "show",
+      "sample": "show",
+      "count": 1,
+      "tools": [
+        "execute_autonomous_goal"
+      ],
+      "last_used": 1794581303.3274415
+    },
+    "this work?": {
+      "pattern": "this work?",
+      "sample": "this work?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581334.5001452
+    },
+    "go down us.": {
+      "pattern": "go down us.",
+      "sample": "Go down us.",
+      "count": 1,
+      "tools": [
+        "file_controller"
+      ],
+      "last_used": 1794581345.035135
+    },
+    "no, i was there. i didn't you didn't do it, huh?": {
+      "pattern": "no, i was there. i didn't you didn't do it, huh?",
+      "sample": "No, I was there. I didn't You didn't do it, huh? I can't see it. It's in the home page now.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "screen_process"
+      ],
+      "last_used": 1794581354.3216698
+    },
+    ", do it.": {
+      "pattern": ", do it.",
+      "sample": "Yeah, do it.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581377.7351966
+    },
+    "i can't see it till now, . i can't see it.": {
+      "pattern": "i can't see it till now, . i can't see it.",
+      "sample": "I can't see it till now, Neo. I can't see it.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "screen_process"
+      ],
+      "last_used": 1794581399.4291446
+    },
+    "nyop nyop": {
+      "pattern": "nyop nyop",
+      "sample": "nyop nyop",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581428.5862856
+    },
+    "do it again.": {
+      "pattern": "do it again.",
+      "sample": "Do it again.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581444.1642294
+    },
+    "do it again, yo.": {
+      "pattern": "do it again, yo.",
+      "sample": "Do it again, yo.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581453.9599495
+    },
+    "do you take any?": {
+      "pattern": "do you take any?",
+      "sample": "Do you take any?",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581474.4459422
+    },
+    "no.": {
+      "pattern": "no.",
+      "sample": "No.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794581488.698603
+    },
+    "i will say you when you want to do okay.": {
+      "pattern": "i will say you when you want to do okay.",
+      "sample": "I will say you when you want to do okay.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581737.1053894
+    },
+    "topic": {
+      "pattern": "topic",
+      "sample": "topic",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794581763.4286985
+    },
+    "i didn't i let you read the news right i let you": {
+      "pattern": "i didn't i let you read the news right i let you",
+      "sample": "I didn't I let you read the news right I let you just set up.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581775.7165916
+    },
+    "deixa eu checar, pio.": {
+      "pattern": "deixa eu checar, pio.",
+      "sample": "Deixa eu checar, pio.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581783.9567606
+    },
+    "shut up your mouth.": {
+      "pattern": "shut up your mouth.",
+      "sample": "Shut up your mouth.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581787.535421
+    },
+    "i am not angry with you, okay?": {
+      "pattern": "i am not angry with you, okay?",
+      "sample": "I am not angry with you, okay?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581797.6257772
+    },
+    "i am very bad. i am very angry at you.": {
+      "pattern": "i am very bad. i am very angry at you.",
+      "sample": "I am very bad. I am very angry at you.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794581806.130956
     }
   },
   "preferences": {},
@@ -1240,9 +1763,99 @@
       "correction": "No, system shut down. You just shut down.",
       "rule": "When user says 'Just play it. Just shut down f': corrected with 'No, system shut down. You just shut down'",
       "timestamp": 1794552482.1399667
+    },
+    {
+      "trigger_command": "Yeah, some more.",
+      "previous_tools": [
+        "computer_settings"
+      ],
+      "correction": "No, it's not actually dropping it down.",
+      "rule": "When user says 'Yeah, some more.': corrected with 'No, it's not actually dropping it down.'",
+      "timestamp": 1794580652.0097609
+    },
+    {
+      "trigger_command": "No, it's not actually dropping it down.",
+      "previous_tools": [
+        "save_memory",
+        "open_app"
+      ],
+      "correction": "No, you should do it right.",
+      "rule": "When user says 'No, it's not actually dropping': corrected with 'No, you should do it right.'",
+      "timestamp": 1794580659.7544634
+    },
+    {
+      "trigger_command": "Would know it. It will not work that.",
+      "previous_tools": [
+        "save_memory"
+      ],
+      "correction": "No, no, no, no. We should do it.",
+      "rule": "When user says 'Would know it. It will not wor': corrected with 'No, no, no, no. We should do it.'",
+      "timestamp": 1794580733.6993375
+    },
+    {
+      "trigger_command": "No, no, no, no. We should do it.",
+      "previous_tools": [
+        "computer_settings",
+        "computer_settings"
+      ],
+      "correction": "No, I am not saying. Do it once more.",
+      "rule": "When user says 'No, no, no, no. We should do i': corrected with 'No, I am not saying. Do it once more.'",
+      "timestamp": 1794580742.1459973
+    },
+    {
+      "trigger_command": "No, I am not saying. Do it once more.",
+      "previous_tools": [
+        "computer_settings"
+      ],
+      "correction": "Nope. Nope. Nope. Nope. Do it.",
+      "rule": "When user says 'No, I am not saying. Do it onc': corrected with 'Nope. Nope. Nope. Nope. Do it.'",
+      "timestamp": 1794580764.0280838
+    },
+    {
+      "trigger_command": "Yeah, now English to fullest.",
+      "previous_tools": [],
+      "correction": "Note that this increase the brightness into maximum.",
+      "rule": "When user says 'Yeah, now English to fullest.': corrected with 'Note that this increase the brightness i'",
+      "timestamp": 1794580794.4655454
+    },
+    {
+      "trigger_command": "I need a demo to demonstrate to me.",
+      "previous_tools": [
+        "render_hud_widget"
+      ],
+      "correction": "Not that you heard it wrong. I asked you",
+      "rule": "When user says 'I need a demo to demonstrate t': corrected with 'Not that you heard it wrong. I asked you'",
+      "timestamp": 1794581128.802554
+    },
+    {
+      "trigger_command": "Go down us.",
+      "previous_tools": [
+        "file_controller"
+      ],
+      "correction": "No, I was there. I didn't You didn't do it, huh? I can't see it. It's in the home page now.",
+      "rule": "When user says 'Go down us.': corrected with 'No, I was there. I didn't You didn't do '",
+      "timestamp": 1794581354.3216205
+    },
+    {
+      "trigger_command": "Do you take any?",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "No.",
+      "rule": "When user says 'Do you take any?': corrected with 'No.'",
+      "timestamp": 1794581488.6985862
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'Do you take any?': execute preferred action 'No.'.",
+    "Avoid previous misstep for 'Go down us.': execute preferred action 'No, I was there. I didn't You didn''.",
+    "Avoid previous misstep for 'I need a demo to demonstr': execute preferred action 'Not that you heard it wrong. I aske'.",
+    "Avoid previous misstep for 'Yeah, now English to full': execute preferred action 'Note that this increase the brightn'.",
+    "Avoid previous misstep for 'No, I am not saying. Do i': execute preferred action 'Nope. Nope. Nope. Nope. Do it.'.",
+    "Avoid previous misstep for 'No, no, no, no. We should': execute preferred action 'No, I am not saying. Do it once mor'.",
+    "Avoid previous misstep for 'Would know it. It will no': execute preferred action 'No, no, no, no. We should do it.'.",
+    "Avoid previous misstep for 'No, it's not actually dro': execute preferred action 'No, you should do it right.'.",
+    "Avoid previous misstep for 'Yeah, some more.': execute preferred action 'No, it's not actually dropping it d'.",
     "Avoid previous misstep for 'Just play it. Just shut d': execute preferred action 'No, system shut down. You just shut'.",
     "Avoid previous misstep for 'me I can manage myself. J': execute preferred action 'And don't repeat the message, okay?'.",
     "Avoid previous misstep for 'the first one': execute preferred action 'No. My spelling was ALWINRAGCP.'.",
@@ -1258,13 +1871,7 @@
     "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'.",
     "Avoid previous misstep for 'Oh yeah, I will decide la': execute preferred action 'Don't yak. Log sign your tap now.'.",
     "Avoid previous misstep for 'I knew due to search by b': execute preferred action 'Actually you didn't type it. Type i'.",
-    "Avoid previous misstep for 'No, just open it by Rahma': execute preferred action 'No, I just closed the tab. New tab,'.",
-    "Avoid previous misstep for 'Take that second user.': execute preferred action 'No, just open it by Rahman account.'.",
-    "Avoid previous misstep for 'No, you type wrong. Just ': execute preferred action 'Close the new pop-up tab you opened'.",
-    "Avoid previous misstep for 'Zenon City': execute preferred action 'No, you type wrong. Just Jain Unive'.",
-    "Avoid previous misstep for 'WhatsApp is closed.': execute preferred action 'Change the music like I don't want '.",
-    "Avoid previous misstep for 'What's up and take me as ': execute preferred action 'No, I don't want a song now. Just c'.",
-    "For 'hello.': immediately execute save_memory without hesitation."
+    "Avoid previous misstep for 'No, just open it by Rahma': execute preferred action 'No, I just closed the tab. New tab,'."
   ],
-  "updated_at": 1794552482.1458151
+  "updated_at": 1794581806.131987
 }

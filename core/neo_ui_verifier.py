@@ -105,7 +105,7 @@ class UIActionVerifier:
                 import PIL.ImageGrab
                 cx, cy = target_pos
                 half = roi_size // 2
-                bbox = (max(0, cx - half), max(0, cy - half), cx + half, cy + half)
+                bbox = (cx - half, cy - half, cx + half, cy + half)
                 crop = PIL.ImageGrab.grab(bbox=bbox)
                 # Compute fast perceptual hash from grayscale thumbnail
                 thumb = crop.convert("L").resize((8, 8))
@@ -213,14 +213,11 @@ class UIActionVerifier:
     def _record_rl_reward(self, action_name: str, result: VerificationResult) -> None:
         """Silently logs action verification reward into reinforcement learning ledger."""
         try:
-            from core.reinforcement_learning import rl_engine
-            reward = 1.0 if result.verified else -0.5
-            rl_engine.record_experience(
-                state=f"ui_{action_name}",
-                action=action_name,
-                reward=reward,
-                next_state="verified" if result.verified else "unverified",
-                done=True,
+            from core.neo_reinforcement_learning import rl_learner
+            rl_learner.record_tool_outcome(
+                tool_name=action_name,
+                success=result.verified,
+                outcome_text=result.reason,
             )
         except Exception:
             pass

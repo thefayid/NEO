@@ -125,9 +125,17 @@ def _resolve_contact(identifier: str) -> dict:
             "is_raw_number": False,
         }
 
-    # Partial / substring match
+    # Partial / substring match (requires at least 3 chars or prefix match)
     for k, v in contacts.items():
-        if clean_key in k or k in clean_key:
+        if len(clean_key) >= 3 and (clean_key in k or k in clean_key):
+            return {
+                "name": v.get("name", identifier),
+                "phone": _clean_phone(v.get("phone", ""), default_cc),
+                "telegram": v.get("telegram", ""),
+                "email": v.get("email", ""),
+                "is_raw_number": False,
+            }
+        elif len(clean_key) >= 2 and k.startswith(clean_key):
             return {
                 "name": v.get("name", identifier),
                 "phone": _clean_phone(v.get("phone", ""), default_cc),

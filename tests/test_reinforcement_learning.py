@@ -15,7 +15,11 @@ class TestNEOReinforcementLearning(unittest.TestCase):
         self.rl = NEOReinforcementLearner(store_path=self.store_path)
 
     def tearDown(self):
-        self.tmp_dir.cleanup()
+        time.sleep(0.05)
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
 
     def test_state_key_extraction(self):
         key1 = self.rl.get_state_key("open YouTube in Chrome", active_app="chrome.exe")

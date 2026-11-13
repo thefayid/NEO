@@ -7,34 +7,54 @@ Uses Windows UI Automation Core / pywinauto under WinSta0 desktop station.
 """
 from __future__ import annotations
 
+import concurrent.futures
 import ctypes
 from ctypes import wintypes
 import os
 import platform
 import re
 import sys
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 _OS = platform.system()
+_ATTACHED_THREADS = set()
+_ATTACH_LOCK = threading.Lock()
+_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="UIAWorker")
+
+
+def ensure_com_initialized() -> None:
+    """Ensures COM is initialized in MTA/STA for the current thread."""
+    if _OS != "Windows":
+        return
+    try:
+        ctypes.windll.ole32.CoInitialize(None)
+    except Exception:
+        pass
 
 
 def ensure_desktop_attached() -> bool:
-    """Attaches the interactive desktop station so UIA works reliably across worker threads."""
+    """Attaches the interactive desktop station so UIA works reliably across worker threads without leaking handles."""
     if _OS != "Windows":
         return False
-    try:
-        user32 = ctypes.WinDLL("user32", use_last_error=True)
-        hwinsta = user32.OpenWindowStationW("WinSta0", False, 0x0000037F)
-        if hwinsta:
-            user32.SetProcessWindowStation(hwinsta)
-            hdesk = user32.OpenDesktopW("Default", 0, False, 0x01FF)
-            if hdesk:
-                user32.SetThreadDesktop(hdesk)
-                return True
-    except Exception:
-        pass
+    tid = threading.get_ident()
+    with _ATTACH_LOCK:
+        if tid in _ATTACHED_THREADS:
+            return True
+        try:
+            user32 = ctypes.WinDLL("user32", use_last_error=True)
+            hwinsta = user32.OpenWindowStationW("WinSta0", False, 0x0000037F)
+            if hwinsta:
+                user32.SetProcessWindowStation(hwinsta)
+                hdesk = user32.OpenDesktopW("Default", 0, False, 0x01FF)
+                if hdesk:
+                    user32.SetThreadDesktop(hdesk)
+                    _ATTACHED_THREADS.add(tid)
+                    return True
+        except Exception:
+            pass
     return False
 
 
@@ -153,17 +173,10 @@ class WindowsUIAutomationEngine:
             pass
         return results
 
-    def get_interactive_controls(self, hwnd: int = 0, max_items: int = 80) -> List[UIControl]:
-        """
-        Extracts all interactive UI controls from the foreground window with exact pixel bounds.
-        """
-        if not self._available or _OS != "Windows":
-            return []
-
+    def _extract_controls_sync(self, target_hwnd: int, max_items: int) -> List[UIControl]:
+        """Internal synchronous extractor with COM initialization."""
+        ensure_com_initialized()
         ensure_desktop_attached()
-        target_hwnd = hwnd or self.get_foreground_handle()
-        if not target_hwnd:
-            return []
 
         controls: List[UIControl] = []
         try:
@@ -171,9 +184,25 @@ class WindowsUIAutomationEngine:
             app = Application(backend="uia").connect(handle=target_hwnd)
             win = app.window(handle=target_hwnd)
 
-            # Enumerate descendants
-            descendants = win.descendants()
-            for elem in descendants:
+            # First priority: Fast scan of top-level children
+            immediate_elements = []
+            try:
+                immediate_elements = win.children()
+            except Exception:
+                pass
+
+            # If immediate children available, also get second-level descendants
+            candidates = list(immediate_elements)
+            for child in immediate_elements[:15]:
+                try:
+                    sub = child.children()
+                    candidates.extend(sub)
+                    if len(candidates) >= (max_items * 2):
+                        break
+                except Exception:
+                    continue
+
+            for elem in candidates:
                 try:
                     c_type = str(getattr(elem.element_info, "control_type", "") or "")
                     if c_type not in self._INTERACTIVE_TYPES:
@@ -182,14 +211,12 @@ class WindowsUIAutomationEngine:
                     rect = elem.rectangle()
                     w = rect.width()
                     h = rect.height()
-                    # Filter out zero-size or invisible off-screen elements
-                    if w < 6 or h < 6 or rect.left < -100 or rect.top < -100:
+                    if w < 6 or h < 6 or rect.left < -500 or rect.top < -500:
                         continue
 
                     name = str(getattr(elem.element_info, "name", "") or "").strip()
                     auto_id = str(getattr(elem.element_info, "automation_id", "") or "").strip()
 
-                    # Calculate exact center coordinates
                     cx = (rect.left + rect.right) // 2
                     cy = (rect.top + rect.bottom) // 2
 
@@ -213,28 +240,48 @@ class WindowsUIAutomationEngine:
 
         return controls
 
+    def get_interactive_controls(self, hwnd: int = 0, max_items: int = 80, timeout_secs: float = 2.0) -> List[UIControl]:
+        """
+        Extracts interactive UI controls from the target window with a hard timeout to prevent freezes.
+        """
+        if not self._available or _OS != "Windows":
+            return []
+
+        target_hwnd = hwnd or self.get_foreground_handle()
+        if not target_hwnd:
+            return []
+
+        # Run with strict timeout
+        future = _EXECUTOR.submit(self._extract_controls_sync, target_hwnd, max_items)
+        try:
+            return future.result(timeout=timeout_secs)
+        except concurrent.futures.TimeoutError:
+            print(f"[UIA] ⚠️ get_interactive_controls timed out after {timeout_secs}s on hwnd={target_hwnd}")
+            return []
+        except Exception as e:
+            return []
+
     def find_control(self, query: str, hwnd: int = 0, search_all_windows: bool = True) -> Optional[UIControl]:
         """
-        Finds a control in the active window (or across top windows) matching query with high precision.
-        Matching Priority:
-          1. Exact case-insensitive match on name or automation_id.
-          2. Prefix / substring match on name.
-          3. Semantic token match (e.g. query='search button' matches Button 'Search').
+        Finds a control matching query with high precision and zero freeze risk.
         """
+        q = (query or "").strip().lower()
+        if not q:
+            return None
+
         primary_hwnd = hwnd or self.get_foreground_handle()
         target_hwnds = [primary_hwnd] if primary_hwnd else [0]
 
         if search_all_windows:
-            top_windows = self.get_top_windows(max_windows=4)
+            top_windows = self.get_top_windows(max_windows=3)
             for h, _ in top_windows:
                 if h not in target_hwnds:
                     target_hwnds.append(h)
 
-        q = query.strip().lower()
         q_tokens = set(re.findall(r"[a-z0-9]+", q))
 
         for target_h in target_hwnds:
-            controls = self.get_interactive_controls(hwnd=target_h)
+            controls = self.get_interactive_controls(hwnd=target_h, timeout_secs=1.5)
             if not controls:
                 continue
 
@@ -245,10 +292,14 @@ class WindowsUIAutomationEngine:
                 if c_name == q or c_id == q:
                     return c
 
+            # If single-character or very short query, do NOT do fuzzy match
+            if len(q) <= 2:
+                continue
+
             # 2. Direct Substring Match
             for c in controls:
                 c_name = c.name.lower()
-                if (q and q in c_name) or (len(c_name) > 3 and c_name in q):
+                if (q in c_name) or (len(c_name) > 3 and c_name in q):
                     return c
 
             # 3. Token Overlap Score

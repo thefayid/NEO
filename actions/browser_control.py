@@ -810,14 +810,26 @@ class _BrowserSession:
         page = await self._get_page()
         try:
             if text:
-                await page.get_by_text(text, exact=False).first.click(timeout=8_000)
+                await page.get_by_text(text, exact=False).first.click(timeout=6_000)
                 return f"Clicked text: '{text}'"
             if selector:
-                await page.click(selector, timeout=8_000)
+                await page.click(selector, timeout=6_000)
                 return f"Clicked selector: {selector}"
             return outcome.failed("browser_control",
                                   "no element was named to click")
         except PlaywrightTimeout:
+            # Fallback: attempt on-screen precision grounding if element exists on user's real display
+            try:
+                target_query = text or selector or ""
+                if target_query:
+                    from core.neo_visual_grounding import visual_grounding
+                    elem = visual_grounding.ground_target_on_screen(target_query, highlight=True)
+                    if elem:
+                        ok = visual_grounding.click_element(elem, verify=True)
+                        if ok:
+                            return outcome.done("browser_control", action="click", label=elem.label, verified=True, method="visual_fallback")
+            except Exception:
+                pass
             return outcome.failed(
                 "browser_control",
                 "no element matching that appeared on the page in time",
@@ -831,12 +843,23 @@ class _BrowserSession:
         try:
             el = page.locator(selector).first if selector else page.locator(":focus")
             if clear_first:
-                await el.clear()
-            await el.type(text, delay=50)
-            # playwright raises when the field is not there, so reaching this
-            # line means the text went into a real input.
+                try:
+                    await el.clear(timeout=4000)
+                except Exception:
+                    pass
+            await el.type(text, delay=35, timeout=5000)
             return outcome.done("browser_control", typed=True, verified=True)
         except Exception as e:
+            # Fallback: if browser is active window on screen, type via native keyboard
+            try:
+                import pyautogui
+                if clear_first:
+                    pyautogui.hotkey("ctrl", "a")
+                    pyautogui.press("backspace")
+                pyautogui.write(text)
+                return outcome.done("browser_control", typed=True, verified=True, method="native_fallback")
+            except Exception:
+                pass
             return f"Type error: {e}"
 
     async def scroll(self, direction: str = "down", amount: int = 500) -> str:

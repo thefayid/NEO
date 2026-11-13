@@ -24,7 +24,13 @@ try:
 except ImportError:
     _HAS_PIL = False
 
-from core.neo_ui_automation import ui_automation, UIControl
+try:
+    from core.neo_ui_automation import ui_automation, UIControl
+    _HAS_UIA = True
+except Exception:
+    ui_automation = None
+    UIControl = None
+    _HAS_UIA = False
 
 
 # High-contrast color palette for visual badges (stands out against light and dark backgrounds)

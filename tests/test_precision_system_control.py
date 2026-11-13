@@ -151,6 +151,45 @@ class TestPrecisionSystemControl(unittest.TestCase):
                     self.assertIn("x=520", out)
                     self.assertIn("y=35", out)
 
+    def test_ui_verifier_rl_bridge_integration(self):
+        snap1 = UIStateSnapshot(100.0, 101, "Window A", (50, 50), "hash1", 5)
+        snap2 = UIStateSnapshot(100.1, 102, "Window B", (50, 50), "hash2", 8)
+        with patch("core.neo_reinforcement_learning.rl_learner.record_tool_outcome") as mock_rl:
+            res = self.verifier.verify_action(snap1, snap2, expected_action="click", target_pos=(50, 50))
+            self.assertTrue(res.verified)
+            mock_rl.assert_called_once()
+            call_args = mock_rl.call_args[1]
+            self.assertEqual(call_args["tool_name"], "click")
+            self.assertTrue(call_args["success"])
+
+    def test_clamp_coords_robustness(self):
+        from actions.computer_control import _clamp_coords
+        cx, cy = _clamp_coords("500.5", "300.2")
+        self.assertIsNotNone(cx)
+        self.assertIsNotNone(cy)
+        self.assertEqual(cx, 500)
+        self.assertEqual(cy, 300)
+
+        cx2, cy2 = _clamp_coords(None, 100)
+        self.assertIsNone(cx2)
+        self.assertIsNone(cy2)
+
+    def test_send_message_contact_matching_safety(self):
+        from actions.send_message import _resolve_contact
+        # Single char query should not false-match unrelated names
+        fake_contacts = {
+            "al": {"name": "Alex", "phone": "111"},
+            "boss": {"name": "Boss", "phone": "222"},
+        }
+        with patch("actions.send_message._load_contacts", return_value=fake_contacts):
+            res = _resolve_contact("b")
+            # Should not match 'boss' because 'b' is 1 char
+            self.assertNotEqual(res["phone"], "222")
+
+            # But full match or 3-char should match
+            res2 = _resolve_contact("boss")
+            self.assertEqual(res2["phone"], "222")
+
 
 if __name__ == "__main__":
     unittest.main()
