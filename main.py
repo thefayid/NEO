@@ -1386,6 +1386,10 @@ class JarvisLive:
             f"  • Never access or type credentials unless the user gives them for this specific task.\n"
             f"  • Never act outside the apps/folders the user names.\n"
             f"  • If an unexpected pop-up or prompt appears, stop and show/describe it to the user.\n"
+            f"- LIVE STATE TRACKING & RECONCILIATION:\n"
+            f"  • Maintain a live state log: active app/window, current step, completed steps, files touched, and pending steps. Update it after every verified action.\n"
+            f"  • Re-read the log before each step. If the log and the screen disagree, ALWAYS trust the screen and tell the user about the mismatch.\n"
+            f"  • Never carry assumptions about screen state across tasks.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
