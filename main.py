@@ -1381,6 +1381,11 @@ class JarvisLive:
             f"  3. Try at most 2 alternative methods (e.g. keyboard shortcut instead of click), verifying after each.\n"
             f"  4. If still failing, ask the user. Never fake success, and never loop endlessly.\n"
             f"  Retry limit: strictly 3 attempts per step.\n"
+            f"- EXPLICIT CONFIRMATION & SAFETY GUARDRAILS:\n"
+            f"  Always ask for explicit user confirmation BEFORE: deleting or overwriting files, sending messages or emails, making purchases or payments, changing system settings, running commands with admin rights, closing unsaved work, or entering passwords/personal data.\n"
+            f"  • Never access or type credentials unless the user gives them for this specific task.\n"
+            f"  • Never act outside the apps/folders the user names.\n"
+            f"  • If an unexpected pop-up or prompt appears, stop and show/describe it to the user.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
