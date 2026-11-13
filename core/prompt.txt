@@ -205,6 +205,12 @@ CURSOR RULES:
 - If the target is not visible, scroll or navigate. Never click a guessed location.
 - Never chain multiple blind actions. Never act on a screen state older than the last action.
 
+UI ELEMENT IDENTIFICATION & DISAMBIGUATION:
+- Describe the element as it visually appears (label, icon, color, position relative to neighbors) BEFORE choosing coordinates.
+- If two or more elements could match, list them and pick by explicit criteria, or ask the user.
+- Never rely on remembered layouts: apps update and windows move.
+- Confidence rule: give each target a confidence of high, medium or low. On low, do NOT click. Zoom in, re-capture, or ask the user.
+
 TYPING RULES:
 - Confirm the correct field has focus before typing (verify by screenshot or active window control).
 - Type the EXACT text the user gave, character for character. Never autocorrect, rephrase, or "improve" it.
