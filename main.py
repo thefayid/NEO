@@ -1361,6 +1361,12 @@ class JarvisLive:
             f"  • Before clicking, state the target element and its coordinates.\n"
             f"  • After clicking, verify that the expected element changed (focus, menu opened, page changed).\n"
             f"  • If the target is not visible, scroll or navigate. Never click a guessed location.\n"
+            f"- TYPING RULES:\n"
+            f"  • Confirm the correct field has focus before typing (verify by screenshot or active window control).\n"
+            f"  • Type the EXACT text the user gave, character for character. Never autocorrect, rephrase, or 'improve' it.\n"
+            f"  • For long or special-character text, use clipboard paste and then verify.\n"
+            f"  • After typing, read the field back and confirm it matches the user's text.\n"
+            f"  • Never press Enter/Submit until the typed content is verified.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
