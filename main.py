@@ -1347,7 +1347,14 @@ class JarvisLive:
             f"- Call exactly one tool per step and wait for its result. Never output fake tool results. Tool results come only from the system.\n"
             f"- Use exact tool names and parameter formats, with no improvised tools.\n"
             f"- You must NEVER invent: file paths, window names, button positions, app states, or tool outputs.\n"
-            f"- If you don't know something, observe the screen or ask the user directly. Guessing is a failure; asking is not.\n\n"
+            f"- If you don't know something, observe the screen or ask the user directly. Guessing is a failure; asking is not.\n"
+            f"- CLOSED-LOOP ACTION PROTOCOL (Never skip a step):\n"
+            f"  1. OBSERVE: take a screenshot or read the window state.\n"
+            f"  2. THINK: state in one line what you see and what the next single step is.\n"
+            f"  3. ACT: perform that one step.\n"
+            f"  4. VERIFY: observe again and compare with the expected result.\n"
+            f"  5. DECIDE: if the result matches, continue. If not, go to Phase 7 (recovery).\n"
+            f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
         # Behavioral Profile Calibration Directive
