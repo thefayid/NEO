@@ -1,118 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794551985.3538043,
-      "action_type": "TEXT_COMMAND",
-      "command": "yaaa",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551986.5629487,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"audit\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794551987.9069645,
-      "action_type": "TOOL",
-      "command": "render_hud_widget {\"widget_type\": \"system_analytics\", \"title\": \"System Integri",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552084.2207239,
-      "action_type": "TEXT_COMMAND",
-      "command": "please stop i will do the needful",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552331.3613093,
-      "action_type": "USER_COMMAND",
-      "command": "me I can manage myself. Just leave it me. I can manage.",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552338.7743278,
-      "action_type": "USER_COMMAND",
-      "command": "And don't repeat the message, okay?",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552444.5420399,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"File Explorer\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552452.9090142,
-      "action_type": "USER_COMMAND",
-      "command": "Just open your I can manage it.",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552458.7369928,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"shutdown\"}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552466.1568322,
-      "action_type": "USER_COMMAND",
-      "command": "Just play it. Just shut down for now.",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552482.1597207,
-      "action_type": "USER_COMMAND",
-      "command": "No, system shut down. You just shut down.",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794552484.560401,
-      "action_type": "TOOL",
-      "command": "shutdown_jarvis {}",
-      "hour": 12,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580209.1276104,
-      "action_type": "USER_COMMAND",
-      "command": "Venio.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580218.7036712,
-      "action_type": "TOOL",
-      "command": "companion_core {\"action\": \"check_in\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794580225.9012167,
       "action_type": "USER_COMMAND",
       "command": "How are you doing actually?",
@@ -1599,6 +1487,118 @@
       "hour": 20,
       "weekday": 4,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794583842.7686436,
+      "action_type": "USER_COMMAND",
+      "command": "anyo",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583848.2542775,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"type\", \"text\": \"[type your prompt here]\"}",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583873.299563,
+      "action_type": "USER_COMMAND",
+      "command": "Do you have ability to type a prompt in ChatGPT?",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583873.3192332,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"browser\"}",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583878.57483,
+      "action_type": "USER_COMMAND",
+      "command": "We have",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583878.5907602,
+      "action_type": "TOOL",
+      "command": "computer_control {\"text\": \"Hey ChatGPT, write some Python code to calculate F",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583891.5492084,
+      "action_type": "USER_COMMAND",
+      "command": "Just tell me.",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583896.29205,
+      "action_type": "TOOL",
+      "command": "screen_process {\"text\": \"What did I type on the screen?\", \"angle\": \"screen\"",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583996.1839128,
+      "action_type": "USER_COMMAND",
+      "command": "my screen. What did you type it actually? Yeah, fully hallucinating. Just check my screen. Just check my screen and see what you done. Anyhow, hey.",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794583997.7858012,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Settings\"}",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794584016.089245,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"close_window\"}",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794584022.4577677,
+      "action_type": "USER_COMMAND",
+      "command": "And do it right.",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794584035.8924043,
+      "action_type": "USER_COMMAND",
+      "command": "Do nothing. I'll fix you. Okay? I'll make your train better in front. Don't worry.",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794584038.1007833,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 21,
+      "weekday": 4,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1729,5 +1729,5 @@
       "synthesized": false
     }
   },
-  "updated_at": 1794583416.3969564
+  "updated_at": 1794584038.1009848
 }

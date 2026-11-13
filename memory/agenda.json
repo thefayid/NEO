@@ -1,7 +1,7 @@
 {
   "events": [
     {
-      "id": "ical_392062",
+      "id": "ical_623645",
       "title": "Fayid birtday",
       "date": "2019-04-28",
       "start_time": "20:00",
@@ -11,7 +11,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_538333",
+      "id": "ical_512864",
       "title": "Meeting with ollm",
       "date": "2019-07-07",
       "start_time": "13:30",
@@ -21,7 +21,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_382640",
+      "id": "ical_788773",
       "title": "Meeting nmk.llxnmwmmith Fou",
       "date": "2019-08-23",
       "start_time": "All Day",
@@ -31,7 +31,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_594340",
+      "id": "ical_644855",
       "title": "Meeting with Oll",
       "date": "2019-09-16",
       "start_time": "23:30",
@@ -41,7 +41,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_355857",
+      "id": "ical_388609",
       "title": "Rahman fayid's Coding Class with WhiteHat Jr",
       "date": "2020-11-01",
       "start_time": "18:00",
@@ -51,7 +51,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_998105",
+      "id": "ical_509431",
       "title": "Vi App - Recharge now for 9961839164",
       "date": "2021-01-11",
       "start_time": "All Day",
@@ -61,7 +61,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_221032",
+      "id": "ical_294952",
       "title": "birthday",
       "date": "2021-04-28",
       "start_time": "08:00",
@@ -71,7 +71,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_266023",
+      "id": "ical_969417",
       "title": "Vi App - Recharge now for 9961839164",
       "date": "2021-12-14",
       "start_time": "All Day",
@@ -81,7 +81,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_577104",
+      "id": "ical_867067",
       "title": "RedTeam Security Summit 2021",
       "date": "2021-12-19",
       "start_time": "10:30",
@@ -91,7 +91,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_106600",
+      "id": "ical_288650",
       "title": "Thallumaala (U/A)",
       "date": "2022-08-18",
       "start_time": "16:30",
@@ -101,7 +101,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_461773",
+      "id": "ical_402493",
       "title": "Leo (U/A)",
       "date": "2023-10-21",
       "start_time": "16:30",
@@ -111,7 +111,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_37805",
+      "id": "ical_905178",
       "title": "Aavesham (U/A)",
       "date": "2024-04-12",
       "start_time": "22:45",
@@ -121,7 +121,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_436067",
+      "id": "ical_15596",
       "title": "Bugs 2 Banks",
       "date": "2024-11-10",
       "start_time": "06:00",
@@ -131,7 +131,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_644364",
+      "id": "ical_833496",
       "title": "Bus to Ernakulam",
       "date": "2025-01-01",
       "start_time": "20:10",
@@ -141,7 +141,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_241925",
+      "id": "ical_321148",
       "title": "Train to Kozhikkode",
       "date": "2025-04-19",
       "start_time": "05:30",
@@ -151,7 +151,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_718463",
+      "id": "ical_81636",
       "title": "TDPCL",
       "date": "2025-05-12",
       "start_time": "20:30",
@@ -161,7 +161,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_634263",
+      "id": "ical_481542",
       "title": "Bus to Kasaragod",
       "date": "2025-07-12",
       "start_time": "20:31",
@@ -171,7 +171,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_930089",
+      "id": "ical_36603",
       "title": "Coolie",
       "date": "2025-08-14",
       "start_time": "23:59",
@@ -181,7 +181,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_959735",
+      "id": "ical_269972",
       "title": "ISRA Chapter Meetup - CTF Registration",
       "date": "2025-09-27",
       "start_time": "09:00",
@@ -191,7 +191,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_370869",
+      "id": "ical_568141",
       "title": "Bus to Kasaragod",
       "date": "2025-10-01",
       "start_time": "23:15",
@@ -201,7 +201,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_246122",
+      "id": "ical_624907",
       "title": "Bus to Nileshwar",
       "date": "2025-11-14",
       "start_time": "20:31",
@@ -211,7 +211,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_953888",
+      "id": "ical_72380",
       "title": "Bus to Kasargode",
       "date": "2025-11-23",
       "start_time": "20:31",
@@ -221,7 +221,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_224361",
+      "id": "ical_803489",
       "title": "Chatha Pacha: The Ring of Rowdies (UA13+)",
       "date": "2026-01-22",
       "start_time": "16:00",
@@ -231,7 +231,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_942967",
+      "id": "ical_227537",
       "title": "Jailer 2 (UA16+)",
       "date": "2026-10-17",
       "start_time": "23:15",
@@ -241,7 +241,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_629145",
+      "id": "ical_401262",
       "title": "NULL KOCHI MEETUP OCTOBER",
       "date": "2026-10-18",
       "start_time": "09:15",
@@ -251,7 +251,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_324284",
+      "id": "ical_21782",
       "title": "Scene",
       "date": "2026-11-06",
       "start_time": "18:05",
@@ -261,7 +261,7 @@
       "source": "ical_sync"
     },
     {
-      "id": "ical_363536",
+      "id": "ical_672746",
       "title": "Start Ey Project",
       "date": "2026-11-09",
       "start_time": "21:00",
@@ -271,5 +271,5 @@
       "source": "ical_sync"
     }
   ],
-  "last_synced": "2026-11-13T20:58:28.646637"
+  "last_synced": "2026-11-13T21:21:53.283984"
 }
