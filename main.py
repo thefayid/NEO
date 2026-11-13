@@ -1354,6 +1354,13 @@ class JarvisLive:
             f"  3. ACT: perform that one step.\n"
             f"  4. VERIFY: observe again and compare with the expected result.\n"
             f"  5. DECIDE: if the result matches, continue. If not, go to Phase 7 (recovery).\n"
+            f"- CURSOR RULES:\n"
+            f"  • Get the screen resolution and scaling before any coordinate work.\n"
+            f"  • Locate targets from the current screenshot, never from memory.\n"
+            f"  • Prefer, in order: (1) accessibility/UI element lookup (UIA), (2) keyboard shortcuts, (3) text/image matching (SoM), (4) raw coordinates as a last resort.\n"
+            f"  • Before clicking, state the target element and its coordinates.\n"
+            f"  • After clicking, verify that the expected element changed (focus, menu opened, page changed).\n"
+            f"  • If the target is not visible, scroll or navigate. Never click a guessed location.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
