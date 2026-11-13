@@ -44,13 +44,23 @@ def visual_screen_grounding(parameters: dict, **kwargs) -> str:
     if action in ("click", "double_click", "right_click"):
         is_dbl = action == "double_click"
         is_right = action == "right_click"
-        ok = visual_grounding.click_element(elem, double_click=is_dbl, right_click=is_right)
+        ok = visual_grounding.click_element(elem, double_click=is_dbl, right_click=is_right, verify=True)
         action_verb = "Double-clicked" if is_dbl else ("Right-clicked" if is_right else "Clicked")
         if ok:
-            return outcome.done("visual_screen_grounding", action=action, label=elem.label, x=cx, y=cy, verified=True)
+            method_str = "uia" if elem.confidence >= 1.0 else ("som" if elem.confidence >= 0.98 else "vision")
+            return outcome.done(
+                "visual_screen_grounding",
+                action=action,
+                label=elem.label,
+                x=cx,
+                y=cy,
+                verified=True,
+                method=method_str,
+            )
         else:
             return outcome.failed("visual_screen_grounding", f"Located '{elem.label}' at ({cx}, {cy}) but click execution failed.")
 
+    method_str = "uia" if elem.confidence >= 1.0 else ("som" if elem.confidence >= 0.98 else "vision")
     return outcome.done(
         "visual_screen_grounding",
         action="locate",
@@ -59,6 +69,7 @@ def visual_screen_grounding(parameters: dict, **kwargs) -> str:
         x=cx,
         y=cy,
         confidence=round(elem.confidence, 2),
+        method=method_str,
     )
 
 

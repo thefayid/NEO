@@ -1,23 +1,29 @@
 {
-  "krishnakiran": {
-    "name": "Krishnakiran",
-    "phone": "",
-    "telegram": "",
-    "email": "krishnakiranbaiju1@gmail.com"
-  },
-  "boss": {
-    "name": "Boss",
-    "phone": "",
-    "telegram": ""
-  },
-  "vihas": {
-    "name": "Vihas",
-    "phone": "",
-    "telegram": ""
-  },
-  "vias": {
-    "name": "Vihas",
-    "phone": "",
-    "telegram": ""
-  }
+    "krishnakiran": {
+        "name": "Krishnakiran",
+        "phone": "",
+        "telegram": "",
+        "email": "krishnakiranbaiju1@gmail.com"
+    },
+    "boss": {
+        "name": "Boss",
+        "phone": "",
+        "telegram": ""
+    },
+    "vihas": {
+        "name": "Vihas",
+        "phone": "",
+        "telegram": ""
+    },
+    "vias": {
+        "name": "Vihas",
+        "phone": "",
+        "telegram": ""
+    },
+    "fayidphone": {
+        "name": "Fayid (Phone)",
+        "phone": "919778012374",
+        "telegram": "",
+        "email": ""
+    }
 }

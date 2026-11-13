@@ -58,6 +58,24 @@ try:
 except ImportError:
     _HAS_PYAUTOGUI = False
 
+try:
+    from core.neo_ui_automation import ui_automation
+    _HAS_UIA = True
+except ImportError:
+    _HAS_UIA = False
+
+try:
+    from core.neo_set_of_marks import set_of_marks
+    _HAS_SOM = True
+except ImportError:
+    _HAS_SOM = False
+
+try:
+    from core.neo_ui_verifier import ui_verifier
+    _HAS_VERIFIER = True
+except ImportError:
+    _HAS_VERIFIER = False
+
 
 @dataclass
 class UIElement:
@@ -327,20 +345,63 @@ class VisualGroundingEngine(QObject):
         )
 
     # -------------------------------------------------------------------------
-    # Multimodal UI Grounding
+    # Multimodal UI Grounding (3-Tier Precision Architecture)
     # -------------------------------------------------------------------------
     def ground_target_on_screen(
         self,
         query: str,
         highlight: bool = True,
+        use_uia: bool = True,
+        use_som: bool = True,
     ) -> Optional[UIElement]:
         """
-        Captures the screen and uses Gemini multimodal to locate the target UI element or text.
+        Locates target UI element across 3 precision tiers:
+        Tier 1: Windows Native UI Automation (UIA) - 100% exact OS bounding box, 0 drift, no vision cost.
+        Tier 2: Set-of-Marks (SoM) Tagging - discrete numbered badges [1], [2], [3]... preventing coordinate hallucination.
+        Tier 3: Multimodal Bounding Box Fallback - standard normalized box detection.
         """
+        # --- Tier 1: Windows UI Automation Direct Query ---
+        if use_uia and _HAS_UIA and ui_automation.is_available:
+            ctrl = ui_automation.find_control(query)
+            if ctrl:
+                elem = UIElement(
+                    label=ctrl.name or query,
+                    bbox=ctrl.rect,
+                    confidence=1.0,
+                    element_type=ctrl.control_type.lower(),
+                )
+                if highlight:
+                    self.highlight_element(elem)
+                self.target_grounded.emit(elem.label, elem.center[0], elem.center[1])
+                return elem
+
+        # Capture primary screen for visual inspection
         img, (sw, sh) = self.capture_screen()
         if not img:
             return None
 
+        # --- Tier 2: Set-of-Marks (SoM) Discrete Numbered Badges ---
+        if use_som and _HAS_SOM:
+            try:
+                uia_ctrls = ui_automation.get_interactive_controls() if (_HAS_UIA and ui_automation.is_available) else []
+                annotated_img, marks = set_of_marks.annotate_screenshot(img, uia_controls=uia_ctrls)
+                if marks:
+                    matched_mark = set_of_marks.query_mark(query, annotated_img, marks)
+                    if matched_mark:
+                        elem = UIElement(
+                            label=matched_mark.label or query,
+                            bbox=matched_mark.rect,
+                            confidence=0.98,
+                            element_type=matched_mark.control_type.lower(),
+                        )
+                        if highlight:
+                            self.highlight_element(elem)
+                        self.target_grounded.emit(elem.label, elem.center[0], elem.center[1])
+                        return elem
+            except Exception as e:
+                print(f"[VisualGrounding] SoM resolution warning: {e}")
+
+        # --- Tier 3: Multimodal Bounding Box Fallback ---
         img_bytes = self.image_to_bytes(img, format="PNG")
         element = self._query_gemini_grounding(query, img_bytes, sw, sh)
 
@@ -378,7 +439,7 @@ where coordinates in bbox_norm are floats normalized between 0.0 and 1.0.
 If the element cannot be found, return {{"found": false}}.
 """
             raw = gemini.multimodal(prompt, img_bytes, mime="image/png", timeout_ms=12000)
-            cleaned = re.sub(r"^```json\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
+            cleaned = re.sub(r"^```json\s*|\s*```$", "", (raw or "").strip(), flags=re.MULTILINE)
             data = json.loads(cleaned)
 
             if not data.get("found", False) or "bbox_norm" not in data:
@@ -421,14 +482,23 @@ If the element cannot be found, return {{"found": false}}.
         target: Union[UIElement, Tuple[int, int]],
         double_click: bool = False,
         right_click: bool = False,
+        verify: bool = True,
     ) -> bool:
         """
-        Moves cursor to target and clicks using native OS API or pyautogui.
+        Moves cursor to target and clicks with closed-loop action verification.
         """
         if isinstance(target, UIElement):
             cx, cy = target.center
         else:
             cx, cy = target
+
+        # Closed-loop pre-action snapshot
+        pre_snap = None
+        if verify and _HAS_VERIFIER:
+            try:
+                pre_snap = ui_verifier.capture_snapshot(target_pos=(cx, cy))
+            except Exception:
+                pass
 
         try:
             # 1. Smooth cursor movement
@@ -464,7 +534,15 @@ If the element cannot be found, return {{"found": false}}.
                 else:
                     pyautogui.click(cx, cy)
 
-            self.action_executed.emit("click", True, f"Clicked ({cx}, {cy})")
+            # Closed-loop post-action verification
+            if verify and _HAS_VERIFIER and pre_snap is not None:
+                time.sleep(0.06)
+                post_snap = ui_verifier.capture_snapshot(target_pos=(cx, cy))
+                ver_res = ui_verifier.verify_action(pre_snap, post_snap, expected_action="click", target_pos=(cx, cy))
+                self.action_executed.emit("click", True, f"Clicked ({cx}, {cy}) [{ver_res.reason}]")
+            else:
+                self.action_executed.emit("click", True, f"Clicked ({cx}, {cy})")
+
             return True
         except Exception as e:
             self.action_executed.emit("click", False, f"Click failed: {e}")

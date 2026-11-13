@@ -1,1006 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794330877.8207974,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794330884.3415818,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 22,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332290.8121846,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332296.9944806,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332326.574257,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332338.5017717,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332373.1552577,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332373.4771402,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332393.7160344,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332442.1277063,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332447.9750004,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332465.8358288,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794332499.4661705,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 23,
-      "weekday": 1,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381428.2009912,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381437.3283424,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381496.4131863,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381502.9444778,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381606.7576284,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381614.9601085,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381665.5471056,
-      "action_type": "SWARM_MISSION",
-      "command": "Quick verification objective",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794381675.3903615,
-      "action_type": "GOAL",
-      "command": "Run health check on active node",
-      "hour": 12,
-      "weekday": 2,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425608.1606822,
-      "action_type": "USER_COMMAND",
-      "command": "new",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425618.2602634,
-      "action_type": "USER_COMMAND",
-      "command": "I came back to test you again.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425629.2602696,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"WhatsApp\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425629.3616297,
-      "action_type": "TOOL",
-      "command": "companion_core {\"action\": \"set_vibe\", \"vibe\": \"beast_mode\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425639.7814622,
-      "action_type": "USER_COMMAND",
-      "command": "What's up and take me as set.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425643.1383069,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Spotify\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425651.7719667,
-      "action_type": "USER_COMMAND",
-      "command": "No, I don't want a song now. Just close Spotify.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425655.5605822,
-      "action_type": "TOOL",
-      "command": "read_messages {\"receiver\": \"Vihas\", \"platform\": \"whatsapp\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425670.3506544,
-      "action_type": "USER_COMMAND",
-      "command": "Yes. Take TV as chat on WhatsApp.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425676.1629808,
-      "action_type": "TOOL",
-      "command": "undo {\"action\": \"list\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425687.0266497,
-      "action_type": "USER_COMMAND",
-      "command": "What more I can say?",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425689.661493,
-      "action_type": "TOOL",
-      "command": "knowledge_memory {\"action\": \"remember\", \"fact\": \"Vihas's chat on WhatsApp con",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425695.2290237,
-      "action_type": "USER_COMMAND",
-      "command": "know that about that sad.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425715.6917558,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, about the chat on behalf what should I send him?",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425719.113641,
-      "action_type": "TOOL",
-      "command": "companion_core {\"action\": \"sync_phone\", \"note\": \"Fayid decided against esca",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425728.1781812,
-      "action_type": "USER_COMMAND",
-      "command": "You are absolutely right. Neo",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425731.5506887,
-      "action_type": "TOOL",
-      "command": "executive_briefing {\"action\": \"briefing\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425732.8797004,
-      "action_type": "USER_COMMAND",
-      "command": "Yes.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425737.6602557,
-      "action_type": "TOOL",
-      "command": "computer_control {\"app_name\": \"WhatsApp\", \"action\": \"close_app\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425743.8477926,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"play\", \"query\": \"Tamil melody movie songs\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425759.3962111,
-      "action_type": "USER_COMMAND",
-      "command": "Close the WhatsApp and open Spotify. And play songs from Tamil Murali movie.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425762.661362,
-      "action_type": "TOOL",
-      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425762.6869073,
-      "action_type": "TOOL",
-      "command": "knowledge_memory {\"fact\": \"User prefers system app over browser for PDFs.\", \"",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425762.7127612,
-      "action_type": "TOOL",
-      "command": "knowledge_memory {\"action\": \"remember\", \"fact\": \"Mistake correction: when ask",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425762.7409272,
-      "action_type": "TOOL",
-      "command": "save_memory {\"value\": \"Uploaded user image 'WhatsApp Image 2025-05-16 at",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425771.554808,
-      "action_type": "USER_COMMAND",
-      "command": "WhatsApp is closed.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425779.4334614,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"query\": \"Minnal Murali movie songs\", \"action\": \"play\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425789.6613941,
-      "action_type": "USER_COMMAND",
-      "command": "Change the music like I don't want this Tamil song. I want the song from the movie Minnal Murali.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425791.2617369,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"next\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425795.9216988,
-      "action_type": "USER_COMMAND",
-      "command": "Another song.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425801.4925168,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"right\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425810.0249074,
-      "action_type": "USER_COMMAND",
-      "command": "Can you just make little more forward this song?",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425811.7852216,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"right\", \"action\": \"press\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425816.0068889,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, do it once more.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425823.011589,
-      "action_type": "TOOL",
-      "command": "workspace_master {\"action\": \"snap\", \"target\": \"spotify\", \"position\": \"minimiz",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425827.1566997,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, sure. Just minimize Spotify window.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425829.5005481,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"go_to\", \"url\": \"about:blank\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425837.011084,
-      "action_type": "USER_COMMAND",
-      "command": "Open Chrome.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425841.4144616,
-      "action_type": "TOOL",
-      "command": "save_memory {\"key\": \"browser_opening_error\", \"value\": \"User wanted Chrom",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425841.998639,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425849.2481666,
-      "action_type": "USER_COMMAND",
-      "command": "I think you did it wrong. You opened the Firefox.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425851.5333984,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Firefox\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425860.4927022,
-      "action_type": "USER_COMMAND",
-      "command": "Close the Firefox",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425864.5670924,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425868.9289687,
-      "action_type": "USER_COMMAND",
-      "command": "Open Chrome.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425876.2444718,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"new_tab\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425879.9646225,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, just make take a new tab.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425883.8611333,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"search\", \"query\": \"Zenon City\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425893.2978683,
-      "action_type": "USER_COMMAND",
-      "command": "Zenon City",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425897.465575,
-      "action_type": "TOOL",
-      "command": "browser_control {\"selector\": \"input[name='q'], textarea[name='q']\", \"clear_f",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.084932,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"press\", \"key\": \"Enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.158998,
-      "action_type": "USER_COMMAND",
-      "command": "No, you type wrong. Just Jain University.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.1751606,
-      "action_type": "TOOL",
-      "command": "save_memory {\"value\": \"User wanted 'Jain University', not 'Zenon City'.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.2037857,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"close_tab\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.223555,
-      "action_type": "TOOL",
-      "command": "browser_control {\"query\": \"Jain University\", \"action\": \"search\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425920.8026738,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Google Chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425921.4500713,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"Jain University\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425922.9041495,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"enter\", \"action\": \"key\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425923.4707673,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425940.1376462,
-      "action_type": "USER_COMMAND",
-      "command": "Close the new pop-up tab you opened. I don't need that.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425945.2908523,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"new_tab\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425945.3677003,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"Jain University\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425946.2050607,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425952.175031,
-      "action_type": "USER_COMMAND",
-      "command": "Type it once more in the new tab.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425954.9760442,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425966.1688929,
-      "action_type": "USER_COMMAND",
-      "command": "Take that program offer.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425968.5315123,
-      "action_type": "TOOL",
-      "command": "save_memory {\"category\": \"corrections\", \"value\": \"User did not want Chro",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425969.128808,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425980.8995078,
-      "action_type": "USER_COMMAND",
-      "command": "I didn't tell you to close it right.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425983.7940497,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+shift+w\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425990.5410256,
-      "action_type": "USER_COMMAND",
-      "command": "Take that second user.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425994.937993,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"Rahman\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425996.0569685,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794425996.7826269,
-      "action_type": "TOOL",
-      "command": "save_memory {\"value\": \"User prefers Chrome to be opened with user accoun",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426004.7811854,
-      "action_type": "USER_COMMAND",
-      "command": "No, just open it by Rahman account.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426008.0517159,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"close_tab\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426013.2829633,
-      "action_type": "USER_COMMAND",
-      "command": "No, I just closed the tab. New tab, okay.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426015.1113367,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"new_tab\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426018.9179294,
-      "action_type": "USER_COMMAND",
-      "command": "Take new tab",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426034.3281443,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"best personal AI assistant for PC comparison 2026",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426059.5898454,
-      "action_type": "USER_COMMAND",
-      "command": "Research on a personal assistant best in PC.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426064.0481122,
-      "action_type": "TOOL",
-      "command": "browser_control {\"query\": \"best personal AI assistant for PC comparison 2026",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426064.6748948,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Google Chrome\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426065.824135,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+t\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426067.0102794,
-      "action_type": "TOOL",
-      "command": "computer_control {\"type\": \"best personal AI assistant for PC comparison 2026\"",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426068.4434335,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426080.6949084,
-      "action_type": "USER_COMMAND",
-      "command": "I knew due to search by by Chrome through Chrome.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426083.5775611,
-      "action_type": "TOOL",
-      "command": "computer_control {\"text\": \"best personal AI assistant for PC comparison 2026\"",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426085.4813287,
-      "action_type": "USER_COMMAND",
-      "command": "Actually you didn't type it. Type it.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426085.5014791,
-      "action_type": "TOOL",
-      "command": "computer_control {\"text\": \"best personal AI assistant for PC comparison 2026\"",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426087.963202,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426095.7287414,
-      "action_type": "USER_COMMAND",
-      "command": "end up",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426099.2935255,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"Provide a concise summary of the visual search res",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426100.2489207,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, just read that a overview.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426129.931995,
-      "action_type": "TOOL",
-      "command": "computer_control {\"app_name\": \"Spotify\", \"action\": \"close_app\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426138.8761303,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, I need to focus more. Just close the Spotify window for me.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426145.1766129,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"scroll_down\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426148.8987164,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, it's closed. Just scroll down the win the search like Google.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426150.5549452,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"scroll_down\"}",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426154.1708999,
-      "action_type": "USER_COMMAND",
-      "command": "I can't move.",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426156.0084207,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"User wants me to read the content currently displa",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426156.7018082,
-      "action_type": "USER_COMMAND",
-      "command": "read that",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426220.6513858,
-      "action_type": "USER_COMMAND",
-      "command": "Just tell me what do you suggest?",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794426242.2532525,
-      "action_type": "USER_COMMAND",
-      "command": "What do you think about Gemini?",
-      "hour": 1,
-      "weekday": 3,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794426254.6803205,
       "action_type": "USER_COMMAND",
       "command": "Oh yeah, I will decide later okay.",
@@ -1599,6 +599,1006 @@
       "hour": 20,
       "weekday": 3,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794501745.6484606,
+      "action_type": "USER_COMMAND",
+      "command": "new",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501751.7556279,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"identity\", \"key\": \"phone_number\", \"value\": \"97",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501751.7752352,
+      "action_type": "TOOL",
+      "command": "send_message {\"receiver\": \"Fayid (Phone)\", \"phone\": \"9778012374\", \"action",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501756.8749688,
+      "action_type": "USER_COMMAND",
+      "command": "Save my phone number as 9778012374.",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501771.4757,
+      "action_type": "USER_COMMAND",
+      "command": "nothing yet",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501777.5585837,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"identity\", \"value\": \"+919778012374\", \"key\": \"p",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501777.5796618,
+      "action_type": "TOOL",
+      "command": "send_message {\"action\": \"save_contact\", \"phone\": \"+919778012374\", \"receiv",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501782.1962829,
+      "action_type": "USER_COMMAND",
+      "command": "Please my country code before my number okay? +91",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501784.4826841,
+      "action_type": "TOOL",
+      "command": "recall_memory {\"query\": \"phone_number\"}",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501785.0725238,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"query\": \"phone_number\", \"operation\": \"query\"}",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501791.2986293,
+      "action_type": "USER_COMMAND",
+      "command": "So tell me what's my number?",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501794.097478,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501807.4749794,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, I see the integrated with WhatsApp.",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501812.747066,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"mobile_dispatch\", \"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501825.687235,
+      "action_type": "USER_COMMAND",
+      "command": "thing will you brief me morning through WhatsApp?",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501835.1482842,
+      "action_type": "USER_COMMAND",
+      "command": "ascendit",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501843.6534538,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, what's the time now?",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501853.6686387,
+      "action_type": "USER_COMMAND",
+      "command": "No, it's not 4:43 p.m.",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501856.431606,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"corrections\", \"key\": \"timezone_correction\", \"v",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501864.6058042,
+      "action_type": "USER_COMMAND",
+      "command": "\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501867.5277262,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"corrections\", \"value\": \"Previous correction wa",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501874.127053,
+      "action_type": "USER_COMMAND",
+      "command": "No, actually it's 10:15 now.",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794501876.465723,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 22,
+      "weekday": 3,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513441.1619687,
+      "action_type": "USER_COMMAND",
+      "command": "Hello. Hello.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513443.0648096,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513447.7905192,
+      "action_type": "USER_COMMAND",
+      "command": "Mhm.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513451.063209,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513451.178407,
+      "action_type": "TOOL",
+      "command": "vision_watchdog {\"action\": \"inspect\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513462.7851028,
+      "action_type": "USER_COMMAND",
+      "command": "Check everything was fine.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513469.132151,
+      "action_type": "TOOL",
+      "command": "system_status {}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513481.533651,
+      "action_type": "USER_COMMAND",
+      "command": "Can you check my processor was very hot or nothing?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513488.201254,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"news\", \"query\": \"latest news Kerala\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513509.289554,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Jain University Kochi\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513530.9306943,
+      "action_type": "USER_COMMAND",
+      "command": "You know the Jain University in Kochi?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513533.6636002,
+      "action_type": "USER_COMMAND",
+      "command": "nothing",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513536.616579,
+      "action_type": "TOOL",
+      "command": "knowledge_memory {\"query\": \"Alvin\", \"action\": \"recall\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513544.9524636,
+      "action_type": "USER_COMMAND",
+      "command": "check the person Alvin Das CP",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513551.9180667,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alvin Rag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513558.1734369,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP social media\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513563.5573835,
+      "action_type": "USER_COMMAND",
+      "command": "Alvin Rag CP in LinkedIn or anything like that social media.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513567.2925446,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513570.9635599,
+      "action_type": "USER_COMMAND",
+      "command": "It's wrong but it's wrong. We knows",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513570.9758618,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alvin Rag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513578.0476027,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP social media\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513584.3311608,
+      "action_type": "USER_COMMAND",
+      "command": "w",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513584.346091,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513590.3877897,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alvin Rag CP social media\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513596.7302108,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, yeah, yeah, the current one. First one.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513596.741969,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513601.7500684,
+      "action_type": "USER_COMMAND",
+      "command": "the first one",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513601.7596123,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alvin Rag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513605.7242725,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alvin Rag CP social media\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513611.2702415,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513615.2796633,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"relationships\", \"value\": \"Alwinrag CP is my fr",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513615.2937675,
+      "action_type": "USER_COMMAND",
+      "command": "No. My spelling was ALWINRAGCP.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513615.3039432,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513621.8778052,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alwinrag CP social media\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513628.0265267,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, the first one.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513628.0368319,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513633.8298166,
+      "action_type": "USER_COMMAND",
+      "command": "Uganda",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513633.84654,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513639.714272,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP social media\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513645.2855918,
+      "action_type": "USER_COMMAND",
+      "command": "Can you say about the rain thing?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513645.2988648,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"User clarified friend's name spelling: ALWINRAGCP",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513645.3186324,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"ALWINRAGCP LinkedIn social media\", \"mode\": \"searc",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513649.4859433,
+      "action_type": "USER_COMMAND",
+      "command": "Hello.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513649.504234,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513655.6349747,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alwinrag CP social media\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513660.971128,
+      "action_type": "USER_COMMAND",
+      "command": "Hello.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513660.982763,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513664.9598126,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP social media\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513669.4502487,
+      "action_type": "USER_COMMAND",
+      "command": "Chatta bhai hai?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513669.462378,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513699.1276648,
+      "action_type": "TOOL",
+      "command": "companion_core {\"action\": \"check_in\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513699.1518662,
+      "action_type": "USER_COMMAND",
+      "command": "n\u00e9? A\u00ed na",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513704.281327,
+      "action_type": "USER_COMMAND",
+      "command": "One minute.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513707.0630162,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513716.0546448,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, how are you doing?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513719.3393812,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"message_text\": \"Hi\", \"receiver\": \"",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513723.3621688,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just open WhatsApp and send a hi to Vias.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513724.022905,
+      "action_type": "TOOL",
+      "command": "send_message {\"message_text\": \"mela\", \"platform\": \"whatsapp\", \"receiver\":",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513724.893032,
+      "action_type": "USER_COMMAND",
+      "command": "mela",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513726.2638872,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"Chrome\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513730.6506445,
+      "action_type": "USER_COMMAND",
+      "command": "spontaneous",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513732.1917825,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513735.178776,
+      "action_type": "USER_COMMAND",
+      "command": "Minimize Chrome",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513736.228481,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"maximize\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513739.544687,
+      "action_type": "USER_COMMAND",
+      "command": "Chrome",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513744.244929,
+      "action_type": "TOOL",
+      "command": "browser_control {\"url\": \"google.com\", \"action\": \"go_to\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513744.3326209,
+      "action_type": "USER_COMMAND",
+      "command": "Oye, Lalo.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513746.059288,
+      "action_type": "TOOL",
+      "command": "computer_control {\"app_name\": \"Chrome\", \"action\": \"close_app\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513748.3750083,
+      "action_type": "USER_COMMAND",
+      "command": "closing the",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513750.0035677,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"Chrome\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513758.4816136,
+      "action_type": "USER_COMMAND",
+      "command": "dost is chrome ah chrome ah chrome",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513763.3429499,
+      "action_type": "TOOL",
+      "command": "computer_control {\"app_name\": \"Chrome\", \"action\": \"close_app\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513781.0564184,
+      "action_type": "USER_COMMAND",
+      "command": "send hote hai. Are you",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513790.9683988,
+      "action_type": "USER_COMMAND",
+      "command": "\uc544\ub2c8\ub77c\uc694. \uad1c\ucc2e\uc544\uc694.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513797.806116,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"news\", \"query\": \"major sports events today\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513816.496235,
+      "action_type": "USER_COMMAND",
+      "command": "en hora. Just say about a other thing like sports.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513820.679395,
+      "action_type": "USER_COMMAND",
+      "command": "Hello.",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513826.315713,
+      "action_type": "TOOL",
+      "command": "web_search {\"query\": \"Anirudh and Kavya marriage latest news\", \"mode\":",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794513847.0522614,
+      "action_type": "USER_COMMAND",
+      "command": "What about the marriage between Anirudh and Kavya?",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794515282.7291107,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 1,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794517199.791637,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 2,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551323.7848556,
+      "action_type": "TEXT_COMMAND",
+      "command": "hey ther e",
+      "hour": 11,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551342.6496341,
+      "action_type": "TEXT_COMMAND",
+      "command": "read todays news once more",
+      "hour": 11,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551768.6276443,
+      "action_type": "TEXT_COMMAND",
+      "command": "i just finished those",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551769.4464447,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"copy\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551769.5132658,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551780.4806938,
+      "action_type": "TEXT_COMMAND",
+      "command": "i will do it",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551953.884458,
+      "action_type": "TEXT_COMMAND",
+      "command": "ya",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551955.257967,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551957.9557147,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"purge_cache\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551985.3538043,
+      "action_type": "TEXT_COMMAND",
+      "command": "yaaa",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551986.5629487,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794551987.9069645,
+      "action_type": "TOOL",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\", \"title\": \"System Integri",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552084.2207239,
+      "action_type": "TEXT_COMMAND",
+      "command": "please stop i will do the needful",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552331.3613093,
+      "action_type": "USER_COMMAND",
+      "command": "me I can manage myself. Just leave it me. I can manage.",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552338.7743278,
+      "action_type": "USER_COMMAND",
+      "command": "And don't repeat the message, okay?",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552444.5420399,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"File Explorer\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552452.9090142,
+      "action_type": "USER_COMMAND",
+      "command": "Just open your I can manage it.",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552458.7369928,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"shutdown\"}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552466.1568322,
+      "action_type": "USER_COMMAND",
+      "command": "Just play it. Just shut down for now.",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552482.1597207,
+      "action_type": "USER_COMMAND",
+      "command": "No, system shut down. You just shut down.",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794552484.560401,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 12,
+      "weekday": 4,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1657,7 +1657,49 @@
       "occurrences": 3,
       "first_seen": 1794495316.4433236,
       "synthesized": false
+    },
+    "web_search_query_alvin_rag_cp_li": {
+      "name": "web_search_query_alvin_rag_cp_li",
+      "command": "web_search {\"query\": \"Alvin Rag CP LinkedIn\", \"mode\": \"search\"}",
+      "occurrences": 3,
+      "first_seen": 1794513596.7442725,
+      "synthesized": false
+    },
+    "web_search_mode_search_query_alv": {
+      "name": "web_search_mode_search_query_alv",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alvin Rag CP LinkedIn\"}",
+      "occurrences": 3,
+      "first_seen": 1794513601.7615933,
+      "synthesized": false
+    },
+    "web_search_query_alvin_rag_cp_so": {
+      "name": "web_search_query_alvin_rag_cp_so",
+      "command": "web_search {\"query\": \"Alvin Rag CP social media\", \"mode\": \"search\"}",
+      "occurrences": 3,
+      "first_seen": 1794513605.7275534,
+      "synthesized": false
+    },
+    "web_search_mode_search_query_alw": {
+      "name": "web_search_mode_search_query_alw",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
+      "occurrences": 3,
+      "first_seen": 1794513649.506739,
+      "synthesized": false
+    },
+    "web_search_query_alwinrag_cp_lin": {
+      "name": "web_search_query_alwinrag_cp_lin",
+      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
+      "occurrences": 3,
+      "first_seen": 1794513660.9847798,
+      "synthesized": false
+    },
+    "manage_neo_memory_operation_get_": {
+      "name": "manage_neo_memory_operation_get_",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "occurrences": 3,
+      "first_seen": 1794517199.7937703,
+      "synthesized": false
     }
   },
-  "updated_at": 1794496070.6046715
+  "updated_at": 1794552484.5605586
 }

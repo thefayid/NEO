@@ -3,9 +3,9 @@
     "new": {
       "pattern": "new",
       "sample": "new",
-      "count": 2,
+      "count": 3,
       "tools": [],
-      "last_used": 1794477553.0730293
+      "last_used": 1794501745.6327481
     },
     "i came back to test you again.": {
       "pattern": "i came back to test you again.",
@@ -626,6 +626,422 @@
         "computer_settings"
       ],
       "last_used": 1794496070.5890608
+    },
+    "save my phone number as 9778012374.": {
+      "pattern": "save my phone number as 9778012374.",
+      "sample": "Save my phone number as 9778012374.",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "send_message"
+      ],
+      "last_used": 1794501756.858298
+    },
+    "nothing yet": {
+      "pattern": "nothing yet",
+      "sample": "nothing yet",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794501771.45583
+    },
+    "my country code before my number okay? +91": {
+      "pattern": "my country code before my number okay? +91",
+      "sample": "Please my country code before my number okay? +91",
+      "count": 1,
+      "tools": [
+        "save_memory",
+        "send_message"
+      ],
+      "last_used": 1794501782.1813853
+    },
+    "so tell me what's my number?": {
+      "pattern": "so tell me what's my number?",
+      "sample": "So tell me what's my number?",
+      "count": 1,
+      "tools": [
+        "recall_memory",
+        "manage_neo_memory"
+      ],
+      "last_used": 1794501791.28432
+    },
+    ", i see the integrated with whatsapp.": {
+      "pattern": ", i see the integrated with whatsapp.",
+      "sample": "Yeah, I see the integrated with WhatsApp.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794501807.4445236
+    },
+    "thing will you brief me morning through whatsapp": {
+      "pattern": "thing will you brief me morning through whatsapp",
+      "sample": "thing will you brief me morning through WhatsApp?",
+      "count": 1,
+      "tools": [
+        "executive_briefing"
+      ],
+      "last_used": 1794501825.6603143
+    },
+    "ascendit": {
+      "pattern": "ascendit",
+      "sample": "ascendit",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794501835.1230116
+    },
+    ", what's the time now?": {
+      "pattern": ", what's the time now?",
+      "sample": "Yeah, what's the time now?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794501843.6341941
+    },
+    "no, it's not 4:43 p.m.": {
+      "pattern": "no, it's not 4:43 p.m.",
+      "sample": "No, it's not 4:43 p.m.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794501853.6503453
+    },
+    "\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.": {
+      "pattern": "\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.",
+      "sample": "\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794501864.590179
+    },
+    "no, actually it's 10:15 now.": {
+      "pattern": "no, actually it's 10:15 now.",
+      "sample": "No, actually it's 10:15 now.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794501874.1080859
+    },
+    "hello. hello.": {
+      "pattern": "hello. hello.",
+      "sample": "Hello. Hello.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794513441.143987
+    },
+    "mhm.": {
+      "pattern": "mhm.",
+      "sample": "Mhm.",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory"
+      ],
+      "last_used": 1794513447.7721505
+    },
+    "check everything was fine.": {
+      "pattern": "check everything was fine.",
+      "sample": "Check everything was fine.",
+      "count": 1,
+      "tools": [
+        "system_immune",
+        "vision_watchdog"
+      ],
+      "last_used": 1794513462.7631333
+    },
+    "check my processor was very hot or nothing?": {
+      "pattern": "check my processor was very hot or nothing?",
+      "sample": "Can you check my processor was very hot or nothing?",
+      "count": 1,
+      "tools": [
+        "system_status"
+      ],
+      "last_used": 1794513481.5038068
+    },
+    "you know the jain university in kochi?": {
+      "pattern": "you know the jain university in kochi?",
+      "sample": "You know the Jain University in Kochi?",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513530.9128556
+    },
+    "nothing": {
+      "pattern": "nothing",
+      "sample": "nothing",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794513533.6549044
+    },
+    "check the person alvin das cp": {
+      "pattern": "check the person alvin das cp",
+      "sample": "check the person Alvin Das CP",
+      "count": 1,
+      "tools": [
+        "knowledge_memory"
+      ],
+      "last_used": 1794513544.9364297
+    },
+    "alvin rag cp in linkedin or anything like that s": {
+      "pattern": "alvin rag cp in linkedin or anything like that s",
+      "sample": "Alvin Rag CP in LinkedIn or anything like that social media.",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513563.549691
+    },
+    "it's wrong but it's wrong. we knows": {
+      "pattern": "it's wrong but it's wrong. we knows",
+      "sample": "It's wrong but it's wrong. We knows",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513570.9554403
+    },
+    ", , , the current one. first one.": {
+      "pattern": ", , , the current one. first one.",
+      "sample": "Yeah, yeah, yeah, the current one. First one.",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513596.721317
+    },
+    "the first one": {
+      "pattern": "the first one",
+      "sample": "the first one",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513601.7432833
+    },
+    "no. my spelling was alwinragcp.": {
+      "pattern": "no. my spelling was alwinragcp.",
+      "sample": "No. My spelling was ALWINRAGCP.",
+      "count": 1,
+      "tools": [
+        "web_search",
+        "save_memory"
+      ],
+      "last_used": 1794513615.2858918
+    },
+    ", the first one.": {
+      "pattern": ", the first one.",
+      "sample": "Yeah, the first one.",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513628.017565
+    },
+    "uganda": {
+      "pattern": "uganda",
+      "sample": "Uganda",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513633.8211343
+    },
+    "say about the rain thing?": {
+      "pattern": "say about the rain thing?",
+      "sample": "Can you say about the rain thing?",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513645.2766294
+    },
+    "hello.": {
+      "pattern": "hello.",
+      "sample": "Hello.",
+      "count": 3,
+      "tools": [
+        "save_memory",
+        "web_search"
+      ],
+      "last_used": 1794513820.668807
+    },
+    "chatta bhai hai?": {
+      "pattern": "chatta bhai hai?",
+      "sample": "Chatta bhai hai?",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513669.4430692
+    },
+    "n\u00e9? a\u00ed na": {
+      "pattern": "n\u00e9? a\u00ed na",
+      "sample": "n\u00e9? A\u00ed na",
+      "count": 1,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794513699.1415937
+    },
+    "one minute.": {
+      "pattern": "one minute.",
+      "sample": "One minute.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794513704.265446
+    },
+    ", how are you doing?": {
+      "pattern": ", how are you doing?",
+      "sample": "Yeah, how are you doing?",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory"
+      ],
+      "last_used": 1794513716.037806
+    },
+    ", open whatsapp and send a hi to vias.": {
+      "pattern": ", open whatsapp and send a hi to vias.",
+      "sample": "Yeah, just open WhatsApp and send a hi to Vias.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794513723.353537
+    },
+    "mela": {
+      "pattern": "mela",
+      "sample": "mela",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794513724.879357
+    },
+    "spontaneous": {
+      "pattern": "spontaneous",
+      "sample": "spontaneous",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794513730.6256576
+    },
+    "minimize chrome": {
+      "pattern": "minimize chrome",
+      "sample": "Minimize Chrome",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794513735.171228
+    },
+    "chrome": {
+      "pattern": "chrome",
+      "sample": "Chrome",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794513739.534262
+    },
+    "oye, lalo.": {
+      "pattern": "oye, lalo.",
+      "sample": "Oye, Lalo.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794513744.328752
+    },
+    "closing the": {
+      "pattern": "closing the",
+      "sample": "closing the",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794513748.370548
+    },
+    "dost is chrome ah chrome ah chrome": {
+      "pattern": "dost is chrome ah chrome ah chrome",
+      "sample": "dost is chrome ah chrome ah chrome",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794513758.4732103
+    },
+    "send hote hai. are you": {
+      "pattern": "send hote hai. are you",
+      "sample": "send hote hai. Are you",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794513781.040476
+    },
+    "\uc544\ub2c8\ub77c\uc694. \uad1c\ucc2e\uc544\uc694.": {
+      "pattern": "\uc544\ub2c8\ub77c\uc694. \uad1c\ucc2e\uc544\uc694.",
+      "sample": "\uc544\ub2c8\ub77c\uc694. \uad1c\ucc2e\uc544\uc694.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794513790.9576955
+    },
+    "en hora. say about a other thing like sports.": {
+      "pattern": "en hora. say about a other thing like sports.",
+      "sample": "en hora. Just say about a other thing like sports.",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513816.485927
+    },
+    "what about the marriage between anirudh and kavy": {
+      "pattern": "what about the marriage between anirudh and kavy",
+      "sample": "What about the marriage between Anirudh and Kavya?",
+      "count": 1,
+      "tools": [
+        "web_search"
+      ],
+      "last_used": 1794513847.0355504
+    },
+    "me i can manage myself. leave it me. i can manag": {
+      "pattern": "me i can manage myself. leave it me. i can manag",
+      "sample": "me I can manage myself. Just leave it me. I can manage.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794552331.3454747
+    },
+    "and don't repeat the message, okay?": {
+      "pattern": "and don't repeat the message, okay?",
+      "sample": "And don't repeat the message, okay?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794552338.7549832
+    },
+    "open your i can manage it.": {
+      "pattern": "open your i can manage it.",
+      "sample": "Just open your I can manage it.",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794552452.8924425
+    },
+    "play it. shut down for now.": {
+      "pattern": "play it. shut down for now.",
+      "sample": "Just play it. Just shut down for now.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794552466.1411443
+    },
+    "no, system shut down. you shut down.": {
+      "pattern": "no, system shut down. you shut down.",
+      "sample": "No, system shut down. You just shut down.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794552482.1399853
     }
   },
   "preferences": {},
@@ -754,9 +1170,87 @@
       "correction": "That's actually wrong. It's not 10:00 a.m. It's like 5:00. Let me check.",
       "rule": "When user says 'I think you are not catching u': corrected with 'That's actually wrong. It's not 10:00 a.'",
       "timestamp": 1794477668.7908967
+    },
+    {
+      "trigger_command": "Save my phone number as 9778012374.",
+      "previous_tools": [
+        "save_memory",
+        "send_message"
+      ],
+      "correction": "nothing yet",
+      "rule": "When user says 'Save my phone number as 977801': corrected with 'nothing yet'",
+      "timestamp": 1794501771.4557216
+    },
+    {
+      "trigger_command": "Yeah, what's the time now?",
+      "previous_tools": [],
+      "correction": "No, it's not 4:43 p.m.",
+      "rule": "When user says 'Yeah, what's the time now?': corrected with 'No, it's not 4:43 p.m.'",
+      "timestamp": 1794501853.650314
+    },
+    {
+      "trigger_command": "\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.",
+      "previous_tools": [
+        "save_memory"
+      ],
+      "correction": "No, actually it's 10:15 now.",
+      "rule": "When user says '\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.': corrected with 'No, actually it's 10:15 now.'",
+      "timestamp": 1794501874.108017
+    },
+    {
+      "trigger_command": "You know the Jain University in Kochi?",
+      "previous_tools": [
+        "web_search"
+      ],
+      "correction": "nothing",
+      "rule": "When user says 'You know the Jain University i': corrected with 'nothing'",
+      "timestamp": 1794513533.6548746
+    },
+    {
+      "trigger_command": "Alvin Rag CP in LinkedIn or anything like that social media.",
+      "previous_tools": [
+        "web_search",
+        "web_search"
+      ],
+      "correction": "It's wrong but it's wrong. We knows",
+      "rule": "When user says 'Alvin Rag CP in LinkedIn or an': corrected with 'It's wrong but it's wrong. We knows'",
+      "timestamp": 1794513570.9554067
+    },
+    {
+      "trigger_command": "the first one",
+      "previous_tools": [
+        "web_search"
+      ],
+      "correction": "No. My spelling was ALWINRAGCP.",
+      "rule": "When user says 'the first one': corrected with 'No. My spelling was ALWINRAGCP.'",
+      "timestamp": 1794513615.2858734
+    },
+    {
+      "trigger_command": "me I can manage myself. Just leave it me. I can manage.",
+      "previous_tools": [],
+      "correction": "And don't repeat the message, okay?",
+      "rule": "When user says 'me I can manage myself. Just l': corrected with 'And don't repeat the message, okay?'",
+      "timestamp": 1794552338.7549434
+    },
+    {
+      "trigger_command": "Just play it. Just shut down for now.",
+      "previous_tools": [
+        "computer_settings"
+      ],
+      "correction": "No, system shut down. You just shut down.",
+      "rule": "When user says 'Just play it. Just shut down f': corrected with 'No, system shut down. You just shut down'",
+      "timestamp": 1794552482.1399667
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'Just play it. Just shut d': execute preferred action 'No, system shut down. You just shut'.",
+    "Avoid previous misstep for 'me I can manage myself. J': execute preferred action 'And don't repeat the message, okay?'.",
+    "Avoid previous misstep for 'the first one': execute preferred action 'No. My spelling was ALWINRAGCP.'.",
+    "Avoid previous misstep for 'Alvin Rag CP in LinkedIn ': execute preferred action 'It's wrong but it's wrong. We knows'.",
+    "Avoid previous misstep for 'You know the Jain Univers': execute preferred action 'nothing'.",
+    "Avoid previous misstep for '\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.': execute preferred action 'No, actually it's 10:15 now.'.",
+    "Avoid previous misstep for 'Yeah, what's the time now': execute preferred action 'No, it's not 4:43 p.m.'.",
+    "Avoid previous misstep for 'Save my phone number as 9': execute preferred action 'nothing yet'.",
     "Avoid previous misstep for 'I think you are not catch': execute preferred action 'That's actually wrong. It's not 10:'.",
     "Avoid previous misstep for 'JUK': execute preferred action 'not bias I don't need bias. Just cl'.",
     "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '.",
@@ -769,7 +1263,8 @@
     "Avoid previous misstep for 'No, you type wrong. Just ': execute preferred action 'Close the new pop-up tab you opened'.",
     "Avoid previous misstep for 'Zenon City': execute preferred action 'No, you type wrong. Just Jain Unive'.",
     "Avoid previous misstep for 'WhatsApp is closed.': execute preferred action 'Change the music like I don't want '.",
-    "Avoid previous misstep for 'What's up and take me as ': execute preferred action 'No, I don't want a song now. Just c'."
+    "Avoid previous misstep for 'What's up and take me as ': execute preferred action 'No, I don't want a song now. Just c'.",
+    "For 'hello.': immediately execute save_memory without hesitation."
   ],
-  "updated_at": 1794496070.5910861
+  "updated_at": 1794552482.1458151
 }

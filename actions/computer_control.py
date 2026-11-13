@@ -214,8 +214,26 @@ def _click(x=None, y=None, button: str = "left", clicks: int = 1) -> str:
     _require_pyautogui()
     if x is not None and y is not None:
         cx, cy = _clamp_coords(x, y)
+        snap_before = None
+        try:
+            from core.neo_ui_verifier import ui_verifier
+            snap_before = ui_verifier.capture_snapshot(target_pos=(cx, cy))
+        except Exception:
+            snap_before = None
+
         pyautogui.click(cx, cy, button=button, clicks=clicks)
-        return f"{'Double-c' if clicks == 2 else 'C'}licked ({cx}, {cy}) [{button}]"
+
+        ver_note = ""
+        if snap_before is not None:
+            try:
+                time.sleep(0.05)
+                snap_after = ui_verifier.capture_snapshot(target_pos=(cx, cy))
+                ver = ui_verifier.verify_action(snap_before, snap_after, expected_action="click", target_pos=(cx, cy))
+                ver_note = f" [{ver.reason}]"
+            except Exception:
+                pass
+
+        return f"{'Double-c' if clicks == 2 else 'C'}licked ({cx}, {cy}) [{button}]{ver_note}"
     pyautogui.click(button=button, clicks=clicks)
     return f"Clicked at current position [{button}]"
 
@@ -492,19 +510,43 @@ def _close_app(app_name: str, confirmed_index: int | None = None) -> str:
 
 
 def _screen_find(description: str) -> tuple[int, int] | None:
+    # 1. Tier 1: Windows Native UI Automation (exact physical bounding box, 0 drift)
+    try:
+        from core.neo_ui_automation import ui_automation
+        if ui_automation.is_available:
+            ctrl = ui_automation.find_control(description)
+            if ctrl:
+                print(f"[ComputerControl] 🎯 UIA exact control found: '{ctrl.name}' at {ctrl.center}")
+                return ctrl.center
+    except Exception as e:
+        print(f"[ComputerControl] UIA search warning: {e}")
+
     api_key = _get_api_key()
     if not api_key:
         print("[ComputerControl] ⚠️ No API key for screen_find")
         return None
 
     try:
-        from google import genai
-        from google.genai import types as gtypes
-
         _require_pyautogui()
-        w, h  = pyautogui.size()
-        img   = pyautogui.screenshot()
-        buf   = io.BytesIO()
+        img = pyautogui.screenshot()
+
+        # 2. Tier 2: Set-of-Marks (SoM) Tagging (discrete tag badges, no coordinate drift)
+        try:
+            from core.neo_set_of_marks import set_of_marks
+            from core.neo_ui_automation import ui_automation
+            uia_ctrls = ui_automation.get_interactive_controls() if ui_automation.is_available else []
+            annotated_img, marks = set_of_marks.annotate_screenshot(img, uia_controls=uia_ctrls)
+            if marks:
+                matched_mark = set_of_marks.query_mark(description, annotated_img, marks)
+                if matched_mark:
+                    print(f"[ComputerControl] 🎯 SoM mark [{matched_mark.id}] matched: {matched_mark.center}")
+                    return matched_mark.center
+        except Exception as e:
+            print(f"[ComputerControl] SoM search warning: {e}")
+
+        # 3. Tier 3: Standard Multimodal Bounding Box Fallback
+        w, h = pyautogui.size()
+        buf = io.BytesIO()
         img.save(buf, format="PNG")
         image_bytes = buf.getvalue()
 
@@ -515,6 +557,8 @@ def _screen_find(description: str) -> tuple[int, int] | None:
             f"If the element is not visible, reply: NOT_FOUND"
         )
 
+        from google import genai
+        from google.genai import types as gtypes
         from core import gemini
         response = gemini.call(
             [gtypes.Part.from_bytes(data=image_bytes, mime_type="image/png"), prompt],

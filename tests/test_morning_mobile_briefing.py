@@ -75,9 +75,10 @@ class TestMorningMobileBriefing(unittest.TestCase):
 
     def test_proactive_engine_trigger_evaluation(self):
         engine = ProactiveEngine()
-        # Mock datetime to 8:35 AM
-        mock_dt = datetime(2026, 11, 13, 8, 35, 0)
-        with patch("actions.proactive.datetime") as mock_datetime:
+        # Mock datetime to 8:35 AM on a new day
+        mock_dt = datetime(2026, 11, 14, 8, 35, 0)
+        with patch("actions.proactive.datetime") as mock_datetime, \
+             patch("actions.proactive._read_config", return_value={"morning_brief_enabled": True, "last_morning_dispatch_date": "2026-11-13"}):
             mock_datetime.now.return_value = mock_dt
             should_fire, reason, snapshot = engine.evaluate_triggers(last_user_speech=0.0)
             self.assertTrue(should_fire)
@@ -86,3 +87,4 @@ class TestMorningMobileBriefing(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
