@@ -468,14 +468,13 @@ If the element cannot be found, return {{"found": false}}.
     # -------------------------------------------------------------------------
     def highlight_element(self, element: UIElement, linger_ms: int = 1500) -> None:
         """Paints an animated macOS accent highlight over the element (strictly thread-safe)."""
+        # Always emit thread-safe queued signal for UI listeners and observers
+        self.highlight_requested.emit(element.bbox, element.label, linger_ms)
         app = QApplication.instance()
         if app and QThread.currentThread() == app.thread():
             overlay = self._ensure_overlay()
             if overlay:
                 overlay.highlight_target(element.bbox, label=element.label, linger_ms=linger_ms)
-        else:
-            # Emit thread-safe queued signal to Main GUI thread
-            self.highlight_requested.emit(element.bbox, element.label, linger_ms)
 
     def click_element(
         self,

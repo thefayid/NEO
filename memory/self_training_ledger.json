@@ -79,11 +79,12 @@
     "yes.": {
       "pattern": "yes.",
       "sample": "Yes.",
-      "count": 1,
+      "count": 2,
       "tools": [
-        "executive_briefing"
+        "executive_briefing",
+        "save_memory"
       ],
-      "last_used": 1794425732.8681774
+      "last_used": 1794582235.1891708
     },
     "close the whatsapp and open spotify. and play so": {
       "pattern": "close the whatsapp and open spotify. and play so",
@@ -1588,6 +1589,110 @@
       "count": 1,
       "tools": [],
       "last_used": 1794581852.570855
+    },
+    "menu": {
+      "pattern": "menu",
+      "sample": "menu",
+      "count": 1,
+      "tools": [
+        "executive_briefing"
+      ],
+      "last_used": 1794582066.0664465
+    },
+    "penio": {
+      "pattern": "penio",
+      "sample": "penio",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory"
+      ],
+      "last_used": 1794582069.894833
+    },
+    "not many new a new": {
+      "pattern": "not many new a new",
+      "sample": "not many new a new",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794582084.1447864
+    },
+    "i think you are not hearing what i am saying. i ": {
+      "pattern": "i think you are not hearing what i am saying. i ",
+      "sample": "I think you are not hearing what I am saying. I just tell you hey Rio.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794582096.9225886
+    },
+    "meeting": {
+      "pattern": "meeting",
+      "sample": "meeting",
+      "count": 1,
+      "tools": [
+        "executive_briefing"
+      ],
+      "last_used": 1794582108.1147437
+    },
+    "so what should i know?": {
+      "pattern": "so what should i know?",
+      "sample": "So what should I know?",
+      "count": 1,
+      "tools": [
+        "subagent_swarm",
+        "executive_briefing",
+        "system_immune"
+      ],
+      "last_used": 1794582128.7894294
+    },
+    "nothing, i will let you know.": {
+      "pattern": "nothing, i will let you know.",
+      "sample": "Nothing, I will let you know.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794582137.9020567
+    },
+    "schi": {
+      "pattern": "schi",
+      "sample": "schi",
+      "count": 1,
+      "tools": [
+        "cortex_deep_reasoning"
+      ],
+      "last_used": 1794582303.0887136
+    },
+    "cheer it": {
+      "pattern": "cheer it",
+      "sample": "cheer it",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794582728.3510013
+    },
+    "do it. do it. do it.": {
+      "pattern": "do it. do it. do it.",
+      "sample": "Do it. Do it. Do it.",
+      "count": 1,
+      "tools": [
+        "system_immune"
+      ],
+      "last_used": 1794582740.070637
+    },
+    "i will start it tomorrow. okay? remind me. tomor": {
+      "pattern": "i will start it tomorrow. okay? remind me. tomor",
+      "sample": "I will start it tomorrow. Okay? Just remind me. Tomorrow.",
+      "count": 1,
+      "tools": [
+        "reminder"
+      ],
+      "last_used": 1794582796.9846847
+    },
+    "thank you.": {
+      "pattern": "thank you.",
+      "sample": "Thank you.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794582802.9302769
     }
   },
   "preferences": {},
@@ -1874,9 +1979,31 @@
       "correction": "are only having doubt and all but we are not actually doing it.",
       "rule": "When user says 'We are not doing anything prec': corrected with 'are only having doubt and all but we are'",
       "timestamp": 1794581844.8341022
+    },
+    {
+      "trigger_command": "penio",
+      "previous_tools": [
+        "manage_neo_memory"
+      ],
+      "correction": "not many new a new",
+      "rule": "When user says 'penio': corrected with 'not many new a new'",
+      "timestamp": 1794582084.1447718
+    },
+    {
+      "trigger_command": "So what should I know?",
+      "previous_tools": [
+        "subagent_swarm",
+        "executive_briefing",
+        "system_immune"
+      ],
+      "correction": "Nothing, I will let you know.",
+      "rule": "When user says 'So what should I know?': corrected with 'Nothing, I will let you know.'",
+      "timestamp": 1794582137.902005
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'So what should I know?': execute preferred action 'Nothing, I will let you know.'.",
+    "Avoid previous misstep for 'penio': execute preferred action 'not many new a new'.",
     "Avoid previous misstep for 'We are not doing anything': execute preferred action 'are only having doubt and all but w'.",
     "Avoid previous misstep for 'Do you take any?': execute preferred action 'No.'.",
     "Avoid previous misstep for 'Go down us.': execute preferred action 'No, I was there. I didn't You didn''.",
@@ -1899,9 +2026,7 @@
     "Avoid previous misstep for 'JUK': execute preferred action 'not bias I don't need bias. Just cl'.",
     "Avoid previous misstep for 'Yeah, just take my profil': execute preferred action 'Now that just take with my profile '.",
     "Avoid previous misstep for 'powerful league': execute preferred action 'not still not called up. called ful'.",
-    "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'.",
-    "Avoid previous misstep for 'Oh yeah, I will decide la': execute preferred action 'Don't yak. Log sign your tap now.'.",
-    "Avoid previous misstep for 'I knew due to search by b': execute preferred action 'Actually you didn't type it. Type i'."
+    "Avoid previous misstep for 'disturbers of': execute preferred action 'No, just lost this tab also.'."
   ],
-  "updated_at": 1794581852.5772352
+  "updated_at": 1794582802.9314508
 }

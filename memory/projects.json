@@ -1,5 +1,5 @@
 {
-  "active_project_id": "proj_current",
+  "active_project_id": "proj_1794582283616",
   "projects": [
     {
       "id": "proj_current",
@@ -9,6 +9,15 @@
       "run_command": "python main.py",
       "created_at": "2026-11-09",
       "last_opened": "2026-11-09 21:59"
+    },
+    {
+      "id": "proj_1794582283616",
+      "name": "AeroGuard WIDS",
+      "path": "E:\\AeroGuard WIDS",
+      "category": "Development",
+      "run_command": "",
+      "created_at": "2026-11-13",
+      "last_opened": "2026-11-13 20:34"
     }
   ]
 }

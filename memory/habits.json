@@ -1,278 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794513621.8778052,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Alwinrag CP social media\", \"mode\": \"search\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513628.0265267,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, the first one.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513628.0368319,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513633.8298166,
-      "action_type": "USER_COMMAND",
-      "command": "Uganda",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513633.84654,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513639.714272,
-      "action_type": "TOOL",
-      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP social media\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513645.2855918,
-      "action_type": "USER_COMMAND",
-      "command": "Can you say about the rain thing?",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513645.2988648,
-      "action_type": "TOOL",
-      "command": "save_memory {\"value\": \"User clarified friend's name spelling: ALWINRAGCP",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513645.3186324,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"ALWINRAGCP LinkedIn social media\", \"mode\": \"searc",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513649.4859433,
-      "action_type": "USER_COMMAND",
-      "command": "Hello.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513649.504234,
-      "action_type": "TOOL",
-      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513655.6349747,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Alwinrag CP social media\", \"mode\": \"search\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513660.971128,
-      "action_type": "USER_COMMAND",
-      "command": "Hello.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513660.982763,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"Alwinrag CP LinkedIn\", \"mode\": \"search\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513664.9598126,
-      "action_type": "TOOL",
-      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP social media\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513669.4502487,
-      "action_type": "USER_COMMAND",
-      "command": "Chatta bhai hai?",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513669.462378,
-      "action_type": "TOOL",
-      "command": "web_search {\"mode\": \"search\", \"query\": \"Alwinrag CP LinkedIn\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513699.1276648,
-      "action_type": "TOOL",
-      "command": "companion_core {\"action\": \"check_in\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513699.1518662,
-      "action_type": "USER_COMMAND",
-      "command": "n\u00e9? A\u00ed na",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513704.281327,
-      "action_type": "USER_COMMAND",
-      "command": "One minute.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513707.0630162,
-      "action_type": "TOOL",
-      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513716.0546448,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, how are you doing?",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513719.3393812,
-      "action_type": "TOOL",
-      "command": "send_message {\"platform\": \"whatsapp\", \"message_text\": \"Hi\", \"receiver\": \"",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513723.3621688,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, just open WhatsApp and send a hi to Vias.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513724.022905,
-      "action_type": "TOOL",
-      "command": "send_message {\"message_text\": \"mela\", \"platform\": \"whatsapp\", \"receiver\":",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513724.893032,
-      "action_type": "USER_COMMAND",
-      "command": "mela",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513726.2638872,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Chrome\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513730.6506445,
-      "action_type": "USER_COMMAND",
-      "command": "spontaneous",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513732.1917825,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"minimize\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513735.178776,
-      "action_type": "USER_COMMAND",
-      "command": "Minimize Chrome",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513736.228481,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"maximize\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513739.544687,
-      "action_type": "USER_COMMAND",
-      "command": "Chrome",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513744.244929,
-      "action_type": "TOOL",
-      "command": "browser_control {\"url\": \"google.com\", \"action\": \"go_to\"}",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794513744.3326209,
-      "action_type": "USER_COMMAND",
-      "command": "Oye, Lalo.",
-      "hour": 1,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794513746.059288,
       "action_type": "TOOL",
       "command": "computer_control {\"app_name\": \"Chrome\", \"action\": \"close_app\"}",
@@ -1599,6 +1327,278 @@
       "hour": 20,
       "weekday": 4,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794582063.4587357,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"morning_brief\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582066.0770855,
+      "action_type": "USER_COMMAND",
+      "command": "menu",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582066.5877142,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582069.9203541,
+      "action_type": "USER_COMMAND",
+      "command": "penio",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582084.1629772,
+      "action_type": "USER_COMMAND",
+      "command": "not many new a new",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582091.99764,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"neo\", \"key\": \"nickname\", \"category\": \"preferences",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582092.0111191,
+      "action_type": "TOOL",
+      "command": "save_memory {\"key\": \"hey_neo_mishearing\", \"value\": \"User was saying 'Hey",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582096.943889,
+      "action_type": "USER_COMMAND",
+      "command": "I think you are not hearing what I am saying. I just tell you hey Rio.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582100.5497584,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582108.1356075,
+      "action_type": "USER_COMMAND",
+      "command": "meeting",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582111.0625339,
+      "action_type": "TOOL",
+      "command": "subagent_swarm {\"action\": \"spawn\", \"role\": \"web_researcher\", \"instruction\":",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582111.0826154,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"email_triage\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582111.1025734,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582128.8106806,
+      "action_type": "USER_COMMAND",
+      "command": "So what should I know?",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582137.9235685,
+      "action_type": "USER_COMMAND",
+      "command": "Nothing, I will let you know.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582232.3365827,
+      "action_type": "TOOL",
+      "command": "save_memory {\"key\": \"confirm_heard_no_action\", \"value\": \"User said 'Yes'",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582235.210102,
+      "action_type": "USER_COMMAND",
+      "command": "Yes.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582300.8591137,
+      "action_type": "TEXT_COMMAND",
+      "command": "Perform an executive Technical Architecture Review & Roadmap for project 'AeroGuard WIDS'.\n- Workspace Path: E:\\AeroGuard WIDS\n- Scope: 29 files across 12 modules (~5,436 Lines of Code, 0.57 MB)\n- Project Overview: AeroGuard WIDS AeroGuard is an enterprise-grade Wireless Intrusion Detection and Prevention System (WIDS/WIPS). It passively monitors 802.11 wireless networks to detect advanced threats\u2014such as Evil Twins and Deauthentication Storms\u2014and actively defends the network using targeted countermeasures. \ufffc [!WARNING] Linux & Hardware Requirement AeroGuard must be run on a Linux environment (e.g., Kali, Ub\n\nPlease deliver:\n1. Architectural Component Breakdown & System Topology\n2. Potential Bottlenecks, Technical Debt & Security Posture\n3. 3-Phase Tactical Sprint Roadmap with immediate next milestones, Boss.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582303.0706878,
+      "action_type": "TOOL",
+      "command": "cortex_deep_reasoning {\"query\": \"Analyze the provided project parameters to delive",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582303.0977778,
+      "action_type": "USER_COMMAND",
+      "command": "schi",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582725.5205703,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582727.6996167,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582728.3594043,
+      "action_type": "USER_COMMAND",
+      "command": "cheer it",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582729.926032,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582730.0483882,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582740.095179,
+      "action_type": "USER_COMMAND",
+      "command": "Do it. Do it. Do it.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582740.5623243,
+      "action_type": "TEXT_COMMAND",
+      "command": "Diagnose and autonomously fix this error: [JARVIS] \u274c Recv: 1008 None. Connection aborted because the client failed to close the connection after receiving a GoAwa, Boss.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582741.4867435,
+      "action_type": "TOOL",
+      "command": "execute_autonomous_goal {\"instruction\": \"Diagnose and fix the connection aborted err",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582788.0761952,
+      "action_type": "TOOL",
+      "command": "reminder {\"date\": \"2026-11-14\", \"time\": \"09:00\", \"message\": \"Start Se",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582796.9966416,
+      "action_type": "USER_COMMAND",
+      "command": "I will start it tomorrow. Okay? Just remind me. Tomorrow.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582802.950375,
+      "action_type": "USER_COMMAND",
+      "command": "Thank you.",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582859.519093,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582859.6314194,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794582859.8865297,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 20,
+      "weekday": 4,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1722,5 +1722,5 @@
       "synthesized": false
     }
   },
-  "updated_at": 1794581852.5966172
+  "updated_at": 1794582859.887149
 }

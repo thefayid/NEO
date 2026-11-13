@@ -1,15 +1,14 @@
 {
   "tasks": [
     {
-      "id": "task_1794220047969",
-      "title": "assignment",
+      "id": "task_1794582481956",
+      "title": "Start Sem Exam Preparation",
       "category": "Academic",
       "priority": "High",
       "due_date": "Today",
       "done": false,
-      "created_at": "2026-11-09 15:57",
-      "notes": "",
-      "completed_at": "2026-11-10 19:14"
+      "created_at": "2026-11-13 20:38",
+      "notes": ""
     }
   ]
 }

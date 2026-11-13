@@ -4776,18 +4776,42 @@ class MainWindow(QMainWindow):
         if _ico_p.exists():
             from PyQt6.QtGui import QIcon
             self.setWindowIcon(QIcon(str(_ico_p)))
-        self.setMinimumSize(_MIN_W, _MIN_H)
-        self.resize(1200, 780)
+
+        # Smart Responsive Window Geometry across all display sizes, resolutions, and aspect ratios
+        self._screen_geo = QApplication.primaryScreen().availableGeometry()
+        sw = self._screen_geo.width()
+        sh = self._screen_geo.height()
+        is_portrait = sh > sw
+
+        # Aspect-ratio and resolution aware target dimension:
+        if is_portrait:
+            # Vertical / Portrait monitors (e.g. 1080x1920)
+            target_w = max(580, min(1000, int(sw * 0.92)))
+            target_h = max(680, min(1400, int(sh * 0.70)))
+        elif sw >= 3400:
+            # Ultrawide 21:9 / 32:9 displays (e.g. 3440x1440, 5120x1440)
+            target_w = min(1560, int(sw * 0.48))
+            target_h = min(980, int(sh * 0.75))
+        elif sw >= 2560:
+            # 1440p / 4K displays
+            target_w = min(1540, int(sw * 0.62))
+            target_h = min(980, int(sh * 0.76))
+        else:
+            # Standard 1080p, 16:10, and 768p laptops (1366x768, 1280x720)
+            target_w = max(760, min(1360, int(sw * 0.74)))
+            target_h = max(520, min(sh - 48, int(sh * 0.82)))
+
+        self.setMinimumSize(560, 420)
+        self.resize(target_w, target_h)
 
         # macOS Sequoia Native Frameless Window Frame
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         self.setMouseTracking(True)
 
-        screen = QApplication.primaryScreen().availableGeometry()
         self.move(
-            (screen.width()  - _DEFAULT_W) // 2,
-            (screen.height() - _DEFAULT_H) // 2,
+            self._screen_geo.x() + (sw - target_w) // 2,
+            self._screen_geo.y() + (sh - target_h) // 2,
         )
 
         self.on_text_command   = None
@@ -6007,45 +6031,71 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         cw = self.centralWidget()
-        if self._overlay and self._overlay.isVisible():
-            ow = getattr(self._overlay, "_OW", 740)
-            oh = getattr(self._overlay, "_OH", 580)
-            self._overlay.setGeometry(
-                (cw.width()  - ow) // 2,
-                (cw.height() - oh) // 2,
-                ow, oh,
-            )
-        if self._remote_overlay and self._remote_overlay.isVisible():
-            ow, oh = RemoteKeyOverlay._OW, RemoteKeyOverlay._OH
-            self._remote_overlay.setGeometry(
-                (cw.width()  - ow) // 2,
-                (cw.height() - oh) // 2,
-                ow, oh,
-            )
-        if self._customize_overlay and self._customize_overlay.isVisible():
-            ow, oh = CustomizeOverlay._OW, CustomizeOverlay._OH
-            self._customize_overlay.setGeometry(
-                (cw.width()  - ow) // 2,
-                (cw.height() - oh) // 2,
-                ow, oh,
-            )
-        # Camera preview — bottom-right corner of the center/HUD area
+        if not cw:
+            return
+
+        win_w = cw.width()
+        win_h = cw.height()
+
+        # ── 1. Dynamic Overlays Clamping (Prevents off-screen overflow on compact windows) ──
+        for overlay_attr, def_w, def_h in [
+            ("_overlay", 740, 580),
+            ("_remote_overlay", getattr(RemoteKeyOverlay, "_OW", 520), getattr(RemoteKeyOverlay, "_OH", 400)),
+            ("_customize_overlay", getattr(CustomizeOverlay, "_OW", 640), getattr(CustomizeOverlay, "_OH", 500)),
+        ]:
+            ov = getattr(self, overlay_attr, None)
+            if ov and ov.isVisible():
+                max_w = getattr(ov, "_OW", def_w)
+                max_h = getattr(ov, "_OH", def_h)
+                fit_w = min(max_w, max(280, win_w - 32))
+                fit_h = min(max_h, max(240, win_h - 40))
+                ov.setGeometry((win_w - fit_w) // 2, (win_h - fit_h) // 2, fit_w, fit_h)
+
+        # ── 2. Responsive Multi-Column Adaptive Breakpoints ─────────────────────
+        # If user snaps or resizes the window below 940px, auto-collapse right inspector
+        # so the center hero/chat stage remains comfortable and uncompressed.
+        if hasattr(self, "_inspector_container") and hasattr(self, "_widgets_sidebar"):
+            if win_w < 940 and not getattr(self, "_manual_inspector_toggle", False):
+                if not getattr(self._inspector_container, "is_collapsed", False):
+                    self._inspector_container.toggle_collapse()
+            elif win_w >= 1060 and not getattr(self, "_manual_inspector_toggle", False):
+                if getattr(self._inspector_container, "is_collapsed", False):
+                    self._inspector_container.toggle_collapse()
+
+        # If width is constrained to companion/sidecar mode (< 680px), auto-collapse left nav
+        if hasattr(self, "_sidebar_container"):
+            if win_w < 680 and not getattr(self, "_manual_sidebar_toggle", False):
+                if not getattr(self._sidebar_container, "is_collapsed", False):
+                    self._sidebar_container.toggle_collapse()
+            elif win_w >= 800 and not getattr(self, "_manual_sidebar_toggle", False):
+                if getattr(self._sidebar_container, "is_collapsed", False):
+                    self._sidebar_container.toggle_collapse()
+
+        # ── 3. Pixel-Accurate Float Positioning (Camera Preview & Swarms) ───────
+        right_w = (
+            self._right_panel.width()
+            if (hasattr(self, "_right_panel") and self._right_panel and self._right_panel.isVisible()
+                and not getattr(self._right_panel, "is_collapsed", False))
+            else 0
+        )
         pw = _CameraPreview._W
         ph = self._cam_preview.height() or _CameraPreview._H
         self._cam_preview.setGeometry(
-            cw.width() - _RIGHT_W - pw - 12,
-            cw.height() - ph - 28,
+            win_w - right_w - pw - 12,
+            win_h - ph - 28,
             pw, ph,
         )
+
         # Subagent Swarm cards — top-right corner of center area
         if hasattr(self, '_swarm_cards'):
             sw = SwarmCardsOverlay._W
             sh = self._swarm_cards.sizeHint().height() or SwarmCardsOverlay._H
             self._swarm_cards.setGeometry(
-                cw.width() - _RIGHT_W - sw - 12,
+                win_w - right_w - sw - 12,
                 64,
                 sw, sh,
             )
+
         # Clipboard panel — bottom-center
         if hasattr(self, '_clipboard_panel') and self._clipboard_panel.isVisible():
             self._position_clipboard_panel()
@@ -6543,8 +6593,12 @@ class MainWindow(QMainWindow):
         if hasattr(self._nav_sidebar, "collapse_requested"):
             self._nav_sidebar.collapse_requested.connect(self._sidebar_container.toggle_collapse)
         self._sidebar_container.set_content_widget(self._nav_sidebar)
+        def _toggle_sidebar():
+            self._manual_sidebar_toggle = not getattr(self._sidebar_container, "is_collapsed", False)
+            self._sidebar_container.toggle_collapse()
+
         if hasattr(self, "_unified_toolbar"):
-            self._unified_toolbar.sidebar_toggle_requested.connect(self._sidebar_container.toggle_collapse)
+            self._unified_toolbar.sidebar_toggle_requested.connect(_toggle_sidebar)
         return self._sidebar_container
 
     def _on_toggle_theme(self):
@@ -6615,8 +6669,12 @@ class MainWindow(QMainWindow):
         self._proc_lbl = QLabel()
 
         self._inspector_container.set_content_widget(self._widgets_sidebar)
+        def _toggle_inspector():
+            self._manual_inspector_toggle = not getattr(self._inspector_container, "is_collapsed", False)
+            self._inspector_container.toggle_collapse()
+
         if hasattr(self, "_unified_toolbar"):
-            self._unified_toolbar.inspector_toggle_requested.connect(self._inspector_container.toggle_collapse)
+            self._unified_toolbar.inspector_toggle_requested.connect(_toggle_inspector)
         return self._inspector_container
 
     def _build_quick_drawer(self) -> QWidget:
@@ -6870,7 +6928,10 @@ class MainWindow(QMainWindow):
                 self._wake_state()
             except Exception:
                 pass
-            self._wake_btns_sig.emit()
+            try:
+                self._wake_btns_sig.emit()
+            except (RuntimeError, Exception):
+                pass
         threading.Thread(target=work, daemon=True, name="wake-state-warm").start()
 
     def _toggle_drawer(self, checked: bool | None = None):
@@ -8183,7 +8244,7 @@ class MainWindow(QMainWindow):
         sections = self.get_plugin_settings() if self.get_plugin_settings else []
         cw = self.centralWidget()
         ov = PluginSettingsOverlay(sections, parent=cw)
-        ow = PluginSettingsOverlay._OW
+        ow = min(PluginSettingsOverlay._OW, cw.width() - 24)
         oh = min(560, cw.height() - 16)
         ov.setGeometry(
             (cw.width()  - ow) // 2,
@@ -8210,8 +8271,10 @@ class MainWindow(QMainWindow):
 
     def _position_clipboard_panel(self):
         cw = self.centralWidget()
-        pw = ClipboardPanel._W
-        ph = self._clipboard_panel.sizeHint().height() or ClipboardPanel._H
+        if not cw:
+            return
+        pw = min(cw.width() - 24, getattr(ClipboardPanel, "_W", 480))
+        ph = self._clipboard_panel.sizeHint().height() or getattr(ClipboardPanel, "_H", 120)
         x = (cw.width() - pw) // 2
         y = cw.height() - ph - 6
         self._clipboard_panel.setGeometry(x, y, pw, ph)

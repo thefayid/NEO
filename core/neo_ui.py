@@ -189,7 +189,9 @@ class NeoEclipseCanvas(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(236)
+        self.setMinimumHeight(130)
+        self.setMaximumHeight(260)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.setMouseTracking(True)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
@@ -427,10 +429,10 @@ class NeoEclipseCanvas(QWidget):
         w, h = self.width(), self.height()
 
         cx = w / 2.0
-        cy = 118.0
-        r = 110.0
-        head_cy = 96.0
-        head_r = 46.0
+        cy = max(55.0, min(125.0, h * 0.50))
+        r = max(40.0, min(110.0, min(w / 3.0, h * 0.44)))
+        head_cy = cy - (r * 0.18)
+        head_r = max(24.0, r * 0.42)
 
         # ── 1. AMBIENT ATMOSPHERIC GLOW ──────────────────────────────────────
         glow = QRadialGradient(cx, cy - 8, r * 1.85)
@@ -516,7 +518,7 @@ class NeoEclipseCanvas(QWidget):
         spacing = 4.8
         total_w = num_bars * bar_w + (num_bars - 1) * spacing
         start_x = cx - total_w / 2.0
-        wave_cy = 168.0
+        wave_cy = head_cy + head_r + 26.0
 
         for i in range(num_bars):
             norm = abs(i - 3) / 3.0
@@ -1789,9 +1791,8 @@ class NeoWidgetsSidebar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setMinimumWidth(280)
+        self.setMinimumWidth(240)
         self.setMaximumWidth(380)
-        self.setFixedWidth(312)
         self.setStyleSheet(f"background: {BG_OBSIDIAN};")
 
         vbox = QVBoxLayout(self)
@@ -1834,9 +1835,9 @@ class NeoNavSidebar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setMinimumWidth(180)
+        self.setMinimumWidth(160)
         self.setMaximumWidth(320)
-        self.setFixedWidth(220)
+        self.resize(220, 600)
         self.setStyleSheet(f"""
             QWidget {{
                 background: {SIDEBAR_BG};
@@ -2214,8 +2215,11 @@ class NeoHeroStage(QWidget):
 
         # Camera Viewport Container (Displayed directly in Home menu when active)
         self.camera_card = QFrame()
-        self.camera_card.setFixedWidth(680)
-        self.camera_card.setFixedHeight(350)
+        self.camera_card.setMinimumWidth(280)
+        self.camera_card.setMaximumWidth(820)
+        self.camera_card.setMinimumHeight(200)
+        self.camera_card.setMaximumHeight(460)
+        self.camera_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.camera_card.setStyleSheet("""
             QFrame {
                 background: rgba(10, 14, 22, 0.95);
@@ -2317,7 +2321,9 @@ class NeoHeroStage(QWidget):
 
         self.input_frame = QFrame()
         self.input_frame.setFixedHeight(48)
-        self.input_frame.setFixedWidth(640)
+        self.input_frame.setMinimumWidth(280)
+        self.input_frame.setMaximumWidth(780)
+        self.input_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.input_frame.setStyleSheet(f"""
             QFrame {{
                 background: {CARD_BG};

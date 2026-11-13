@@ -816,6 +816,14 @@
         "failures": 0,
         "last_reward": 0.8,
         "last_updated": 1794581398.6506925
+      },
+      "executive_briefing": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794582066.053434
       }
     },
     "actually_now@desktop#evening": {
@@ -1577,7 +1585,101 @@
         "last_reward": 0.8,
         "last_updated": 1794581831.7937074
       }
+    },
+    "menu@desktop#evening": {
+      "manage_neo_memory": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794582084.1406515
+      }
+    },
+    "think_you@desktop#evening": {
+      "executive_briefing": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794582101.207579
+      }
+    },
+    "meeting@desktop#evening": {
+      "subagent_swarm": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794582111.0708802
+      },
+      "executive_briefing": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794582111.0894153
+      },
+      "system_immune": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794582137.90128
+      }
+    },
+    "perform_executive@desktop#evening": {
+      "cortex_deep_reasoning": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794582303.0845065
+      }
+    },
+    "schi@desktop#evening": {
+      "system_immune": {
+        "q_value": 0.48375,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794582727.8059416
+      }
+    },
+    "cheer@desktop#evening": {
+      "system_immune": {
+        "q_value": 0.42300000000000004,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794582731.8415139
+      }
+    },
+    "diagnose_and@desktop#evening": {
+      "execute_autonomous_goal": {
+        "q_value": -0.765,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -1.7,
+        "last_updated": 1794582741.51184
+      },
+      "reminder": {
+        "q_value": 1.098,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794582802.9290156
+      }
     }
   },
-  "updated_at": 1794581831.7942429
+  "updated_at": 1794582802.9306705
 }
