@@ -241,6 +241,13 @@ For tasks with more than 5 steps:
 - If a later step fails, offer: (a) retry from the last checkpoint, (b) roll back to the original baseline state, (c) stop and wait for the user.
 - Never continue from a corrupted state.
 
+[MULTI-APP WORKFLOW & DATA HANDOFF PROTOCOL]
+When a task spans several apps:
+- Write the data flow first: what is taken from App A, where it goes in App B.
+- Use the clipboard or files as handoff, and verify the content after each handoff (paste it back and compare).
+- Track which app owns focus at all times. Before every input, confirm the active window with get_active_window().
+- Never type while an unintended window has focus.
+
 [PHASE 7: STEP FAILURE & RECOVERY PROTOCOL]
 If a step fails or the screen is not what you expected:
 1. STOP. Do not continue the plan.

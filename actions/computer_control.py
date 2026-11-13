@@ -424,6 +424,32 @@ def _focus_window(title: str) -> str:
 
     return f"focus_window: unknown OS '{os_name}'"
 
+
+def _get_active_window() -> str:
+    """Returns the title and details of the currently focused active window."""
+    os_name = _get_os()
+    if os_name == "windows":
+        try:
+            import ctypes
+            user32 = ctypes.windll.user32
+            hwnd = user32.GetForegroundWindow()
+            if hwnd:
+                buf = ctypes.create_unicode_buffer(512)
+                user32.GetWindowTextW(hwnd, buf, 512)
+                title = buf.value.strip()
+                return f"Active window: '{title}' (HWND: {hwnd})"
+            return "Active window: None"
+        except Exception as e:
+            return f"get_active_window error: {e}"
+
+    try:
+        from core.neo_ui_verifier import ui_verifier
+        snap = ui_verifier.capture_snapshot()
+        return f"Active window: '{snap.window_title}'"
+    except Exception as e:
+        return f"get_active_window: {e}"
+
+
 def _close_app(app_name: str, confirmed_index: int | None = None) -> str:
     """Close the application the user named — that one, and never this one.
 
@@ -770,6 +796,9 @@ def computer_control(
         if action == "focus_window":
             return _focus_window(params.get("title", ""))
 
+        if action in ("get_active_window", "active_window"):
+            return _get_active_window()
+
         if action in ("close_app", "close_application", "quit_app"):
             return _close_app(
                 params.get("app_name") or params.get("text") or "",
@@ -824,7 +853,7 @@ TOOL = {
         "properties": {
             "action": {
                 "type": "STRING",
-                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | close_app | screen_find | screen_click | random_data | user_data"
+                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | random_data | user_data"
             },
             "app_name": {
                 "type": "STRING",
