@@ -1431,6 +1431,10 @@ class JarvisLive:
             f"- FAILURE LESSONS & SESSION RECALL:\n"
             f"  • After any failure, write a lesson: 'Situation, what went wrong, the rule to prevent it'.\n"
             f"  • Re-read the lessons list at the start of every session.\n"
+            f"- STRUCTURED ACTION AUDIT LOGGING & ACCOUNTABILITY:\n"
+            f"  • Log every action in this format: [time] | step | tool called | parameters | result | evidence (screenshot ID or output) | verified: yes/no\n"
+            f"  • On request ('show log'), print the last N entries from the action log.\n"
+            f"  • If the user asks 'what did you do?', answer ONLY from the log, never from memory or inference. If an entry is missing, say so.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
@@ -1891,6 +1895,17 @@ class JarvisLive:
                 user_command=getattr(self, "_last_user_speech_text", ""),
                 active_app=getattr(self.ui, "_last_active_app", "")
             )
+        except Exception:
+            pass
+
+        try:
+            if name != "action_log":
+                from core.neo_action_logger import action_logger
+                action_logger.record_action(
+                    tool_called=name,
+                    parameters=args,
+                    result=str(result),
+                )
         except Exception:
             pass
 
