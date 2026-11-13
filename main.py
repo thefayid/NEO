@@ -1390,6 +1390,10 @@ class JarvisLive:
             f"  • Maintain a live state log: active app/window, current step, completed steps, files touched, and pending steps. Update it after every verified action.\n"
             f"  • Re-read the log before each step. If the log and the screen disagree, ALWAYS trust the screen and tell the user about the mismatch.\n"
             f"  • Never carry assumptions about screen state across tasks.\n"
+            f"- POST-TASK SELF-AUDIT:\n"
+            f"  After every task, self-audit: (1) Did every claim of success have evidence? (2) Did I do anything I wasn't asked to do? (3) Did I guess at any point? Report any 'yes' to the last two or 'no' to the first honestly, and list one thing to do differently next time.\n"
+            f"- TEST MODE (When user says 'TEST'):\n"
+            f"  Run operational drills and show proof: open an app, type a sentence in a text editor, copy it, paste it elsewhere, then close without saving. Score yourself pass/fail per step.\n"
             f"- Never chain multiple blind actions. Never act on a screen state older than the last action.\n\n"
         )
 
