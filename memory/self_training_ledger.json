@@ -1119,9 +1119,11 @@
     "genio.": {
       "pattern": "genio.",
       "sample": "Genio.",
-      "count": 1,
-      "tools": [],
-      "last_used": 1794580547.2494905
+      "count": 2,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794652523.9216335
     },
     "so it's for a for a day with cigars the": {
       "pattern": "so it's for a for a day with cigars the",
@@ -1278,16 +1280,17 @@
     ".": {
       "pattern": ".",
       "sample": "Hey.",
-      "count": 5,
+      "count": 8,
       "tools": [
         "computer_control",
         "visual_screen_grounding",
         "companion_core",
         "open_app",
         "browser_control",
-        "read_messages"
+        "read_messages",
+        "screen_process"
       ],
-      "last_used": 1794592843.0989354
+      "last_used": 1794654292.0442524
     },
     ", killing all the background process, okay?": {
       "pattern": ", killing all the background process, okay?",
@@ -1459,11 +1462,11 @@
     ", do it.": {
       "pattern": ", do it.",
       "sample": "Yeah, do it.",
-      "count": 1,
+      "count": 2,
       "tools": [
         "computer_control"
       ],
-      "last_used": 1794581377.7351966
+      "last_used": 1794652600.946782
     },
     "i can't see it till now, . i can't see it.": {
       "pattern": "i can't see it till now, . i can't see it.",
@@ -2191,6 +2194,372 @@
         "youtube_video"
       ],
       "last_used": 1794651347.166484
+    },
+    "minimize all the windows, open chrome and take a": {
+      "pattern": "minimize all the windows, open chrome and take a",
+      "sample": "Minimize all the windows, open Chrome and take a on a video from car.",
+      "count": 1,
+      "tools": [
+        "computer_settings",
+        "open_app",
+        "video_player"
+      ],
+      "last_used": 1794652431.2387717
+    },
+    "from youtube": {
+      "pattern": "from youtube",
+      "sample": "from YouTube",
+      "count": 1,
+      "tools": [
+        "youtube_video"
+      ],
+      "last_used": 1794652439.8055754
+    },
+    "skip the ad": {
+      "pattern": "skip the ad",
+      "sample": "Skip the ad",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794652451.4307506
+    },
+    "skip the ad now.": {
+      "pattern": "skip the ad now.",
+      "sample": "Skip the ad now.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794652472.5130165
+    },
+    "problem, i'll do it manually.": {
+      "pattern": "problem, i'll do it manually.",
+      "sample": "Problem, I'll do it manually.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794652485.8373845
+    },
+    "forward this video a little more?": {
+      "pattern": "forward this video a little more?",
+      "sample": "Can you forward this video a little more?",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794652494.09126
+    },
+    "play from middle.": {
+      "pattern": "play from middle.",
+      "sample": "Play from middle.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794652512.7351186
+    },
+    "genio, play this video from the middle.": {
+      "pattern": "genio, play this video from the middle.",
+      "sample": "Genio, play this video from the middle.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794652534.0362203
+    },
+    "no, not worked it.": {
+      "pattern": "no, not worked it.",
+      "sample": "No, not worked it.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding",
+        "save_memory"
+      ],
+      "last_used": 1794652561.0835934
+    },
+    "no, you are not dead. you hallucinated.": {
+      "pattern": "no, you are not dead. you hallucinated.",
+      "sample": "No, you are not dead. You just hallucinated.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794652615.494273
+    },
+    "panel": {
+      "pattern": "panel",
+      "sample": "panel",
+      "count": 1,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794652658.203441
+    },
+    "cameo book memo e ticket for main book my show": {
+      "pattern": "cameo book memo e ticket for main book my show",
+      "sample": "cameo book memo e ticket for main book my show",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794652676.8143833
+    },
+    ", set the location to kochi.": {
+      "pattern": ", set the location to kochi.",
+      "sample": "Yeah, set the location to Kochi.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding",
+        "computer_control",
+        "save_memory"
+      ],
+      "last_used": 1794652696.8318837
+    },
+    "no, it's not updating you ding ding net. does no": {
+      "pattern": "no, it's not updating you ding ding net. does no",
+      "sample": "No, it's not updating you ding ding net. Does nothing.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794652704.0327122
+    },
+    "no, you clicked it wrong. you clicked hyderabad.": {
+      "pattern": "no, you clicked it wrong. you clicked hyderabad.",
+      "sample": "No, you clicked it wrong. You just clicked Hyderabad. Just change it to Cochin.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "save_memory"
+      ],
+      "last_used": 1794652731.8549764
+    },
+    "we are not done yet, .": {
+      "pattern": "we are not done yet, .",
+      "sample": "We are not done yet, Neo.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794652765.5182245
+    },
+    "close the both tabs you open now. let's do it on": {
+      "pattern": "close the both tabs you open now. let's do it on",
+      "sample": "Just close the both tabs you open now. Let's do it once again.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794652792.068188
+    },
+    ", i will try.": {
+      "pattern": ", i will try.",
+      "sample": "Yeah, I will try.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794652799.855556
+    },
+    "ya do it once again.": {
+      "pattern": "ya do it once again.",
+      "sample": "Ya do it once again.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794652814.8360748
+    },
+    ", set to proceed.": {
+      "pattern": ", set to proceed.",
+      "sample": "Yeah, set to proceed.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding",
+        "computer_control"
+      ],
+      "last_used": 1794652832.4910672
+    },
+    "no, you have to submit it again and again and ag": {
+      "pattern": "no, you have to submit it again and again and ag",
+      "sample": "No, you just have to submit it again and again and again. It doesn't work. Till now.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794652842.6693075
+    },
+    "video": {
+      "pattern": "video",
+      "sample": "video",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794654001.1529937
+    },
+    "no, book me more ticket for me.": {
+      "pattern": "no, book me more ticket for me.",
+      "sample": "No, just book me more ticket for me.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794654008.1694748
+    },
+    ", do it correctly.": {
+      "pattern": ", do it correctly.",
+      "sample": "Yeah, do it correctly.",
+      "count": 1,
+      "tools": [
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794654039.3068452
+    },
+    "check my screen. it's not accurate. it's in hyde": {
+      "pattern": "check my screen. it's not accurate. it's in hyde",
+      "sample": "Just check my screen. It's not accurate. It's in Hyderabad. Just change to Kochi and book a ticket for me.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794654054.5714962
+    },
+    "continue": {
+      "pattern": "continue",
+      "sample": "continue",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding",
+        "computer_control",
+        "screen_process"
+      ],
+      "last_used": 1794654096.299592
+    },
+    "daniel, hear me?": {
+      "pattern": "daniel, hear me?",
+      "sample": "Daniel, can you hear me?",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794654106.0081189
+    },
+    "check my screen and tell me what i am seeing rig": {
+      "pattern": "check my screen and tell me what i am seeing rig",
+      "sample": "Just check my screen and tell me what I am seeing right now.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794654114.809798
+    },
+    "let's go.": {
+      "pattern": "let's go.",
+      "sample": "Let's go.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794654145.6617749
+    },
+    "great": {
+      "pattern": "great",
+      "sample": "great",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794654154.987555
+    },
+    "what i am seeing in my screen?": {
+      "pattern": "what i am seeing in my screen?",
+      "sample": "What I am seeing in my screen?",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794654207.525955
+    },
+    "what is your thinking about this course?": {
+      "pattern": "what is your thinking about this course?",
+      "sample": "What is your thinking about this course?",
+      "count": 1,
+      "tools": [
+        "cortex_deep_reasoning"
+      ],
+      "last_used": 1794654224.2619846
+    },
+    "mutton toast tell me some": {
+      "pattern": "mutton toast tell me some",
+      "sample": "mutton toast can you tell me some",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794654271.422188
+    },
+    ", let me think about it. i will say you later. o": {
+      "pattern": ", let me think about it. i will say you later. o",
+      "sample": "Yeah, let me think about it. I will say you later. Okay?",
+      "count": 1,
+      "tools": [
+        "knowledge_memory"
+      ],
+      "last_used": 1794654285.823004
+    },
+    "open linkedin and find jobs for me?": {
+      "pattern": "open linkedin and find jobs for me?",
+      "sample": "Can you open LinkedIn and find jobs for me?",
+      "count": 1,
+      "tools": [
+        "browser_control",
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794654315.6573522
+    },
+    "want through chrome i have a linkedin applicatio": {
+      "pattern": "want through chrome i have a linkedin applicatio",
+      "sample": "want through Chrome I have a LinkedIn application open it and find jobs for a in the app itself.",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794654332.4831016
+    },
+    "cyber security jobs": {
+      "pattern": "cyber security jobs",
+      "sample": "cyber security jobs",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "screen_process"
+      ],
+      "last_used": 1794654338.8522096
+    },
+    "scroll down.": {
+      "pattern": "scroll down.",
+      "sample": "Scroll down.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794654356.7579002
+    },
+    "i love you, sachi.": {
+      "pattern": "i love you, sachi.",
+      "sample": "I love you, Sachi.",
+      "count": 1,
+      "tools": [
+        "browser_control",
+        "open_app",
+        "computer_control"
+      ],
+      "last_used": 1794655241.9164026
+    },
+    "i am on it. i am on it.": {
+      "pattern": "i am on it. i am on it.",
+      "sample": "I am on it. I am on it.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794655261.5673597
     }
   },
   "preferences": {},
@@ -2575,9 +2944,75 @@
       "correction": "No.",
       "rule": "When user says 'Just minimize the underground ': corrected with 'No.'",
       "timestamp": 1794651289.7023325
+    },
+    {
+      "trigger_command": "Genio, play this video from the middle.",
+      "previous_tools": [
+        "visual_screen_grounding"
+      ],
+      "correction": "No, not worked it.",
+      "rule": "When user says 'Genio, play this video from th': corrected with 'No, not worked it.'",
+      "timestamp": 1794652561.0835657
+    },
+    {
+      "trigger_command": "Yeah, do it.",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "No, you are not dead. You just hallucinated.",
+      "rule": "When user says 'Yeah, do it.': corrected with 'No, you are not dead. You just hallucina'",
+      "timestamp": 1794652615.494234
+    },
+    {
+      "trigger_command": "Yeah, set the location to Kochi.",
+      "previous_tools": [
+        "visual_screen_grounding",
+        "computer_control",
+        "save_memory",
+        "computer_control",
+        "computer_control"
+      ],
+      "correction": "No, it's not updating you ding ding net. Does nothing.",
+      "rule": "When user says 'Yeah, set the location to Koch': corrected with 'No, it's not updating you ding ding net.'",
+      "timestamp": 1794652704.0326798
+    },
+    {
+      "trigger_command": "No, it's not updating you ding ding net. Does nothing.",
+      "previous_tools": [
+        "screen_process"
+      ],
+      "correction": "No, you clicked it wrong. You just clicked Hyderabad. Just change it to Cochin.",
+      "rule": "When user says 'No, it's not updating you ding': corrected with 'No, you clicked it wrong. You just click'",
+      "timestamp": 1794652731.8548324
+    },
+    {
+      "trigger_command": "Yeah, set to proceed.",
+      "previous_tools": [
+        "visual_screen_grounding",
+        "computer_control",
+        "computer_control"
+      ],
+      "correction": "No, you just have to submit it again and again and again. It doesn't work. Till now.",
+      "rule": "When user says 'Yeah, set to proceed.': corrected with 'No, you just have to submit it again and'",
+      "timestamp": 1794652842.6692717
+    },
+    {
+      "trigger_command": "video",
+      "previous_tools": [
+        "spotify_control"
+      ],
+      "correction": "No, just book me more ticket for me.",
+      "rule": "When user says 'video': corrected with 'No, just book me more ticket for me.'",
+      "timestamp": 1794654008.1694531
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'video': execute preferred action 'No, just book me more ticket for me'.",
+    "Avoid previous misstep for 'Yeah, set to proceed.': execute preferred action 'No, you just have to submit it agai'.",
+    "Avoid previous misstep for 'No, it's not updating you': execute preferred action 'No, you clicked it wrong. You just '.",
+    "Avoid previous misstep for 'Yeah, set the location to': execute preferred action 'No, it's not updating you ding ding'.",
+    "Avoid previous misstep for 'Yeah, do it.': execute preferred action 'No, you are not dead. You just hall'.",
+    "Avoid previous misstep for 'Genio, play this video fr': execute preferred action 'No, not worked it.'.",
     "Avoid previous misstep for 'Just minimize the undergr': execute preferred action 'No.'.",
     "Avoid previous misstep for 'No, what song I am pay?': execute preferred action 'No, I'll say it when I need it.'.",
     "Avoid previous misstep for 'Let's go back.': execute preferred action 'No, what song I am pay?'.",
@@ -2596,13 +3031,7 @@
     "Avoid previous misstep for 'Yeah, now English to full': execute preferred action 'Note that this increase the brightn'.",
     "Avoid previous misstep for 'No, I am not saying. Do i': execute preferred action 'Nope. Nope. Nope. Nope. Do it.'.",
     "Avoid previous misstep for 'No, no, no, no. We should': execute preferred action 'No, I am not saying. Do it once mor'.",
-    "Avoid previous misstep for 'Would know it. It will no': execute preferred action 'No, no, no, no. We should do it.'.",
-    "Avoid previous misstep for 'No, it's not actually dro': execute preferred action 'No, you should do it right.'.",
-    "Avoid previous misstep for 'Yeah, some more.': execute preferred action 'No, it's not actually dropping it d'.",
-    "Avoid previous misstep for 'Just play it. Just shut d': execute preferred action 'No, system shut down. You just shut'.",
-    "Avoid previous misstep for 'me I can manage myself. J': execute preferred action 'And don't repeat the message, okay?'.",
-    "Avoid previous misstep for 'the first one': execute preferred action 'No. My spelling was ALWINRAGCP.'.",
-    "Avoid previous misstep for 'Alvin Rag CP in LinkedIn ': execute preferred action 'It's wrong but it's wrong. We knows'."
+    "Avoid previous misstep for 'Would know it. It will no': execute preferred action 'No, no, no, no. We should do it.'."
   ],
-  "updated_at": 1794651347.167266
+  "updated_at": 1794655261.5735803
 }

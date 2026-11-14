@@ -175,9 +175,14 @@ def _user_profile() -> dict:
 
 def _type(text: str, interval: float = 0.03) -> str:
     _require_pyautogui()
-    time.sleep(0.3)
+    time.sleep(0.15)
+    # Use clipboard paste for fast, lossless typing of URLs, symbols, multi-word strings, and non-ASCII
+    symbols = set(":/@_?=&\\\"'{}[]()<>,~`!#$%^*+|;")
+    has_symbols = any(c in symbols for c in text)
     has_non_ascii = any(ord(c) > 127 for c in text)
-    if has_non_ascii and _require_pyperclip():
+    is_long_or_url = len(text) > 15 or "http" in text or "www." in text or has_symbols or has_non_ascii
+
+    if is_long_or_url and _require_pyperclip():
         pyperclip.copy(text)
         time.sleep(0.05)
         paste_key = "command" if _get_os() == "mac" else "ctrl"
@@ -273,10 +278,17 @@ def _press(key: str) -> str:
     return f"Pressed: {key}"
 
 
-def _scroll(direction: str = "down", amount: int = 3) -> str:
+def _scroll(direction: str = "down", amount: int = 3, x: int | None = None, y: int | None = None) -> str:
     _require_pyautogui()
-    vertical   = direction in ("up", "down")
-    clicks     = amount if direction in ("up", "right") else -amount
+    if x is not None and y is not None:
+        cx, cy = _clamp_coords(x, y)
+        if cx is not None and cy is not None:
+            pyautogui.moveTo(cx, cy, duration=0.1)
+
+    vertical = direction in ("up", "down")
+    # Windows mouse_event(MOUSEEVENTF_WHEEL) uses WHEEL_DELTA=120 per notch
+    scale = 120 if (_get_os() == "windows" and amount <= 20) else 1
+    clicks = (amount * scale) if direction in ("up", "right") else (-amount * scale)
     pyautogui.scroll(clicks) if vertical else pyautogui.hscroll(clicks)
     return f"Scrolled {direction} ×{amount}"
 
@@ -578,73 +590,25 @@ def _close_app(app_name: str, confirmed_index: int | None = None) -> str:
 
 
 def _screen_find(description: str) -> tuple[int, int] | None:
-    # 1. Tier 1: Windows Native UI Automation (exact physical bounding box, 0 drift)
+    # 1. First priority: Multimodal Visual Grounding Engine (UIA -> SoM -> Gemini Multimodal Vision)
+    try:
+        from core.neo_visual_grounding import visual_grounding
+        elem = visual_grounding.ground_target_on_screen(description, highlight=True)
+        if elem:
+            return elem.center
+    except Exception as e:
+        print(f"[ComputerControl] visual_grounding delegation error: {e}")
+
+    # 2. Direct UIA control search fallback
     try:
         from core.neo_ui_automation import ui_automation
         if ui_automation.is_available:
             ctrl = ui_automation.find_control(description)
-            if ctrl:
+            if ctrl and ctrl.is_plausible:
                 print(f"[ComputerControl] 🎯 UIA exact control found: '{ctrl.name}' at {ctrl.center}")
                 return ctrl.center
     except Exception as e:
         print(f"[ComputerControl] UIA search warning: {e}")
-
-    api_key = _get_api_key()
-    if not api_key:
-        print("[ComputerControl] ⚠️ No API key for screen_find")
-        return None
-
-    try:
-        _require_pyautogui()
-        img = pyautogui.screenshot()
-
-        # 2. Tier 2: Set-of-Marks (SoM) Tagging (discrete tag badges, no coordinate drift)
-        try:
-            from core.neo_set_of_marks import set_of_marks
-            from core.neo_ui_automation import ui_automation
-            uia_ctrls = ui_automation.get_interactive_controls() if ui_automation.is_available else []
-            annotated_img, marks = set_of_marks.annotate_screenshot(img, uia_controls=uia_ctrls)
-            if marks:
-                matched_mark = set_of_marks.query_mark(description, annotated_img, marks)
-                if matched_mark:
-                    print(f"[ComputerControl] 🎯 SoM mark [{matched_mark.id}] matched: {matched_mark.center}")
-                    return matched_mark.center
-        except Exception as e:
-            print(f"[ComputerControl] SoM search warning: {e}")
-
-        # 3. Tier 3: Standard Multimodal Bounding Box Fallback
-        w, h = pyautogui.size()
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        image_bytes = buf.getvalue()
-
-        prompt = (
-            f"This is a screenshot of a {w}×{h} pixel screen. "
-            f"Locate the UI element described as: '{description}'. "
-            f"Reply with ONLY the center coordinates as: x,y "
-            f"If the element is not visible, reply: NOT_FOUND"
-        )
-
-        from google import genai
-        from google.genai import types as gtypes
-        from core import gemini
-        response = gemini.call(
-            [gtypes.Part.from_bytes(data=image_bytes, mime_type="image/png"), prompt],
-            tier=gemini.FAST, timeout_ms=20_000,
-        )
-        if response is None:
-            return None
-
-        text = (response.text or "").strip()
-        if "NOT_FOUND" in text.upper():
-            return None
-
-        match = re.search(r"(\d+)\s*,\s*(\d+)", text)
-        if match:
-            return int(match.group(1)), int(match.group(2))
-
-    except Exception as e:
-        print(f"[ComputerControl] ⚠️ screen_find failed: {e}")
 
     return None
 
@@ -760,6 +724,8 @@ def computer_control(
             return _scroll(
                 direction=params.get("direction", "down"),
                 amount=int(params.get("amount", 3)),
+                x=params.get("x"),
+                y=params.get("y"),
             )
 
         if action == "copy":

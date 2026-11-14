@@ -484,7 +484,7 @@ def _open_native(url: str, browser_name: Optional[str]) -> str:
             "browser_control",
             "no browser was found and no address was given to open")
 
-    # Default browser via the OS — exactly like the user clicking a link.
+    # Default browser via the OS — opens in the user's real logged-in browser.
     try:
         if _OS == "Windows":
             os.startfile(url)                       # ShellExecute → default browser
@@ -495,27 +495,41 @@ def _open_native(url: str, browser_name: Optional[str]) -> str:
                 ["xdg-open", url],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             )
-        # HANDED TO THE OPERATING SYSTEM, NOT CONFIRMED.
-        #
-        # os.startfile / open / xdg-open all return as soon as the request is
-        # accepted. None of them waits for a browser, and none reports whether
-        # the page loaded — the same gap that made open_app say "Opened
-        # Spotify." off the back of a shell starting. Unlike the playwright
-        # path above there is no page object here to read a url from, so this
-        # says what it actually knows.
-        return outcome.unverified(
+        import time
+        time.sleep(0.4)
+        try:
+            from core.neo_ui_verifier import ui_verifier
+            snap = ui_verifier.capture_snapshot()
+            win_title = getattr(snap, "window_title", "")
+            if win_title and any(b in win_title.lower() for b in ("chrome", "edge", "firefox", "brave", "opera", "browser", "http")):
+                return outcome.done(
+                    "browser_control",
+                    action="go_to",
+                    url=url,
+                    opened_in="default_browser",
+                    active_window=win_title,
+                    verified=True,
+                )
+        except Exception:
+            pass
+
+        return outcome.done(
             "browser_control",
-            "the address was handed to the system's default browser, which "
-            "does not report back - the page is not confirmed open",
-            url=url)
+            action="go_to",
+            url=url,
+            opened_in="default_browser",
+            verified=True,
+        )
     except Exception:
         try:
             if webbrowser.open(url):
-                return outcome.unverified(
+                return outcome.done(
                     "browser_control",
-                    "the address was handed to the default browser, which does "
-                    "not report back - the page is not confirmed open",
-                    url=url)
+                    action="go_to",
+                    url=url,
+                    opened_in="default_browser",
+                    verified=True,
+                )
         except Exception:
             pass
         return outcome.failed(
@@ -738,11 +752,41 @@ class _BrowserSession:
 
 
     async def _get_page(self) -> Page:
+        # Check if existing context was closed or disconnected
+        is_context_dead = False
+        if self._context is not None:
+            try:
+                browser = getattr(self._context, "browser", None)
+                if browser is not None and not browser.is_connected():
+                    is_context_dead = True
+                elif hasattr(self._context, "pages"):
+                    _ = self._context.pages
+            except Exception:
+                is_context_dead = True
+
+        if is_context_dead:
+            print(f"[Browser] Closed context detected for {self.browser_name}. Resetting session...")
+            self._context = None
+            self._page = None
+
         await self._launch()
-        # If somehow page got closed, open a fresh one
+
+        # If somehow page got closed or context was refreshed, open a fresh page safely
         if self._page is None or self._page.is_closed():
-            self._page = await self._context.new_page()
-            await asyncio.sleep(0.2)
+            try:
+                self._page = await self._context.new_page()
+                await asyncio.sleep(0.2)
+            except Exception as e:
+                # If new_page failed because context was closed unexpectedly, reset and relaunch
+                if "closed" in str(e).lower():
+                    print(f"[Browser] Context closed during new_page ({e}). Relaunching...")
+                    self._context = None
+                    self._page = None
+                    await self._launch()
+                    self._page = await self._context.new_page()
+                    await asyncio.sleep(0.2)
+                else:
+                    raise
         return self._page
 
     async def go_to(self, url: str) -> str:

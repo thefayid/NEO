@@ -204,6 +204,42 @@ class TestVisualGroundingBounds(unittest.TestCase):
             res = visual_screen_grounding({"query": "Skip Ad", "action": "click"})
             self.assertIn("Could not locate", res)
 
+    def test_gemini_vision_1000_scale_normalization(self):
+        # When Gemini returns bbox in standard [0, 1000] scale
+        mock_raw = '{"found": true, "label": "YouTube progress bar", "bbox_norm": [850, 440, 880, 890]}'
+        with patch("core.gemini.multimodal", return_value=mock_raw):
+            elem = visual_grounding._query_gemini_grounding("YouTube progress bar", b"fake", 1920, 1080)
+            self.assertIsNotNone(elem)
+            # Physical bbox should be within screen resolution (not 680640, 925020)
+            self.assertLessEqual(elem.bbox[0], 1920)
+            self.assertLessEqual(elem.bbox[1], 1080)
+            self.assertLessEqual(elem.bbox[2], 1920)
+            self.assertLessEqual(elem.bbox[3], 1080)
+            self.assertGreaterEqual(elem.bbox[0], 0)
+            self.assertGreaterEqual(elem.bbox[1], 0)
+            # Verify coordinates are approx (844, 918, 1708, 950)
+            self.assertEqual(elem.bbox, (844, 918, 1708, 950))
+
+    def test_computer_control_scroll_wheel_delta_on_windows(self):
+        from actions.computer_control import _scroll
+        with patch("actions.computer_control._require_pyautogui"), \
+             patch("actions.computer_control._get_os", return_value="windows"), \
+             patch("pyautogui.scroll") as mock_scroll:
+            _scroll(direction="down", amount=5)
+            # 5 notches on Windows must be scaled by WHEEL_DELTA (120) -> -600
+            mock_scroll.assert_called_once_with(-600)
+
+    def test_computer_control_type_uses_clipboard_for_urls(self):
+        from actions.computer_control import _type
+        with patch("actions.computer_control._require_pyautogui"), \
+             patch("actions.computer_control._require_pyperclip", return_value=True), \
+             patch("actions.computer_control.pyperclip.copy") as mock_copy, \
+             patch("pyautogui.hotkey") as mock_hotkey:
+            url = "https://www.linkedin.com/jobs"
+            res = _type(url)
+            mock_copy.assert_called_once_with(url)
+            self.assertIn("Typed: https://www.linkedin.com/jobs", res)
+
 
 if __name__ == "__main__":
     unittest.main()

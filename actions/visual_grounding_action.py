@@ -35,6 +35,13 @@ def visual_screen_grounding(parameters: dict, **kwargs) -> str:
 
     # Ground element on active display (highlight is sent via safe Qt signal)
     elem = visual_grounding.ground_target_on_screen(query, highlight=True)
+    if not elem and query.lower() in ("skip ad", "skip ads", "skip"):
+        for alt_q in ("Skip Ads", "Skip Ad", "Skip"):
+            if alt_q.lower() != query.lower():
+                elem = visual_grounding.ground_target_on_screen(alt_q, highlight=True)
+                if elem:
+                    break
+
     if not elem:
         return outcome.failed("visual_screen_grounding", f"Could not locate UI element '{query}' on active display.")
 

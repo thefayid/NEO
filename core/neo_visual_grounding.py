@@ -519,6 +519,27 @@ If the element cannot be found, return {{"found": false}}.
                 return None
 
             ymin, xmin, ymax, xmax = data["bbox_norm"]
+            ymin, xmin, ymax, xmax = float(ymin), float(xmin), float(ymax), float(xmax)
+
+            # Gemini bounding box outputs are often scaled to [0, 1000]
+            if any(c > 1.0 for c in (ymin, xmin, ymax, xmax)):
+                ymin /= 1000.0
+                xmin /= 1000.0
+                ymax /= 1000.0
+                xmax /= 1000.0
+
+            # Clamp normalized coordinates to [0.0, 1.0]
+            ymin = max(0.0, min(1.0, ymin))
+            xmin = max(0.0, min(1.0, xmin))
+            ymax = max(0.0, min(1.0, ymax))
+            xmax = max(0.0, min(1.0, xmax))
+
+            # Ensure proper ordering
+            if xmax < xmin:
+                xmin, xmax = xmax, xmin
+            if ymax < ymin:
+                ymin, ymax = ymax, ymin
+
             # Convert [ymin, xmin, ymax, xmax] normalized to [x1, y1, x2, y2] physical
             x1 = int(xmin * screen_w)
             y1 = int(ymin * screen_h)
