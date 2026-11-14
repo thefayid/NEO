@@ -240,6 +240,23 @@ class TestVisualGroundingBounds(unittest.TestCase):
             mock_copy.assert_called_once_with(url)
             self.assertIn("Typed: https://www.linkedin.com/jobs", res)
 
+    def test_computer_control_key_normalization(self):
+        from actions.computer_control import _press, _hotkey
+        with patch("actions.computer_control._require_pyautogui"), \
+             patch("pyautogui.press") as mock_press, \
+             patch("pyautogui.hotkey") as mock_hotkey:
+            _press("ENTER")
+            mock_press.assert_called_with("enter")
+
+            _press("Return")
+            mock_press.assert_called_with("enter")
+
+            _press("ESC")
+            mock_press.assert_called_with("escape")
+
+            _hotkey("CTRL", "SHIFT", "ESC")
+            mock_hotkey.assert_called_with("ctrl", "shift", "escape")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -907,12 +907,17 @@ class _BrowserSession:
             return f"Type error: {e}"
 
     async def scroll(self, direction: str = "down", amount: int = 500) -> str:
-        page = await self._get_page()
         try:
+            page = await self._get_page()
             y = amount if direction == "down" else -amount
             await page.mouse.wheel(0, y)
             return f"Scrolled {direction}."
         except Exception as e:
+            try:
+                from actions.computer_control import _scroll
+                return _scroll(direction=direction, amount=5)
+            except Exception:
+                pass
             return f"Scroll error: {e}"
 
     async def press(self, key: str) -> str:

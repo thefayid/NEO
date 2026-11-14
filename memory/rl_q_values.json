@@ -630,6 +630,14 @@
         "failures": 0,
         "last_reward": 0.8,
         "last_updated": 1794477557.108373
+      },
+      "computer_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657170.5373795
       }
     },
     "think_you@desktop#afternoon": {
@@ -1162,12 +1170,12 @@
         "last_updated": 1794652430.7105715
       },
       "computer_control": {
-        "q_value": -0.07859556316271743,
-        "visits": 10,
-        "successes": 9,
+        "q_value": 0.43804343556313546,
+        "visits": 13,
+        "successes": 12,
         "failures": 1,
         "last_reward": 0.8,
-        "last_updated": 1794656154.2755241
+        "last_updated": 1794657230.687705
       },
       "save_memory": {
         "q_value": -1.35,
@@ -1184,6 +1192,14 @@
         "failures": 0,
         "last_reward": 0.8,
         "last_updated": 1794656164.8526766
+      },
+      "shutdown_jarvis": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657581.0193887
       }
     },
     "yaaa@desktop#afternoon": {
@@ -2202,6 +2218,22 @@
         "failures": 0,
         "last_reward": 0.8,
         "last_updated": 1794654337.3556406
+      },
+      "open_app": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794657316.3269622
+      },
+      "visual_screen_grounding": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794657330.784613
       }
     },
     "scroll_down@desktop#afternoon": {
@@ -2692,12 +2724,12 @@
     },
     "seen@desktop#afternoon": {
       "computer_control": {
-        "q_value": 0.36000000000000004,
-        "visits": 1,
-        "successes": 1,
+        "q_value": 0.6669,
+        "visits": 3,
+        "successes": 3,
         "failures": 0,
         "last_reward": 0.8,
-        "last_updated": 1794656039.6032372
+        "last_updated": 1794657198.5533824
       }
     },
     "switch_the@desktop#afternoon": {
@@ -2712,12 +2744,20 @@
     },
     "the_same@desktop#afternoon": {
       "computer_settings": {
-        "q_value": -0.97875,
-        "visits": 2,
-        "successes": 1,
+        "q_value": 0.13668749999999985,
+        "visits": 3,
+        "successes": 2,
         "failures": 1,
-        "last_reward": -3.0,
-        "last_updated": 1794656138.3050466
+        "last_reward": 1.5,
+        "last_updated": 1794657262.6755466
+      },
+      "computer_control": {
+        "q_value": 0.6669,
+        "visits": 3,
+        "successes": 3,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657252.0657709
       }
     },
     "nope_still@desktop#afternoon": {
@@ -2747,7 +2787,213 @@
         "last_reward": 1.5,
         "last_updated": 1794656197.5557241
       }
+    },
+    "necesitas@desktop#afternoon": {
+      "open_app": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794657122.0376027
+      },
+      "browser_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657122.0889437
+      }
+    },
+    "fastest_day@desktop#afternoon": {
+      "computer_control": {
+        "q_value": 0.704334375,
+        "visits": 4,
+        "successes": 4,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657169.614293
+      }
+    },
+    "are_you@desktop#afternoon": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657182.0795114
+      }
+    },
+    "the_movie@desktop#afternoon": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657210.3344884
+      }
+    },
+    "add@desktop#afternoon": {
+      "screen_process": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794657244.0997906
+      }
+    },
+    "back@desktop#afternoon": {
+      "computer_control": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794657274.8836956
+      }
+    },
+    "take_the@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657343.9178917
+      }
+    },
+    "close_bookmyshow@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 1.4917698652566636,
+        "visits": 10,
+        "successes": 10,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657361.7833629
+      }
+    },
+    "navigate_first@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657366.7750235
+      }
+    },
+    "minimize_this@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657381.7288215
+      }
+    },
+    "minimize_your@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657399.0866747
+      }
+    },
+    "mind_will@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 1.4970449676421744,
+        "visits": 13,
+        "successes": 13,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657438.2383385
+      }
+    },
+    "the_first@desktop#afternoon": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657441.530049
+      }
+    },
+    "get@desktop#afternoon": {
+      "visual_screen_grounding": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794657459.3870986
+      }
+    },
+    "projects@desktop#afternoon": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657467.653906
+      }
+    },
+    "didn_like@desktop#afternoon": {
+      "computer_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657472.9242897
+      },
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657482.7366052
+      }
+    },
+    "deutsch@desktop#afternoon": {
+      "computer_control": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794657508.1339967
+      }
+    },
+    "then_you@desktop#afternoon": {
+      "computer_settings": {
+        "q_value": 1.4551007701648617,
+        "visits": 6,
+        "successes": 6,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794657550.192939
+      }
+    },
+    "going_try@desktop#afternoon": {
+      "screen_process": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794657552.6361582
+      }
     }
   },
-  "updated_at": 1794656197.5560567
+  "updated_at": 1794657581.0197213
 }

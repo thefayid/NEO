@@ -3,11 +3,12 @@
     "new": {
       "pattern": "new",
       "sample": "new",
-      "count": 4,
+      "count": 5,
       "tools": [
-        "companion_core"
+        "companion_core",
+        "computer_control"
       ],
-      "last_used": 1794593866.5819333
+      "last_used": 1794657169.6271558
     },
     "i came back to test you again.": {
       "pattern": "i came back to test you again.",
@@ -2598,11 +2599,11 @@
     "seen": {
       "pattern": "seen",
       "sample": "seen",
-      "count": 1,
+      "count": 2,
       "tools": [
         "screen_process"
       ],
-      "last_used": 1794656025.5330818
+      "last_used": 1794657182.7930326
     },
     "switch the location.": {
       "pattern": "switch the location.",
@@ -2661,11 +2662,12 @@
     "do it.": {
       "pattern": "do it.",
       "sample": "Do it.",
-      "count": 1,
+      "count": 2,
       "tools": [
-        "computer_control"
+        "computer_control",
+        "screen_process"
       ],
-      "last_used": 1794656161.7318873
+      "last_used": 1794657211.8351648
     },
     "but you did do it.": {
       "pattern": "but you did do it.",
@@ -2684,22 +2686,230 @@
         "computer_settings"
       ],
       "last_used": 1794656211.94539
+    },
+    "\u00bfqu\u00e9 necesitas de m\u00ed?": {
+      "pattern": "\u00bfqu\u00e9 necesitas de m\u00ed?",
+      "sample": "\u00bfQu\u00e9 necesitas de m\u00ed?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794657117.2751791
+    },
+    "book me a movie ticket for main book my show?": {
+      "pattern": "book me a movie ticket for main book my show?",
+      "sample": "Can you book me a movie ticket for Main Book My Show?",
+      "count": 1,
+      "tools": [
+        "open_app",
+        "browser_control"
+      ],
+      "last_used": 1794657129.2964976
+    },
+    "fastest day change the location to cochin.": {
+      "pattern": "fastest day change the location to cochin.",
+      "sample": "Fastest day change the location to Cochin.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794657133.931338
+    },
+    "are you done?": {
+      "pattern": "are you done?",
+      "sample": "Are you done?",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794657179.2395387
+    },
+    "the movie name is scene.": {
+      "pattern": "the movie name is scene.",
+      "sample": "The movie name is Scene.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794657204.4903266
+    },
+    "add it.": {
+      "pattern": "add it.",
+      "sample": "Add it.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794657237.7198775
+    },
+    "no, it's the same page. check.": {
+      "pattern": "no, it's the same page. check.",
+      "sample": "No, it's the same page. Just check.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794657244.1009538
+    },
+    "go back": {
+      "pattern": "go back",
+      "sample": "go back",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657269.424472
+    },
+    "close bookmyshow app": {
+      "pattern": "close bookmyshow app",
+      "sample": "Close BookMyShow app",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794657284.482297
+    },
+    "i didn't tell you to close the entire chrome. i ": {
+      "pattern": "i didn't tell you to close the entire chrome. i ",
+      "sample": "I didn't tell you to close the entire Chrome. I just tell you to close the BookMyShow tab. You just close the entire Chrome. Why?",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794657310.2160344
+    },
+    "reopen the chrome without bookmyshow.": {
+      "pattern": "reopen the chrome without bookmyshow.",
+      "sample": "Just reopen the Chrome without BookMyShow.",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794657322.636319
+    },
+    "i take the user rahman.": {
+      "pattern": "i take the user rahman.",
+      "sample": "I just take the user Rahman.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794657337.8207483
+    },
+    "close bookmyshow tab": {
+      "pattern": "close bookmyshow tab",
+      "sample": "Close BookMyShow tab",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657348.719952
+    },
+    "navigate to first tab.": {
+      "pattern": "navigate to first tab.",
+      "sample": "Just navigate to first tab.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657364.6763582
+    },
+    "minimize this tab?": {
+      "pattern": "minimize this tab?",
+      "sample": "Can you just minimize this tab?",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657368.0941656
+    },
+    "minimize your new tab.": {
+      "pattern": "minimize your new tab.",
+      "sample": "Minimize your new tab.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657387.8012602
+    },
+    "didn't minimize that minimize it now.": {
+      "pattern": "didn't minimize that minimize it now.",
+      "sample": "didn't minimize that just minimize it now.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657405.800845
+    },
+    "mind i will do it myself.": {
+      "pattern": "mind i will do it myself.",
+      "sample": "mind I will just do it myself.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794657416.0652444
+    },
+    "go to the first tab that like api keys.": {
+      "pattern": "go to the first tab that like api keys.",
+      "sample": "Just go to the first tab that like API keys.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657438.2481678
+    },
+    ", get it.": {
+      "pattern": ", get it.",
+      "sample": "Yeah, just get it.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794657442.8528013
+    },
+    ", go to projects.": {
+      "pattern": ", go to projects.",
+      "sample": "Yeah, just go to projects.",
+      "count": 1,
+      "tools": [
+        "visual_screen_grounding"
+      ],
+      "last_used": 1794657463.966236
+    },
+    "didn't like that.": {
+      "pattern": "didn't like that.",
+      "sample": "didn't like that.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794657468.9768817
+    },
+    "deutsch": {
+      "pattern": "deutsch",
+      "sample": "Deutsch",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794657484.1557043
+    },
+    "then you should do that fast right.": {
+      "pattern": "then you should do that fast right.",
+      "sample": "then you should do that fast right.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794657512.1688666
+    },
+    "going to try hack my window. tab then.": {
+      "pattern": "going to try hack my window. tab then.",
+      "sample": "Going to try hack my window. Tab then.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794657551.3839111
     }
   },
   "preferences": {},
   "correction_rules": [
-    {
-      "trigger_command": "WhatsApp is closed.",
-      "previous_tools": [
-        "manage_neo_memory",
-        "knowledge_memory",
-        "knowledge_memory",
-        "save_memory"
-      ],
-      "correction": "Change the music like I don't want this Tamil song. I want the song from the movie Minnal Murali.",
-      "rule": "When user says 'WhatsApp is closed.': corrected with 'Change the music like I don't want this '",
-      "timestamp": 1794425789.6441038
-    },
     {
       "trigger_command": "Zenon City",
       "previous_tools": [
@@ -3145,9 +3355,20 @@
       "correction": "Nope, still still you're hallucinating nothing worth that you're on the same page.",
       "rule": "When user says 'No, it's in the same page itse': corrected with 'Nope, still still you're hallucinating n'",
       "timestamp": 1794656138.3100567
+    },
+    {
+      "trigger_command": "Add it.",
+      "previous_tools": [
+        "computer_control",
+        "computer_control"
+      ],
+      "correction": "No, it's the same page. Just check.",
+      "rule": "When user says 'Add it.': corrected with 'No, it's the same page. Just check.'",
+      "timestamp": 1794657244.1009126
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'Add it.': execute preferred action 'No, it's the same page. Just check.'.",
     "Avoid previous misstep for 'No, it's in the same page': execute preferred action 'Nope, still still you're hallucinat'.",
     "Avoid previous misstep for 'Do it. Do it.': execute preferred action 'No, it's in the same page itself. I'.",
     "Avoid previous misstep for 'Just switch the location.': execute preferred action 'No, you are not clicked.'.",
@@ -3171,8 +3392,7 @@
     "Avoid previous misstep for 'We are not doing anything': execute preferred action 'are only having doubt and all but w'.",
     "Avoid previous misstep for 'Do you take any?': execute preferred action 'No.'.",
     "Avoid previous misstep for 'Go down us.': execute preferred action 'No, I was there. I didn't You didn''.",
-    "Avoid previous misstep for 'I need a demo to demonstr': execute preferred action 'Not that you heard it wrong. I aske'.",
-    "Avoid previous misstep for 'Yeah, now English to full': execute preferred action 'Note that this increase the brightn'."
+    "Avoid previous misstep for 'I need a demo to demonstr': execute preferred action 'Not that you heard it wrong. I aske'."
   ],
-  "updated_at": 1794656211.9459593
+  "updated_at": 1794657551.3844028
 }

@@ -268,14 +268,33 @@ def _click(x=None, y=None, button: str = "left", clicks: int = 1) -> str:
 
 def _hotkey(*keys) -> str:
     _require_pyautogui()
-    pyautogui.hotkey(*keys)
-    return f"Hotkey: {'+'.join(keys)}"
+    key_aliases = {
+        "return": "enter",
+        "esc": "escape",
+        "cmd": "command" if _get_os() == "mac" else "win",
+        "windows": "win",
+        "super": "win",
+        "control": "ctrl",
+    }
+    clean_keys = [key_aliases.get(str(k).strip().lower(), str(k).strip().lower()) for k in keys if str(k).strip()]
+    pyautogui.hotkey(*clean_keys)
+    return f"Hotkey: {'+'.join(clean_keys)}"
 
 
 def _press(key: str) -> str:
     _require_pyautogui()
-    pyautogui.press(key)
-    return f"Pressed: {key}"
+    k = str(key).strip().lower()
+    key_aliases = {
+        "return": "enter",
+        "esc": "escape",
+        "cmd": "command" if _get_os() == "mac" else "win",
+        "windows": "win",
+        "super": "win",
+        "control": "ctrl",
+    }
+    k = key_aliases.get(k, k)
+    pyautogui.press(k)
+    return f"Pressed: {k}"
 
 
 def _scroll(direction: str = "down", amount: int = 3, x: int | None = None, y: int | None = None) -> str:
@@ -389,8 +408,14 @@ def _focus_window(title: str) -> str:
             if found_hwnd[0]:
                 h = found_hwnd[0]
                 user32.ShowWindow(h, 9)  # SW_RESTORE
+                user32.ShowWindow(h, 5)  # SW_SHOW
+                user32.BringWindowToTop(h)
+                try:
+                    user32.SwitchToThisWindow(h, True)
+                except Exception:
+                    pass
                 user32.SetForegroundWindow(h)
-                time.sleep(0.1)
+                time.sleep(0.15)
                 return f"Focused window: {title}"
             return f"Window not found: {title}"
         except Exception as e:
