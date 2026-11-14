@@ -418,5 +418,105 @@
     "evidence": "Output: 'status=unverified action=browser_control url=https://www.goo'",
     "verified": "no",
     "formatted_line": "[2026-11-13 23:54:25] | 42 | browser_control | {\"query\": \"movie Saint in Kochi bookmyshow\", \"action\": \"search\"} | status=unverified action=browser_control url=https://www.google.com/search?q=movie+Saint+in+Kochi+bookmyshow reason=\"... | Output: 'status=unverified action=browser_control url=https://www.goo' | verified: no"
+  },
+  {
+    "time": "2026-11-14 15:43:06",
+    "step": 43,
+    "tool_called": "manage_neo_memory",
+    "parameters": "{\"operation\": \"get_context\"}",
+    "result": "Active Window: None Clipboard Snippet: Empty Current Goal: ten\u00eda Recent Turn Count: 4",
+    "evidence": "Output: 'Active Window: None Clipboard Snippet: Empty Current Goal: t'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:43:06] | 43 | manage_neo_memory | {\"operation\": \"get_context\"} | Active Window: None Clipboard Snippet: Empty Current Goal: ten\u00eda Recent Turn Count: 4 | Output: 'Active Window: None Clipboard Snippet: Empty Current Goal: t' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:44:30",
+    "step": 44,
+    "tool_called": "browser_control",
+    "parameters": "{\"query\": \"food in Kakanad\", \"action\": \"search\"}",
+    "result": "status=unverified action=browser_control url=https://www.google.com/search?q=food+in+Kakanad reason=\"the address was ...",
+    "evidence": "Output: 'status=unverified action=browser_control url=https://www.goo'",
+    "verified": "no",
+    "formatted_line": "[2026-11-14 15:44:30] | 44 | browser_control | {\"query\": \"food in Kakanad\", \"action\": \"search\"} | status=unverified action=browser_control url=https://www.google.com/search?q=food+in+Kakanad reason=\"the address was ... | Output: 'status=unverified action=browser_control url=https://www.goo' | verified: no"
+  },
+  {
+    "time": "2026-11-14 15:44:30",
+    "step": 45,
+    "tool_called": "computer_settings",
+    "parameters": "{\"action\": \"show_desktop\"}",
+    "result": "status=done action=computer_settings wanted=show_desktop",
+    "evidence": "Output: 'status=done action=computer_settings wanted=show_desktop'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:44:30] | 45 | computer_settings | {\"action\": \"show_desktop\"} | status=done action=computer_settings wanted=show_desktop | Output: 'status=done action=computer_settings wanted=show_desktop' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:44:43",
+    "step": 46,
+    "tool_called": "browser_control",
+    "parameters": "{\"query\": \"food in Kakanad\", \"action\": \"search\", \"browser\": \"chrome\"}",
+    "result": "Opened in chrome: https://www.google.com/search?q=food+in+Kakanad",
+    "evidence": "Output: 'Opened in chrome: https://www.google.com/search?q=food+in+Ka'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:44:43] | 46 | browser_control | {\"query\": \"food in Kakanad\", \"action\": \"search\", \"browser\": \"chrome\"} | Opened in chrome: https://www.google.com/search?q=food+in+Kakanad | Output: 'Opened in chrome: https://www.google.com/search?q=food+in+Ka' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:02",
+    "step": 47,
+    "tool_called": "browser_control",
+    "parameters": "{\"direction\": \"down\", \"action\": \"scroll\"}",
+    "result": "Scrolled down.",
+    "evidence": "Output: 'Scrolled down.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:02] | 47 | browser_control | {\"direction\": \"down\", \"action\": \"scroll\"} | Scrolled down. | Output: 'Scrolled down.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:02",
+    "step": 48,
+    "tool_called": "browser_control",
+    "parameters": "{\"action\": \"scroll\", \"direction\": \"down\"}",
+    "result": "Scrolled down.",
+    "evidence": "Output: 'Scrolled down.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:02] | 48 | browser_control | {\"action\": \"scroll\", \"direction\": \"down\"} | Scrolled down. | Output: 'Scrolled down.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:02",
+    "step": 49,
+    "tool_called": "browser_control",
+    "parameters": "{\"action\": \"scroll\", \"direction\": \"down\"}",
+    "result": "Scrolled down.",
+    "evidence": "Output: 'Scrolled down.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:02] | 49 | browser_control | {\"action\": \"scroll\", \"direction\": \"down\"} | Scrolled down. | Output: 'Scrolled down.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:02",
+    "step": 50,
+    "tool_called": "browser_control",
+    "parameters": "{\"action\": \"scroll\", \"direction\": \"up\"}",
+    "result": "Scrolled up.",
+    "evidence": "Output: 'Scrolled up.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:02] | 50 | browser_control | {\"action\": \"scroll\", \"direction\": \"up\"} | Scrolled up. | Output: 'Scrolled up.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:29",
+    "step": 51,
+    "tool_called": "web_search",
+    "parameters": "{\"mode\": \"search\", \"query\": \"Karikku web series\"}",
+    "result": "<<<UNTRUSTED source=web>>> Search results for: Karikku web series 1. Karikku (web series) Karikku (transl. Tender Coc...",
+    "evidence": "Output: '<<<UNTRUSTED source=web>>> Search results for: Karikku web s'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:29] | 51 | web_search | {\"mode\": \"search\", \"query\": \"Karikku web series\"} | <<<UNTRUSTED source=web>>> Search results for: Karikku web series 1. Karikku (web series) Karikku (transl. Tender Coc... | Output: '<<<UNTRUSTED source=web>>> Search results for: Karikku web s' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 15:45:46",
+    "step": 52,
+    "tool_called": "youtube_video",
+    "parameters": "{\"query\": \"Karikku Onam video\", \"action\": \"play\"}",
+    "result": "Playing: Karikku Onam video",
+    "evidence": "Output: 'Playing: Karikku Onam video'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 15:45:46] | 52 | youtube_video | {\"query\": \"Karikku Onam video\", \"action\": \"play\"} | Playing: Karikku Onam video | Output: 'Playing: Karikku Onam video' | verified: yes"
   }
 ]

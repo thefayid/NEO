@@ -5730,6 +5730,191 @@
           "role": "neo",
           "content": "Got it, Boss. Switching over to English permanently. How can I help you run this computer today?",
           "timestamp": "02:57 PM"
+        },
+        {
+          "role": "user",
+          "content": "\uc544\ub2c8\uc694. Can you hear me?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Loud and clear, Fayid. What's up, how can I help you?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "user",
+          "content": "\uc544\ub2c8\uc694. Can you hear me?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Loud and clear, Fayid. What's up, how can I help you?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah, how are you?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I'm great, thanks! Just here in the digital flow, you know? Trying to keep everything fully optimized. How are things on your end?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah, how are you?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "neo",
+          "content": "I'm great, thanks! Just here in the digital flow, you know? Trying to keep everything fully optimized. How are things on your end?",
+          "timestamp": "03:41 PM"
+        },
+        {
+          "role": "user",
+          "content": "ten\u00eda",
+          "timestamp": "03:43 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Yeah, still",
+          "timestamp": "03:43 PM"
+        },
+        {
+          "role": "user",
+          "content": "Hello, ma'am.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Fayid! How are ya? What's up today?",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Hello, ma'am.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Hey Fayid! How are ya? What's up today?",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Gott",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Glad to hear it. Anything you need a hand with, or just saying hello?",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Gott",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Glad to hear it. Anything you need a hand with, or just saying hello?",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Just minimize the underground table open crop and search for food in Kakanad.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Alright, I've minimized everything sent that search to your browser, though I can't confirm if the page loaded. You should see the results on your screen now.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Just minimize the underground table open crop and search for food in Kakanad.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Alright, I've minimized everything sent that search to your browser, though I can't confirm if the page loaded. You should see the results on your screen now.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "No.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Got it, my apologies. It looks like those commands didn't work as expected. I'm opening Chrome and searching for \"food in Kakanad\" for you properly.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "No.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Got it, my apologies. It looks like those commands didn't work as expected. I'm opening Chrome and searching for \"food in Kakanad\" for you properly.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah, scroll down.",
+          "timestamp": "03:44 PM"
+        },
+        {
+          "role": "user",
+          "content": "Try.",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "crawl up",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Do you know Karikku series?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Yeah, I know them! Karikku is a really popular Malayalam web series channel on YouTube. They got famous with \"Thera Para\". Are you a fan, or just asking?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Do you know Karikku series?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "neo",
+          "content": "Yeah, I know them! Karikku is a really popular Malayalam web series channel on YouTube. They got famous with \"Thera Para\". Are you a fan, or just asking?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah, can you play them Onam video in YouTube?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "neo",
+          "content": "[YouTube] Searching: Karikku Onam video",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Yeah, can you play them Onam video in YouTube?",
+          "timestamp": "03:45 PM"
+        },
+        {
+          "role": "user",
+          "content": "Skip the ad",
+          "timestamp": "03:45 PM"
         }
       ]
     }

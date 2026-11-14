@@ -85,6 +85,20 @@ class UIControl:
     def area(self) -> int:
         return self.width * self.height
 
+    @property
+    def is_plausible(self) -> bool:
+        """Returns True if control coordinates and dimensions are plausible for an interactable UI element."""
+        w = self.width
+        h = self.height
+        l, t, r, b = self.rect
+        if w < 6 or h < 6:
+            return False
+        if w > 3840 or h > 2160:
+            return False
+        if l < -1000 or t < -1000 or r > 10000 or b > 10000:
+            return False
+        return True
+
 
 class WindowsUIAutomationEngine:
     """
@@ -214,7 +228,12 @@ class WindowsUIAutomationEngine:
                     rect = elem.rectangle()
                     w = rect.width()
                     h = rect.height()
-                    if w < 6 or h < 6 or rect.left < -500 or rect.top < -500:
+                    if (
+                        w < 6 or h < 6
+                        or w > 3840 or h > 2160
+                        or rect.left < -1000 or rect.top < -1000
+                        or rect.right > 10000 or rect.bottom > 10000
+                    ):
                         continue
 
                     name = str(getattr(elem.element_info, "name", "") or "").strip()
@@ -290,6 +309,8 @@ class WindowsUIAutomationEngine:
 
             # 1. Exact Name / Automation ID Match
             for c in controls:
+                if not c.is_plausible:
+                    continue
                 c_name = c.name.lower()
                 c_id = c.automation_id.lower()
                 if c_name == q or c_id == q:
@@ -301,6 +322,8 @@ class WindowsUIAutomationEngine:
 
             # 2. Direct Substring Match
             for c in controls:
+                if not c.is_plausible:
+                    continue
                 c_name = c.name.lower()
                 if (q in c_name) or (len(c_name) > 3 and c_name in q):
                     return c
@@ -309,6 +332,8 @@ class WindowsUIAutomationEngine:
             best_ctrl: Optional[UIControl] = None
             best_score = 0
             for c in controls:
+                if not c.is_plausible:
+                    continue
                 c_tokens = set(re.findall(r"[a-z0-9]+", c.name.lower()))
                 c_tokens.add(c.control_type.lower())
                 overlap = len(q_tokens & c_tokens)

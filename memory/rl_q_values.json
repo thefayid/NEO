@@ -1128,6 +1128,14 @@
         "failures": 0,
         "last_reward": 0.5,
         "last_updated": 1794551963.2689774
+      },
+      "browser_control": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794651302.254899
       }
     },
     "yaaa@desktop#afternoon": {
@@ -2085,7 +2093,85 @@
         "last_reward": 2.3,
         "last_updated": 1794594265.6485753
       }
+    },
+    "how_are@desktop#afternoon": {
+      "manage_neo_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794651186.776126
+      }
+    },
+    "gott@desktop#afternoon": {
+      "browser_control": {
+        "q_value": 1.035,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.3,
+        "last_updated": 1794651270.2133424
+      },
+      "computer_settings": {
+        "q_value": 0.675,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.5,
+        "last_updated": 1794651270.2875764
+      }
+    },
+    "web_navigation@desktop#afternoon": {
+      "browser_control": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794651289.6973386
+      }
+    },
+    "scroll_down@desktop#afternoon": {
+      "browser_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794651302.3059733
+      }
+    },
+    "try@desktop#afternoon": {
+      "browser_control": {
+        "q_value": 0.558,
+        "visits": 2,
+        "successes": 2,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794651302.9329586
+      }
+    },
+    "crawl@desktop#afternoon": {
+      "web_search": {
+        "q_value": 0.225,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.5,
+        "last_updated": 1794651329.9135635
+      }
+    },
+    "you_know@desktop#afternoon": {
+      "youtube_video": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794651346.6395757
+      }
     }
   },
-  "updated_at": 1794594265.6487918
+  "updated_at": 1794651346.6399064
 }

@@ -159,20 +159,67 @@ class MacOSScreenHighlightOverlay(QWidget):
     ) -> None:
         """
         Shows a highlight around rect=(x1, y1, x2, y2) in physical coordinates.
+        Safely validates and clamps coordinates to prevent GDI DIB overflow (CreateDIBSection failure).
         """
-        x1, y1, x2, y2 = rect
-        w = max(20, x2 - x1)
-        h = max(20, y2 - y1)
+        try:
+            x1, y1, x2, y2 = rect
+        except Exception:
+            return
+
+        # Ensure ordered coordinates
+        if x2 < x1:
+            x1, x2 = x2, x1
+        if y2 < y1:
+            y1, y2 = y2, y1
+
+        # Determine physical screen boundaries
+        screen_w, screen_h = 1920, 1080
+        app = QApplication.instance()
+        if app:
+            primary = app.primaryScreen()
+            if primary:
+                geo = primary.geometry()
+                screen_w, screen_h = geo.width(), geo.height()
+        elif sys.platform == "win32":
+            try:
+                screen_w = ctypes.windll.user32.GetSystemMetrics(0) or 1920
+                screen_h = ctypes.windll.user32.GetSystemMetrics(1) or 1080
+            except Exception:
+                pass
+
+        raw_w = x2 - x1
+        raw_h = y2 - y1
+
+        # Reject impossible or astronomical dimensions (preventing GDI CreateDIBSection crash)
+        if raw_w > (screen_w * 2) or raw_h > (screen_h * 2) or raw_w < 4 or raw_h < 4:
+            print(f"[VisualHighlight] ⚠️ Rejecting target rect with invalid dimensions: {rect} (screen: {screen_w}x{screen_h})")
+            return
+
+        if x1 > (screen_w * 2) or y1 > (screen_h * 2) or x2 < -screen_w or y2 < -screen_h:
+            print(f"[VisualHighlight] ⚠️ Rejecting offscreen target rect: {rect}")
+            return
+
+        # Safe clamped target dimensions
+        w = max(20, min(screen_w, raw_w))
+        h = max(20, min(screen_h, raw_h))
 
         # Expand widget to encompass the target plus badge margin
         padding = 32
-        wx = max(0, x1 - padding)
-        wy = max(0, y1 - padding)
-        ww = w + (padding * 2)
-        wh = h + (padding * 2)
+        wx = max(0, min(screen_w - 20, x1 - padding))
+        wy = max(0, min(screen_h - 20, y1 - padding))
+        ww = max(20, min(w + (padding * 2), screen_w - wx))
+        wh = max(20, min(h + (padding * 2), screen_h - wy))
+
+        if ww <= 0 or wh <= 0:
+            return
 
         self.setGeometry(wx, wy, ww, wh)
-        self._target_rect = QRect(padding, padding, w, h)
+        self._target_rect = QRect(
+            min(padding, max(0, ww - w) // 2),
+            min(padding, max(0, wh - h) // 2),
+            min(w, ww),
+            min(h, wh),
+        )
         self._target_label = label
         self._opacity = 1.0
 
@@ -360,20 +407,46 @@ class VisualGroundingEngine(QObject):
         Tier 2: Set-of-Marks (SoM) Tagging - discrete numbered badges [1], [2], [3]... preventing coordinate hallucination.
         Tier 3: Multimodal Bounding Box Fallback - standard normalized box detection.
         """
+        # Determine physical screen boundaries for bounds checks
+        screen_w, screen_h = 1920, 1080
+        if sys.platform == "win32":
+            try:
+                screen_w = ctypes.windll.user32.GetSystemMetrics(0) or 1920
+                screen_h = ctypes.windll.user32.GetSystemMetrics(1) or 1080
+            except Exception:
+                pass
+
         # --- Tier 1: Windows UI Automation Direct Query ---
         if use_uia and _HAS_UIA and ui_automation.is_available:
             ctrl = ui_automation.find_control(query)
             if ctrl:
-                elem = UIElement(
-                    label=ctrl.name or query,
-                    bbox=ctrl.rect,
-                    confidence=1.0,
-                    element_type=ctrl.control_type.lower(),
+                ctrl_w = ctrl.width
+                ctrl_h = ctrl.height
+                cx, cy = ctrl.center
+                is_valid_box = (
+                    8 <= ctrl_w <= screen_w
+                    and 8 <= ctrl_h <= screen_h
+                    and 0 <= cx <= int(screen_w * 1.5)
+                    and 0 <= cy <= int(screen_h * 1.5)
+                    and ctrl.rect[0] >= -100
+                    and ctrl.rect[1] >= -100
                 )
-                if highlight:
-                    self.highlight_element(elem)
-                self.target_grounded.emit(elem.label, elem.center[0], elem.center[1])
-                return elem
+                if is_valid_box:
+                    elem = UIElement(
+                        label=ctrl.name or query,
+                        bbox=ctrl.rect,
+                        confidence=1.0,
+                        element_type=ctrl.control_type.lower(),
+                    )
+                    if highlight:
+                        self.highlight_element(elem)
+                    self.target_grounded.emit(elem.label, elem.center[0], elem.center[1])
+                    return elem
+                else:
+                    print(
+                        f"[VisualGrounding] ⚠️ Tier 1 UIA found '{ctrl.name}' but bounding box is invalid/uninitialized "
+                        f"{ctrl.rect} ({ctrl_w}x{ctrl_h}). Falling back to Tier 2 (SoM) / Tier 3 (Vision)..."
+                    )
 
         # Capture primary screen for visual inspection
         img, (sw, sh) = self.capture_screen()
@@ -490,6 +563,21 @@ If the element cannot be found, return {{"found": false}}.
             cx, cy = target.center
         else:
             cx, cy = target
+
+        # Screen boundaries check
+        screen_w, screen_h = 1920, 1080
+        if sys.platform == "win32":
+            try:
+                screen_w = ctypes.windll.user32.GetSystemMetrics(0) or 1920
+                screen_h = ctypes.windll.user32.GetSystemMetrics(1) or 1080
+            except Exception:
+                pass
+
+        if cx < 0 or cy < 0 or cx > int(screen_w * 1.5) or cy > int(screen_h * 1.5):
+            err_msg = f"Click coordinates ({cx}, {cy}) are out of display bounds (screen: {screen_w}x{screen_h})."
+            print(f"[VisualGrounding] ❌ {err_msg}")
+            self.action_executed.emit("click", False, err_msg)
+            return False
 
         # Closed-loop pre-action snapshot
         pre_snap = None

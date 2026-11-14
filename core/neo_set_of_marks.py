@@ -101,13 +101,19 @@ class SetOfMarksEngine:
         # 1. First priority: Add exact UIA control bounding boxes
         if uia_controls:
             for c in uia_controls:
+                # Discard controls with unplausible or uninitialized dimensions
+                if hasattr(c, "is_plausible") and not c.is_plausible:
+                    continue
                 x1, y1, x2, y2 = c.rect
                 # Clamp to image bounds
                 x1 = max(0, min(w - 1, x1))
                 y1 = max(0, min(h - 1, y1))
                 x2 = max(x1 + 6, min(w, x2))
                 y2 = max(y1 + 6, min(h, y2))
-                if (x2 - x1) >= 8 and (y2 - y1) >= 8:
+                bw = x2 - x1
+                bh = y2 - y1
+                # Reject boxes smaller than minimum or covering entire window/screen background
+                if 8 <= bw <= int(w * 0.95) and 8 <= bh <= int(h * 0.95):
                     boxes.append((x1, y1, x2, y2))
 
         # 2. If UIA returned fewer than 15 candidate controls (e.g. web canvas, video, game),

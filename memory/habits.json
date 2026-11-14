@@ -1,182 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794581264.3224623,
-      "action_type": "USER_COMMAND",
-      "command": "I can't see it now.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581268.184695,
-      "action_type": "TOOL",
-      "command": "execute_autonomous_goal {\"instruction\": \"Open File Explorer and navigate to the Down",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581268.2273204,
-      "action_type": "USER_COMMAND",
-      "command": "Ya, it still didn't open.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581290.6856833,
-      "action_type": "TOOL",
-      "command": "execute_autonomous_goal {\"operation\": \"status\", \"instruction\": \"Open File Explorer a",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581290.7043502,
-      "action_type": "USER_COMMAND",
-      "command": "sit still smoke",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581303.3162763,
-      "action_type": "TOOL",
-      "command": "execute_autonomous_goal {\"goal_id\": \"goal-4b3\", \"instruction\": \"Open File Explorer a",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581303.3374255,
-      "action_type": "USER_COMMAND",
-      "command": "show",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581303.9590085,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"File Explorer\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581316.116656,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"win+e\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581325.4274309,
-      "action_type": "USER_COMMAND",
-      "command": "till now",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581334.5208461,
-      "action_type": "USER_COMMAND",
-      "command": "this work?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581336.547737,
-      "action_type": "TOOL",
-      "command": "file_controller {\"path\": \"downloads\", \"action\": \"list\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581345.072758,
-      "action_type": "USER_COMMAND",
-      "command": "Go down us.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581352.3566687,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"screenshot\", \"path\": \"screenshot.png\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581353.4969819,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"The user insists they cannot see the Downloads fol",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581354.33328,
-      "action_type": "USER_COMMAND",
-      "command": "No, I was there. I didn't You didn't do it, huh? I can't see it. It's in the home page now.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581369.3505547,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"screen_click\", \"description\": \"Downloads link in",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581377.7630453,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, do it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581397.5463698,
-      "action_type": "TOOL",
-      "command": "computer_control {\"path\": \"screenshot.png\", \"action\": \"screenshot\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581398.5826201,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"Analyze the screenshot to see if the user is in th",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581399.4452078,
-      "action_type": "USER_COMMAND",
-      "command": "I can't see it till now, Neo. I can't see it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581411.7696435,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"File Explorer\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794581416.6402962,
       "action_type": "USER_COMMAND",
       "command": "Yeah.",
@@ -1599,6 +1423,182 @@
       "hour": 14,
       "weekday": 5,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794651103.7683442,
+      "action_type": "USER_COMMAND",
+      "command": "\uc544\ub2c8\uc694. Can you hear me?",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651119.6320727,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, how are you?",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651186.7705996,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651255.6658096,
+      "action_type": "USER_COMMAND",
+      "command": "Hello, ma'am.",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651263.0228486,
+      "action_type": "USER_COMMAND",
+      "command": "Gott",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651270.1410742,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"food in Kakanad\", \"action\": \"search\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651270.2311502,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"show_desktop\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651279.1524646,
+      "action_type": "USER_COMMAND",
+      "command": "Just minimize the underground table open crop and search for food in Kakanad.",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651283.5648668,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"food in Kakanad\", \"action\": \"search\", \"browser\":",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651289.7247171,
+      "action_type": "USER_COMMAND",
+      "command": "No.",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651292.4085793,
+      "action_type": "TOOL",
+      "command": "browser_control {\"direction\": \"down\", \"action\": \"scroll\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651302.2764883,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, scroll down.",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651302.2937953,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"scroll\", \"direction\": \"down\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651302.3264415,
+      "action_type": "USER_COMMAND",
+      "command": "Try.",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651302.3407633,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"scroll\", \"direction\": \"down\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651302.9184165,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"scroll\", \"direction\": \"up\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651303.4375684,
+      "action_type": "USER_COMMAND",
+      "command": "crawl up",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651322.2484317,
+      "action_type": "TOOL",
+      "command": "web_search {\"mode\": \"search\", \"query\": \"Karikku web series\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651340.581621,
+      "action_type": "USER_COMMAND",
+      "command": "Do you know Karikku series?",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651345.7829735,
+      "action_type": "TOOL",
+      "command": "youtube_video {\"query\": \"Karikku Onam video\", \"action\": \"play\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651347.1770253,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, can you play them Onam video in YouTube?",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651356.8587463,
+      "action_type": "TOOL",
+      "command": "visual_screen_grounding {\"query\": \"Skip Ad\", \"action\": \"click\"}",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1743,5 +1743,5 @@
       "synthesized": false
     }
   },
-  "updated_at": 1794648468.7817469
+  "updated_at": 1794651356.8590527
 }
