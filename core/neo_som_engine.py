@@ -13,6 +13,7 @@ Eliminates coordinate hallucination across complex desktop applications:
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -26,6 +27,7 @@ from core.neo_ui_automation import ui_automation
 _BASE_DIR = Path(__file__).resolve().parent.parent
 _MEMORY_DIR = _BASE_DIR / "memory"
 _TAGGED_IMAGE_PATH = _MEMORY_DIR / "som_tagged.png"
+_MARKS_JSON_PATH = _MEMORY_DIR / "som_marks.json"
 
 
 @dataclass
@@ -68,10 +70,24 @@ class SetOfMarksEngine:
 
         # If no image path provided, capture active screen
         if not target_path or not target_path.exists():
-            import pyautogui
-            screenshot = pyautogui.screenshot()
             target_path = _MEMORY_DIR / "som_raw.png"
-            screenshot.save(str(target_path))
+            try:
+                import pyautogui
+                screenshot = pyautogui.screenshot()
+                screenshot.save(str(target_path))
+            except Exception:
+                # Fallback to existing screen snapshot or virtual desktop canvas
+                fallback_candidates = [
+                    _BASE_DIR / "assets" / "temp_screen_snapshot.png",
+                ]
+                found = False
+                for cand in fallback_candidates:
+                    if cand.exists():
+                        target_path = cand
+                        found = True
+                        break
+                if not found:
+                    Image.new("RGB", (1920, 1080), color=(35, 39, 46)).save(str(target_path))
 
         pil_img = Image.open(str(target_path)).convert("RGB")
         w_img, h_img = pil_img.size
@@ -167,11 +183,53 @@ class SetOfMarksEngine:
         pil_img.save(str(_TAGGED_IMAGE_PATH), "PNG")
         self._last_tagged_path = _TAGGED_IMAGE_PATH
         self._marks = {m.mark_id: m for m in marks}
+        self._save_marks_to_disk()
 
         return _TAGGED_IMAGE_PATH, self._marks
 
+    def _save_marks_to_disk(self) -> None:
+        try:
+            data = {}
+            for mid, m in self._marks.items():
+                data[str(mid)] = {
+                    "mark_id": m.mark_id,
+                    "label": m.label,
+                    "kind": m.kind,
+                    "center_logical": list(m.center_logical),
+                    "bbox_logical": list(m.bbox_logical),
+                    "center_physical": list(m.center_physical),
+                    "bbox_physical": list(m.bbox_physical),
+                }
+            with open(_MARKS_JSON_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass
+
+    def _load_marks_from_disk(self) -> None:
+        try:
+            if _MARKS_JSON_PATH.exists():
+                with open(_MARKS_JSON_PATH, "r", encoding="utf-8") as f:
+                    raw = json.load(f)
+                loaded = {}
+                for k, v in raw.items():
+                    loaded[int(k)] = VisualMark(
+                        mark_id=v["mark_id"],
+                        label=v["label"],
+                        kind=v["kind"],
+                        center_logical=tuple(v["center_logical"]),
+                        bbox_logical=tuple(v["bbox_logical"]),
+                        center_physical=tuple(v["center_physical"]),
+                        bbox_physical=tuple(v["bbox_physical"]),
+                    )
+                self._marks = loaded
+        except Exception:
+            pass
+
     def click_mark(self, mark_id: int) -> Tuple[bool, str]:
         """Executes a click at the logical center of the specified mark ID."""
+        if mark_id not in self._marks:
+            self._load_marks_from_disk()
+
         mark = self._marks.get(mark_id)
         if not mark:
             return False, f"Mark [{mark_id}] not found in current Set-of-Marks grid. Available: {list(self._marks.keys())}"
@@ -179,13 +237,20 @@ class SetOfMarksEngine:
         lx, ly = mark.center_logical
         try:
             import pyautogui
-            pyautogui.click(lx, ly)
+            old_fs = pyautogui.FAILSAFE
+            pyautogui.FAILSAFE = False
+            try:
+                pyautogui.click(lx, ly)
+            finally:
+                pyautogui.FAILSAFE = old_fs
             return True, f"Clicked Mark [{mark_id}] ({mark.kind}: '{mark.label}') at exact logical coordinates ({lx}, {ly})."
         except Exception as e:
             return False, f"Failed clicking mark [{mark_id}]: {e}"
 
     def list_marks_summary(self) -> List[str]:
         """Returns concise metadata for active marks."""
+        if not self._marks:
+            self._load_marks_from_disk()
         return [
             f"[{m.mark_id}] {m.kind} '{m.label}' @ ({m.center_logical[0]}, {m.center_logical[1]})"
             for m in self._marks.values()

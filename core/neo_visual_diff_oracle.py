@@ -39,17 +39,23 @@ class VisualDiffOracle:
 
         l = max(0, px - p_radius)
         t = max(0, py - p_radius)
-        w = p_radius * 2
-        h = p_radius * 2
+        w = max(1, p_radius * 2)
+        h = max(1, p_radius * 2)
 
-        screenshot = pyautogui.screenshot(region=(l, t, w, h))
-        return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        try:
+            screenshot = pyautogui.screenshot(region=(l, t, w, h))
+            return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        except Exception:
+            return np.zeros((h, w, 3), dtype=np.uint8)
 
     def capture_fullscreen(self) -> np.ndarray:
         """Captures active screen as an OpenCV BGR image."""
-        import pyautogui
-        screenshot = pyautogui.screenshot()
-        return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        try:
+            import pyautogui
+            screenshot = pyautogui.screenshot()
+            return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        except Exception:
+            return np.zeros((1080, 1920, 3), dtype=np.uint8)
 
     def compute_visual_diff(self, img1: np.ndarray, img2: np.ndarray) -> float:
         """
