@@ -1,30 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794581416.6402962,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581420.44341,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"win+e\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581428.6055484,
-      "action_type": "USER_COMMAND",
-      "command": "nyop nyop",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794581438.0769403,
       "action_type": "USER_COMMAND",
       "command": "Yeah.",
@@ -1599,6 +1575,30 @@
       "hour": 15,
       "weekday": 5,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794651997.105391,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651998.1812725,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794651998.55713,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 15,
+      "weekday": 5,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1743,5 +1743,5 @@
       "synthesized": false
     }
   },
-  "updated_at": 1794651356.8590527
+  "updated_at": 1794651998.5574522
 }
