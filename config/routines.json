@@ -88,24 +88,5 @@
         "description": "Position meeting window on left"
       }
     ]
-  },
-  "test_custom_routine": {
-    "description": "A test automation pipeline",
-    "steps": [
-      {
-        "tool": "os_control",
-        "params": {
-          "action": "system_health"
-        },
-        "description": "Check initial health"
-      },
-      {
-        "tool": "os_control",
-        "params": {
-          "action": "list_windows"
-        },
-        "description": "List visible windows"
-      }
-    ]
   }
 }

@@ -12,6 +12,7 @@ Provides sub-millisecond, deterministic system execution:
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict
 from core.neo_os_automation import window_manager, resource_manager
 from core import outcome
