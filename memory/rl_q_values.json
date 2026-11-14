@@ -842,12 +842,12 @@
         "last_updated": 1794583413.9397674
       },
       "computer_control": {
-        "q_value": 0.5319,
-        "visits": 3,
-        "successes": 3,
+        "q_value": 0.652545,
+        "visits": 4,
+        "successes": 4,
         "failures": 0,
-        "last_reward": 0.5,
-        "last_updated": 1794581443.0814524
+        "last_reward": 0.8,
+        "last_updated": 1794674032.0497591
       },
       "screen_process": {
         "q_value": 0.36000000000000004,
@@ -872,6 +872,14 @@
         "failures": 0,
         "last_reward": 0.8,
         "last_updated": 1794583344.503947
+      },
+      "manage_neo_memory": {
+        "q_value": -1.152,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794674040.2083995
       }
     },
     "actually_now@desktop#evening": {
@@ -1308,6 +1316,14 @@
         "failures": 0,
         "last_reward": 2.0,
         "last_updated": 1794580559.8763056
+      },
+      "read_messages": {
+        "q_value": 0.135,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.3,
+        "last_updated": 1794674253.9946885
       }
     },
     "for_for@desktop#evening": {
@@ -1914,6 +1930,14 @@
         "failures": 1,
         "last_reward": -3.0,
         "last_updated": 1794584035.866916
+      },
+      "kasa_control": {
+        "q_value": 0.54,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.2,
+        "last_updated": 1794673964.6379664
       }
     },
     "nothing_fix@desktop#evening": {
@@ -2993,7 +3017,197 @@
         "last_reward": 0.8,
         "last_updated": 1794657552.6361582
       }
+    },
+    "you_know@desktop#evening": {
+      "manage_neo_memory": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794673622.8037546
+      }
+    },
+    "mhm@desktop#evening": {
+      "render_hud_widget": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794673736.3524065
+      }
+    },
+    "you_describe@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794673769.3095984
+      }
+    },
+    "read_whatsapp@desktop#evening": {
+      "computer_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794673781.211616
+      }
+    },
+    "wait_let@desktop#evening": {
+      "send_message": {
+        "q_value": 0.81,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 1.8,
+        "last_updated": 1794673800.6590364
+      }
+    },
+    "take_for@desktop#evening": {
+      "send_message": {
+        "q_value": -0.8549999999999999,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794673838.0247028
+      }
+    },
+    "you_unheard@desktop#evening": {
+      "computer_control": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794673840.4846952
+      }
+    },
+    "wait_for@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794673860.6084588
+      }
+    },
+    "read_once@desktop#evening": {
+      "send_message": {
+        "q_value": -0.8549999999999999,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794673956.9625306
+      }
+    },
+    "mandalo@desktop#evening": {
+      "save_memory": {
+        "q_value": -1.35,
+        "visits": 1,
+        "successes": 0,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794673980.766448
+      }
+    },
+    "now_let@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794673989.5850172
+      }
+    },
+    "message_dalo@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794673995.4802926
+      }
+    },
+    "need_call@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794674003.825891
+      }
+    },
+    "aale_amma@desktop#evening": {
+      "read_messages": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794674009.4219894
+      }
+    },
+    "matlab_kya@desktop#evening": {
+      "read_messages": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794674014.8788557
+      }
+    },
+    "familia@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794674020.7367694
+      }
+    },
+    "why_didn@desktop#evening": {
+      "send_message": {
+        "q_value": -0.8549999999999999,
+        "visits": 2,
+        "successes": 1,
+        "failures": 1,
+        "last_reward": -3.0,
+        "last_updated": 1794674026.3983233
+      }
+    },
+    "don_want@desktop#evening": {
+      "send_message": {
+        "q_value": 0.9,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 2.0,
+        "last_updated": 1794674031.9037368
+      }
+    },
+    "can_send@desktop#evening": {
+      "shutdown_jarvis": {
+        "q_value": 0.36000000000000004,
+        "visits": 1,
+        "successes": 1,
+        "failures": 0,
+        "last_reward": 0.8,
+        "last_updated": 1794674043.420375
+      }
     }
   },
-  "updated_at": 1794657581.0197213
+  "updated_at": 1794674253.9953313
 }

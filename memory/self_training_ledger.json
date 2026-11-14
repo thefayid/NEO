@@ -735,11 +735,11 @@
     "mhm.": {
       "pattern": "mhm.",
       "sample": "Mhm.",
-      "count": 1,
+      "count": 2,
       "tools": [
         "manage_neo_memory"
       ],
-      "last_used": 1794513447.7721505
+      "last_used": 1794673626.0660977
     },
     "check everything was fine.": {
       "pattern": "check everything was fine.",
@@ -2906,62 +2906,221 @@
         "computer_settings"
       ],
       "last_used": 1794657551.3839111
+    },
+    "you know.": {
+      "pattern": "you know.",
+      "sample": "You know.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794673589.2276368
+    },
+    "you describe all your abilities with my computer": {
+      "pattern": "you describe all your abilities with my computer",
+      "sample": "You just describe all your abilities with my computer.",
+      "count": 1,
+      "tools": [
+        "render_hud_widget"
+      ],
+      "last_used": 1794673758.5564504
+    },
+    ", then read my unread messages in whatsapp.": {
+      "pattern": ", then read my unread messages in whatsapp.",
+      "sample": "Yeah, then read my unread messages in WhatsApp.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673777.869222
+    },
+    "wait, let it load.": {
+      "pattern": "wait, let it load.",
+      "sample": "Wait, let it load.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794673786.3239727
+    },
+    ", take it for the time means chat.": {
+      "pattern": ", take it for the time means chat.",
+      "sample": "Yeah, just take it for the time means chat.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673813.31363
+    },
+    "no, you unheard it wrong. i tell you like to tak": {
+      "pattern": "no, you unheard it wrong. i tell you like to tak",
+      "sample": "No, you just unheard it wrong. I just tell you like to take a chat. I will take it manually. You just read it, okay?",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673838.0309062
+    },
+    ", wait for me to select.": {
+      "pattern": ", wait for me to select.",
+      "sample": "Yeah, just wait for me to select.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794673843.6714807
+    },
+    "another it": {
+      "pattern": "another it",
+      "sample": "another it",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673878.4962096
+    },
+    ", read the read those names?": {
+      "pattern": ", read the read those names?",
+      "sample": "Yeah, can you read the read those names?",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794673895.2394772
+    },
+    "read once more.": {
+      "pattern": "read once more.",
+      "sample": "Just read once more.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794673911.1025567
+    },
+    "no, see the screen once again and read from the ": {
+      "pattern": "no, see the screen once again and read from the ",
+      "sample": "No, just see the screen once again and read from the first.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673956.9642866
+    },
+    "mandalo no. ah?": {
+      "pattern": "mandalo no. ah?",
+      "sample": "Mandalo no. Ah?",
+      "count": 1,
+      "tools": [
+        "kasa_control"
+      ],
+      "last_used": 1794673973.3913975
+    },
+    "now let me talk with my friends.": {
+      "pattern": "now let me talk with my friends.",
+      "sample": "Now let me talk with my friends.",
+      "count": 1,
+      "tools": [
+        "save_memory"
+      ],
+      "last_used": 1794673980.7704868
+    },
+    "message dalo unread messages": {
+      "pattern": "message dalo unread messages",
+      "sample": "message dalo unread messages",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673989.6006227
+    },
+    "i need to call": {
+      "pattern": "i need to call",
+      "sample": "Please I need to call",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794673995.4982793
+    },
+    "aale na. amma na. panty um chutti iranginala?": {
+      "pattern": "aale na. amma na. panty um chutti iranginala?",
+      "sample": "Aale na. Amma na. Panty um chutti iranginala?",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794674003.8448493
+    },
+    "matlab kya nahin aapki aadaraniya adhyaksh mahod": {
+      "pattern": "matlab kya nahin aapki aadaraniya adhyaksh mahod",
+      "sample": "matlab kya nahin aapki aadaraniya adhyaksh mahoday ko barta nahin hai.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794674009.443855
+    },
+    "\u00bfqu\u00e9 es familia?": {
+      "pattern": "\u00bfqu\u00e9 es familia?",
+      "sample": "\u00bfQu\u00e9 es familia?",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794674014.8977878
+    },
+    "why didn't he run? explain them now.": {
+      "pattern": "why didn't he run? explain them now.",
+      "sample": "Why didn't he run? Explain them now.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794674020.7587466
+    },
+    "i don't want it.": {
+      "pattern": "i don't want it.",
+      "sample": "I don't want it.",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794674026.3995492
+    },
+    "\u304a \u5f85\u305f \u305b \u3002": {
+      "pattern": "\u304a \u5f85\u305f \u305b \u3002",
+      "sample": "\u304a \u5f85\u305f \u305b \u3002",
+      "count": 1,
+      "tools": [
+        "send_message"
+      ],
+      "last_used": 1794674031.921351
+    },
+    "no, can i send it?": {
+      "pattern": "no, can i send it?",
+      "sample": "No, can I send it?",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "manage_neo_memory"
+      ],
+      "last_used": 1794674040.2138462
+    },
+    "genio": {
+      "pattern": "genio",
+      "sample": "genio",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794674223.0621855
+    },
+    ", this trade once more my messages.": {
+      "pattern": ", this trade once more my messages.",
+      "sample": "Yeah, this trade once more my messages.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794674254.0063674
     }
   },
   "preferences": {},
   "correction_rules": [
-    {
-      "trigger_command": "Zenon City",
-      "previous_tools": [
-        "browser_control"
-      ],
-      "correction": "No, you type wrong. Just Jain University.",
-      "rule": "When user says 'Zenon City': corrected with 'No, you type wrong. Just Jain University'",
-      "timestamp": 1794425920.1397138
-    },
-    {
-      "trigger_command": "No, you type wrong. Just Jain University.",
-      "previous_tools": [
-        "browser_control",
-        "browser_control"
-      ],
-      "correction": "Close the new pop-up tab you opened. I don't need that.",
-      "rule": "When user says 'No, you type wrong. Just Jain ': corrected with 'Close the new pop-up tab you opened. I d'",
-      "timestamp": 1794425940.12128
-    },
-    {
-      "trigger_command": "Take that second user.",
-      "previous_tools": [
-        "computer_control"
-      ],
-      "correction": "No, just open it by Rahman account.",
-      "rule": "When user says 'Take that second user.': corrected with 'No, just open it by Rahman account.'",
-      "timestamp": 1794426004.7625716
-    },
-    {
-      "trigger_command": "No, just open it by Rahman account.",
-      "previous_tools": [
-        "computer_control",
-        "computer_control",
-        "save_memory"
-      ],
-      "correction": "No, I just closed the tab. New tab, okay.",
-      "rule": "When user says 'No, just open it by Rahman acc': corrected with 'No, I just closed the tab. New tab, okay'",
-      "timestamp": 1794426013.264131
-    },
-    {
-      "trigger_command": "I knew due to search by by Chrome through Chrome.",
-      "previous_tools": [
-        "browser_control",
-        "open_app",
-        "computer_control",
-        "computer_control",
-        "computer_control"
-      ],
-      "correction": "Actually you didn't type it. Type it.",
-      "rule": "When user says 'I knew due to search by by Chr': corrected with 'Actually you didn't type it. Type it.'",
-      "timestamp": 1794426085.4743953
-    },
     {
       "trigger_command": "Oh yeah, I will decide later okay.",
       "previous_tools": [],
@@ -3365,9 +3524,57 @@
       "correction": "No, it's the same page. Just check.",
       "rule": "When user says 'Add it.': corrected with 'No, it's the same page. Just check.'",
       "timestamp": 1794657244.1009126
+    },
+    {
+      "trigger_command": "Yeah, just take it for the time means chat.",
+      "previous_tools": [
+        "send_message"
+      ],
+      "correction": "No, you just unheard it wrong. I just tell you like to take a chat. I will take it manually. You just read it, okay?",
+      "rule": "When user says 'Yeah, just take it for the tim': corrected with 'No, you just unheard it wrong. I just te'",
+      "timestamp": 1794673838.030853
+    },
+    {
+      "trigger_command": "Just read once more.",
+      "previous_tools": [],
+      "correction": "No, just see the screen once again and read from the first.",
+      "rule": "When user says 'Just read once more.': corrected with 'No, just see the screen once again and r'",
+      "timestamp": 1794673956.9642358
+    },
+    {
+      "trigger_command": "Mandalo no. Ah?",
+      "previous_tools": [
+        "kasa_control"
+      ],
+      "correction": "Now let me talk with my friends.",
+      "rule": "When user says 'Mandalo no. Ah?': corrected with 'Now let me talk with my friends.'",
+      "timestamp": 1794673980.7704659
+    },
+    {
+      "trigger_command": "Why didn't he run? Explain them now.",
+      "previous_tools": [
+        "send_message"
+      ],
+      "correction": "I don't want it.",
+      "rule": "When user says 'Why didn't he run? Explain the': corrected with 'I don't want it.'",
+      "timestamp": 1794674026.3995292
+    },
+    {
+      "trigger_command": "\u304a \u5f85\u305f \u305b \u3002",
+      "previous_tools": [
+        "send_message"
+      ],
+      "correction": "No, can I send it?",
+      "rule": "When user says '\u304a \u5f85\u305f \u305b \u3002': corrected with 'No, can I send it?'",
+      "timestamp": 1794674040.2137659
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for '\u304a \u5f85\u305f \u305b \u3002': execute preferred action 'No, can I send it?'.",
+    "Avoid previous misstep for 'Why didn't he run? Explai': execute preferred action 'I don't want it.'.",
+    "Avoid previous misstep for 'Mandalo no. Ah?': execute preferred action 'Now let me talk with my friends.'.",
+    "Avoid previous misstep for 'Just read once more.': execute preferred action 'No, just see the screen once again '.",
+    "Avoid previous misstep for 'Yeah, just take it for th': execute preferred action 'No, you just unheard it wrong. I ju'.",
     "Avoid previous misstep for 'Add it.': execute preferred action 'No, it's the same page. Just check.'.",
     "Avoid previous misstep for 'No, it's in the same page': execute preferred action 'Nope, still still you're hallucinat'.",
     "Avoid previous misstep for 'Do it. Do it.': execute preferred action 'No, it's in the same page itself. I'.",
@@ -3387,12 +3594,7 @@
     "Avoid previous misstep for 'And do it right.': execute preferred action 'Do nothing. I'll fix you. Okay? I'l'.",
     "Avoid previous misstep for 'I close the entire browse': execute preferred action 'No, I will study for the exam later'.",
     "Avoid previous misstep for 'bylingual wa wa wa wa': execute preferred action 'Nothing for now. Say it okay.'.",
-    "Avoid previous misstep for 'So what should I know?': execute preferred action 'Nothing, I will let you know.'.",
-    "Avoid previous misstep for 'penio': execute preferred action 'not many new a new'.",
-    "Avoid previous misstep for 'We are not doing anything': execute preferred action 'are only having doubt and all but w'.",
-    "Avoid previous misstep for 'Do you take any?': execute preferred action 'No.'.",
-    "Avoid previous misstep for 'Go down us.': execute preferred action 'No, I was there. I didn't You didn''.",
-    "Avoid previous misstep for 'I need a demo to demonstr': execute preferred action 'Not that you heard it wrong. I aske'."
+    "Avoid previous misstep for 'So what should I know?': execute preferred action 'Nothing, I will let you know.'."
   ],
-  "updated_at": 1794657551.3844028
+  "updated_at": 1794674254.006932
 }

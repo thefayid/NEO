@@ -1,430 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794652802.3651872,
-      "action_type": "TOOL",
-      "command": "browser_control {\"url\": \"https://in.bookmyshow.com\", \"action\": \"go_to\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652814.8565648,
-      "action_type": "USER_COMMAND",
-      "command": "Ya do it once again.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652818.117614,
-      "action_type": "TOOL",
-      "command": "visual_screen_grounding {\"action\": \"click\", \"query\": \"detect location or select city",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652823.6538074,
-      "action_type": "TOOL",
-      "command": "computer_control {\"text\": \"Kochi\", \"action\": \"type\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652825.0736992,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"enter\", \"action\": \"press\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652832.5146496,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, set to proceed.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652841.6082182,
-      "action_type": "TOOL",
-      "command": "screen_process {\"angle\": \"screen\", \"text\": \"status of bookmyshow.com locati",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652842.68065,
-      "action_type": "USER_COMMAND",
-      "command": "No, you just have to submit it again and again and again. It doesn't work. Till now.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794652844.3588119,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"click\", \"x\": 772, \"y\": 405}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794653994.80778,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"current\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654001.1723728,
-      "action_type": "USER_COMMAND",
-      "command": "video",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654007.2600281,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"Check current state of BookMyShow for Kochi locati",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654008.1814947,
-      "action_type": "USER_COMMAND",
-      "command": "No, just book me more ticket for me.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654009.316905,
-      "action_type": "TOOL",
-      "command": "browser_control {\"url\": \"https://in.bookmyshow.com/kochi\", \"action\": \"go_to\"",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654010.2364511,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Chrome\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654012.5687323,
-      "action_type": "TOOL",
-      "command": "browser_control {\"url\": \"https://in.bookmyshow.com/kochi\", \"action\": \"go_to\"",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654013.705413,
-      "action_type": "TOOL",
-      "command": "computer_control {\"text\": \"https://in.bookmyshow.com/kochi\", \"action\": \"type\"",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654016.0999405,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654017.0003443,
-      "action_type": "TOOL",
-      "command": "screen_process {\"angle\": \"screen\", \"text\": \"screen state of BookMyShow afte",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654033.0338311,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Chrome\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654034.014106,
-      "action_type": "TOOL",
-      "command": "computer_control {\"keys\": \"ctrl+l\", \"action\": \"hotkey\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654035.2089355,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"https://in.bookmyshow.com/kochi\"",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654037.9895763,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"enter\", \"action\": \"press\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654039.3157325,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, do it correctly.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654053.2142072,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"BookMyShow page state. It seems to be on Hyderabad",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654054.5813959,
-      "action_type": "USER_COMMAND",
-      "command": "Just check my screen. It's not accurate. It's in Hyderabad. Just change to Kochi and book a ticket for me.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654056.363585,
-      "action_type": "TOOL",
-      "command": "visual_screen_grounding {\"query\": \"Hyderabad dropdown menu\", \"action\": \"click\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654064.4124594,
-      "action_type": "TOOL",
-      "command": "computer_control {\"text\": \"Kochi\", \"action\": \"type\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654066.0195527,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654094.608833,
-      "action_type": "TOOL",
-      "command": "screen_process {\"angle\": \"screen\", \"text\": \"state of BookMyShow after attem",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654096.3107886,
-      "action_type": "USER_COMMAND",
-      "command": "continue",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654098.1687412,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"go_to\", \"url\": \"https://in.bookmyshow.com/explor",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654106.0316155,
-      "action_type": "USER_COMMAND",
-      "command": "Daniel, can you hear me?",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654111.9205883,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"What is on the screen right now?\", \"angle\": \"scree",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654114.820145,
-      "action_type": "USER_COMMAND",
-      "command": "Just check my screen and tell me what I am seeing right now.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654145.687753,
-      "action_type": "USER_COMMAND",
-      "command": "Let's go.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654155.0092943,
-      "action_type": "USER_COMMAND",
-      "command": "great",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654206.7677166,
-      "action_type": "TOOL",
-      "command": "screen_process {\"angle\": \"screen\", \"text\": \"What am I seeing on my screen?\"",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654207.536827,
-      "action_type": "USER_COMMAND",
-      "command": "What I am seeing in my screen?",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654224.2370038,
-      "action_type": "TOOL",
-      "command": "cortex_deep_reasoning {\"query\": \"Given the user is a final year cybersecurity stud",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654224.2725203,
-      "action_type": "USER_COMMAND",
-      "command": "What is your thinking about this course?",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654271.4431932,
-      "action_type": "USER_COMMAND",
-      "command": "mutton toast can you tell me some",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654278.2785234,
-      "action_type": "TOOL",
-      "command": "knowledge_memory {\"action\": \"remember\", \"category\": \"projects\", \"fact\": \"Cons",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654285.8423064,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, let me think about it. I will say you later. Okay?",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654292.0738218,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654305.362174,
-      "action_type": "TOOL",
-      "command": "browser_control {\"query\": \"site:linkedin.com/jobs cybersecurity jobs\", \"acti",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654306.220997,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Chrome\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654307.108013,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+l\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654308.169027,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"https://www.linkedin.com/jobs\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654310.4386945,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654315.6808977,
-      "action_type": "USER_COMMAND",
-      "command": "Can you open LinkedIn and find jobs for me?",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654325.5130565,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"LinkedIn\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654332.5094364,
-      "action_type": "USER_COMMAND",
-      "command": "want through Chrome I have a LinkedIn application open it and find jobs for a in the app itself.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794654335.4429462,
       "action_type": "TOOL",
       "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+f\"}",
@@ -1599,6 +1175,430 @@
       "hour": 17,
       "weekday": 5,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794673589.2429893,
+      "action_type": "USER_COMMAND",
+      "command": "You know.",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673622.7985375,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673626.0881736,
+      "action_type": "USER_COMMAND",
+      "command": "Mhm.",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673736.1235952,
+      "action_type": "TOOL",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673758.5778804,
+      "action_type": "USER_COMMAND",
+      "command": "You just describe all your abilities with my computer.",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673763.0503547,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673777.8998349,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, then read my unread messages in WhatsApp.",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673781.055707,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"screenshot\"}",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673786.3467817,
+      "action_type": "USER_COMMAND",
+      "command": "Wait, let it load.",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673789.6391172,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\", \"receive",
+      "hour": 21,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673813.335464,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just take it for the time means chat.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673821.7837183,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673838.0567565,
+      "action_type": "USER_COMMAND",
+      "command": "No, you just unheard it wrong. I just tell you like to take a chat. I will take it manually. You just read it, okay?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673840.406028,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"screenshot\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673843.6922462,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just wait for me to select.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673854.4029284,
+      "action_type": "TOOL",
+      "command": "send_message {\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673878.5198069,
+      "action_type": "USER_COMMAND",
+      "command": "another it",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673881.9210625,
+      "action_type": "TOOL",
+      "command": "save_memory {\"value\": \"Always read individual names aloud from WhatsApp",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673895.255983,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, can you read the read those names?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673911.1315527,
+      "action_type": "USER_COMMAND",
+      "command": "Just read once more.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673915.1092165,
+      "action_type": "TOOL",
+      "command": "send_message {\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673956.9959927,
+      "action_type": "USER_COMMAND",
+      "command": "No, just see the screen once again and read from the first.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673963.1305454,
+      "action_type": "TOOL",
+      "command": "kasa_control {\"action\": \"scan\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673973.413902,
+      "action_type": "USER_COMMAND",
+      "command": "Mandalo no. Ah?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673975.8798783,
+      "action_type": "TOOL",
+      "command": "save_memory {\"category\": \"corrections\", \"key\": \"user_wants_silence_for_f",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673980.8034537,
+      "action_type": "USER_COMMAND",
+      "command": "Now let me talk with my friends.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673983.7629774,
+      "action_type": "TOOL",
+      "command": "send_message {\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673989.6123772,
+      "action_type": "USER_COMMAND",
+      "command": "message dalo unread messages",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673989.627894,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673995.5081868,
+      "action_type": "USER_COMMAND",
+      "command": "Please I need to call",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794673998.3944824,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674003.8548598,
+      "action_type": "USER_COMMAND",
+      "command": "Aale na. Amma na. Panty um chutti iranginala?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674003.8706002,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674009.4804494,
+      "action_type": "USER_COMMAND",
+      "command": "matlab kya nahin aapki aadaraniya adhyaksh mahoday ko barta nahin hai.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674009.529906,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674014.9110377,
+      "action_type": "USER_COMMAND",
+      "command": "\u00bfQu\u00e9 es familia?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674014.931304,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674020.7699935,
+      "action_type": "USER_COMMAND",
+      "command": "Why didn't he run? Explain them now.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674020.7927043,
+      "action_type": "TOOL",
+      "command": "send_message {\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674026.4134011,
+      "action_type": "USER_COMMAND",
+      "command": "I don't want it.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674026.4303966,
+      "action_type": "TOOL",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674031.9366915,
+      "action_type": "USER_COMMAND",
+      "command": "\u304a \u5f85\u305f \u305b \u3002",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674031.9557858,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"screenshot\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674032.0695875,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674040.2497332,
+      "action_type": "USER_COMMAND",
+      "command": "No, can I send it?",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674043.4054203,
+      "action_type": "TOOL",
+      "command": "shutdown_jarvis {}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674223.0860734,
+      "action_type": "USER_COMMAND",
+      "command": "genio",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674228.985736,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674254.0174935,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, this trade once more my messages.",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674254.031804,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674570.1029453,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674570.3214562,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794674570.7983668,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 22,
+      "weekday": 5,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1755,7 +1755,28 @@
       "occurrences": 3,
       "first_seen": 1794657545.79073,
       "synthesized": false
+    },
+    "send_message_action_read_message": {
+      "name": "send_message_action_read_message",
+      "command": "send_message {\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+      "occurrences": 3,
+      "first_seen": 1794673983.7648506,
+      "synthesized": false
+    },
+    "send_message_platform_whatsapp_a": {
+      "name": "send_message_platform_whatsapp_a",
+      "command": "send_message {\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+      "occurrences": 3,
+      "first_seen": 1794673989.6314201,
+      "synthesized": false
+    },
+    "read_messages_platform_whatsapp": {
+      "name": "read_messages_platform_whatsapp",
+      "command": "read_messages {\"platform\": \"whatsapp\"}",
+      "occurrences": 3,
+      "first_seen": 1794674228.9874,
+      "synthesized": false
     }
   },
-  "updated_at": 1794657581.0042646
+  "updated_at": 1794674570.7987142
 }

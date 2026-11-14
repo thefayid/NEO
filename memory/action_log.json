@@ -2118,5 +2118,225 @@
     "evidence": "Output: 'Shutting down NEO now. Goodbye.'",
     "verified": "yes",
     "formatted_line": "[2026-11-14 17:29:41] | 212 | shutdown_jarvis | {} | Shutting down NEO now. Goodbye. | Output: 'Shutting down NEO now. Goodbye.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 21:57:02",
+    "step": 213,
+    "tool_called": "manage_neo_memory",
+    "parameters": "{\"operation\": \"get_context\"}",
+    "result": "Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Current Goal: Mhm. Recent Turn Count: 2",
+    "evidence": "Output: 'Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Cu'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 21:57:02] | 213 | manage_neo_memory | {\"operation\": \"get_context\"} | Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Current Goal: Mhm. Recent Turn Count: 2 | Output: 'Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Cu' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 21:58:56",
+    "step": 214,
+    "tool_called": "render_hud_widget",
+    "parameters": "{\"widget_type\": \"system_analytics\"}",
+    "result": "HUD Widget 'System Analytics' rendered on screen.",
+    "evidence": "Output: 'HUD Widget 'System Analytics' rendered on screen.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 21:58:56] | 214 | render_hud_widget | {\"widget_type\": \"system_analytics\"} | HUD Widget 'System Analytics' rendered on screen. | Output: 'HUD Widget 'System Analytics' rendered on screen.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 21:59:29",
+    "step": 215,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"Based on the provided i...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 21:59:29] | 215 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"Based on the provided i... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 21:59:41",
+    "step": 216,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"screenshot\"}",
+    "result": "Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png",
+    "evidence": "Screenshot ID: jarvis_screenshot.png",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 21:59:41] | 216 | computer_control | {\"action\": \"screenshot\"} | Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png | Screenshot ID: jarvis_screenshot.png | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:00:00",
+    "step": 217,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\", \"receiver\": \"Fahad Nazeem\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Fahad Nazeem\" verified=true transcript=\"No chat with 'Fahad Na...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Fahad'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:00:00] | 217 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\", \"receiver\": \"Fahad Nazeem\"} | status=done action=read_messages platform=WhatsApp to=\"Fahad Nazeem\" verified=true transcript=\"No chat with 'Fahad Na... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Fahad' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:00:27",
+    "step": 218,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"No chat is currently se...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:00:27] | 218 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"No chat is currently se... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:00:40",
+    "step": 219,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"screenshot\"}",
+    "result": "Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png",
+    "evidence": "Screenshot ID: jarvis_screenshot.png",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:00:40] | 219 | computer_control | {\"action\": \"screenshot\"} | Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png | Screenshot ID: jarvis_screenshot.png | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:01:00",
+    "step": 220,
+    "tool_called": "send_message",
+    "parameters": "{\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: (Unknown Send...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:01:00] | 220 | send_message | {\"action\": \"read_messages\", \"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: (Unknown Send... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:02:00",
+    "step": 221,
+    "tool_called": "send_message",
+    "parameters": "{\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Anjana Miss J...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:02:00] | 221 | send_message | {\"action\": \"read_messages\", \"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Anjana Miss J... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:02:44",
+    "step": 222,
+    "tool_called": "kasa_control",
+    "parameters": "{\"action\": \"scan\"}",
+    "result": "status=done action=kasa_control message=\"No Kasa smart home devices detected on the local network, Boss.\" count=0",
+    "evidence": "Output: 'status=done action=kasa_control message=\"No Kasa smart home '",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:02:44] | 222 | kasa_control | {\"action\": \"scan\"} | status=done action=kasa_control message=\"No Kasa smart home devices detected on the local network, Boss.\" count=0 | Output: 'status=done action=kasa_control message=\"No Kasa smart home ' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:09",
+    "step": 223,
+    "tool_called": "send_message",
+    "parameters": "{\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: JASINI Timest...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:09] | 223 | send_message | {\"action\": \"read_messages\", \"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: JASINI Timest... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:15",
+    "step": 224,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Unknown (prev...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:15] | 224 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Unknown (prev... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:23",
+    "step": 225,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:23] | 225 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:29",
+    "step": 226,
+    "tool_called": "read_messages",
+    "parameters": "{\"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:29] | 226 | read_messages | {\"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:34",
+    "step": 227,
+    "tool_called": "read_messages",
+    "parameters": "{\"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: (Unknown Name...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:34] | 227 | read_messages | {\"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: (Unknown Name... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:40",
+    "step": 228,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Unknown, Time...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:40] | 228 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Unknown, Time... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:46",
+    "step": 229,
+    "tool_called": "send_message",
+    "parameters": "{\"action\": \"read_messages\", \"platform\": \"whatsapp\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:46] | 229 | send_message | {\"action\": \"read_messages\", \"platform\": \"whatsapp\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender: Admin * Times... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:51",
+    "step": 230,
+    "tool_called": "send_message",
+    "parameters": "{\"platform\": \"whatsapp\", \"action\": \"read_messages\"}",
+    "result": "status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender name: Unknown ...",
+    "evidence": "Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:51] | 230 | send_message | {\"platform\": \"whatsapp\", \"action\": \"read_messages\"} | status=done action=read_messages platform=WhatsApp to=\"Recent Chat\" verified=true transcript=\"* Sender name: Unknown ... | Output: 'status=done action=read_messages platform=WhatsApp to=\"Recen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:52",
+    "step": 231,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"screenshot\"}",
+    "result": "Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png",
+    "evidence": "Screenshot ID: jarvis_screenshot.png",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:52] | 231 | computer_control | {\"action\": \"screenshot\"} | Screenshot saved: C:\\Users\\rahma\\Desktop\\jarvis_screenshot.png | Screenshot ID: jarvis_screenshot.png | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:03:52",
+    "step": 232,
+    "tool_called": "manage_neo_memory",
+    "parameters": "{\"operation\": \"get_context\"}",
+    "result": "Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Current Goal: \u304a \u5f85\u305f \u305b \u3002 Recent Turn Count: 12",
+    "evidence": "Output: 'Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Cu'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:03:52] | 232 | manage_neo_memory | {\"operation\": \"get_context\"} | Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Current Goal: \u304a \u5f85\u305f \u305b \u3002 Recent Turn Count: 12 | Output: 'Active Window: NEO Studio \u00b7 Home Clipboard Snippet: Empty Cu' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:04:03",
+    "step": 233,
+    "tool_called": "shutdown_jarvis",
+    "parameters": "{}",
+    "result": "Shutting down NEO now. Goodbye.",
+    "evidence": "Output: 'Shutting down NEO now. Goodbye.'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 22:04:03] | 233 | shutdown_jarvis | {} | Shutting down NEO now. Goodbye. | Output: 'Shutting down NEO now. Goodbye.' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 22:07:33",
+    "step": 234,
+    "tool_called": "read_messages",
+    "parameters": "{\"platform\": \"whatsapp\"}",
+    "result": "Tool 'read_messages' timed out after 25 seconds.",
+    "evidence": "Output: 'Tool 'read_messages' timed out after 25 seconds.'",
+    "verified": "no",
+    "formatted_line": "[2026-11-14 22:07:33] | 234 | read_messages | {\"platform\": \"whatsapp\"} | Tool 'read_messages' timed out after 25 seconds. | Output: 'Tool 'read_messages' timed out after 25 seconds.' | verified: no"
   }
 ]
