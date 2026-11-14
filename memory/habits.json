@@ -1,286 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794593912.2302902,
-      "action_type": "USER_COMMAND",
-      "command": "No, no, no. I don't need sad songs. Just play previous song.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593916.1955066,
-      "action_type": "TOOL",
-      "command": "gesture_control {\"action\": \"enable\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593922.1478713,
-      "action_type": "USER_COMMAND",
-      "command": "Let's do it.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593929.7949026,
-      "action_type": "TOOL",
-      "command": "gesture_control {\"action\": \"disable\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593934.867965,
-      "action_type": "USER_COMMAND",
-      "command": "I don't need a Castro control, you just do it.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593937.891281,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"play\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593942.7101133,
-      "action_type": "USER_COMMAND",
-      "command": "Just play that song from Spotify.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593945.137446,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"play\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593948.595231,
-      "action_type": "USER_COMMAND",
-      "command": "Play all the song.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593952.5031738,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"previous\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593956.2047117,
-      "action_type": "USER_COMMAND",
-      "command": "Let's go back.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593968.1886697,
-      "action_type": "TOOL",
-      "command": "spotify_control {\"action\": \"current\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794593971.9536672,
-      "action_type": "USER_COMMAND",
-      "command": "No, what song I am pay?",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594002.729682,
-      "action_type": "TEXT_COMMAND",
-      "command": "Inspect system memory hogs, clean cache, and report telemetry, Boss.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594003.386369,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"kill_zombies\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594005.7925882,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"purge_cache\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594006.3295012,
-      "action_type": "TOOL",
-      "command": "stark_protocol {\"protocol\": \"telemetry\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594040.829264,
-      "action_type": "TOOL",
-      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594041.0868404,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"kill_zombies\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594070.8643668,
-      "action_type": "TOOL",
-      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594071.1483002,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"audit\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594100.873482,
-      "action_type": "TOOL",
-      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594101.1355293,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"audit\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594126.0859435,
-      "action_type": "USER_COMMAND",
-      "command": "No, I'll say it when I need it.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594134.107305,
-      "action_type": "USER_COMMAND",
-      "command": "Sure sure.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594137.5187416,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"minimize\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594142.0916922,
-      "action_type": "USER_COMMAND",
-      "command": "Minimize your window.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594145.0178025,
-      "action_type": "TOOL",
-      "command": "executive_briefing {\"action\": \"agenda\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594156.2984073,
-      "action_type": "USER_COMMAND",
-      "command": "seminal",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594158.7909951,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"focus_window\", \"title\": \"NEO\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594158.916181,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"minimize\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594169.8715003,
-      "action_type": "USER_COMMAND",
-      "command": "You are not minimized it.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594174.0132546,
-      "action_type": "TOOL",
-      "command": "screen_process {\"angle\": \"screen\", \"text\": \"The user says I am not minimize",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594174.6779907,
-      "action_type": "USER_COMMAND",
-      "command": "But I can see you are still here.",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794594178.2997692,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"focus_window\", \"title\": \"NEO\"}",
-      "hour": 23,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794594179.7432394,
       "action_type": "TOOL",
       "command": "computer_settings {\"action\": \"minimize\"}",
@@ -1599,6 +1319,286 @@
       "hour": 16,
       "weekday": 5,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794655987.222897,
+      "action_type": "USER_COMMAND",
+      "command": "\uc544\ub2c8\uc694.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794655991.9625418,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"BookMyShow\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656001.036982,
+      "action_type": "USER_COMMAND",
+      "command": "Book me a movie ticket for me in BookMyShow.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656004.690307,
+      "action_type": "TOOL",
+      "command": "browser_control {\"url\": \"https://in.bookmyshow.com/\", \"action\": \"go_to\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656005.2167222,
+      "action_type": "USER_COMMAND",
+      "command": "Just open the website.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656005.983701,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"go_to\", \"url\": \"bookmyshow.com\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656011.5644326,
+      "action_type": "USER_COMMAND",
+      "command": "s",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656013.3425157,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"type\", \"text\": \"Kochi\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656013.71435,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"press\", \"key\": \"enter\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656020.6283917,
+      "action_type": "USER_COMMAND",
+      "command": "Cochin",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656023.1343405,
+      "action_type": "TOOL",
+      "command": "screen_process {\"angle\": \"screen\", \"text\": \"What is on the screen right now",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656025.5528214,
+      "action_type": "USER_COMMAND",
+      "command": "seen",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656039.4033377,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"click\", \"x\": 1140, \"y\": 101}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656045.7506292,
+      "action_type": "USER_COMMAND",
+      "command": "Just switch the location.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656049.2271872,
+      "action_type": "TOOL",
+      "command": "screen_process {\"angle\": \"screen\", \"text\": \"Describe the current state of t",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656050.6228583,
+      "action_type": "USER_COMMAND",
+      "command": "No, you are not clicked.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656054.2899466,
+      "action_type": "TOOL",
+      "command": "computer_control {\"x\": 779, \"y\": 139, \"action\": \"click\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656071.960651,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"click\", \"y\": 201, \"x\": 162}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656080.1976461,
+      "action_type": "USER_COMMAND",
+      "command": "You clicked it wrong. You just clicked to the something else and it's in another page now.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656084.9356072,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"click\", \"y\": 201, \"x\": 162}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656092.1551647,
+      "action_type": "USER_COMMAND",
+      "command": "Do it. Do it.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656100.7261684,
+      "action_type": "TOOL",
+      "command": "computer_control {\"x\": 143, \"y\": 139, \"action\": \"click\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656108.7901816,
+      "action_type": "USER_COMMAND",
+      "command": "No, it's in the same page itself. It's just in mode. It's in mode.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656120.5149257,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"refresh_page\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656138.3284488,
+      "action_type": "USER_COMMAND",
+      "command": "Nope, still still you're hallucinating nothing worth that you're on the same page.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656142.1406446,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"click\", \"x\": 1140, \"y\": 101}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656150.974229,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656154.0992718,
+      "action_type": "TOOL",
+      "command": "computer_control {\"y\": 101, \"x\": 1140, \"action\": \"click\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656161.7555492,
+      "action_type": "USER_COMMAND",
+      "command": "Do it.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656164.772929,
+      "action_type": "TOOL",
+      "command": "screen_process {\"text\": \"Describe the current screen state of the BookMySho",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656166.1084666,
+      "action_type": "USER_COMMAND",
+      "command": "But you did do it.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656170.9948704,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"click\", \"y\": 139, \"x\": 779}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656197.2731473,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"value\": \"Kochi\", \"action\": \"type_text\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656197.500877,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"value\": \"enter\", \"action\": \"press_key\"}",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794656211.9629028,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, Ravi, you're not doing anything.",
+      "hour": 17,
+      "weekday": 5,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1743,5 +1743,5 @@
       "synthesized": false
     }
   },
-  "updated_at": 1794655261.5937884
+  "updated_at": 1794656211.9634821
 }

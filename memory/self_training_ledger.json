@@ -1280,7 +1280,7 @@
     ".": {
       "pattern": ".",
       "sample": "Hey.",
-      "count": 8,
+      "count": 9,
       "tools": [
         "computer_control",
         "visual_screen_grounding",
@@ -1290,7 +1290,7 @@
         "read_messages",
         "screen_process"
       ],
-      "last_used": 1794654292.0442524
+      "last_used": 1794656150.9520738
     },
     ", killing all the background process, okay?": {
       "pattern": ", killing all the background process, okay?",
@@ -2560,20 +2560,134 @@
       "count": 1,
       "tools": [],
       "last_used": 1794655261.5673597
+    },
+    "\uc544\ub2c8\uc694.": {
+      "pattern": "\uc544\ub2c8\uc694.",
+      "sample": "\uc544\ub2c8\uc694.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794655987.1934552
+    },
+    "book me a movie ticket for me in bookmyshow.": {
+      "pattern": "book me a movie ticket for me in bookmyshow.",
+      "sample": "Book me a movie ticket for me in BookMyShow.",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794656001.0168602
+    },
+    "open the website.": {
+      "pattern": "open the website.",
+      "sample": "Just open the website.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794656005.207814
+    },
+    "cochin": {
+      "pattern": "cochin",
+      "sample": "Cochin",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656020.6101751
+    },
+    "seen": {
+      "pattern": "seen",
+      "sample": "seen",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794656025.5330818
+    },
+    "switch the location.": {
+      "pattern": "switch the location.",
+      "sample": "Just switch the location.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656045.7268717
+    },
+    "no, you are not clicked.": {
+      "pattern": "no, you are not clicked.",
+      "sample": "No, you are not clicked.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794656050.6101053
+    },
+    "you clicked it wrong. you clicked to the somethi": {
+      "pattern": "you clicked it wrong. you clicked to the somethi",
+      "sample": "You clicked it wrong. You just clicked to the something else and it's in another page now.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656080.1708622
+    },
+    "do it. do it.": {
+      "pattern": "do it. do it.",
+      "sample": "Do it. Do it.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656092.1363692
+    },
+    "no, it's in the same page itself. it's in mode. ": {
+      "pattern": "no, it's in the same page itself. it's in mode. ",
+      "sample": "No, it's in the same page itself. It's just in mode. It's in mode.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656108.7625258
+    },
+    "nope, still still you're hallucinating nothing w": {
+      "pattern": "nope, still still you're hallucinating nothing w",
+      "sample": "Nope, still still you're hallucinating nothing worth that you're on the same page.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794656138.310114
+    },
+    "do it.": {
+      "pattern": "do it.",
+      "sample": "Do it.",
+      "count": 1,
+      "tools": [
+        "computer_control"
+      ],
+      "last_used": 1794656161.7318873
+    },
+    "but you did do it.": {
+      "pattern": "but you did do it.",
+      "sample": "But you did do it.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794656166.0984583
+    },
+    ", ravi, you're not doing anything.": {
+      "pattern": ", ravi, you're not doing anything.",
+      "sample": "Yeah, Ravi, you're not doing anything.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794656211.94539
     }
   },
   "preferences": {},
   "correction_rules": [
-    {
-      "trigger_command": "What's up and take me as set.",
-      "previous_tools": [
-        "open_app",
-        "companion_core"
-      ],
-      "correction": "No, I don't want a song now. Just close Spotify.",
-      "rule": "When user says 'What's up and take me as set.': corrected with 'No, I don't want a song now. Just close '",
-      "timestamp": 1794425651.756595
-    },
     {
       "trigger_command": "WhatsApp is closed.",
       "previous_tools": [
@@ -3004,9 +3118,39 @@
       "correction": "No, just book me more ticket for me.",
       "rule": "When user says 'video': corrected with 'No, just book me more ticket for me.'",
       "timestamp": 1794654008.1694531
+    },
+    {
+      "trigger_command": "Just switch the location.",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "No, you are not clicked.",
+      "rule": "When user says 'Just switch the location.': corrected with 'No, you are not clicked.'",
+      "timestamp": 1794656050.6100833
+    },
+    {
+      "trigger_command": "Do it. Do it.",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "No, it's in the same page itself. It's just in mode. It's in mode.",
+      "rule": "When user says 'Do it. Do it.': corrected with 'No, it's in the same page itself. It's j'",
+      "timestamp": 1794656108.762472
+    },
+    {
+      "trigger_command": "No, it's in the same page itself. It's just in mode. It's in mode.",
+      "previous_tools": [
+        "computer_control"
+      ],
+      "correction": "Nope, still still you're hallucinating nothing worth that you're on the same page.",
+      "rule": "When user says 'No, it's in the same page itse': corrected with 'Nope, still still you're hallucinating n'",
+      "timestamp": 1794656138.3100567
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'No, it's in the same page': execute preferred action 'Nope, still still you're hallucinat'.",
+    "Avoid previous misstep for 'Do it. Do it.': execute preferred action 'No, it's in the same page itself. I'.",
+    "Avoid previous misstep for 'Just switch the location.': execute preferred action 'No, you are not clicked.'.",
     "Avoid previous misstep for 'video': execute preferred action 'No, just book me more ticket for me'.",
     "Avoid previous misstep for 'Yeah, set to proceed.': execute preferred action 'No, you just have to submit it agai'.",
     "Avoid previous misstep for 'No, it's not updating you': execute preferred action 'No, you clicked it wrong. You just '.",
@@ -3028,10 +3172,7 @@
     "Avoid previous misstep for 'Do you take any?': execute preferred action 'No.'.",
     "Avoid previous misstep for 'Go down us.': execute preferred action 'No, I was there. I didn't You didn''.",
     "Avoid previous misstep for 'I need a demo to demonstr': execute preferred action 'Not that you heard it wrong. I aske'.",
-    "Avoid previous misstep for 'Yeah, now English to full': execute preferred action 'Note that this increase the brightn'.",
-    "Avoid previous misstep for 'No, I am not saying. Do i': execute preferred action 'Nope. Nope. Nope. Nope. Do it.'.",
-    "Avoid previous misstep for 'No, no, no, no. We should': execute preferred action 'No, I am not saying. Do it once mor'.",
-    "Avoid previous misstep for 'Would know it. It will no': execute preferred action 'No, no, no, no. We should do it.'."
+    "Avoid previous misstep for 'Yeah, now English to full': execute preferred action 'Note that this increase the brightn'."
   ],
-  "updated_at": 1794655261.5735803
+  "updated_at": 1794656211.9459593
 }

@@ -1288,5 +1288,195 @@
     "evidence": "Output: 'Pressed: enter'",
     "verified": "yes",
     "formatted_line": "[2026-11-14 16:50:41] | 129 | computer_control | {\"action\": \"press\", \"key\": \"******\"} | Pressed: enter | Output: 'Pressed: enter' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:15",
+    "step": 130,
+    "tool_called": "open_app",
+    "parameters": "{\"app_name\": \"BookMyShow\"}",
+    "result": "status=done action=open_app app=BookMyShow matched=msedge verified=true",
+    "evidence": "Output: 'status=done action=open_app app=BookMyShow matched=msedge ve'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:15] | 130 | open_app | {\"app_name\": \"BookMyShow\"} | status=done action=open_app app=BookMyShow matched=msedge verified=true | Output: 'status=done action=open_app app=BookMyShow matched=msedge ve' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:25",
+    "step": 131,
+    "tool_called": "browser_control",
+    "parameters": "{\"url\": \"https://in.bookmyshow.com/\", \"action\": \"go_to\"}",
+    "result": "status=done action=browser_control action=go_to url=https://in.bookmyshow.com/ opened_in=default_browser active_windo...",
+    "evidence": "Output: 'status=done action=browser_control action=go_to url=https://'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:25] | 131 | browser_control | {\"url\": \"https://in.bookmyshow.com/\", \"action\": \"go_to\"} | status=done action=browser_control action=go_to url=https://in.bookmyshow.com/ opened_in=default_browser active_windo... | Output: 'status=done action=browser_control action=go_to url=https://' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:26",
+    "step": 132,
+    "tool_called": "browser_control",
+    "parameters": "{\"action\": \"go_to\", \"url\": \"bookmyshow.com\"}",
+    "result": "status=done action=browser_control action=go_to url=https://bookmyshow.com opened_in=default_browser active_window=\"U...",
+    "evidence": "Output: 'status=done action=browser_control action=go_to url=https://'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:26] | 132 | browser_control | {\"action\": \"go_to\", \"url\": \"bookmyshow.com\"} | status=done action=browser_control action=go_to url=https://bookmyshow.com opened_in=default_browser active_window=\"U... | Output: 'status=done action=browser_control action=go_to url=https://' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:33",
+    "step": 133,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"type\", \"text\": \"Kochi\"}",
+    "result": "Typed: Kochi",
+    "evidence": "Output: 'Typed: Kochi'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:33] | 133 | computer_control | {\"action\": \"type\", \"text\": \"Kochi\"} | Typed: Kochi | Output: 'Typed: Kochi' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:33",
+    "step": 134,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"press\", \"key\": \"******\"}",
+    "result": "Pressed: enter",
+    "evidence": "Output: 'Pressed: enter'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:33] | 134 | computer_control | {\"action\": \"press\", \"key\": \"******\"} | Pressed: enter | Output: 'Pressed: enter' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:43",
+    "step": 135,
+    "tool_called": "screen_process",
+    "parameters": "{\"angle\": \"screen\", \"text\": \"What is on the screen right now? Describe the BookMyShow website and tell me if Cochin i...",
+    "result": "[VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im...",
+    "evidence": "Output: '[VISION_ACTIVE] Screen captured and attached to this same ex'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:43] | 135 | screen_process | {\"angle\": \"screen\", \"text\": \"What is on the screen right now? Describe the BookMyShow website and tell me if Cochin i... | [VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im... | Output: '[VISION_ACTIVE] Screen captured and attached to this same ex' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:03:59",
+    "step": 136,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"click\", \"x\": 1140, \"y\": 101}",
+    "result": "Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ...",
+    "evidence": "Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:03:59] | 136 | computer_control | {\"action\": \"click\", \"x\": 1140, \"y\": 101} | Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ... | Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:04:09",
+    "step": 137,
+    "tool_called": "screen_process",
+    "parameters": "{\"angle\": \"screen\", \"text\": \"Describe the current state of the BookMyShow webpage. Focus on the location selector in ...",
+    "result": "[VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im...",
+    "evidence": "Output: '[VISION_ACTIVE] Screen captured and attached to this same ex'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:04:09] | 137 | screen_process | {\"angle\": \"screen\", \"text\": \"Describe the current state of the BookMyShow webpage. Focus on the location selector in ... | [VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im... | Output: '[VISION_ACTIVE] Screen captured and attached to this same ex' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:04:14",
+    "step": 138,
+    "tool_called": "computer_control",
+    "parameters": "{\"x\": 779, \"y\": 139, \"action\": \"click\"}",
+    "result": "Clicked (779, 139) [left] [Visual ROI delta detected (element state changed/opened); Cursor locked to physical coordi...",
+    "evidence": "Output: 'Clicked (779, 139) [left] [Visual ROI delta detected (elemen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:04:14] | 138 | computer_control | {\"x\": 779, \"y\": 139, \"action\": \"click\"} | Clicked (779, 139) [left] [Visual ROI delta detected (element state changed/opened); Cursor locked to physical coordi... | Output: 'Clicked (779, 139) [left] [Visual ROI delta detected (elemen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:04:32",
+    "step": 139,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"click\", \"y\": 201, \"x\": 162}",
+    "result": "Clicked (162, 201) [left] [Cursor locked to physical coordinates (162, 201); Native click executed at verified target...",
+    "evidence": "Output: 'Clicked (162, 201) [left] [Cursor locked to physical coordin'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:04:32] | 139 | computer_control | {\"action\": \"click\", \"y\": 201, \"x\": 162} | Clicked (162, 201) [left] [Cursor locked to physical coordinates (162, 201); Native click executed at verified target... | Output: 'Clicked (162, 201) [left] [Cursor locked to physical coordin' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:04:45",
+    "step": 140,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"click\", \"y\": 201, \"x\": 162}",
+    "result": "Clicked (162, 201) [left] [Cursor locked to physical coordinates (162, 201); Native click executed at verified target...",
+    "evidence": "Output: 'Clicked (162, 201) [left] [Cursor locked to physical coordin'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:04:45] | 140 | computer_control | {\"action\": \"click\", \"y\": 201, \"x\": 162} | Clicked (162, 201) [left] [Cursor locked to physical coordinates (162, 201); Native click executed at verified target... | Output: 'Clicked (162, 201) [left] [Cursor locked to physical coordin' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:05:00",
+    "step": 141,
+    "tool_called": "computer_control",
+    "parameters": "{\"x\": 143, \"y\": 139, \"action\": \"click\"}",
+    "result": "Clicked (143, 139) [left] [Cursor locked to physical coordinates (143, 139); Native click executed at verified target...",
+    "evidence": "Output: 'Clicked (143, 139) [left] [Cursor locked to physical coordin'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:05:00] | 141 | computer_control | {\"x\": 143, \"y\": 139, \"action\": \"click\"} | Clicked (143, 139) [left] [Cursor locked to physical coordinates (143, 139); Native click executed at verified target... | Output: 'Clicked (143, 139) [left] [Cursor locked to physical coordin' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:05:20",
+    "step": 142,
+    "tool_called": "computer_settings",
+    "parameters": "{\"action\": \"refresh_page\"}",
+    "result": "status=done action=computer_settings wanted=refresh_page",
+    "evidence": "Output: 'status=done action=computer_settings wanted=refresh_page'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:05:20] | 142 | computer_settings | {\"action\": \"refresh_page\"} | status=done action=computer_settings wanted=refresh_page | Output: 'status=done action=computer_settings wanted=refresh_page' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:05:42",
+    "step": 143,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"click\", \"x\": 1140, \"y\": 101}",
+    "result": "Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ...",
+    "evidence": "Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:05:42] | 143 | computer_control | {\"action\": \"click\", \"x\": 1140, \"y\": 101} | Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ... | Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:05:54",
+    "step": 144,
+    "tool_called": "computer_control",
+    "parameters": "{\"y\": 101, \"x\": 1140, \"action\": \"click\"}",
+    "result": "Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ...",
+    "evidence": "Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:05:54] | 144 | computer_control | {\"y\": 101, \"x\": 1140, \"action\": \"click\"} | Clicked (1140, 101) [left] [Cursor locked to physical coordinates (1140, 101); Native click executed at verified targ... | Output: 'Clicked (1140, 101) [left] [Cursor locked to physical coordi' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:06:04",
+    "step": 145,
+    "tool_called": "screen_process",
+    "parameters": "{\"text\": \"Describe the current screen state of the BookMyShow website. Pay close attention to the location selector i...",
+    "result": "[VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im...",
+    "evidence": "Output: '[VISION_ACTIVE] Screen captured and attached to this same ex'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:06:04] | 145 | screen_process | {\"text\": \"Describe the current screen state of the BookMyShow website. Pay close attention to the location selector i... | [VISION_ACTIVE] Screen captured and attached to this same exchange. Do not acknowledge and do not answer yet \u2014 the im... | Output: '[VISION_ACTIVE] Screen captured and attached to this same ex' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:06:11",
+    "step": 146,
+    "tool_called": "computer_control",
+    "parameters": "{\"action\": \"click\", \"y\": 139, \"x\": 779}",
+    "result": "Clicked (779, 139) [left] [Visual ROI delta detected (element state changed/opened); Cursor locked to physical coordi...",
+    "evidence": "Output: 'Clicked (779, 139) [left] [Visual ROI delta detected (elemen'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:06:11] | 146 | computer_control | {\"action\": \"click\", \"y\": 139, \"x\": 779} | Clicked (779, 139) [left] [Visual ROI delta detected (element state changed/opened); Cursor locked to physical coordi... | Output: 'Clicked (779, 139) [left] [Visual ROI delta detected (elemen' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:06:37",
+    "step": 147,
+    "tool_called": "computer_settings",
+    "parameters": "{\"value\": \"Kochi\", \"action\": \"type_text\"}",
+    "result": "status=done action=computer_settings wanted=type_text typed=Kochi",
+    "evidence": "Output: 'status=done action=computer_settings wanted=type_text typed='",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:06:37] | 147 | computer_settings | {\"value\": \"Kochi\", \"action\": \"type_text\"} | status=done action=computer_settings wanted=type_text typed=Kochi | Output: 'status=done action=computer_settings wanted=type_text typed=' | verified: yes"
+  },
+  {
+    "time": "2026-11-14 17:06:37",
+    "step": 148,
+    "tool_called": "computer_settings",
+    "parameters": "{\"value\": \"enter\", \"action\": \"press_key\"}",
+    "result": "status=done action=computer_settings wanted=press_key key=enter",
+    "evidence": "Output: 'status=done action=computer_settings wanted=press_key key=en'",
+    "verified": "yes",
+    "formatted_line": "[2026-11-14 17:06:37] | 148 | computer_settings | {\"value\": \"enter\", \"action\": \"press_key\"} | status=done action=computer_settings wanted=press_key key=enter | Output: 'status=done action=computer_settings wanted=press_key key=en' | verified: yes"
   }
 ]
