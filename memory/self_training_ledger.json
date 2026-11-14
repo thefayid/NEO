@@ -3,9 +3,11 @@
     "new": {
       "pattern": "new",
       "sample": "new",
-      "count": 3,
-      "tools": [],
-      "last_used": 1794501745.6327481
+      "count": 4,
+      "tools": [
+        "companion_core"
+      ],
+      "last_used": 1794593866.5819333
     },
     "i came back to test you again.": {
       "pattern": "i came back to test you again.",
@@ -1276,15 +1278,16 @@
     ".": {
       "pattern": ".",
       "sample": "Hey.",
-      "count": 4,
+      "count": 5,
       "tools": [
         "computer_control",
         "visual_screen_grounding",
         "companion_core",
         "open_app",
-        "browser_control"
+        "browser_control",
+        "read_messages"
       ],
-      "last_used": 1794583387.1794794
+      "last_used": 1794592843.0989354
     },
     ", killing all the background process, okay?": {
       "pattern": ", killing all the background process, okay?",
@@ -1673,11 +1676,13 @@
     "do it. do it. do it.": {
       "pattern": "do it. do it. do it.",
       "sample": "Do it. Do it. Do it.",
-      "count": 1,
+      "count": 2,
       "tools": [
-        "system_immune"
+        "system_immune",
+        "computer_control",
+        "computer_settings"
       ],
-      "last_used": 1794582740.070637
+      "last_used": 1794594196.0095904
     },
     "i will start it tomorrow. okay? remind me. tomor": {
       "pattern": "i will start it tomorrow. okay? remind me. tomor",
@@ -1813,6 +1818,295 @@
       "count": 1,
       "tools": [],
       "last_used": 1794584035.8715365
+    },
+    "open whatsapp?": {
+      "pattern": "open whatsapp?",
+      "sample": "Can you just open WhatsApp?",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794592790.137922
+    },
+    "okay.": {
+      "pattern": "okay.",
+      "sample": "Okay.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794592791.9818861
+    },
+    ", is it open?": {
+      "pattern": ", is it open?",
+      "sample": "Yeah, is it open?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794592800.5220764
+    },
+    "open it once more?": {
+      "pattern": "open it once more?",
+      "sample": "Can you open it once more?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794592808.465643
+    },
+    "finally, open it once more?": {
+      "pattern": "finally, open it once more?",
+      "sample": "Finally, can you open it once more?",
+      "count": 1,
+      "tools": [
+        "open_app"
+      ],
+      "last_used": 1794592815.189229
+    },
+    ", take we are set.": {
+      "pattern": ", take we are set.",
+      "sample": "Yeah, just take we are set.",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794592828.465626
+    },
+    "\u4f60 \u8981": {
+      "pattern": "\u4f60 \u8981",
+      "sample": "\u4f60 \u8981",
+      "count": 1,
+      "tools": [
+        "read_messages"
+      ],
+      "last_used": 1794592858.3022716
+    },
+    "monali gorai game. adippa ippo irungeela. ippo e": {
+      "pattern": "monali gorai game. adippa ippo irungeela. ippo e",
+      "sample": "Monali Gorai game. Adippa ippo irungeela. Ippo enippo enna 4:00 mani vare irukkum ippo enna ezhunthirichu.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794593024.5700154
+    },
+    "no, i can manage it myself.": {
+      "pattern": "no, i can manage it myself.",
+      "sample": "No, I can manage it myself.",
+      "count": 1,
+      "tools": [
+        "knowledge_memory"
+      ],
+      "last_used": 1794593204.5305448
+    },
+    "need to activate centre mode.": {
+      "pattern": "need to activate centre mode.",
+      "sample": "Need to activate centre mode.",
+      "count": 1,
+      "tools": [
+        "presence_sentry"
+      ],
+      "last_used": 1794593395.677058
+    },
+    "turn off. turn it off.": {
+      "pattern": "turn off. turn it off.",
+      "sample": "Turn off. Turn it off.",
+      "count": 1,
+      "tools": [
+        "presence_sentry"
+      ],
+      "last_used": 1794593409.2528315
+    },
+    "song i am playing on spotify?": {
+      "pattern": "song i am playing on spotify?",
+      "sample": "song I am playing on Spotify?",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593873.3943253
+    },
+    "how do you know?": {
+      "pattern": "how do you know?",
+      "sample": "How do you know?",
+      "count": 1,
+      "tools": [
+        "manage_neo_memory"
+      ],
+      "last_used": 1794593883.9339275
+    },
+    "pause it?": {
+      "pattern": "pause it?",
+      "sample": "Can you pause it?",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593889.1526313
+    },
+    "singing a sad song": {
+      "pattern": "singing a sad song",
+      "sample": "singing a sad song",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593902.998024
+    },
+    "no, no, no. i don't need sad songs. play previou": {
+      "pattern": "no, no, no. i don't need sad songs. play previou",
+      "sample": "No, no, no. I don't need sad songs. Just play previous song.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593912.209273
+    },
+    "let's do it.": {
+      "pattern": "let's do it.",
+      "sample": "Let's do it.",
+      "count": 1,
+      "tools": [
+        "gesture_control"
+      ],
+      "last_used": 1794593922.1277559
+    },
+    "i don't need a castro control, you do it.": {
+      "pattern": "i don't need a castro control, you do it.",
+      "sample": "I don't need a Castro control, you just do it.",
+      "count": 1,
+      "tools": [
+        "gesture_control"
+      ],
+      "last_used": 1794593934.8448622
+    },
+    "play that song from spotify.": {
+      "pattern": "play that song from spotify.",
+      "sample": "Just play that song from Spotify.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593942.6878445
+    },
+    "play all the song.": {
+      "pattern": "play all the song.",
+      "sample": "Play all the song.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593948.5709195
+    },
+    "let's go back.": {
+      "pattern": "let's go back.",
+      "sample": "Let's go back.",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593956.181719
+    },
+    "no, what song i am pay?": {
+      "pattern": "no, what song i am pay?",
+      "sample": "No, what song I am pay?",
+      "count": 1,
+      "tools": [
+        "spotify_control"
+      ],
+      "last_used": 1794593971.9334512
+    },
+    "no, i'll say it when i need it.": {
+      "pattern": "no, i'll say it when i need it.",
+      "sample": "No, I'll say it when I need it.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794594126.057421
+    },
+    "sure sure.": {
+      "pattern": "sure sure.",
+      "sample": "Sure sure.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794594134.0853405
+    },
+    "minimize your window.": {
+      "pattern": "minimize your window.",
+      "sample": "Minimize your window.",
+      "count": 1,
+      "tools": [
+        "computer_settings"
+      ],
+      "last_used": 1794594142.0729573
+    },
+    "seminal": {
+      "pattern": "seminal",
+      "sample": "seminal",
+      "count": 1,
+      "tools": [
+        "executive_briefing"
+      ],
+      "last_used": 1794594156.2799897
+    },
+    "you are not minimized it.": {
+      "pattern": "you are not minimized it.",
+      "sample": "You are not minimized it.",
+      "count": 1,
+      "tools": [
+        "computer_control",
+        "computer_settings"
+      ],
+      "last_used": 1794594169.8472974
+    },
+    "but i can see you are still here.": {
+      "pattern": "but i can see you are still here.",
+      "sample": "But I can see you are still here.",
+      "count": 1,
+      "tools": [
+        "screen_process"
+      ],
+      "last_used": 1794594174.6677518
+    },
+    "part of this i will manually minimize it okay.": {
+      "pattern": "part of this i will manually minimize it okay.",
+      "sample": "part of this I will just manually minimize it okay.",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794594206.4854288
+    },
+    "why are you here? foreigner, right? do my jobs, ": {
+      "pattern": "why are you here? foreigner, right? do my jobs, ",
+      "sample": "Why are you here? Foreigner, right? Do my jobs, right?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794594224.006721
+    },
+    "i need to automate everything in my system.": {
+      "pattern": "i need to automate everything in my system.",
+      "sample": "I need to automate everything in my system.",
+      "count": 1,
+      "tools": [
+        "execute_autonomous_goal"
+      ],
+      "last_used": 1794594228.350508
+    },
+    "book me a movie ticket for me in bookmyshow?": {
+      "pattern": "book me a movie ticket for me in bookmyshow?",
+      "sample": "Can you book me a movie ticket for me in BookMyShow?",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794594261.13444
+    },
+    "the movie name is saint from kochi.": {
+      "pattern": "the movie name is saint from kochi.",
+      "sample": "The movie name is Saint from Kochi.",
+      "count": 1,
+      "tools": [
+        "browser_control"
+      ],
+      "last_used": 1794594277.8039854
+    },
+    "eeven oru ellu koodalanu saare ee firemanare nir": {
+      "pattern": "eeven oru ellu koodalanu saare ee firemanare nir",
+      "sample": "Eeven oru ellu koodalanu saare ee firemanare nirthikondirunna nirthiyille",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794648468.7508729
     }
   },
   "preferences": {},
@@ -2144,9 +2438,57 @@
       "correction": "Do nothing. I'll fix you. Okay? I'll make your train better in front. Don't worry.",
       "rule": "When user says 'And do it right.': corrected with 'Do nothing. I'll fix you. Okay? I'll mak'",
       "timestamp": 1794584035.8714952
+    },
+    {
+      "trigger_command": "Monali Gorai game. Adippa ippo irungeela. Ippo enippo enna 4:00 mani vare irukkum ippo enna ezhunthirichu.",
+      "previous_tools": [],
+      "correction": "No, I can manage it myself.",
+      "rule": "When user says 'Monali Gorai game. Adippa ippo': corrected with 'No, I can manage it myself.'",
+      "timestamp": 1794593204.5305047
+    },
+    {
+      "trigger_command": "singing a sad song",
+      "previous_tools": [
+        "spotify_control"
+      ],
+      "correction": "No, no, no. I don't need sad songs. Just play previous song.",
+      "rule": "When user says 'singing a sad song': corrected with 'No, no, no. I don't need sad songs. Just'",
+      "timestamp": 1794593912.2092185
+    },
+    {
+      "trigger_command": "Let's do it.",
+      "previous_tools": [
+        "gesture_control"
+      ],
+      "correction": "I don't need a Castro control, you just do it.",
+      "rule": "When user says 'Let's do it.': corrected with 'I don't need a Castro control, you just '",
+      "timestamp": 1794593934.844835
+    },
+    {
+      "trigger_command": "Let's go back.",
+      "previous_tools": [
+        "spotify_control"
+      ],
+      "correction": "No, what song I am pay?",
+      "rule": "When user says 'Let's go back.': corrected with 'No, what song I am pay?'",
+      "timestamp": 1794593971.9334075
+    },
+    {
+      "trigger_command": "No, what song I am pay?",
+      "previous_tools": [
+        "spotify_control"
+      ],
+      "correction": "No, I'll say it when I need it.",
+      "rule": "When user says 'No, what song I am pay?': corrected with 'No, I'll say it when I need it.'",
+      "timestamp": 1794594126.0573637
     }
   ],
   "learned_directives": [
+    "Avoid previous misstep for 'No, what song I am pay?': execute preferred action 'No, I'll say it when I need it.'.",
+    "Avoid previous misstep for 'Let's go back.': execute preferred action 'No, what song I am pay?'.",
+    "Avoid previous misstep for 'Let's do it.': execute preferred action 'I don't need a Castro control, you '.",
+    "Avoid previous misstep for 'singing a sad song': execute preferred action 'No, no, no. I don't need sad songs.'.",
+    "Avoid previous misstep for 'Monali Gorai game. Adippa': execute preferred action 'No, I can manage it myself.'.",
     "Avoid previous misstep for 'And do it right.': execute preferred action 'Do nothing. I'll fix you. Okay? I'l'.",
     "Avoid previous misstep for 'I close the entire browse': execute preferred action 'No, I will study for the exam later'.",
     "Avoid previous misstep for 'bylingual wa wa wa wa': execute preferred action 'Nothing for now. Say it okay.'.",
@@ -2166,12 +2508,7 @@
     "Avoid previous misstep for 'me I can manage myself. J': execute preferred action 'And don't repeat the message, okay?'.",
     "Avoid previous misstep for 'the first one': execute preferred action 'No. My spelling was ALWINRAGCP.'.",
     "Avoid previous misstep for 'Alvin Rag CP in LinkedIn ': execute preferred action 'It's wrong but it's wrong. We knows'.",
-    "Avoid previous misstep for 'You know the Jain Univers': execute preferred action 'nothing'.",
-    "Avoid previous misstep for '\uc0b0\uc5d0 \ub4e4\uc5b4\uac00.': execute preferred action 'No, actually it's 10:15 now.'.",
-    "Avoid previous misstep for 'Yeah, what's the time now': execute preferred action 'No, it's not 4:43 p.m.'.",
-    "Avoid previous misstep for 'Save my phone number as 9': execute preferred action 'nothing yet'.",
-    "Avoid previous misstep for 'I think you are not catch': execute preferred action 'That's actually wrong. It's not 10:'.",
-    "Avoid previous misstep for 'JUK': execute preferred action 'not bias I don't need bias. Just cl'."
+    "Avoid previous misstep for 'You know the Jain Univers': execute preferred action 'nothing'."
   ],
-  "updated_at": 1794584035.8739195
+  "updated_at": 1794648468.7523997
 }

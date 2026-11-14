@@ -1,646 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794580225.9012167,
-      "action_type": "USER_COMMAND",
-      "command": "How are you doing actually?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580243.706616,
-      "action_type": "TOOL",
-      "command": "web_search {\"query\": \"current time in New York City\", \"mode\": \"search\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580256.3328412,
-      "action_type": "USER_COMMAND",
-      "command": "What's the time now in New York?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580287.6606905,
-      "action_type": "TOOL",
-      "command": "read_messages {\"platform\": \"telegram\", \"receiver\": \"E for Entertainments\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580296.5728672,
-      "action_type": "USER_COMMAND",
-      "command": "Open Telegram and find for E for Entertainments.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580303.5006003,
-      "action_type": "TOOL",
-      "command": "read_messages {\"receiver\": \"E for Entertainments\", \"platform\": \"whatsapp\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580315.3682415,
-      "action_type": "TOOL",
-      "command": "read_messages {\"receiver\": \"E for Entertainments\", \"platform\": \"whatsapp\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580333.8731678,
-      "action_type": "USER_COMMAND",
-      "command": "So you do can you do the same with WhatsApp?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580337.3085175,
-      "action_type": "TOOL",
-      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"E for Entertainments\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580346.3783784,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, check again.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580346.4012625,
-      "action_type": "TOOL",
-      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"E for Entertainments\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580355.170683,
-      "action_type": "USER_COMMAND",
-      "command": "bird ne ho chuke hai",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580355.1876266,
-      "action_type": "TOOL",
-      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"E for Entertainments\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580372.618576,
-      "action_type": "USER_COMMAND",
-      "command": "\u00bfAh? Da, da, da, selfie, lee.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580547.2691245,
-      "action_type": "USER_COMMAND",
-      "command": "Genio.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580551.389868,
-      "action_type": "TOOL",
-      "command": "send_message {\"receiver\": \"E for Entertainments\", \"action\": \"open_chat\",",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580561.0780883,
-      "action_type": "USER_COMMAND",
-      "command": "So it's for a for a day with cigars the",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580561.8240387,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"WhatsApp\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580575.4947155,
-      "action_type": "USER_COMMAND",
-      "command": "mio",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580618.6860023,
-      "action_type": "USER_COMMAND",
-      "command": "How much you can count on my system?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580622.459344,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580628.222324,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, reduce my brightness.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580630.8556328,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580637.6258872,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, some more.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580643.6428275,
-      "action_type": "TOOL",
-      "command": "save_memory {\"category\": \"corrections\", \"value\": \"System brightness_down",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580644.5400326,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"Settings\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580652.0281339,
-      "action_type": "USER_COMMAND",
-      "command": "No, it's not actually dropping it down.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580659.732703,
-      "action_type": "TOOL",
-      "command": "cortex_deep_reasoning {\"context\": \"User Fayid wants to lower the computer's screen",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580659.7660952,
-      "action_type": "USER_COMMAND",
-      "command": "No, you should do it right.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580707.322398,
-      "action_type": "TOOL",
-      "command": "save_memory {\"category\": \"corrections\", \"key\": \"deep_reasoning_failure_m",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580720.0681918,
-      "action_type": "USER_COMMAND",
-      "command": "Would know it. It will not work that.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580723.9965334,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580724.7683952,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580733.7211256,
-      "action_type": "USER_COMMAND",
-      "command": "No, no, no, no. We should do it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580736.9441516,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580742.1629653,
-      "action_type": "USER_COMMAND",
-      "command": "No, I am not saying. Do it once more.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580750.2503734,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580754.6762722,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_down\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580764.045643,
-      "action_type": "USER_COMMAND",
-      "command": "Nope. Nope. Nope. Nope. Do it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580776.0916495,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, now English to fullest.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580780.3937535,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_set\", \"value\": \"100\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580780.4113834,
-      "action_type": "TOOL",
-      "command": "save_memory {\"value\": \"User prefers maximum brightness.\", \"category\": \"p",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580794.4859784,
-      "action_type": "USER_COMMAND",
-      "command": "Note that this increase the brightness into maximum.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580796.3072417,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_up\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580801.5226712,
-      "action_type": "USER_COMMAND",
-      "command": "brightness up",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580807.696693,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"brightness_up\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580814.8257017,
-      "action_type": "USER_COMMAND",
-      "command": "more",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580840.9423866,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"kill_zombies\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580849.8632822,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah. Just kill all the zombie process in background.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580853.9230583,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"task_manager\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580853.9903398,
-      "action_type": "TOOL",
-      "command": "save_memory {\"category\": \"corrections\", \"key\": \"kill_zombies_feedback_re",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580862.116482,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, there are many phase in application the background is killed it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580866.5189974,
-      "action_type": "TOOL",
-      "command": "computer_control {\"app_name\": \"Google Chrome\", \"action\": \"close_app\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580875.1932423,
-      "action_type": "TOOL",
-      "command": "visual_screen_grounding {\"query\": \"Notepad icon\", \"action\": \"click\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580947.1190395,
-      "action_type": "TOOL",
-      "command": "companion_core {\"action\": \"check_in\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580952.5241008,
-      "action_type": "USER_COMMAND",
-      "command": "Hey.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580956.3697765,
-      "action_type": "TOOL",
-      "command": "system_immune {\"action\": \"kill_zombies\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580966.904026,
-      "action_type": "USER_COMMAND",
-      "command": "Yeah, just killing all the background process, okay?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580969.7222555,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"close_app\", \"app_name\": \"FX Sound\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794580986.6963484,
-      "action_type": "USER_COMMAND",
-      "command": "Kill FX sound",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581110.014781,
-      "action_type": "TOOL",
-      "command": "system_status {}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581110.3252444,
-      "action_type": "USER_COMMAND",
-      "command": "Exactly, your system configuration.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581112.782549,
-      "action_type": "TOOL",
-      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581123.7437592,
-      "action_type": "USER_COMMAND",
-      "command": "I need a demo to demonstrate to me.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581128.0227427,
-      "action_type": "TOOL",
-      "command": "save_memory {\"key\": \"misheard_request_analytics_demo\", \"value\": \"Assista",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581128.8213594,
-      "action_type": "USER_COMMAND",
-      "command": "Not that you heard it wrong. I asked you",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581134.2083106,
-      "action_type": "USER_COMMAND",
-      "command": "How much tablet you are having with my computer? Like how much control you are having with my computer?",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581150.6668475,
-      "action_type": "USER_COMMAND",
-      "command": "need a proof like can you do something to know to get know me.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581152.8463926,
-      "action_type": "TOOL",
-      "command": "file_controller {\"action\": \"list\", \"path\": \"downloads\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581152.8744571,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"File Explorer\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581163.0377057,
-      "action_type": "USER_COMMAND",
-      "command": "Yes, sure do it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581165.4832404,
-      "action_type": "USER_COMMAND",
-      "command": "I can't see it.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581166.536854,
-      "action_type": "TOOL",
-      "command": "save_memory {\"key\": \"downloads_navigation_issue\", \"category\": \"correctio",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581216.9450765,
-      "action_type": "USER_COMMAND",
-      "command": "till now",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581219.2007759,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"screenshot\", \"path\": \"screenshot.png\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581220.148147,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"The user says they cannot see File Explorer or the",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581220.858009,
-      "action_type": "USER_COMMAND",
-      "command": "I knew.",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581234.2765305,
-      "action_type": "TOOL",
-      "command": "open_app {\"app_name\": \"File Explorer\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581245.4197254,
-      "action_type": "USER_COMMAND",
-      "command": "but not what you said to",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794581252.953135,
-      "action_type": "TOOL",
-      "command": "computer_settings {\"action\": \"switch_window\"}",
-      "hour": 20,
-      "weekday": 4,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794581264.3224623,
       "action_type": "USER_COMMAND",
       "command": "I can't see it now.",
@@ -1599,6 +959,646 @@
       "hour": 21,
       "weekday": 4,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794592786.4061089,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"WhatsApp\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592790.1654496,
+      "action_type": "USER_COMMAND",
+      "command": "Can you just open WhatsApp?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592791.9918091,
+      "action_type": "USER_COMMAND",
+      "command": "Okay.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592800.545051,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, is it open?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592808.488294,
+      "action_type": "USER_COMMAND",
+      "command": "Can you open it once more?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592814.5524912,
+      "action_type": "TOOL",
+      "command": "open_app {\"app_name\": \"WhatsApp\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592815.2063282,
+      "action_type": "USER_COMMAND",
+      "command": "Finally, can you open it once more?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592818.9148605,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"Vihas\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592828.4767015,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah, just take we are set.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592828.4914668,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"Vihas\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592843.1108904,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592843.1258266,
+      "action_type": "TOOL",
+      "command": "read_messages {\"receiver\": \"Vihas\", \"platform\": \"whatsapp\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592858.3182154,
+      "action_type": "USER_COMMAND",
+      "command": "\u4f60 \u8981",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794592858.3320727,
+      "action_type": "TOOL",
+      "command": "read_messages {\"platform\": \"whatsapp\", \"receiver\": \"Vihas\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593024.587208,
+      "action_type": "USER_COMMAND",
+      "command": "Monali Gorai game. Adippa ippo irungeela. Ippo enippo enna 4:00 mani vare irukkum ippo enna ezhunthirichu.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593197.4165447,
+      "action_type": "TOOL",
+      "command": "knowledge_memory {\"query\": \"exam prep resources\", \"action\": \"recall\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593204.5520608,
+      "action_type": "USER_COMMAND",
+      "command": "No, I can manage it myself.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593386.846265,
+      "action_type": "TOOL",
+      "command": "presence_sentry {\"action\": \"enable\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593395.6989598,
+      "action_type": "USER_COMMAND",
+      "command": "Need to activate centre mode.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593404.6000586,
+      "action_type": "TOOL",
+      "command": "presence_sentry {\"action\": \"disable\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593409.2864764,
+      "action_type": "USER_COMMAND",
+      "command": "Turn off. Turn it off.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593859.2726002,
+      "action_type": "TOOL",
+      "command": "companion_core {\"action\": \"check_in\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593866.6019824,
+      "action_type": "USER_COMMAND",
+      "command": "new",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593869.335925,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"current\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593873.4183095,
+      "action_type": "USER_COMMAND",
+      "command": "song I am playing on Spotify?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593877.912847,
+      "action_type": "TOOL",
+      "command": "manage_neo_memory {\"operation\": \"get_context\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593883.9579098,
+      "action_type": "USER_COMMAND",
+      "command": "How do you know?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593886.0441787,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"pause\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593889.175084,
+      "action_type": "USER_COMMAND",
+      "command": "Can you pause it?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593893.8727279,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"query\": \"sad song\", \"action\": \"play\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593903.0400486,
+      "action_type": "USER_COMMAND",
+      "command": "singing a sad song",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593907.8196971,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"previous\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593912.2302902,
+      "action_type": "USER_COMMAND",
+      "command": "No, no, no. I don't need sad songs. Just play previous song.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593916.1955066,
+      "action_type": "TOOL",
+      "command": "gesture_control {\"action\": \"enable\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593922.1478713,
+      "action_type": "USER_COMMAND",
+      "command": "Let's do it.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593929.7949026,
+      "action_type": "TOOL",
+      "command": "gesture_control {\"action\": \"disable\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593934.867965,
+      "action_type": "USER_COMMAND",
+      "command": "I don't need a Castro control, you just do it.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593937.891281,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"play\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593942.7101133,
+      "action_type": "USER_COMMAND",
+      "command": "Just play that song from Spotify.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593945.137446,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"play\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593948.595231,
+      "action_type": "USER_COMMAND",
+      "command": "Play all the song.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593952.5031738,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"previous\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593956.2047117,
+      "action_type": "USER_COMMAND",
+      "command": "Let's go back.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593968.1886697,
+      "action_type": "TOOL",
+      "command": "spotify_control {\"action\": \"current\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794593971.9536672,
+      "action_type": "USER_COMMAND",
+      "command": "No, what song I am pay?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594002.729682,
+      "action_type": "TEXT_COMMAND",
+      "command": "Inspect system memory hogs, clean cache, and report telemetry, Boss.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594003.386369,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594005.7925882,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"purge_cache\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594006.3295012,
+      "action_type": "TOOL",
+      "command": "stark_protocol {\"protocol\": \"telemetry\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594040.829264,
+      "action_type": "TOOL",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594041.0868404,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"kill_zombies\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594070.8643668,
+      "action_type": "TOOL",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594071.1483002,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594100.873482,
+      "action_type": "TOOL",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594101.1355293,
+      "action_type": "TOOL",
+      "command": "system_immune {\"action\": \"audit\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594126.0859435,
+      "action_type": "USER_COMMAND",
+      "command": "No, I'll say it when I need it.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594134.107305,
+      "action_type": "USER_COMMAND",
+      "command": "Sure sure.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594137.5187416,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594142.0916922,
+      "action_type": "USER_COMMAND",
+      "command": "Minimize your window.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594145.0178025,
+      "action_type": "TOOL",
+      "command": "executive_briefing {\"action\": \"agenda\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594156.2984073,
+      "action_type": "USER_COMMAND",
+      "command": "seminal",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594158.7909951,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"focus_window\", \"title\": \"NEO\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594158.916181,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594169.8715003,
+      "action_type": "USER_COMMAND",
+      "command": "You are not minimized it.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594174.0132546,
+      "action_type": "TOOL",
+      "command": "screen_process {\"angle\": \"screen\", \"text\": \"The user says I am not minimize",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594174.6779907,
+      "action_type": "USER_COMMAND",
+      "command": "But I can see you are still here.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594178.2997692,
+      "action_type": "TOOL",
+      "command": "computer_control {\"action\": \"focus_window\", \"title\": \"NEO\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594179.7432394,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594190.6492386,
+      "action_type": "TOOL",
+      "command": "computer_control {\"title\": \"NEO\", \"action\": \"focus_window\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594190.7704453,
+      "action_type": "TOOL",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594196.041466,
+      "action_type": "USER_COMMAND",
+      "command": "Do it. Do it. Do it.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594206.505203,
+      "action_type": "USER_COMMAND",
+      "command": "part of this I will just manually minimize it okay.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594224.0291271,
+      "action_type": "USER_COMMAND",
+      "command": "Why are you here? Foreigner, right? Do my jobs, right?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594228.3196394,
+      "action_type": "TOOL",
+      "command": "execute_autonomous_goal {\"instruction\": \"Automate everything on Boss's system. Pleas",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594228.3600888,
+      "action_type": "USER_COMMAND",
+      "command": "I need to automate everything in my system.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594252.6152558,
+      "action_type": "TOOL",
+      "command": "browser_control {\"action\": \"go_to\", \"url\": \"https://in.bookmyshow.com/\"}",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594261.1583362,
+      "action_type": "USER_COMMAND",
+      "command": "Can you book me a movie ticket for me in BookMyShow?",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594265.6189895,
+      "action_type": "TOOL",
+      "command": "browser_control {\"query\": \"movie Saint in Kochi bookmyshow\", \"action\": \"sear",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794594277.8300393,
+      "action_type": "USER_COMMAND",
+      "command": "The movie name is Saint from Kochi.",
+      "hour": 23,
+      "weekday": 4,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794648468.7811022,
+      "action_type": "USER_COMMAND",
+      "command": "Eeven oru ellu koodalanu saare ee firemanare nirthikondirunna nirthiyille",
+      "hour": 14,
+      "weekday": 5,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1727,7 +1727,21 @@
       "occurrences": 3,
       "first_seen": 1794583315.2639892,
       "synthesized": false
+    },
+    "render_hud_widget_widget_type_sy": {
+      "name": "render_hud_widget_widget_type_sy",
+      "command": "render_hud_widget {\"widget_type\": \"system_analytics\"}",
+      "occurrences": 3,
+      "first_seen": 1794594100.8776846,
+      "synthesized": false
+    },
+    "computer_settings_action_minimiz": {
+      "name": "computer_settings_action_minimiz",
+      "command": "computer_settings {\"action\": \"minimize\"}",
+      "occurrences": 3,
+      "first_seen": 1794594179.7449653,
+      "synthesized": false
     }
   },
-  "updated_at": 1794584038.1009848
+  "updated_at": 1794648468.7817469
 }
