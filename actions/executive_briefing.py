@@ -622,7 +622,7 @@ def _run_night_owl_debrief(auto_commit: bool = False, notes: str = "", player=No
     time_disp = now.strftime("%I:%M %p")
     date_disp = now.strftime("%A, %B %d, %Y")
 
-    proj_name = "Mark-LVI-main"
+    proj_name = "NEO"
     proj_path = _BASE_DIR
     projects_file = _BASE_DIR / "memory" / "projects.json"
     try:

@@ -68,7 +68,7 @@ def _get_desktop() -> Path:
 #     generated code never was.
 #
 #     An action this file does not recognise is now a failure that names the
-#     ones it does — the shape computer_settings has used since Mark LII —
+#     ones it does — the shape computer_settings has used —
 #     rather than a prompt asking a model to invent something.
 
 

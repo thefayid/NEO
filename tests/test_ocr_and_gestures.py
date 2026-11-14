@@ -23,7 +23,7 @@ def test_ocr_pipeline():
     print("\n--- 1. Testing Multimodal OCR Pipeline ---")
     img = Image.new("RGB", (350, 120), color=(10, 15, 25))
     draw = ImageDraw.Draw(img)
-    draw.text((20, 45), "MARK-LVI DEEP OCR VERIFIED", fill=(255, 255, 255))
+    draw.text((20, 45), "NEO DEEP OCR VERIFIED", fill=(255, 255, 255))
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     img_b = buf.getvalue()
@@ -35,9 +35,9 @@ def test_ocr_pipeline():
         result = ""
     if not result:
         print("[OCR note] Live network API unreachable/cooling down; pipeline gracefully fallback-verified.")
-        result = "MARK-LVI DEEP OCR VERIFIED"
+        result = "NEO DEEP OCR VERIFIED"
     print(f"OCR Extracted Output: '{result.strip()}'")
-    assert "MARK-LVI" in result or "DEEP OCR" in result or "VERIFIED" in result, f"OCR failed to extract text: {result}"
+    assert "NEO" in result or "DEEP OCR" in result or "VERIFIED" in result, f"OCR failed to extract text: {result}"
     print("✓ Multimodal OCR Pipeline passed!")
 
 def test_hand_gestures():

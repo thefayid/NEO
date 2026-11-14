@@ -94,7 +94,7 @@ TOOL = {
             },
             "entity": {
                 "type": "STRING",
-                "description": "Subject entity for 'remember' (e.g. 'user', 'NEO', 'Project Mark-LVI').",
+                "description": "Subject entity for 'remember' (e.g. 'user', 'NEO', 'Project NEO').",
             },
             "relation": {
                 "type": "STRING",

@@ -1,5 +1,5 @@
 """
-JARVIS action — open an application, and know whether it actually opened.
+NEO action — open an application, and know whether it actually opened.
 
 WHAT WAS WRONG WITH THIS FILE
     It answered "Opened Spotify." whenever its launcher returned True, and on
@@ -263,7 +263,7 @@ def _launch_and_verify(player, spoken: str, launcher_name: str,
             spoken, before, timeout=_LAUNCH_TIMEOUT
         )
         if appeared is not None:
-            _log(player, f"JARVIS: {appeared.label} is open.")
+            _log(player, f"NEO: {appeared.label} is open.")
             return
 
         if not requested:
@@ -275,7 +275,7 @@ def _launch_and_verify(player, spoken: str, launcher_name: str,
                        f"is NOT confirmed open - it may be slow to load, or not "
                        f"installed under that name")
 
-        _log(player, f"JARVIS: {trouble}")
+        _log(player, f"NEO: {trouble}")
         _say(player, "Tell the user, in one short sentence in their own "
                      f"language: {trouble}")
     except Exception as exc:
@@ -319,7 +319,7 @@ def open_app(parameters=None, response=None, player=None,
         # First, attempt to focus existing window handles across matching processes.
         for candidate in existing[:8]:
             if appidentity.focus(candidate):
-                _log(player, f"JARVIS: {candidate.label} brought to the front.")
+                _log(player, f"NEO: {candidate.label} brought to the front.")
                 return outcome.done(
                     "open_app", app=spoken, matched=candidate.label,
                     already_running=True, focused=True, verified=True,
@@ -332,7 +332,7 @@ def open_app(parameters=None, response=None, player=None,
         if "whatsapp" in lower_spoken:
             try:
                 os.startfile("whatsapp:")
-                _log(player, "JARVIS: WhatsApp brought to the front.")
+                _log(player, "NEO: WhatsApp brought to the front.")
                 return outcome.done("open_app", app=spoken, already_running=True, focused=True, verified=True)
             except Exception:
                 pass
@@ -343,7 +343,7 @@ def open_app(parameters=None, response=None, player=None,
 
     launcher_name = appidentity.launcher_name(spoken)
     before = appidentity.snapshot()
-    _log(player, f"JARVIS: Opening {spoken}…")
+    _log(player, f"NEO: Opening {spoken}…")
 
     try:
         launcher = _LAUNCHERS[_SYSTEM]
@@ -355,7 +355,7 @@ def open_app(parameters=None, response=None, player=None,
             spoken, before, timeout=2.5, poll=0.2
         )
         if appeared is not None:
-            _log(player, f"JARVIS: {appeared.label} is open.")
+            _log(player, f"NEO: {appeared.label} is open.")
             return outcome.done("open_app", app=spoken, matched=appeared.label, verified=True)
 
         if requested:

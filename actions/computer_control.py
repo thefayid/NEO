@@ -67,7 +67,7 @@ _SAFE_SCREENSHOT_ROOTS = (
 )
 
 def _safe_screenshot_path(requested: str | None) -> Path:
-    fallback = Path.home() / "Desktop" / "jarvis_screenshot.png"
+    fallback = Path.home() / "Desktop" / "neo_screenshot.png"
     if not requested:
         return fallback
     try:
@@ -499,7 +499,7 @@ def _close_app(app_name: str, confirmed_index: int | None = None) -> str:
         No target. It sent Alt+F4 to whatever window had focus, and while
         somebody is talking to the assistant the window with focus is very
         often the assistant — which is why people reported that asking it to
-        close an app closed JARVIS itself. It also returned nothing at all, so
+        close an app closed NEO itself. It also returned nothing at all, so
         the model announced a success it had no information about.
 
         The keystroke is not fixable by aiming it better. "The focused window"

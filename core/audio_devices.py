@@ -1,12 +1,12 @@
 """
-core/audio_devices.py — pick which microphone and which speakers JARVIS uses.
+core/audio_devices.py — pick which microphone and which speakers NEO uses.
 
 WHY
     Both audio streams in main.py were opened without a `device=` argument, so
     they always took whatever the operating system called "default". On a laptop
     with a built-in mic, a webcam mic and a headset that is a coin toss — and on
     Windows the default *moves on its own* the moment you plug a headset in.
-    "JARVIS can't hear me" almost always means "JARVIS is listening to the
+    "NEO can't hear me" almost always means "NEO is listening to the
     monitor's microphone".
 
 WHY NAMES, NOT INDICES
@@ -17,10 +17,8 @@ WHY NAMES, NOT INDICES
 
 WHY THIS IS CACHED
     `sd.query_devices()` talks to the host audio API and can take a few hundred
-    milliseconds on a Windows machine with many endpoints. Mark LV learned this
-    lesson the expensive way — a 2.1-second `openwakeword` import on the Qt
-    thread made the settings drawer look like it was broken. So the list is
-    fetched once on a background thread at startup and served from cache.
+    milliseconds on a Windows machine with many endpoints. We cache this so
+    the list is fetched once on a background thread at startup and served from cache.
 """
 
 from __future__ import annotations
@@ -463,7 +461,7 @@ def resolve(name: str, kind: str):
 #
 # This began life as `ses_testi.py`, a loose script in the project root that
 # nobody would ever find. It is here because the moment somebody needs it is
-# the moment they have opened AUDIO DEVICES wondering why JARVIS cannot hear
+# the moment they have opened AUDIO DEVICES wondering why NEO cannot hear
 # them.
 
 # Below this peak, nothing usable arrived; below the second, speech is present

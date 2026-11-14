@@ -305,7 +305,7 @@ class TestCentralActionsAndCoordinator(unittest.TestCase):
         self.assertIn("timestamp", snap)
 
         # Test central remember
-        ok = central_core.remember_fact("NEO", "POWERS", "Mark-LVI Desktop Assistant")
+        ok = central_core.remember_fact("NEO", "POWERS", "Autonomous Desktop Assistant")
         self.assertTrue(ok)
 
 

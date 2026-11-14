@@ -54,7 +54,7 @@ def _get_os() -> str:
 
 
 def _scripts_dir() -> Path:
-    d = Path.home() / ".jarvis" / "reminders"
+    d = Path.home() / ".neo" / "reminders"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -507,7 +507,7 @@ def reminder(
         return "That time has already passed, Boss. I can't set a reminder in the past."
 
     rem_id = f"rem_{target_dt.strftime('%Y%m%d_%H%M%S')}_{os.urandom(2).hex()}"
-    task_name = f"JARVISReminder_{target_dt.strftime('%Y%m%d_%H%M%S')}"
+    task_name = f"NEOReminder_{target_dt.strftime('%Y%m%d_%H%M%S')}"
     os_name = _get_os()
     safe_msg = _sanitise(message)
 

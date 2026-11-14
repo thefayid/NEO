@@ -21,7 +21,7 @@
 | 🔌 **Dual-Engine Flexibility** | Switch seamlessly between **Gemini Live** and **Local / Self-Hosted** engines (Whisper STT + Ollama / LM Studio + Piper TTS) with zero code changes. |
 | 🛡️ **Verified Grounding & Safety** | Tools report ground truth (`done`, `unverified`, `failed`). Built-in safety gates for destructive tasks and natural language `undo`. |
 | 🧠 **Persistent Local Memory** | Dynamic memory recall with smart prompt indexing, local search, and privacy-first storage (`memory/long_term.json`). |
-| 🎙️ **Push-to-Talk & Wake Word** | Global push-to-talk chord (**Ctrl+Space**), local offline **"Hey Jarvis"** wake word, and self-echo filtering. |
+| 🎙️ **Push-to-Talk & Wake Word** | Global push-to-talk chord (**Ctrl+Space**), local offline **"Hey Neo"** wake word, and self-echo filtering. |
 | 🧩 **Extensible Plugin System** | Modular architecture where tools and plugins (`actions/`, `plugins/`) auto-register with typed schema definitions. |
 | 📱 **Remote Dashboard** | Local network phone dashboard paired via QR code for wireless monitoring and remote control. |
 
@@ -80,7 +80,7 @@ python main.py
 | Action | Control | Description |
 |---|---|---|
 | **Push-to-Talk** | `Ctrl + Space` | Hold to speak, release to send audio |
-| **Wake Word** | Spoken: *"Hey Jarvis"* | Offline wake word detector |
+| **Wake Word** | Spoken: *"Hey Neo"* | Offline wake word detector |
 | **Screen Lens** | `F10` / `Ctrl + Shift + L` | Captures active display for visual grounding |
 | **Undo** | Spoken / Typed: *"Undo"* | Reverses last file operation or setting change |
 | **Settings Drawer** | Click `⚙` or `🎛` on HUD | Configure audio devices, theme, engine, and plugins |

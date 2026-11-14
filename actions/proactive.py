@@ -118,7 +118,7 @@ def _get_upcoming_agenda() -> list[dict]:
 def _get_active_project_and_git() -> dict:
     """Checks active workspace repository branch and uncommitted modifications."""
     projects_file = _BASE_DIR / "memory" / "projects.json"
-    proj_name = "Mark-LVI-main"
+    proj_name = "NEO"
     proj_path = _BASE_DIR
     try:
         if projects_file.exists():

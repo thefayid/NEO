@@ -7981,7 +7981,7 @@ class _PersonaCardGroup:
         for c in self.cards:
             if c.is_selected:
                 return c.key
-        return self._selected_key or "Tactical JARVIS"
+        return self._selected_key or "Tactical NEO"
 
     def set_selected_value(self, val: str):
         self._selected_key = val
@@ -8256,7 +8256,7 @@ class NeoCalibrationOverlay(QFrame):
 
         personas = [
             (
-                "Tactical JARVIS", "⚡", "Tactical JARVIS", "DEFAULT // SPEED",
+                "Tactical NEO", "⚡", "Tactical NEO", "DEFAULT // SPEED",
                 "Razor-sharp, ultra-concise (1-2 sentences), zero fluff. Pure speed, immediate action execution."
             ),
             (
@@ -8521,7 +8521,7 @@ class NeoCalibrationOverlay(QFrame):
 
         self.role_pills.set_selected_value("💻 AI / Software Engineer")
         self.rhythm_pills.set_selected_value("🌙 Night Owl")
-        self.persona_group.set_selected_value("Tactical JARVIS")
+        self.persona_group.set_selected_value("Tactical NEO")
         self.feedback_pills.set_selected_value("🎯 Brutally Honest (Tell me straight)")
         self.voice_pills.set_selected_value("Aoede")
 
