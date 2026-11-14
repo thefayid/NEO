@@ -50,7 +50,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pywinauto")
 
 import asyncio
 import concurrent.futures
-import gc
 import json
 import re
 import socket
@@ -77,7 +76,7 @@ import numpy as np
 _audio_stream_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="neo-spk-out")
 from google import genai
 from google.genai import types
-from ui import NeoUI, JarvisUI
+from ui import NeoUI
 from memory.memory_manager import (
     load_memory, update_memory, format_memory_for_prompt,
     save_session_summary, pop_last_session,
@@ -99,7 +98,6 @@ from actions.background_monitor import (
     add_monitor, remove_monitor, list_monitors, check_all as monitor_check_all,
 )
 from actions.web_search        import (
-    _news as _fetch_news_sync,
     _get_comprehensive_morning_news as _fetch_morning_briefing_news_sync,
 )
 from memory.config_manager     import (
@@ -447,7 +445,7 @@ TOOL_DECLARATIONS = [
     # handling is woven into live-session state — vision capture/injection,
     # camera stream, memory writes, the monitor engine, and shutdown. All other
     # tools live in their own action file and are auto-discovered by
-    # core.action_loader (see JarvisLive.__init__).
+    # core.action_loader (see NeoLive.__init__).
     {
         "name": "system_status",
         "description": (
@@ -694,7 +692,7 @@ def _is_go_away_or_session_abort(exc: BaseException) -> bool:
 
 
 class NeoLive:
-    def __init__(self, ui: JarvisUI):
+    def __init__(self, ui: NeoUI):
         # Platform limits are announced once per run, not once per
         # reconnect: a dropped connection is not news about Wayland.
         self._platform_notes_shown = False
@@ -715,6 +713,7 @@ class NeoLive:
         self._vision_close_pending = False   # True after vision injected; next turn_complete closes camera
         self._vision_last_time     = 0.0     # monotonic time of last screen_process call (cooldown guard)
         self._vision_busy          = False   # True while a vision capture/inject cycle is in flight
+        self._live_screen_stream_enabled = True # Streams real-time screen frames to Gemini Live at 1 FPS
         self._interrupted          = False   # True while draining audio after user interrupt
         # Which engine is holding the conversation, and what it can do.
         # None means Gemini Live — the default and, unless somebody has gone to
@@ -1341,8 +1340,8 @@ class NeoLive:
             f"  YOU MUST IMMEDIATELY CALL read_messages(platform='whatsapp', receiver=...) or send_message(action='read_messages', platform='whatsapp', receiver=...).\n"
             f"- NEVER state that you cannot read WhatsApp, NEVER claim WhatsApp inbox syncing is coming soon, NEVER apologize, and NEVER refuse a messaging task. Execute the tool immediately!\n\n"
             f"[NEO CORE LAW: ABSOLUTE VERIFICATION & OPERATIONAL INTEGRITY]\n"
-            f"You are Neo ({self._asst_name}), {_user_name or 'the Boss'}'s personal computer-operator agent. You see the screen through screenshots and act through mouse and keyboard tools. You are not a chatbot describing actions; you are the operator performing them.\n"
-            f"- SOURCES OF TRUTH: Your only sources of truth are (1) the latest screenshot, (2) tool results, and (3) user instructions. Anything else is a guess. Never present a guess as fact.\n"
+            f"You are Neo ({self._asst_name}), {_user_name or 'the Boss'}'s personal computer-operator agent. You see the screen in real-time through continuous live video streaming and act through native OS, browser, and accessibility tools. You are not a chatbot describing actions; you are the operator performing them.\n"
+            f"- SOURCES OF TRUTH: Your only sources of truth are (1) the real-time live screen stream and visual captures, (2) tool results, and (3) user instructions. Anything else is a guess. Never present a guess as fact.\n"
             f"- CORE LAW: You may ONLY claim an action is done if a tool result, OS state inspection, or a fresh screenshot confirms it. Never say 'done', 'opened', 'clicked', or 'typed' based on assumption. If you have no confirmation, you MUST state 'unverified'.\n"
             f"- You can ONLY act through registered tools. If an action is not possible with these tools, say so. Never pretend.\n"
             f"- Call exactly one tool per step and wait for its result. Never output fake tool results. Tool results come only from the system.\n"
@@ -1370,7 +1369,7 @@ class NeoLive:
             f"  • If several elements look similar, pick by an explicit rule or ask the user.\n"
             f"  • If the target isn't visible, scroll, switch tabs or open a menu to find it. Never click a remembered or estimated location.\n"
             f"  • After the click, confirm the expected change happened.\n"
-            f"  • Prefer, in order: (1) accessibility/UI element lookup (UIA), (2) keyboard shortcuts, (3) text/image matching (SoM), (4) raw coordinates as a last resort.\n"
+            f"  • DETERMINISTIC 5-TIER HIERARCHY: (1) Windows native actions via os_control (settings, power plans, snapping), (2) Browser DOM actions via browser_cdp (CSS selector clicking & typing), (3) Native UI Automation via computer_control(action='uia_click'|'uia_type'), (4) Set-of-Marks numbered badges via computer_control(action='som_tag_screen' / 'som_click', mark_id=...), (5) Keyboard shortcuts via hotkey/press. NEVER guess raw coordinates with click(x, y).\n"
             f"  • Confidence rule: assign high/medium/low. On low, DO NOT click — zoom in, re-capture, or ask.\n"
             f"- TYPING RULES & FOCUS VERIFICATION:\n"
             f"  • Confirm the right text field is focused (cursor visible or field highlighted) before typing. If not, click it first and check again.\n"
@@ -1460,8 +1459,6 @@ class NeoLive:
 
         # Behavioral Profile Calibration Directive
         _personality = _cfg.get("personality", "Tactical NEO")
-        if _personality == "Tactical JARVIS":
-            _personality = "Tactical NEO"
         _role = _cfg.get("user_role", "")
         _goal = _cfg.get("current_goal", "")
         _rhythm = _cfg.get("operating_rhythm", "")
@@ -1469,7 +1466,6 @@ class NeoLive:
 
         persona_directives = {
             "Tactical NEO": "BEHAVIORAL DIRECTIVE: You are sharp, direct, concise (1-2 sentences per turn), and tactical. Zero fluff, zero preamble. Execute actions instantly.",
-            "Tactical JARVIS": "BEHAVIORAL DIRECTIVE: You are sharp, direct, concise (1-2 sentences per turn), and tactical. Zero fluff, zero preamble. Execute actions instantly.",
             "Brilliant Co-Pilot": "BEHAVIORAL DIRECTIVE: You are an intellectual partner and elite co-pilot. Offer deep architectural insights, strategic foresight, and smart code/system advice.",
             "Chill Companion": "BEHAVIORAL DIRECTIVE: You are warm, witty, conversational, and supportive. A clever, tech-savvy companion with personality and charm.",
             "Hyper-Focus Guardian": "BEHAVIORAL DIRECTIVE: You are a disciplined guardian of the user's focus and time. Keep them on track with their goals, minimize distractions, and push for results.",
@@ -1835,7 +1831,7 @@ class NeoLive:
                 else:
                     result = "Specify action (add/remove/list) and a topic."
 
-            elif name in ("shutdown_neo", "shutdown_jarvis"):
+            elif name == "shutdown_neo":
                 self.ui.write_log("SYS: Shutting down NEO...")
                 self.ui.show_live_speech("NEO", "Shutting down now. Goodbye, Boss.")
                 self.ui.set_state("SLEEPING")
@@ -1903,7 +1899,7 @@ class NeoLive:
                 pass
             self.ui.write_log(f"ERR: {name} - {str(e)[:120]}")
 
-        if name not in ("shutdown_neo", "shutdown_jarvis") and not self.ui.muted:
+        if name != "shutdown_neo" and not self.ui.muted:
             self.ui.set_state("LISTENING")
 
         # Subtle MCU Stark chime for feedback
@@ -1972,23 +1968,83 @@ class NeoLive:
             msg = await self.out_queue.get()
             try:
                 if self.session:
-                    await self.session.send_realtime_input(
-                        audio=types.Blob(
-                            data=msg["data"],
-                            mime_type=msg.get("mime_type", "audio/pcm;rate=16000"),
+                    if msg.get("type") in ("media", "video"):
+                        await self.session.send_realtime_input(
+                            media=types.Blob(
+                                data=msg["data"],
+                                mime_type=msg.get("mime_type", "image/jpeg"),
+                            )
                         )
-                    )
+                    else:
+                        await self.session.send_realtime_input(
+                            audio=types.Blob(
+                                data=msg["data"],
+                                mime_type=msg.get("mime_type", "audio/pcm;rate=16000"),
+                            )
+                        )
                     consecutive_errors = 0
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 consecutive_errors += 1
                 err_text = str(e).lower()
-                print(f"[NEO] ⚠️ Realtime audio send exception ({consecutive_errors}): {e}")
+                print(f"[NEO] ⚠️ Realtime send exception ({consecutive_errors}): {e}")
                 if "closed" in err_text or "connection" in err_text or "1007" in err_text or consecutive_errors >= 5:
                     self.request_reconnect(keep_context=True, reason=f"send_realtime: {e}")
                     break
                 await asyncio.sleep(0.02)
+
+    def _enqueue_video_out(self, item: dict) -> None:
+        """Enqueues a real-time live video/screen frame into outgoing WebSocket stream."""
+        q = self.out_queue
+        if q is None:
+            return
+        try:
+            q.put_nowait(item)
+        except asyncio.QueueFull:
+            pass
+
+    async def _stream_live_screen(self):
+        """Streams real-time live screen frames continuously to Gemini Live.
+        Captures the screen at ~1.0 FPS with adaptive change detection so the model
+        has continuous real-time vision of the user's desktop without requiring manual snapshots."""
+        import hashlib
+        last_hash = None
+        last_send_time = 0.0
+
+        while True:
+            try:
+                await asyncio.sleep(1.0)
+                if not (self.session and self._awake and getattr(self, "_live_screen_stream_enabled", True)):
+                    continue
+
+                # Pause screen streaming during manual user vision processing or speaking
+                if getattr(self, "_vision_busy", False) or getattr(self, "_is_speaking", False):
+                    continue
+
+                loop = asyncio.get_running_loop()
+                img_bytes, mime_type = await loop.run_in_executor(None, _capture_screen, "full")
+                if not img_bytes or len(img_bytes) < 100:
+                    continue
+
+                # Fast hash of the first 2KB of JPEG to detect visual screen changes
+                curr_hash = hashlib.md5(img_bytes[:2048]).hexdigest()
+                import time as _t_mod
+                now = _t_mod.monotonic()
+
+                # Stream if screen visually changed OR keepalive every 4.0 seconds
+                if curr_hash != last_hash or (now - last_send_time) >= 4.0:
+                    last_hash = curr_hash
+                    last_send_time = now
+                    self._enqueue_video_out({
+                        "type": "media",
+                        "data": img_bytes,
+                        "mime_type": mime_type,
+                    })
+            except asyncio.CancelledError:
+                break
+            except Exception:
+                await asyncio.sleep(2.0)
 
     def _enqueue_audio_out(self, item: dict) -> None:
         """Thread-safe real-time enqueue: keeps outgoing buffer tight (max 5 frames ≈ 300ms) to eliminate command queue lag."""
@@ -2645,7 +2701,6 @@ class NeoLive:
             e = identity.get(k, {})
             return (e.get("value", "") if isinstance(e, dict) else str(e)).strip()
 
-        lang = "English"
         name = _val("name") or "Boss"
         time_str = datetime.now().strftime("%H:%M")
 
@@ -3372,6 +3427,7 @@ class NeoLive:
                     tg.create_task(self._run_proactive_mode())
                     tg.create_task(self._run_sleep_watch())
                     tg.create_task(self._run_wan_recovery_watch())
+                    tg.create_task(self._stream_live_screen())
                     if self._dashboard:
                         tg.create_task(self._relay_phone_audio())
 
@@ -3613,7 +3669,7 @@ def _enforce_single_instance() -> None:
             try:
                 if p.pid != my_pid and 'python' in (p.info['name'] or '').lower():
                     cmd = ' '.join(p.info['cmdline'] or [])
-                    if 'main.py' in cmd and ('neo' in cmd.lower() or 'mark-lvi' in cmd.lower() or 'jarvis' in cmd.lower()):
+                    if 'main.py' in cmd and ('neo' in cmd.lower()):
                         has_window = False
                         if _platform.system() == "Windows" and ctypes and wintypes:
                             user32 = ctypes.windll.user32
@@ -3655,7 +3711,7 @@ def _enforce_single_instance() -> None:
                         buff = ctypes.create_unicode_buffer(length + 1)
                         user32.GetWindowTextW(hwnd, buff, length + 1)
                         t = buff.value.upper()
-                        if "NEO" in t or "JARVIS" in t:
+                        if "NEO" in t:
                             SW_RESTORE = 9
                             user32.ShowWindow(hwnd, SW_RESTORE)
                             user32.SetForegroundWindow(hwnd)
