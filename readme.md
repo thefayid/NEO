@@ -1,13 +1,17 @@
 # ⚙️ NEO: Autonomous Computer-Operator & Voice AI
 
 > **The Ultimate Real-Time Multimodal Voice & Desktop Operating Assistant**  
-> *Engineered by Rahman Fayid* • Cross-platform: Windows, macOS, Linux
+> *Engineered by Rahman Fayid*  
+> 🪟 **Mainly optimized for Windows** *(Deep Win32, UI Automation, and hardware-level orchestrations)*  
+> 🐧 🍏 **Compatible with Linux and macOS** *(More updates and deeper native integrations on these platforms coming soon!)*
 
 ---
 
 ## 🌟 Overview
 
-**NEO** is an autonomous computer-operator and real-time voice AI assistant. Powered by the **Gemini Live API** and an optional **100% Local Pipeline** (Whisper + Ollama + Piper), NEO can see your screen, understand user interfaces via multimodal visual grounding, hear your voice, and operate desktop and browser applications with precise, verified actions.
+**NEO** is an autonomous computer-operator and real-time voice AI assistant. Powered by the **Gemini Live API** and an optional **100% Local Pipeline** (Whisper + Ollama + Piper), NEO can see your screen in real time through continuous live video streaming, understand user interfaces via multimodal visual grounding, hear your voice, and operate desktop and browser applications with precise, verified actions.
+
+While NEO is **mainly optimized for Windows** with deep OS-level accessibility and system schemes, it is fully cross-platform for Linux and macOS, with dedicated updates actively in development.
 
 ---
 
@@ -15,7 +19,8 @@
 
 | Feature | Description |
 |---|---|
-| 🖱️ **Computer Operator** | Autonomous UI navigation, mouse clicks, keyboard input, window raising, and browser automation via multimodal grounding and Windows UI Automation. |
+| 📺 **Continuous Real-Time Screen Stream** | Streams live screen video frames (~1.0 FPS with adaptive delta hashing) directly into the Gemini Live WebSocket session for true real-time visual perception without manual snapshots. |
+| 🎯 **Deterministic 5-Tier Control** | Enforces zero coordinate guessing: (1) Native OS URIs, (2) Browser CDP DOM bridge, (3) Windows UI Automation, (4) Set-of-Marks visual badges, and (5) Keyboard shortcuts. |
 | 🏷️ **Set-of-Marks (SoM) Grid** | Overlays numbered, high-contrast interactive markers (`[1..N]`) over UIA and visual controls for 100% deterministic `som_click(mark_id)` targeting. |
 | 🌐 **Headful Chrome DevTools (CDP)** | Direct browser control via CDP on port 9222: instantaneous DOM clicking by CSS selector/XPath, form typing, and table data scraping. |
 | 💻 **Deep Windows OS Orchestrator** | Sub-millisecond execution of `ms-settings:` URI schemes (Wi-Fi, Bluetooth, Sound, Display, Apps), power plans (`powercfg`), and virtual desktop navigation. |
@@ -33,6 +38,16 @@
 | 🤖 **Autonomous Computer Operator** | Multi-turn closed-loop operator agent with strict Truth Rules, stage verification, state diffing, and security handoff gates. |
 | 📋 **Deterministic Workflow Engine** | Instant multi-step routine and macro execution with zero LLM latency (`dev_workspace`, `focus_mode`, `system_tuneup`, `meeting_prep`). |
 | 📱 **Remote Dashboard** | Local network phone dashboard paired via QR code for wireless monitoring and remote control. |
+
+---
+
+## 🖥️ Platform Support & Roadmap
+
+| Platform | Support Status | Capabilities & Notes |
+|---|---|---|
+| **Windows 10 / 11** | 🟢 **Mainly Optimized (Tier 1)** | Complete deep integration: Win32 window snapping, Windows UI Automation (UIA) tree extraction, hardware power scheme management (`powercfg`), direct `ms-settings:` URIs, virtual desktops, audio loopback capture, and DPI scaling translation. |
+| **Linux (Ubuntu, Debian, Fedora, Arch)** | 🟡 **Compatible (Core Features)** | Full voice conversation, local pipelines (Whisper/Ollama/Piper), terminal/shell executions, CDP browser automation, and standard computer control. *Native D-Bus / Wayland screen integration updates coming soon.* |
+| **macOS (Apple Silicon & Intel)** | 🟡 **Compatible (Core Features)** | Full Gemini Live voice, audio I/O, terminal actions, and web automation. *Dedicated AppleScript & macOS Accessibility API enhancements coming soon.* |
 
 ---
 
