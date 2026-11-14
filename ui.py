@@ -4129,33 +4129,42 @@ class ProvidersOverlay(_HudOverlay):
 
 
 class ClipboardPanel(QWidget):
-    """Floating panel shown when text is copied — offers quick NEO actions."""
+    """Floating Ambient Copilot Lens — dynamically categorizes text, errors, code, and links with actionable pills."""
 
     action_requested = pyqtSignal(str)
-    _W, _H = 326, 112
+    _W, _H = 420, 126
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet(f"""
             ClipboardPanel {{
-                background: rgba(19, 23, 32, 250);
+                background: rgba(15, 20, 30, 252);
                 border: 1px solid {C.BORDER_B};
-                border-radius: 6px;
+                border-radius: 8px;
             }}
         """)
         self.setFixedWidth(self._W)
         self._clip_text = ""
+        self._current_analysis = None
 
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(8, 6, 8, 7)
-        lay.setSpacing(4)
+        self._lay = QVBoxLayout(self)
+        self._lay.setContentsMargins(10, 8, 10, 8)
+        self._lay.setSpacing(5)
 
-        hdr = QHBoxLayout(); hdr.setSpacing(4)
-        icon_lbl = QLabel("Clipboard Content")
-        icon_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-        icon_lbl.setStyleSheet(f"color: {C.ACC2}; background: transparent;")
-        hdr.addWidget(icon_lbl); hdr.addStretch()
+        # Header row
+        hdr = QHBoxLayout(); hdr.setSpacing(6)
+        self._badge_icon = QLabel("📋")
+        self._badge_icon.setFont(QFont("Segoe UI", 9))
+        self._badge_icon.setStyleSheet("background: transparent;")
+        hdr.addWidget(self._badge_icon)
+
+        self._badge_lbl = QLabel("AMBIENT COPILOT LENS")
+        self._badge_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self._badge_lbl.setStyleSheet(f"color: {C.PRI}; background: transparent; letter-spacing: 0.5px;")
+        hdr.addWidget(self._badge_lbl)
+        hdr.addStretch()
+
         x_btn = QPushButton("✕")
         x_btn.setFixedSize(16, 16)
         x_btn.setFont(QFont("Segoe UI", 8))
@@ -4163,36 +4172,22 @@ class ClipboardPanel(QWidget):
         x_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         x_btn.clicked.connect(self.hide)
         hdr.addWidget(x_btn)
-        lay.addLayout(hdr)
+        self._lay.addLayout(hdr)
 
+        # Preview line
         self._preview = QLabel()
-        self._preview.setFont(QFont("Segoe UI", 8))
+        self._preview.setFont(QFont("Consolas", 8))
         self._preview.setStyleSheet(f"""
-            color: {C.TEXT}; background: {C.PANEL2};
-            border: 1px solid {C.BORDER}; border-radius: 3px; padding: 4px 6px;
+            color: {C.TEXT}; background: rgba(24, 30, 44, 230);
+            border: 1px solid {C.BORDER}; border-radius: 4px; padding: 4px 8px;
         """)
         self._preview.setWordWrap(False)
         self._preview.setFixedHeight(28)
-        lay.addWidget(self._preview)
+        self._lay.addWidget(self._preview)
 
-        btn_row = QHBoxLayout(); btn_row.setSpacing(4)
-        _bs = (f"QPushButton {{ background: {C.PANEL2}; color: {C.TEXT_MED}; "
-               f"border: 1px solid {C.BORDER}; border-radius: 2px; }}"
-               f"QPushButton:hover {{ color: {C.PRI}; border-color: {C.BORDER_B}; }}")
-        for label, cmd_fmt in [
-            ("TRANSLATE", "Translate this text to English: {text}"),
-            ("SUMMARISE", "Summarise this: {text}"),
-            ("EXPLAIN",   "Explain this: {text}"),
-            ("FIX",       "Fix grammar and spelling: {text}"),
-        ]:
-            b = QPushButton(label)
-            b.setFixedHeight(22)
-            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
-            b.setStyleSheet(_bs)
-            b.clicked.connect(lambda _, c=cmd_fmt: self._trigger(c))
-            btn_row.addWidget(b)
-        lay.addLayout(btn_row)
+        # Dynamic Action Buttons Container
+        self._btn_row = QHBoxLayout(); self._btn_row.setSpacing(5)
+        self._lay.addLayout(self._btn_row)
 
         self._dismiss_timer = QTimer(self)
         self._dismiss_timer.setSingleShot(True)
@@ -4201,17 +4196,86 @@ class ClipboardPanel(QWidget):
 
     def _trigger(self, cmd_fmt: str):
         if self._clip_text:
-            self.action_requested.emit(cmd_fmt.format(text=self._clip_text[:800]))
+            text_snippet = self._clip_text[:1200]
+            if "{text}" in cmd_fmt:
+                cmd = cmd_fmt.format(text=text_snippet)
+            else:
+                cmd = f"{cmd_fmt}: {text_snippet}"
+            self.action_requested.emit(cmd)
         self.hide()
 
     def show_clipboard(self, text: str):
         self._clip_text = text
-        preview = text[:58].replace('\n', ' ')
-        if len(text) > 58:
-            preview += "…"
-        self._preview.setText(f'"{preview}"')
-        self.show(); self.raise_()
-        self._dismiss_timer.start(8000)
+        try:
+            from core.ambient_copilot import copilot_engine, ContentKind
+            analysis = copilot_engine.process_content(text)
+        except Exception:
+            analysis = None
+
+        if analysis:
+            self._current_analysis = analysis
+            self._badge_icon.setText(analysis.badge_icon)
+            self._badge_lbl.setText(f"{analysis.badge_label} — {analysis.title[:38]}")
+            self._badge_lbl.setStyleSheet(f"color: {analysis.badge_color}; background: transparent; font-weight: bold;")
+            
+            # Highlight border for errors
+            if analysis.kind == ContentKind.STACK_TRACE:
+                self.setStyleSheet(f"""
+                    ClipboardPanel {{
+                        background: rgba(28, 12, 16, 252);
+                        border: 1px solid #ef4444;
+                        border-radius: 8px;
+                    }}
+                """)
+            else:
+                self.setStyleSheet(f"""
+                    ClipboardPanel {{
+                        background: rgba(15, 20, 30, 252);
+                        border: 1px solid {analysis.badge_color};
+                        border-radius: 8px;
+                    }}
+                """)
+
+            preview = analysis.preview_text.replace('\n', ' ')
+            self._preview.setText(f'"{preview}"')
+
+            # Clear existing action buttons
+            while self._btn_row.count():
+                item = self._btn_row.takeAt(0)
+                w = item.widget()
+                if w:
+                    w.deleteLater()
+
+            # Render dynamic contextual action buttons
+            for btn_label, cmd_tmpl in analysis.actions[:4]:
+                b = QPushButton(btn_label)
+                b.setFixedHeight(24)
+                b.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+                b.setCursor(Qt.CursorShape.PointingHandCursor)
+                b.setStyleSheet(f"""
+                    QPushButton {{
+                        background: #182234; color: {analysis.badge_color};
+                        border: 1px solid {C.BORDER}; border-radius: 3px; padding: 0 6px;
+                    }}
+                    QPushButton:hover {{
+                        background: #243048; color: #ffffff; border-color: {analysis.badge_color};
+                    }}
+                """)
+                b.clicked.connect(lambda _, c=cmd_tmpl: self._trigger(c))
+                self._btn_row.addWidget(b)
+        else:
+            preview = text[:58].replace('\n', ' ')
+            if len(text) > 58:
+                preview += "…"
+            self._preview.setText(f'"{preview}"')
+
+        self.adjustSize()
+        self.show()
+        self.raise_()
+        self._dismiss_timer.start(9000)
+
+
+AmbientCopilotPanel = ClipboardPanel
 
 
 class PluginSettingsOverlay(QWidget):
@@ -4756,6 +4820,7 @@ class MainWindow(QMainWindow):
     _tool_sig       = pyqtSignal(str)        # active tool execution badge trigger
     _chips_sig      = pyqtSignal(list)       # proactive smart affordance chips (thread-safe)
     _toast_sig      = pyqtSignal(str, str, str, str)  # proactive toast (title, msg, variant, payload)
+    _meeting_badge_sig = pyqtSignal(bool, str, int)   # (active, topic, duration_sec)
 
     def __init__(self, face_path: str):
         super().__init__()
@@ -5105,6 +5170,7 @@ class MainWindow(QMainWindow):
         self._tool_sig.connect(self._apply_tool_execution)
         self._chips_sig.connect(self._apply_proactive_chips)
         self._toast_sig.connect(self._apply_proactive_toast)
+        self._meeting_badge_sig.connect(self._apply_meeting_badge)
 
         # Visual Screen Grounding Overlay Connection (Main GUI thread safe)
         try:
@@ -6470,6 +6536,30 @@ class MainWindow(QMainWindow):
         """)
         self._status_pill.clicked.connect(self._toggle_mute)
         self._unified_toolbar.left_slot.addWidget(self._status_pill)
+
+        # Meeting Copilot Recording Pill (Internal Audio Loopback)
+        self._meeting_pill = QPushButton("🔴 REC · 00:00")
+        self._meeting_pill.setFixedHeight(28)
+        self._meeting_pill.setFont(QFont("-apple-system", 9, QFont.Weight.Bold))
+        self._meeting_pill.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._meeting_pill.setToolTip("Active Meeting Copilot (Loopback Recording) — Click to conclude and view minutes")
+        self._meeting_pill.setStyleSheet("""
+            QPushButton {
+                color: #ff453a;
+                background-color: rgba(255, 69, 58, 0.16);
+                border: 1px solid rgba(255, 69, 58, 0.40);
+                border-radius: 14px;
+                padding: 0 10px;
+                font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 69, 58, 0.28);
+                border-color: rgba(255, 69, 58, 0.65);
+            }
+        """)
+        self._meeting_pill.setVisible(False)
+        self._meeting_pill.clicked.connect(lambda: self._on_chat_command("Conclude the current meeting and compile executive minutes."))
+        self._unified_toolbar.left_slot.addWidget(self._meeting_pill)
 
         # Center/Left Spotlight Search Capsule
         self._search_capsule = QPushButton("🔍  Search or ask NEO anything...  ⌘K")
@@ -8422,6 +8512,24 @@ class MainWindow(QMainWindow):
         """Thread-safe GUI slot: display macOS toast on Main GUI thread."""
         self._on_proactive_toast(title, message, variant=variant, payload=payload)
 
+    def _apply_meeting_badge(self, active: bool, topic: str = "", duration_sec: int = 0):
+        """Thread-safe GUI slot: update or hide meeting loopback recording badge on unified toolbar."""
+        if not hasattr(self, "_meeting_pill") or self._meeting_pill is None:
+            return
+        if not active:
+            self._meeting_pill.setVisible(False)
+            return
+        m, s = divmod(duration_sec, 60)
+        h, m = divmod(m, 60)
+        dur_str = f"{h:02d}:{m:02d}:{s:02d}" if h > 0 else f"{m:02d}:{s:02d}"
+        topic_disp = (f" · {topic[:14]}" if topic and topic != "General Meeting" else "")
+        self._meeting_pill.setText(f"🔴 REC{topic_disp} ({dur_str})")
+        self._meeting_pill.setVisible(True)
+
+    def show_meeting_badge(self, active: bool, topic: str = "", duration_sec: int = 0):
+        """Thread-safe: emit meeting badge update to Main GUI thread."""
+        self._meeting_badge_sig.emit(active, topic, duration_sec)
+
     def _show_screen_highlight(self, bbox: Any, label: str = "", linger_ms: int = 1500) -> None:
         """Safely creates and displays the macOS Sequoia screen highlight overlay on Main GUI thread."""
         try:
@@ -8762,6 +8870,13 @@ class NeoUI:
     def set_active_tool(self, tool_name: str):
         """Thread-safe: flash an active tactical tool badge on the HUD."""
         self._win._tool_sig.emit(str(tool_name or ""))
+
+    def show_meeting_badge(self, active: bool, topic: str = "", duration_sec: int = 0):
+        """Thread-safe: update HUD meeting loopback recording badge."""
+        try:
+            self._win.show_meeting_badge(active, topic, duration_sec)
+        except Exception:
+            pass
 
     def show_live_speech(self, speaker: str, text: str):
         """Thread-safe: display live speech subtitle (user=green, assistant=white)."""

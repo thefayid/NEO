@@ -24,6 +24,8 @@
 | 🎙️ **Push-to-Talk & Wake Word** | Global push-to-talk chord (**Ctrl+Space**), local offline **"Hey Neo"** wake word, and self-echo filtering. |
 | 🧩 **Extensible Plugin System** | Modular architecture where tools and plugins (`actions/`, `plugins/`) auto-register with typed schema definitions. |
 | 📱 **Remote Dashboard** | Local network phone dashboard paired via QR code for wireless monitoring and remote control. |
+| 🔍 **Ambient Live Copilot Lens** | Real-time clipboard and error observer (Python/JS/Rust/C++ stack traces, SQL, code, URLs) with proactive HUD action pills and autonomous bug fixing. |
+| 🎙️ **Meeting Copilot (Loopback)** | Captures internal system audio (Google Meet, Zoom, Teams, YouTube) via Stereo Mix loopback without mic bleed. Auto-generates executive Markdown minutes on Desktop and syncs action items to Tasks & Agenda. |
 
 ---
 
