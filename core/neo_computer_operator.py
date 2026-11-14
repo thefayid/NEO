@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from core.neo_ui_automation import ui_automation, UIControl
 from core.neo_os_automation import window_manager
+from core.neo_visual_diff_oracle import diff_oracle
 
 
 @dataclass
@@ -309,6 +310,12 @@ class ComputerOperatorSession:
 
         elif action == "wait":
             time.sleep(1.0)
+
+        # Adaptive settle watchdog: wait for any visual transitions/spinners to stabilize
+        try:
+            diff_oracle.wait_until_settled(max_wait_sec=1.2)
+        except Exception:
+            pass
 
     def _turn_to_dict(self, turn: OperatorTurn) -> Dict[str, Any]:
         """Formats output into the exact schema requested by user."""

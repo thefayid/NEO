@@ -1,8 +1,6 @@
 #computer_control.py
-import io
 import json
 import platform
-import re
 import string
 import subprocess
 import sys
@@ -804,6 +802,18 @@ def computer_control(
             summary = [f"{c.name} ({c.control_type}) @ {c.center}" for c in ctrls[:15] if c.name]
             return f"Found {len(ctrls)} interactive controls: " + ", ".join(summary)
 
+        if action in ("som_tag_screen", "tag_screen"):
+            from core.neo_som_engine import som_engine
+            img_path, marks = som_engine.generate_som_grid(params.get("path"))
+            summary = som_engine.list_marks_summary()
+            return f"Generated Set-of-Marks grid ({len(marks)} marks) saved to {img_path}: " + "; ".join(summary[:12])
+
+        if action in ("som_click", "click_mark"):
+            mark_id = int(params.get("mark_id") or params.get("target_id") or 1)
+            from core.neo_som_engine import som_engine
+            ok, msg = som_engine.click_mark(mark_id)
+            return msg if ok else f"Error: {msg}"
+
         if action == "wait":
             secs = float(params.get("seconds", 1.0))
             secs = min(secs, 30.0)
@@ -873,7 +883,11 @@ TOOL = {
         "properties": {
             "action": {
                 "type": "STRING",
-                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | uia_click | uia_type | uia_list | random_data | user_data"
+                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | uia_click | uia_type | uia_list | som_tag_screen | som_click | random_data | user_data"
+            },
+            "mark_id": {
+                "type": "INTEGER",
+                "description": "Integer mark ID for som_click"
             },
             "app_name": {
                 "type": "STRING",

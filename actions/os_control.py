@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 from core.neo_os_automation import window_manager, resource_manager
+from core.neo_win_orchestrator import win_orchestrator
 from core import outcome
 
 TOOL = {
@@ -23,7 +24,8 @@ TOOL = {
         "Execute direct, sub-millisecond native OS actions with 100% precision without mouse clicks: "
         "snap windows (left/right/maximize/minimize/center), tile two windows side-by-side (50/50), "
         "focus a window by name, kill frozen processes by name or PID, inspect/kill port conflicts, "
-        "check system health (CPU/RAM/battery), empty recycle bin, or open file explorer."
+        "open Windows settings directly via URI (wifi/bluetooth/sound/display/apps), switch power plans, "
+        "navigate virtual desktops, check system health, empty recycle bin, or open file explorer."
     ),
     "parameters": {
         "type": "OBJECT",
@@ -33,12 +35,14 @@ TOOL = {
                 "description": (
                     "The action to execute: 'snap_window', 'tile_windows', 'list_windows', 'focus_window', "
                     "'close_window', 'kill_process', 'find_port', 'kill_port', 'system_health', "
-                    "'empty_recycle_bin', 'open_explorer', 'create_desktop_folder'."
+                    "'empty_recycle_bin', 'open_explorer', 'create_desktop_folder', 'open_settings', "
+                    "'power_plan', 'virtual_desktop', 'audio_devices'."
                 ),
                 "enum": [
                     "snap_window", "tile_windows", "list_windows", "focus_window", "close_window",
                     "kill_process", "find_port", "kill_port", "system_health", "empty_recycle_bin",
-                    "open_explorer", "create_desktop_folder"
+                    "open_explorer", "create_desktop_folder", "open_settings", "power_plan",
+                    "virtual_desktop", "audio_devices"
                 ]
             },
             "position": {
@@ -64,6 +68,18 @@ TOOL = {
             "folder_name": {
                 "type": "STRING",
                 "description": "Folder name to create on Desktop for create_desktop_folder."
+            },
+            "page": {
+                "type": "STRING",
+                "description": "Settings page for open_settings: 'wifi', 'bluetooth', 'sound', 'display', 'battery', 'apps', 'storage', 'windows_update', 'clipboard'."
+            },
+            "plan": {
+                "type": "STRING",
+                "description": "Power plan for power_plan: 'high_performance', 'balanced', 'power_saver' (or omit to query)."
+            },
+            "desktop_action": {
+                "type": "STRING",
+                "description": "Virtual desktop action: 'next', 'prev', 'new', 'close'."
             }
         },
         "required": ["action"]
@@ -163,5 +179,34 @@ def run(params: Dict[str, Any], player=None) -> str:
         folder_name = params.get("folder_name") or "New Folder"
         created = resource_manager.create_desktop_folder(folder_name)
         return outcome.done("os_control", created_path=created, message=f"Created folder '{folder_name}' on Desktop.")
+
+    elif action == "open_settings":
+        page = params.get("page") or "wifi"
+        ok, msg = win_orchestrator.open_settings_page(page)
+        if ok:
+            return outcome.done("os_control", page=page, message=msg)
+        return outcome.failed("os_control", msg)
+
+    elif action == "power_plan":
+        plan = params.get("plan")
+        if plan:
+            ok, msg = win_orchestrator.set_power_scheme(plan)
+            if ok:
+                return outcome.done("os_control", plan=plan, message=msg)
+            return outcome.failed("os_control", msg)
+        current = win_orchestrator.get_active_power_scheme()
+        return outcome.done("os_control", active_plan=current, message=f"Active Windows power plan is '{current}'.")
+
+    elif action == "virtual_desktop":
+        d_act = params.get("desktop_action") or "next"
+        ok, msg = win_orchestrator.virtual_desktop(d_act)
+        if ok:
+            return outcome.done("os_control", desktop_action=d_act, message=msg)
+        return outcome.failed("os_control", msg)
+
+    elif action == "audio_devices":
+        endpoints = win_orchestrator.list_audio_endpoints()
+        summary = [f"#{e['index']}: {e['name']} ({e['inputs']} in, {e['outputs']} out)" for e in endpoints[:10]]
+        return outcome.done("os_control", count=len(endpoints), devices=summary)
 
     return outcome.failed("os_control", f"Unknown action '{action}'.")

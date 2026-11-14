@@ -27,6 +27,11 @@
 | 🔍 **Ambient Live Copilot Lens** | Real-time clipboard and error observer (Python/JS/Rust/C++ stack traces, SQL, code, URLs) with proactive HUD action pills and autonomous bug fixing. |
 | 🎙️ **Meeting Copilot (Loopback)** | Captures internal system audio (Google Meet, Zoom, Teams, YouTube) via Stereo Mix loopback without mic bleed. Auto-generates executive Markdown minutes on Desktop and syncs action items to Tasks & Agenda. |
 | ⚡ **Direct OS & Shell Engine** | Sub-millisecond Win32 window snapping, dual-window tiling (50/50), port conflict resolution, process watchdog, and desktop utilities. |
+| 💻 **Deep Windows OS Orchestrator** | Sub-millisecond execution of `ms-settings:` URI schemes (Wi-Fi, Bluetooth, Sound, Display, Apps), power plans (`powercfg`), and virtual desktop navigation. |
+| 🎯 **DPI-Aware Physical Transformer** | Hardware-accurate scaling eliminates physical-to-logical drift on high-DPI monitors (125%, 150%, 200%) with local OpenCV contour element detection. |
+| 🏷️ **Set-of-Marks (SoM) Interactive Grid** | Overlays numbered, high-contrast interactive markers (`[1..N]`) over UIA and visual controls for 100% deterministic `som_click(mark_id)` targeting. |
+| 🌐 **Headful Chrome DevTools Bridge (CDP)** | Direct browser control via CDP on port 9222: instantaneous DOM clicking by CSS selector/XPath, form typing, and table data scraping. |
+| 👁️ **Visual Diff Oracle & Settle Watchdog** | Perceptual patch diffing before/after clicks using OpenCV `absdiff` to verify action registration, replacing blind sleeps with adaptive settling. |
 | 🤖 **Autonomous Computer Operator** | Multi-turn closed-loop operator agent with strict Truth Rules, stage verification, state diffing, and security handoff gates. |
 | 📋 **Deterministic Workflow Engine** | Instant multi-step routine and macro execution with zero LLM latency (`dev_workspace`, `focus_mode`, `system_tuneup`, `meeting_prep`). |
 
