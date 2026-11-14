@@ -615,7 +615,18 @@ def _close_app(app_name: str, confirmed_index: int | None = None) -> str:
 
 
 def _screen_find(description: str) -> tuple[int, int] | None:
-    # 1. First priority: Multimodal Visual Grounding Engine (UIA -> SoM -> Gemini Multimodal Vision)
+    # 1. First priority: Direct Windows UI Automation (UIA) Exact Match (0ms latency, 100% precision)
+    try:
+        from core.neo_ui_automation import ui_automation
+        if ui_automation.is_available:
+            ctrl = ui_automation.find_control(description)
+            if ctrl and ctrl.is_plausible:
+                print(f"[ComputerControl] 🎯 UIA exact control found: '{ctrl.name}' ({ctrl.control_type}) at {ctrl.center}")
+                return ctrl.center
+    except Exception as e:
+        print(f"[ComputerControl] UIA search error: {e}")
+
+    # 2. Second priority: Multimodal Visual Grounding Engine (Vision + SetOfMarks fallback)
     try:
         from core.neo_visual_grounding import visual_grounding
         elem = visual_grounding.ground_target_on_screen(description, highlight=True)
@@ -623,17 +634,6 @@ def _screen_find(description: str) -> tuple[int, int] | None:
             return elem.center
     except Exception as e:
         print(f"[ComputerControl] visual_grounding delegation error: {e}")
-
-    # 2. Direct UIA control search fallback
-    try:
-        from core.neo_ui_automation import ui_automation
-        if ui_automation.is_available:
-            ctrl = ui_automation.find_control(description)
-            if ctrl and ctrl.is_plausible:
-                print(f"[ComputerControl] 🎯 UIA exact control found: '{ctrl.name}' at {ctrl.center}")
-                return ctrl.center
-    except Exception as e:
-        print(f"[ComputerControl] UIA search warning: {e}")
 
     return None
 
@@ -775,6 +775,35 @@ def computer_control(
                 return f"Clicked '{desc}' at {coords}"
             return f"Element not found on screen: '{desc}'"
 
+        if action in ("uia_click", "click_element"):
+            desc = params.get("description") or params.get("text") or ""
+            from core.neo_ui_automation import ui_automation
+            ok, detail, center = ui_automation.click_control_by_name(desc)
+            if ok:
+                return f"UIA Success: {detail}"
+            coords = _screen_find(desc)
+            if coords:
+                _click(coords[0], coords[1], "left", 1)
+                return f"Clicked '{desc}' at visual coordinates ({coords[0]}, {coords[1]})."
+            return f"Element '{desc}' could not be found."
+
+        if action in ("uia_type", "type_into_element"):
+            desc = params.get("description") or ""
+            text_to_type = params.get("text") or ""
+            from core.neo_ui_automation import ui_automation
+            ctrl = ui_automation.find_control(desc)
+            if ctrl:
+                _click(ctrl.center[0], ctrl.center[1], "left", 1)
+                time.sleep(0.05)
+                return _smart_type(text_to_type, clear_first=params.get("clear_first", True))
+            return f"Input element '{desc}' not found."
+
+        if action in ("uia_list", "list_elements"):
+            from core.neo_ui_automation import ui_automation
+            ctrls = ui_automation.get_interactive_controls()
+            summary = [f"{c.name} ({c.control_type}) @ {c.center}" for c in ctrls[:15] if c.name]
+            return f"Found {len(ctrls)} interactive controls: " + ", ".join(summary)
+
         if action == "wait":
             secs = float(params.get("seconds", 1.0))
             secs = min(secs, 30.0)
@@ -844,7 +873,7 @@ TOOL = {
         "properties": {
             "action": {
                 "type": "STRING",
-                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | random_data | user_data"
+                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | uia_click | uia_type | uia_list | random_data | user_data"
             },
             "app_name": {
                 "type": "STRING",

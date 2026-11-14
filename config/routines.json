@@ -1,0 +1,111 @@
+{
+  "dev_workspace": {
+    "description": "Sets up split-screen developer workspace (Editor + Terminal/Browser side-by-side).",
+    "steps": [
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "snap_window",
+          "position": "left"
+        },
+        "description": "Snap editor to left 50%"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "snap_window",
+          "position": "right"
+        },
+        "description": "Snap secondary window to right 50%"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "tile_windows",
+          "mode": "side_by_side"
+        },
+        "description": "Ensure perfect 50/50 dual tiling"
+      }
+    ]
+  },
+  "focus_mode": {
+    "description": "Optimizes desktop for deep focus: sets volume to 25% and snaps foreground window to center.",
+    "steps": [
+      {
+        "tool": "computer_settings",
+        "params": {
+          "action": "volume_set",
+          "value": 25
+        },
+        "description": "Set master audio to comfortable 25%"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "snap_window",
+          "position": "center"
+        },
+        "description": "Center active window in work area"
+      }
+    ]
+  },
+  "system_tuneup": {
+    "description": "Purges temporary junk, empties recycle bin, and measures hardware vitality.",
+    "steps": [
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "empty_recycle_bin"
+        },
+        "description": "Empty Windows Recycle Bin"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "system_health"
+        },
+        "description": "Audit CPU, memory, and disk health"
+      }
+    ]
+  },
+  "meeting_prep": {
+    "description": "Prepares workstation for meeting: starts internal loopback copilot and tiles screen.",
+    "steps": [
+      {
+        "tool": "meeting_copilot",
+        "params": {
+          "action": "start",
+          "topic": "Live Meeting"
+        },
+        "description": "Initiate loopback meeting recording"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "snap_window",
+          "position": "left"
+        },
+        "description": "Position meeting window on left"
+      }
+    ]
+  },
+  "test_custom_routine": {
+    "description": "A test automation pipeline",
+    "steps": [
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "system_health"
+        },
+        "description": "Check initial health"
+      },
+      {
+        "tool": "os_control",
+        "params": {
+          "action": "list_windows"
+        },
+        "description": "List visible windows"
+      }
+    ]
+  }
+}

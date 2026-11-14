@@ -26,6 +26,9 @@
 | 📱 **Remote Dashboard** | Local network phone dashboard paired via QR code for wireless monitoring and remote control. |
 | 🔍 **Ambient Live Copilot Lens** | Real-time clipboard and error observer (Python/JS/Rust/C++ stack traces, SQL, code, URLs) with proactive HUD action pills and autonomous bug fixing. |
 | 🎙️ **Meeting Copilot (Loopback)** | Captures internal system audio (Google Meet, Zoom, Teams, YouTube) via Stereo Mix loopback without mic bleed. Auto-generates executive Markdown minutes on Desktop and syncs action items to Tasks & Agenda. |
+| ⚡ **Direct OS & Shell Engine** | Sub-millisecond Win32 window snapping, dual-window tiling (50/50), port conflict resolution, process watchdog, and desktop utilities. |
+| 🤖 **Autonomous Computer Operator** | Multi-turn closed-loop operator agent with strict Truth Rules, stage verification, state diffing, and security handoff gates. |
+| 📋 **Deterministic Workflow Engine** | Instant multi-step routine and macro execution with zero LLM latency (`dev_workspace`, `focus_mode`, `system_tuneup`, `meeting_prep`). |
 
 ---
 
