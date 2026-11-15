@@ -811,6 +811,25 @@ def computer_control(
             summary = [f"{c.name} ({c.control_type}) @ {c.center}" for c in ctrls[:15] if c.name]
             return f"Found {len(ctrls)} interactive controls: " + ", ".join(summary)
 
+        if action in ("ghost_click", "background_click"):
+            desc = params.get("description") or params.get("target") or params.get("text") or ""
+            app_name = params.get("app_name") or params.get("app")
+            from core.neo_ghost_hands import ghost_hands
+            res = ghost_hands.ghost_click(target=desc, app_or_title=app_name)
+            if res.get("status") == "done":
+                return f"Ghost Click Success: Clicked '{desc}' in background ({res.get('method')}) without moving cursor."
+            return f"Ghost Click Failed: {res.get('reason', 'Element not found')}"
+
+        if action in ("ghost_type", "background_type"):
+            desc = params.get("description") or params.get("target") or ""
+            text_to_type = params.get("text") or ""
+            app_name = params.get("app_name") or params.get("app")
+            from core.neo_ghost_hands import ghost_hands
+            res = ghost_hands.ghost_type(target=desc, text=text_to_type, app_or_title=app_name)
+            if res.get("status") == "done":
+                return f"Ghost Type Success: Typed {res.get('chars_typed')} chars into '{desc}' without keyboard focus."
+            return f"Ghost Type Failed: {res.get('reason', 'Element not found')}"
+
         if action in ("list_monitors", "get_displays"):
             from core.neo_multi_monitor import multi_monitor
             displays = multi_monitor.displays
@@ -927,7 +946,7 @@ TOOL = {
         "properties": {
             "action": {
                 "type": "STRING",
-                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | uia_click | uia_type | uia_list | som_tag_screen | som_click | random_data | user_data"
+                "description": "type | smart_type | click | double_click | right_click | hotkey | press | scroll | move | copy | paste | screenshot | wait | clear_field | focus_window | get_active_window | close_app | screen_find | screen_click | uia_click | uia_type | uia_list | ghost_click | ghost_type | som_tag_screen | som_click | random_data | user_data"
             },
             "mark_id": {
                 "type": "INTEGER",

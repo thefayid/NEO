@@ -35,6 +35,7 @@ While NEO is **mainly optimized for Windows** with deep OS-level accessibility a
 
 | Feature | Description |
 |---|---|
+| 👻 **Ghost Hands (Zero-Hijacking Parallel Operator)** | Operates background applications, browser windows, and desktop controls simultaneously without moving the user's physical mouse cursor or stealing keyboard focus. Allows true parallel human-AI co-operation. |
 | 📺 **Continuous Real-Time Screen Stream** | Streams live screen video frames (~1.0 FPS with adaptive delta hashing) directly into the Gemini Live WebSocket session for true real-time visual perception without manual snapshots. |
 | 🎯 **Deterministic 5-Tier Control** | Enforces zero coordinate guessing: (1) Native OS URIs, (2) Browser CDP DOM bridge, (3) Windows UI Automation, (4) Set-of-Marks visual badges, and (5) Keyboard shortcuts. |
 | 🏷️ **Set-of-Marks (SoM) Grid** | Overlays numbered, high-contrast interactive markers (`[1..N]`) over UIA and visual controls for 100% deterministic `som_click(mark_id)` targeting. |
@@ -135,9 +136,24 @@ python main.py
 
 You can verify and test every component of NEO directly from your command line without starting the full GUI:
 
-### 1. Run Complete Automated Test Suite (43 Tests)
+### 1. Run Complete Automated Test Suite (60 Tests)
 ```powershell
-python -m unittest tests/test_key_rotator_suite.py tests/test_advanced_computer_control_suite.py tests/test_core_system_control_suite.py tests/test_ambient_and_meeting_copilot.py
+python -m unittest tests/test_key_rotator_suite.py tests/test_advanced_computer_control_suite.py tests/test_core_system_control_suite.py tests/test_ambient_and_meeting_copilot.py tests/test_audio_diagnostic.py tests/test_ghost_hands_suite.py
+```
+
+### 2. Ghost Hands (Zero-Hijacking Background Computer-Use)
+```powershell
+# 1. Inspect all background application windows available for ghost operation:
+python -c "from actions.ghost_hands import run; print(run({'action': 'list_windows'}))"
+
+# 2. Click a button in a background window without moving the physical mouse cursor:
+python -c "from actions.ghost_hands import run; print(run({'action': 'click', 'target': 'Settings', 'app_name': 'Settings'}))"
+
+# 3. Type text into a background field without stealing active keyboard focus:
+python -c "from actions.ghost_hands import run; print(run({'action': 'type', 'target': 'Search', 'text': 'Wi-Fi Networks', 'app_name': 'Settings'}))"
+
+# 4. Scroll a background window without mouse wheel hijack:
+python -c "from actions.ghost_hands import run; print(run({'action': 'scroll', 'direction': 'down', 'amount': 3, 'app_name': 'Settings'}))"
 ```
 
 ### 2. Set-of-Marks (SoM) Interactive Grid & Discrete Clicking
@@ -234,12 +250,14 @@ NEO/
 ├── ui.py                                        # PyQt6 Holographic HUD, avatar renderer & controls
 ├── setup.py                                     # OS-specific dependency installer
 ├── actions/                                     # Core action modules auto-discovered by loader
+│   ├── ghost_hands.py                           # Zero-hijacking background computer operator
 │   ├── browser_cdp.py                           # Chrome DevTools Protocol DOM bridge
 │   ├── computer_control.py                      # Mouse, keyboard, UIA & Set-of-Marks grid clicking
 │   ├── os_control.py                            # Window snapping, power schemes, settings URIs & health
 │   ├── meeting_copilot.py                       # Internal audio loopback & minute generator
 │   └── neo_memory.py                            # Lifelong Tri-Tier knowledge recall
 ├── core/                                        # Core intelligence, visual grounding & OS layer
+│   ├── neo_ghost_hands.py                       # UIA COM pattern & Win32 background event dispatcher
 │   ├── neo_key_rotator.py                       # Multi-key pool & automatic 429 quota rotation engine
 │   ├── neo_cdp_bridge.py                        # CDP WebSocket controller & DOM evaluator
 │   ├── neo_dpi_ocr.py                           # DPI coordinate transformer & visual contour detector
