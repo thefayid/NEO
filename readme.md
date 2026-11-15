@@ -1,5 +1,6 @@
 # ⚙️ NEO: Autonomous Computer-Operator & Voice AI
 
+[![Ghost Hands](https://img.shields.io/badge/Ghost%20Hands%E2%84%A2-Zero--Cursor%20Hijacking-9400D3?style=for-the-badge&logo=ghost)](https://github.com/thefayid/NEO#-the-killer-feature-ghost-hands)
 [![Version](https://img.shields.io/badge/version-v1.0%20Release-0A84FF?style=for-the-badge&logo=rocket)](https://github.com/thefayid/NEO)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Contributions%20Welcome-30D158?style=for-the-badge&logo=github)](https://github.com/thefayid/NEO#-open-source--contributing)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-FF9F0A?style=for-the-badge)](https://github.com/thefayid/NEO#%EF%B8%8F-platform-support--roadmap)
@@ -7,8 +8,45 @@
 
 > **The Ultimate Real-Time Multimodal Voice & Desktop Operating Assistant**  
 > *Engineered by Rahman Fayid*  
+> 👻 **Featuring Ghost Hands™**: Parallel background computer-use with **ZERO mouse cursor hijacking**  
 > 🪟 **Mainly optimized for Windows** *(Deep Win32, UI Automation, and hardware-level orchestrations)*  
 > 🐧 🍏 **Compatible with Linux and macOS** *(More updates and deeper native integrations on these platforms coming soon!)*
+
+---
+
+## 👻 The Killer Feature: Ghost Hands™
+### *The World's First Non-Hijacking Background Computer Operator*
+
+> [!TIP]
+> **Why this changes everything**: Every existing Computer-Use AI (Anthropic Claude 3.7 Computer Use, OpenAI Operator, Microsoft Copilot) has one fatal flaw — **it hijacks your physical mouse cursor and locks keyboard focus**. While the AI works, you are frozen out of your own computer, forced to watch it click around.
+>
+> **NEO solves this forever with Ghost Hands.**
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        YOUR WORKSTATION IN ACTION                      │
+├───────────────────────────────────┬────────────────────────────────────┤
+│    👤 YOU (Active Foreground)     │     👻 NEO (Background Ghost)      │
+│    • Writing code in VS Code      │     • Opens browser in background  │
+│    • Typing in documents / chat   │     • Navigates admin portals      │
+│    • On a live Zoom / Meet call   │     • Fills forms & exports CSV    │
+│    (Your mouse & keys never move) │     (Direct UIA COM & Win32 IPC)   │
+└───────────────────────────────────┴────────────────────────────────────┘
+```
+
+#### How It Outperforms Existing AI Computer-Use Models:
+| Capability | Anthropic Computer Use / OpenAI Operator | Traditional Bots (PyAutoGUI) | **NEO (Ghost Hands™)** |
+|---|---|---|---|
+| **Mouse Cursor** | ❌ Hijacked / Locked | ❌ Hijacked / Drags cursor | 🟢 **100% Free for User** |
+| **Keyboard Focus** | ❌ Steals active window focus | ❌ Drops keystrokes into wrong apps | 🟢 **Zero Focus Interruption** |
+| **Multitasking** | ❌ Spectator mode only | ❌ Sequential only | 🟢 **True Simultaneous Co-Operation** |
+| **Targeting Precision** | ❌ Best-effort visual pixel coordinates | ❌ Brittle screen-scraping | 🟢 **Direct OS UIA COM & DOM Selectors** |
+| **Execution Latency** | ❌ Slow multi-second VLM roundtrips | ❌ Blind sleeps & delays | 🟢 **Sub-millisecond Native IPC** |
+
+- 🖱️ **Zero Cursor Stealing**: Your physical mouse pointer stays exactly where you left it.
+- ⌨️ **Zero Keyboard Focus Theft**: Background apps receive input directly via UIA `ValuePattern` and Win32 `WM_SETTEXT` without stealing keystrokes from your active window.
+- ⚡ **Zero Coordinate Hallucination**: Driven by deterministic OS-level Accessibility IDs, UIA patterns, and DOM selectors—never blind screen pixel guesses.
+- 🛡️ **Hardware CursorGuard**: Sub-millisecond hardware watchdog guarantees cursor restoration if any third-party app attempts to shift focus.
 
 ---
 
