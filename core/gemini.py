@@ -421,6 +421,8 @@ def api_key(refresh: bool = False) -> str:
             _cached_key = str(data.get("gemini_api_key") or "")
         except Exception:
             _cached_key = ""
+        if not _cached_key:
+            _cached_key = os.environ.get("GEMINI_API_KEY", "")
         return _cached_key
 
 

@@ -8892,10 +8892,46 @@ class MainWindow(QMainWindow):
             print(f"[UI] Screen highlight overlay display notice: {e}")
 
     def _check_config(self) -> bool:
-        if not API_FILE.exists(): return False
+        """
+        Returns True if the assistant is already configured (old/existing user).
+        Only returns False for a brand-new installation with zero keys and zero local pipeline.
+        """
+        # 1. Environment variables
+        if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS"):
+            return True
+
+        # 2. Key rotator check (handles multi-key pool, cached keys, etc.)
+        try:
+            from core.neo_key_rotator import key_rotator
+            if key_rotator.get_active_key():
+                return True
+        except Exception:
+            pass
+
+        # 3. Check config/api_keys.json
+        if not API_FILE.exists():
+            return False
         try:
             d = json.loads(API_FILE.read_text(encoding="utf-8"))
-            return bool(d.get("gemini_api_key")) and bool(d.get("onboarding_completed", False) or d.get("user_name"))
+            single_key = str(d.get("gemini_api_key") or "").strip()
+            pool_keys = d.get("gemini_api_keys")
+            has_pool = isinstance(pool_keys, list) and any(bool(str(k).strip()) for k in pool_keys)
+            is_local = (
+                str(d.get("pipeline", "")).lower() in ("local", "custom", "ollama", "piper")
+                or bool(d.get("local_mode"))
+            )
+            already_configured = bool(d.get("onboarding_completed") or d.get("user_name") or d.get("personality"))
+
+            if single_key or has_pool or is_local or already_configured:
+                # Existing user! Ensure onboarding_completed flag is saved so it never prompts again
+                if not d.get("onboarding_completed"):
+                    try:
+                        d["onboarding_completed"] = True
+                        API_FILE.write_text(json.dumps(d, indent=4), encoding="utf-8")
+                    except Exception:
+                        pass
+                return True
+            return False
         except Exception:
             return False
 
@@ -8930,6 +8966,12 @@ class MainWindow(QMainWindow):
 
     def _on_setup_cancelled(self):
         self._ready = True
+        try:
+            d = _read_full_config()
+            d["onboarding_completed"] = True
+            API_FILE.write_text(json.dumps(d, indent=4), encoding="utf-8")
+        except Exception:
+            pass
         if self._overlay:
             self._overlay.hide()
             self._overlay = None

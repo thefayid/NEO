@@ -206,7 +206,7 @@ _TAIL_MARGIN = 0.25
 # seconds is twenty-five times the measured first response, which leaves room
 # for a slow tool call (those send their own traffic, which clears the deadline)
 # while turning an unbounded hang into a blip.
-_STALL_LIMIT = 30.0
+_STALL_LIMIT = 12.0
 
 _VIS_WIN = 1024        # ~43 ms analysis window at 24 kHz: enough for formants
 _VIS_HOP = 480         # 20 ms between frames, i.e. 50 shapes a second
@@ -1013,7 +1013,7 @@ class NeoLive:
 
     # ── stall watchdog ───────────────────────────────────────────────────────
 
-    def _arm_stall(self) -> None:
+    def _arm_stall(self, timeout: float = _STALL_LIMIT) -> None:
         """A user turn has gone out; start the clock if one is not already running.
 
         Deliberately does NOT push an existing deadline forward. The question is
@@ -1022,7 +1022,7 @@ class NeoLive:
         into a dead socket would keep resetting the very timer meant to catch it.
         """
         if self._rx_deadline is None:
-            self._rx_deadline = time.monotonic() + _STALL_LIMIT
+            self._rx_deadline = time.monotonic() + timeout
 
     def _clear_stall(self) -> None:
         """The server spoke, so the return path is alive."""
@@ -1036,15 +1036,15 @@ class NeoLive:
         cost the rest of the session with no indication anything was wrong.
         """
         while True:
-            await asyncio.sleep(2)
+            await asyncio.sleep(1.0)
             deadline = self._rx_deadline
             if deadline is None or time.monotonic() < deadline:
                 continue
             self._clear_stall()
-            print(f"[NEO] ⚠️  No response for {_STALL_LIMIT:.0f}s — "
-                  f"the live session is not answering. Rebuilding it.")
-            self.ui.write_log("SYS: The model stopped answering — reconnecting.")
-            self.request_reconnect(keep_context=True, reason="no response")
+            print(f"[NEO] ⚠️  No response from API for {_STALL_LIMIT:.0f}s — "
+                  f"the live session is not answering. Rebuilding it seamlessly.")
+            self.ui.write_log("SYS: Model connection stalled — reconnecting seamlessly.")
+            self.request_reconnect(keep_context=True, reason="live session response stall")
             return          # this session is going away; the new one gets its own watcher
 
     def request_reconnect(self, keep_context: bool = True, reason: str = ""):
@@ -2015,18 +2015,24 @@ class NeoLive:
             try:
                 if self.session:
                     if msg.get("type") in ("media", "video"):
-                        await self.session.send_realtime_input(
-                            media=types.Blob(
-                                data=msg["data"],
-                                mime_type=msg.get("mime_type", "image/jpeg"),
-                            )
+                        await asyncio.wait_for(
+                            self.session.send_realtime_input(
+                                media=types.Blob(
+                                    data=msg["data"],
+                                    mime_type=msg.get("mime_type", "image/jpeg"),
+                                )
+                            ),
+                            timeout=3.5,
                         )
                     else:
-                        await self.session.send_realtime_input(
-                            audio=types.Blob(
-                                data=msg["data"],
-                                mime_type=msg.get("mime_type", "audio/pcm;rate=16000"),
-                            )
+                        await asyncio.wait_for(
+                            self.session.send_realtime_input(
+                                audio=types.Blob(
+                                    data=msg["data"],
+                                    mime_type=msg.get("mime_type", "audio/pcm;rate=16000"),
+                                )
+                            ),
+                            timeout=3.5,
                         )
                     consecutive_errors = 0
             except asyncio.CancelledError:
@@ -2035,7 +2041,7 @@ class NeoLive:
                 consecutive_errors += 1
                 err_text = str(e).lower()
                 print(f"[NEO] ⚠️ Realtime send exception ({consecutive_errors}): {e}")
-                if "closed" in err_text or "connection" in err_text or "1007" in err_text or consecutive_errors >= 5:
+                if "closed" in err_text or "connection" in err_text or "1007" in err_text or "timeout" in err_text or consecutive_errors >= 3:
                     self.request_reconnect(keep_context=True, reason=f"send_realtime: {e}")
                     break
                 await asyncio.sleep(0.02)
@@ -2052,15 +2058,15 @@ class NeoLive:
 
     async def _stream_live_screen(self):
         """Streams real-time live screen frames continuously to Gemini Live.
-        Captures the screen at ~1.0 FPS with adaptive change detection so the model
-        has continuous real-time vision of the user's desktop without requiring manual snapshots."""
+        Captures the screen at ~2.5s cadence with adaptive change detection so the model
+        has continuous real-time vision of the user's desktop without token flooding."""
         import hashlib
         last_hash = None
         last_send_time = 0.0
 
         while True:
             try:
-                await asyncio.sleep(1.0)
+                await asyncio.sleep(2.5)
                 if not (self.session and self._awake and getattr(self, "_live_screen_stream_enabled", True)):
                     continue
 
@@ -2071,7 +2077,7 @@ class NeoLive:
                     getattr(self, "_vision_busy", False)
                     or getattr(self, "_is_speaking", False)
                     or getattr(self, "_active_speech_frames", 0) > 0
-                    or (now - getattr(self, "_last_user_speech", 0.0)) < 1.2
+                    or (now - getattr(self, "_last_user_speech", 0.0)) < 2.5
                 ):
                     continue
 
@@ -2087,8 +2093,8 @@ class NeoLive:
                 import time as _t_mod
                 now = _t_mod.monotonic()
 
-                # Stream if screen visually changed OR keepalive every 4.0 seconds
-                if curr_hash != last_hash or (now - last_send_time) >= 4.0:
+                # Stream if screen visually changed OR keepalive every 6.0 seconds
+                if curr_hash != last_hash or (now - last_send_time) >= 6.0:
                     last_hash = curr_hash
                     last_send_time = now
                     self._enqueue_video_out({
@@ -2155,8 +2161,8 @@ class NeoLive:
                 neo_speaking = self._is_speaking
                 speaking_since = getattr(self, "_speaking_since", 0.0)
 
-            # Watchdog: if speaking flag has been stuck on for > 8s with no audio queued, unstick it
-            if neo_speaking and (time.monotonic() - speaking_since > 8.0) and (self.audio_in_queue is None or self.audio_in_queue.empty()):
+            # Watchdog: if speaking flag has been stuck on for > 3.5s with no audio queued, unstick it
+            if neo_speaking and (time.monotonic() - speaking_since > 3.5) and (self.audio_in_queue is None or self.audio_in_queue.empty()):
                 print("[NEO] ⚠️ Speaking state watchdog triggered: unsticking microphone.")
                 self.set_speaking(False)
                 neo_speaking = False
@@ -2246,6 +2252,8 @@ class NeoLive:
                     if prev_f >= 3 and self._active_speech_frames == 0:  # speech offset confirmed
                         try:
                             telemetry.on_user_speech_stop()
+                            # Speech finished; arm stall watchdog so if API freezes, it reconnects seamlessly
+                            loop.call_soon_threadsafe(self._arm_stall, 10.0)
                         except Exception:
                             pass
 
@@ -3689,16 +3697,34 @@ class NeoLive:
                     )
                     continue
 
-                # Invalid API key — stop hammering the API, prompt re-configuration
+                # Invalid API key — rotate key first from pool if available; only prompt if truly empty
                 if "API key not valid" in err_str or "API_KEY_INVALID" in err_str:
-                    self.ui.write_log("ERR: API key invalid — please re-enter your key.")
-                    self.ui.set_state("SLEEPING")
-                    self.ui.prompt_reconfig()
-                    while not self.ui._win._ready:
-                        await asyncio.sleep(1)
-                    print("[NEO] New API key saved — reconnecting...")
-                    _conn_backoff = 3
-                    continue
+                    try:
+                        from core.neo_key_rotator import key_rotator
+                        rotated, new_k, r_msg = key_rotator.rotate_key(reason="api_key_invalid", cooldown_seconds=600.0)
+                        if rotated:
+                            print(f"[NEO] 🔑 Key invalid — automatically rotated to pool key: {r_msg}")
+                            self.ui.write_log("🔑 Standby API key activated from pool.")
+                            _conn_backoff = 1
+                            continue
+                    except Exception as _rot_err:
+                        print(f"[NEO] Key rotation attempt failed: {_rot_err}")
+
+                    from core.neo_key_rotator import key_rotator
+                    if not key_rotator.get_keys():
+                        self.ui.write_log("ERR: No API key configured — please enter your key.")
+                        self.ui.set_state("SLEEPING")
+                        self.ui.prompt_reconfig()
+                        while not self.ui._win._ready:
+                            await asyncio.sleep(1)
+                        print("[NEO] New API key saved — reconnecting...")
+                        _conn_backoff = 3
+                        continue
+                    else:
+                        self.ui.write_log("ERR: API key invalid and key pool exhausted. Retrying in 10s...")
+                        _conn_backoff = 10
+                        await asyncio.sleep(10)
+                        continue
 
                 # Network / timeout errors — attempt immediate offline failover to local brain
                 is_net_err = any(k in err_str for k in (

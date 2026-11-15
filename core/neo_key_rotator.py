@@ -14,6 +14,7 @@ Provides automatic zero-downtime key rotation for Google AI Studio / Gemini API:
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -87,6 +88,17 @@ class GeminiKeyPool:
             for k in single_field:
                 if isinstance(k, str):
                     raw_candidates.append(k.strip())
+
+        # 3. Check environment variables GEMINI_API_KEY and GEMINI_API_KEYS
+        env_single = os.environ.get("GEMINI_API_KEY", "")
+        if env_single:
+            for part in env_single.replace("\n", ",").split(","):
+                raw_candidates.append(part.strip())
+
+        env_pool = os.environ.get("GEMINI_API_KEYS", "")
+        if env_pool:
+            for part in env_pool.replace("\n", ",").split(","):
+                raw_candidates.append(part.strip())
 
         # Clean, validate, and deduplicate
         seen = set()
