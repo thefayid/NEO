@@ -830,6 +830,14 @@ class NeoLive:
         self.ui.get_plugin_settings = self._plugin_registry.settings_schemas  # ⚙ settings tab
         self.ui.request_say = self.plugin_say   # plugins: mid-task speech channel
 
+        # Model Context Protocol (MCP) bridge
+        from core.neo_mcp_bridge import mcp_bridge
+        self._mcp_bridge = mcp_bridge
+        try:
+            self._mcp_bridge.initialize()
+        except Exception as _e:
+            print(f"[MCP] Bridge initialization error: {_e}")
+
         try:
             from core.neo_central_coordinator import central_core
             central_core.set_references(assistant=self, ui=self.ui)
@@ -1514,7 +1522,8 @@ class NeoLive:
         # and this follows without anyone editing a prompt.
         _all_decls = (TOOL_DECLARATIONS
                       + self._action_registry.get_tool_declarations()
-                      + self._plugin_registry.get_tool_declarations())
+                      + self._plugin_registry.get_tool_declarations()
+                      + (self._mcp_bridge.get_tool_declarations() if hasattr(self, "_mcp_bridge") and self._mcp_bridge else []))
 
         # An engine that cannot do something is not offered the tool for it.
         #
@@ -1909,6 +1918,19 @@ class NeoLive:
                     except asyncio.TimeoutError:
                         print(f"[NEO] ⚠️ Plugin tool '{name}' timed out after 25s")
                         r = f"Plugin tool '{name}' timed out after 25 seconds."
+                    result = r or "Done."
+                elif hasattr(self, "_mcp_bridge") and self._mcp_bridge and self._mcp_bridge.has(name):
+                    try:
+                        r = await asyncio.wait_for(
+                            loop.run_in_executor(
+                                None,
+                                lambda: self._mcp_bridge.run(name, args)
+                            ),
+                            timeout=25.0
+                        )
+                    except asyncio.TimeoutError:
+                        print(f"[NEO] ⚠️ MCP tool '{name}' timed out after 25s")
+                        r = f"MCP tool '{name}' timed out after 25 seconds."
                     result = r or "Done."
                 else:
                     result = f"Unknown tool: {name}"
@@ -2444,6 +2466,14 @@ class NeoLive:
                                 print(f"[NEO] 🗣️ User: {full_in}")
                                 self.ui.write_log(f"You: {full_in}")
                                 self._session_log.append(f"User: {full_in}")
+                                try:
+                                    from core.neo_personality_engine import personality_engine
+                                    emo_in = personality_engine.analyze_dialog_turn(full_in, role="user")
+                                    if hasattr(self.ui, "set_emotion"):
+                                        self.ui.set_emotion(emo_in.emotion, duration=emo_in.duration)
+                                    personality_engine.note_topic(full_in[:60])
+                                except Exception:
+                                    pass
                                 if self._dashboard:
                                     asyncio.create_task(self._dashboard.broadcast({
                                         "type": "log", "speaker": "user",
@@ -2467,6 +2497,13 @@ class NeoLive:
                                 self._last_out_logged = full_out
                                 self.ui.write_log(f"{self._asst_name}: {full_out}")
                                 self._session_log.append(f"{self._asst_name}: {full_out}")
+                                try:
+                                    from core.neo_personality_engine import personality_engine
+                                    emo_out = personality_engine.analyze_dialog_turn(full_out, role="assistant")
+                                    if hasattr(self.ui, "set_emotion"):
+                                        self.ui.set_emotion(emo_out.emotion, duration=emo_out.duration)
+                                except Exception:
+                                    pass
                                 if self._dashboard:
                                     asyncio.create_task(self._dashboard.broadcast({
                                         "type": "log", "speaker": "neo",

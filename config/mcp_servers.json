@@ -1,0 +1,14 @@
+{
+  "mcp_servers": {
+    "filesystem_local": {
+      "command": "python",
+      "args": [
+        "-c",
+        "print('NEO MCP Stdio Mock Server Ready')"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Standard local file operations MCP server"
+    }
+  }
+}

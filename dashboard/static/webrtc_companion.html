@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>NEO — Mobile WebRTC Companion</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0d0e12">
+  <style>
+    :root {
+      --bg: #0d0e12;
+      --card-bg: rgba(26, 28, 36, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #00f0ff;
+      --accent-glow: rgba(0, 240, 255, 0.35);
+      --accent-orange: #f59e0b;
+      --text: #ffffff;
+      --text-dim: #9ca3af;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(13, 14, 18, 0.85);
+      backdrop-filter: blur(20px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+    }
+    .status-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Visualizer & Camera Section */
+    .hero-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    #visualizer {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, rgba(13, 14, 18, 0) 70%);
+    }
+
+    #camera-preview {
+      display: none;
+      width: 140px;
+      height: 180px;
+      border-radius: 16px;
+      object-fit: cover;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      border: 2px solid var(--accent);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Transcript Stream */
+    .transcripts {
+      height: 180px;
+      overflow-y: auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: linear-gradient(180deg, transparent, rgba(13, 14, 18, 0.95));
+    }
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.4;
+      max-width: 85%;
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #e0f2fe;
+    }
+    .bubble.assistant {
+      align-self: flex-start;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+
+    /* Action Controls */
+    .controls {
+      padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: 16px;
+      background: rgba(13, 14, 18, 0.95);
+      border-top: 1px solid var(--card-border);
+    }
+
+    .btn-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-circle.active {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .btn-ptt {
+      flex: 1;
+      height: 58px;
+      border-radius: 29px;
+      border: none;
+      background: linear-gradient(135deg, #00f0ff, #0284c7);
+      color: #000;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: transform 0.1s, box-shadow 0.1s;
+      user-select: none;
+    }
+    .btn-ptt:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px var(--accent-glow);
+      background: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span style="color: var(--accent);">⭘</span> NEO Live
+    </div>
+    <div id="status" class="status-badge">WebRTC Connected</div>
+  </header>
+
+  <div class="hero-stage">
+    <canvas id="visualizer"></canvas>
+    <video id="camera-preview" autoplay playsinline muted></video>
+  </div>
+
+  <div class="transcripts" id="transcript-list">
+    <div class="bubble assistant">Welcome to NEO Mobile Companion. Tap and hold to speak or stream your camera live.</div>
+  </div>
+
+  <div class="controls">
+    <button id="camera-btn" class="btn-circle" title="Show Neo Camera">📷</button>
+    <button id="ptt-btn" class="btn-ptt">
+      <span>🎙️</span> HOLD TO TALK
+    </button>
+    <button id="speaker-btn" class="btn-circle active" title="Mute Assistant">🔊</button>
+  </div>
+
+  <script>
+    const statusBadge = document.getElementById("status");
+    const transcriptList = document.getElementById("transcript-list");
+    const pttBtn = document.getElementById("ptt-btn");
+    const cameraBtn = document.getElementById("camera-btn");
+    const cameraPreview = document.getElementById("camera-preview");
+    const canvas = document.getElementById("visualizer");
+    const ctx = canvas.getContext("2d");
+
+    let isCameraActive = false;
+    let localStream = null;
+    let ws = null;
+
+    // Canvas size
+    canvas.width = 220;
+    canvas.height = 220;
+
+    // Connect WebSocket Signaling
+    function connectSignaling() {
+      const loc = window.location;
+      const proto = loc.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${proto}//${loc.host}/webrtc/signal`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        statusBadge.innerText = "Live Synced";
+        statusBadge.style.color = "#10b981";
+        // Send initial handshake offer
+        ws.send(JSON.stringify({
+          type: "offer",
+          sdp: "v=0\r\no=Mobile\r\ns=NEO-PWA\r\nt=0 0\r\n",
+          device: navigator.userAgent.includes("iPhone") ? "iPhone" : "Android"
+        }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "transcript") {
+            addBubble(msg.role, msg.text);
+          }
+        } catch(e) {}
+      };
+
+      ws.onclose = () => {
+        statusBadge.innerText = "Reconnecting...";
+        statusBadge.style.color = "#f59e0b";
+        setTimeout(connectSignaling, 3000);
+      };
+    }
+
+    function addBubble(role, text) {
+      const b = document.createElement("div");
+      b.className = `bubble ${role}`;
+      b.innerText = text;
+      transcriptList.appendChild(b);
+      transcriptList.scrollTop = transcriptList.scrollHeight;
+    }
+
+    // Push to Talk
+    pttBtn.addEventListener("pointerdown", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
+      pttBtn.style.background = "#f59e0b";
+      pttBtn.querySelector("span").innerText = "🔴";
+      addBubble("user", "...");
+    });
+
+    pttBtn.addEventListener("pointerup", () => {
+      pttBtn.style.background = "";
+      pttBtn.querySelector("span").innerText = "🎙️";
+    });
+
+    // Camera Toggle ("Show Neo")
+    cameraBtn.addEventListener("click", async () => {
+      if (!isCameraActive) {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment", width: 640, height: 480 },
+            audio: false
+          });
+          cameraPreview.srcObject = localStream;
+          cameraPreview.style.display = "block";
+          cameraBtn.classList.add("active");
+          isCameraActive = true;
+          addBubble("assistant", "Camera stream active. NEO can see what you are pointing at.");
+        } catch (err) {
+          alert("Camera access failed: " + err.message);
+        }
+      } else {
+        if (localStream) localStream.getTracks().forEach(t => t.stop());
+        cameraPreview.style.display = "none";
+        cameraBtn.classList.remove("active");
+        isCameraActive = false;
+      }
+    });
+
+    // Reactive Audio Waveform Simulation
+    let angle = 0;
+    function renderVisualizer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 65, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Pulsing outer ripple
+      const radius = 65 + Math.sin(angle) * 8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.8)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.restore();
+      angle += 0.05;
+      requestAnimationFrame(renderVisualizer);
+    }
+    renderVisualizer();
+
+    connectSignaling();
+  </script>
+</body>
+</html>

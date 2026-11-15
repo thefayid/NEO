@@ -1281,7 +1281,7 @@
     ".": {
       "pattern": ".",
       "sample": "Hey.",
-      "count": 9,
+      "count": 10,
       "tools": [
         "computer_control",
         "visual_screen_grounding",
@@ -1291,7 +1291,7 @@
         "read_messages",
         "screen_process"
       ],
-      "last_used": 1794656150.9520738
+      "last_used": 1794747962.687671
     },
     ", killing all the background process, okay?": {
       "pattern": ", killing all the background process, okay?",
@@ -3117,6 +3117,13 @@
         "read_messages"
       ],
       "last_used": 1794674254.0063674
+    },
+    "how are you?": {
+      "pattern": "how are you?",
+      "sample": "How are you?",
+      "count": 1,
+      "tools": [],
+      "last_used": 1794747988.5926096
     }
   },
   "preferences": {},
@@ -3596,5 +3603,5 @@
     "Avoid previous misstep for 'bylingual wa wa wa wa': execute preferred action 'Nothing for now. Say it okay.'.",
     "Avoid previous misstep for 'So what should I know?': execute preferred action 'Nothing, I will let you know.'."
   ],
-  "updated_at": 1794674254.006932
+  "updated_at": 1794747988.5956168
 }

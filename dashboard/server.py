@@ -870,6 +870,13 @@ class DashboardServer:
         async def login_page():
             return HTMLResponse(self._login_html)
 
+        @app.get("/companion", response_class=HTMLResponse)
+        async def webrtc_companion():
+            comp_path = STATIC_DIR / "webrtc_companion.html"
+            if comp_path.exists():
+                return HTMLResponse(comp_path.read_text(encoding="utf-8"))
+            return HTMLResponse("<h1>WebRTC Companion UI not found</h1>")
+
         @app.get("/", response_class=HTMLResponse)
         async def index():
             # Auth is handled client-side via sessionStorage bearer token.
@@ -1185,6 +1192,21 @@ class DashboardServer:
                 pass
             finally:
                 self._clients.discard(websocket)
+
+        @app.websocket("/webrtc/signal")
+        async def webrtc_signal_ep(websocket: WebSocket):
+            from core.neo_webrtc_hub import webrtc_hub
+            await websocket.accept()
+            sess_id = f"peer_{int(time.time()*1000)}"
+            try:
+                while True:
+                    data = await websocket.receive_json()
+                    res = webrtc_hub.handle_signaling_message(sess_id, data)
+                    await websocket.send_json(res)
+            except WebSocketDisconnect:
+                webrtc_hub.terminate_session(sess_id)
+            except Exception:
+                webrtc_hub.terminate_session(sess_id)
 
         return app
 

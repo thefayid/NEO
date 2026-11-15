@@ -1,94 +1,6 @@
 {
   "history": [
     {
-      "timestamp": 1794654335.4429462,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"hotkey\", \"keys\": \"ctrl+f\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654335.50811,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"cyber security\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654336.3212454,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"enter\", \"action\": \"press\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654337.2835932,
-      "action_type": "TOOL",
-      "command": "screen_process {\"text\": \"look for the search bar in the linkedin app\", \"ang",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654338.861806,
-      "action_type": "USER_COMMAND",
-      "command": "cyber security jobs",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654339.9188273,
-      "action_type": "TOOL",
-      "command": "computer_control {\"x\": 258, \"action\": \"click\", \"y\": 67}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654341.4888663,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"type\", \"text\": \"cyber security jobs\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654344.8706915,
-      "action_type": "TOOL",
-      "command": "computer_control {\"key\": \"enter\", \"action\": \"press\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654355.2198408,
-      "action_type": "TOOL",
-      "command": "computer_control {\"action\": \"scroll\", \"amount\": 5, \"direction\": \"down\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794654356.7685318,
-      "action_type": "USER_COMMAND",
-      "command": "Scroll down.",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
-      "timestamp": 1794655235.8023221,
-      "action_type": "TOOL",
-      "command": "browser_control {\"action\": \"search\", \"query\": \"current date and time\"}",
-      "hour": 16,
-      "weekday": 5,
-      "metadata": {}
-    },
-    {
       "timestamp": 1794655236.5714803,
       "action_type": "TOOL",
       "command": "open_app {\"app_name\": \"Chrome\"}",
@@ -1599,6 +1511,94 @@
       "hour": 22,
       "weekday": 5,
       "metadata": {}
+    },
+    {
+      "timestamp": 1794745760.9028687,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 17,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794745761.1560688,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 17,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794745761.4066522,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 17,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794746674.6338673,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794746674.7346015,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794746674.899679,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794747328.5415003,
+      "action_type": "SWARM_MISSION",
+      "command": "Design secure authentication service",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794747328.6596065,
+      "action_type": "SWARM_MISSION",
+      "command": "Quick verification objective",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794747328.8292449,
+      "action_type": "GOAL",
+      "command": "Run health check on active node",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794747962.7076354,
+      "action_type": "USER_COMMAND",
+      "command": "Yeah.",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
+    },
+    {
+      "timestamp": 1794747988.611012,
+      "action_type": "USER_COMMAND",
+      "command": "How are you?",
+      "hour": 18,
+      "weekday": 6,
+      "metadata": {}
     }
   ],
   "habits": {
@@ -1776,7 +1776,14 @@
       "occurrences": 3,
       "first_seen": 1794674228.9874,
       "synthesized": false
+    },
+    "design_secure_authentication_ser": {
+      "name": "design_secure_authentication_ser",
+      "command": "Design secure authentication service",
+      "occurrences": 3,
+      "first_seen": 1794746674.635712,
+      "synthesized": false
     }
   },
-  "updated_at": 1794674570.7987142
+  "updated_at": 1794747988.6113796
 }

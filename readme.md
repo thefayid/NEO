@@ -36,6 +36,10 @@ While NEO is **mainly optimized for Windows** with deep OS-level accessibility a
 | 🎙️ **Meeting Copilot (Loopback)** | Captures internal system audio (Google Meet, Zoom, Teams, YouTube) via Stereo Mix loopback without mic bleed. Auto-generates executive Markdown minutes on Desktop and syncs action items to Tasks & Agenda. |
 | ⚡ **Direct OS & Shell Engine** | Sub-millisecond Win32 window snapping, dual-window tiling (50/50), port conflict resolution, process watchdog, and desktop utilities. |
 | 🤖 **Autonomous Computer Operator** | Multi-turn closed-loop operator agent with strict Truth Rules, stage verification, state diffing, and security handoff gates. |
+| 🛡️ **Shadow Mode & Visual Action Guard** | Pre-execution safety risk classifier (Safe/Low/Med/High/Critical), dry-run simulation mode, and neon target bounding preview before clicks. |
+| 🔌 **Model Context Protocol (MCP) Bridge** | Native stdio JSON-RPC 2.0 client connecting external databases, tools, and servers (`config/mcp_servers.json`) directly into Gemini Live. |
+| 🖥️ **Multi-Monitor Spatial Awareness** | Virtual desktop coordinate topology across multi-display setups, spatial NLP ("monitor 2", "left screen"), and per-monitor Set-of-Marks. |
+| ⏳ **Visual Screen Time Capsule** | Privacy-first local SQLite episodic screen memory to recall past windows, active applications, and visual OCR snippets. |
 | 📋 **Deterministic Workflow Engine** | Instant multi-step routine and macro execution with zero LLM latency (`dev_workspace`, `focus_mode`, `system_tuneup`, `meeting_prep`). |
 | 📱 **Remote Dashboard** | Local network phone dashboard paired via QR code for wireless monitoring and remote control. |
 
@@ -160,6 +164,30 @@ python -c "from actions.browser_cdp import run; print(run({'action': 'eval_js', 
 ```powershell
 # Check detected system scale factor and physical-to-logical coordinate translation:
 python -c "from core.neo_dpi_ocr import dpi_transformer; print('DPI Scale Factor:', dpi_transformer.scale_factor); print('Physical (1250, 625) -> Logical:', dpi_transformer.physical_to_logical(1250, 625))"
+```
+
+### 6. Model Context Protocol (MCP) Server & Tool Hub
+```powershell
+# List all configured MCP servers and active external tools:
+python -c "from actions.mcp_control import mcp_control; print(mcp_control({'action': 'list_servers'}))"
+```
+
+### 7. Shadow Mode Safety Guard & Dry-Run Simulation
+```powershell
+# Enable dry-run simulation mode and test click interception:
+python -c "from actions.computer_control import computer_control; print(computer_control({'action': 'shadow_mode', 'shadow_mode': True, 'dry_run': True})); print(computer_control({'action': 'click', 'x': 500, 'y': 300}))"
+```
+
+### 8. Multi-Monitor Topology & Spatial Display Detection
+```powershell
+# Inspect all connected physical displays and virtual coordinates:
+python -c "from actions.computer_control import computer_control; print(computer_control({'action': 'list_monitors'}))"
+```
+
+### 9. Visual Screen Time Capsule & Memory Search
+```powershell
+# Search episodic visual memory for past screen activity:
+python -c "from actions.time_capsule_action import time_capsule_action; print(time_capsule_action({'action': 'timeline', 'limit': 5}))"
 ```
 
 ---

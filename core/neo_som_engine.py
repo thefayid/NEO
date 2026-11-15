@@ -61,12 +61,24 @@ class SetOfMarksEngine:
         self,
         screenshot_path: Optional[str | Path] = None,
         max_marks: int = 40,
+        monitor_index: Optional[int] = None,
     ) -> Tuple[Path, Dict[int, VisualMark]]:
         """
         Takes screenshot or loads image, extracts controls, renders numbered badges, and stores registry.
+        Supports multi-monitor targeting via monitor_index (1, 2, ...).
         """
         _MEMORY_DIR.mkdir(parents=True, exist_ok=True)
         target_path = Path(screenshot_path) if screenshot_path else None
+        offset_x, offset_y = 0, 0
+
+        # Multi-monitor capture support
+        if monitor_index is not None and not target_path:
+            try:
+                from core.neo_multi_monitor import multi_monitor
+                target_path, disp_info = multi_monitor.capture_display(monitor_index)
+                offset_x, offset_y = disp_info.x, disp_info.y
+            except Exception as e:
+                target_path = None
 
         # If no image path provided, capture active screen
         if not target_path or not target_path.exists():
@@ -122,10 +134,10 @@ class SetOfMarksEngine:
                         mark_id=mark_idx,
                         label=c.name,
                         kind=c.control_type,
-                        center_logical=(cx, cy),
-                        bbox_logical=(l, t, r, b),
-                        center_physical=(p_cx, p_cy),
-                        bbox_physical=(p_l, p_t, p_r, p_b),
+                        center_logical=(cx + offset_x, cy + offset_y),
+                        bbox_logical=(l + offset_x, t + offset_y, r + offset_x, b + offset_y),
+                        center_physical=(p_cx + offset_x, p_cy + offset_y),
+                        bbox_physical=(p_l + offset_x, p_t + offset_y, p_r + offset_x, p_b + offset_y),
                     ))
                     mark_idx += 1
                     if len(marks) >= max_marks:
@@ -143,10 +155,20 @@ class SetOfMarksEngine:
                         mark_id=mark_idx,
                         label=f"{d.kind}_{mark_idx}",
                         kind=d.kind,
-                        center_logical=d.center_logical,
-                        bbox_logical=d.bbox_logical,
-                        center_physical=(p_cx, p_cy),
-                        bbox_physical=d.bbox_physical,
+                        center_logical=(d.center_logical[0] + offset_x, d.center_logical[1] + offset_y),
+                        bbox_logical=(
+                            d.bbox_logical[0] + offset_x,
+                            d.bbox_logical[1] + offset_y,
+                            d.bbox_logical[2] + offset_x,
+                            d.bbox_logical[3] + offset_y,
+                        ),
+                        center_physical=(p_cx + offset_x, p_cy + offset_y),
+                        bbox_physical=(
+                            d.bbox_physical[0] + offset_x,
+                            d.bbox_physical[1] + offset_y,
+                            d.bbox_physical[2] + offset_x,
+                            d.bbox_physical[3] + offset_y,
+                        ),
                     ))
                     mark_idx += 1
                     if len(marks) >= max_marks:

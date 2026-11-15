@@ -61,6 +61,11 @@ def log_milestone_story(title: str, story: str, category: str = "growth") -> str
     episodes.append(entry)
     _save_episodes(episodes)
     try:
+        from core.neo_personality_engine import personality_engine
+        personality_engine.log_shared_milestone(title, story)
+    except Exception:
+        pass
+    try:
         from core.sfx import play_confirm
         play_confirm()
     except Exception:

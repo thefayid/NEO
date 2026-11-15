@@ -13,6 +13,8 @@ config/voiceprint.json
 # Personal data
 memory/long_term.json
 memory/som_marks.json
+memory/rapport.json
+memory/chat_sessions.json
 memory/*.db
 
 # Python build noise

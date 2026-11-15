@@ -195,6 +195,9 @@ class HoloAvatar:
         # ── emotion system ──────────────────────────────────────────────────
         self.emotion = "listening"
         self._emotion_hold = 0.0
+        self._roll = 0.0           # head tilt in radians (-0.15 .. +0.15)
+        self._roll_tgt = 0.0
+        self._breath = 0.0         # subtle organic breathing rhythm
 
         # ── viseme ──────────────────────────────────────────────────────────
         # Loudness alone only answers "how far open", which is why an RMS-driven
@@ -270,17 +273,15 @@ class HoloAvatar:
         amp = max(0.0, min(1.0, float(amp)))
         live = speaking and not muted
 
-        # Idle sway. The phase is *integrated* rather than taken as
-        # sin(t * rate * speed): multiplying absolute time by a speed that
-        # changes when NEO starts or stops talking jumps the phase by
-        # t * rate * delta, which after a minute of uptime is several radians
-        # and visibly teleports the head the instant a sentence ends.
+        # Idle sway & organic breathing.
         speed = (1.0 if not muted else 0.55) * (1.25 if live else 1.0)
         self._sway += dt * speed
         s = self._sway
         self._yaw = 0.26 * math.sin(s * 0.31) + 0.09 * math.sin(s * 0.73 + 1.3)
         self._pitch = (0.060 * math.sin(s * 0.23 + 0.7)
                        + 0.024 * math.sin(s * 0.61))
+        # Subtle organic breathing vertical rhythm
+        self._breath = 0.012 * math.sin(s * 1.5)
 
         # Mouth. Which level is driving it matters more than any rate here.
         #
@@ -366,26 +367,42 @@ class HoloAvatar:
             brow_bias, lid_tgt = 0.45, 1.04
             self._wide += (0.38 - self._wide) * 0.14
             self._pitch += (-0.035 - self._pitch) * 0.08
+            self._roll_tgt = 0.04
         elif emo in ("curious", "surprised"):
             self._bias_tgt = [0.15, 0.10]
             brow_bias, lid_tgt = 0.60, 1.08
             self._yaw += (0.14 - self._yaw) * 0.08
+            self._roll_tgt = 0.11   # Inquisitive head tilt
         elif emo == "empathy":
             self._bias_tgt = [-0.10, -0.05]
             brow_bias, lid_tgt = 0.20, 0.95
             self._yaw += (-0.10 - self._yaw) * 0.08
+            self._roll_tgt = -0.09  # Compassionate listening tilt
+        elif emo in ("proud", "celebrating"):
+            self._bias_tgt = [0.0, 0.08]
+            brow_bias, lid_tgt = 0.45, 1.05
+            self._pitch += (0.04 - self._pitch) * 0.08
+            self._roll_tgt = 0.0
+        elif emo in ("focused", "deep_work"):
+            self._bias_tgt = [0.0, -0.06]
+            brow_bias, lid_tgt = -0.18, 0.92
+            self._roll_tgt = 0.0
         elif emo in ("listening", "attuned"):
             # LISTENING: eyes attentively fixated on user, brows slightly alert
             self._bias_tgt = [0.0, 0.0]
             self._bias_at = 0.0
             brow_bias = 0.14
             lid_tgt = 1.0
+            self._roll_tgt = 0.03
         else:
             # idle / speaking: eyes come back to the user.
             self._bias_tgt = [0.0, 0.0]
             self._bias_at = 0.0
             brow_bias = 0.10 if st == "LISTENING" else 0.0
             lid_tgt = 1.0
+            self._roll_tgt = 0.0
+
+        self._roll += (self._roll_tgt - self._roll) * 0.06
 
         for i in (0, 1):
             self._gaze_bias[i] += (self._bias_tgt[i] - self._gaze_bias[i]) * 0.06
@@ -500,11 +517,16 @@ class HoloAvatar:
 
         cy, sy = math.cos(self._yaw), math.sin(self._yaw)
         cp, sp = math.cos(self._pitch), math.sin(self._pitch)
+        cr, sr = math.cos(self._roll), math.sin(self._roll)
+        # Combined 3D rotation matrix: Roll (Z) @ Pitch (X) @ Yaw (Y)
         m = np.array([
-            [cy, 0.0, sy],
-            [sp * sy, cp, -sp * cy],
-            [-cp * sy, sp, cp * cy],
+            [cr * cy - sr * sp * sy, -sr * cp, cr * sy + sr * sp * cy],
+            [sr * cy + cr * sp * sy,  cr * cp, sr * sy - cr * sp * cy],
+            [-cp * sy,                sp,      cp * cy],
         ], dtype=np.float32)
+
+        # Organic breathing vertical oscillation
+        v[:, 1] += self._breath
 
         return v @ m.T, self._n0 @ m.T
 

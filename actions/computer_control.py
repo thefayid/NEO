@@ -237,6 +237,15 @@ def _clamp_coords(x: int | float | str | None, y: int | float | str | None) -> t
 
 
 def _click(x=None, y=None, button: str = "left", clicks: int = 1) -> str:
+    from core.neo_shadow_guard import shadow_guard
+    allowed, guard_msg = shadow_guard.guard_action_execution(
+        "click",
+        {"button": button, "clicks": clicks},
+        target_coords=(int(x), int(y)) if x is not None and y is not None else None,
+    )
+    if not allowed:
+        return guard_msg
+
     _require_pyautogui()
     if x is not None and y is not None:
         cx, cy = _clamp_coords(x, y)
@@ -802,17 +811,52 @@ def computer_control(
             summary = [f"{c.name} ({c.control_type}) @ {c.center}" for c in ctrls[:15] if c.name]
             return f"Found {len(ctrls)} interactive controls: " + ", ".join(summary)
 
+        if action in ("list_monitors", "get_displays"):
+            from core.neo_multi_monitor import multi_monitor
+            displays = multi_monitor.displays
+            data = [
+                f"Monitor {d.index}{' [Primary]' if d.is_primary else ''}: {d.width}x{d.height} @ ({d.x}, {d.y})"
+                for d in displays
+            ]
+            return f"Found {len(displays)} active monitor(s): " + " | ".join(data)
+
         if action in ("som_tag_screen", "tag_screen"):
             from core.neo_som_engine import som_engine
-            img_path, marks = som_engine.generate_som_grid(params.get("path"))
+            m_idx = params.get("monitor_index")
+            if m_idx is not None:
+                try:
+                    m_idx = int(m_idx)
+                except Exception:
+                    m_idx = None
+            img_path, marks = som_engine.generate_som_grid(params.get("path"), monitor_index=m_idx)
             summary = som_engine.list_marks_summary()
-            return f"Generated Set-of-Marks grid ({len(marks)} marks) saved to {img_path}: " + "; ".join(summary[:12])
+            target_desc = f" (Monitor {m_idx})" if m_idx else ""
+            return f"Generated Set-of-Marks grid{target_desc} ({len(marks)} marks) saved to {img_path}: " + "; ".join(summary[:12])
 
         if action in ("som_click", "click_mark"):
             mark_id = int(params.get("mark_id") or params.get("target_id") or 1)
             from core.neo_som_engine import som_engine
+            from core.neo_shadow_guard import shadow_guard
+            mark = som_engine.active_marks.get(mark_id)
+            target_label = mark.label if mark else ""
+            target_coords = mark.center_logical if mark else None
+            allowed, guard_msg = shadow_guard.guard_action_execution(
+                "som_click",
+                params,
+                target_coords=target_coords,
+                target_label=target_label,
+            )
+            if not allowed:
+                return guard_msg
             ok, msg = som_engine.click_mark(mark_id)
             return msg if ok else f"Error: {msg}"
+
+        if action in ("shadow_mode", "set_shadow_mode"):
+            from core.neo_shadow_guard import shadow_guard
+            s_mode = params.get("shadow_mode")
+            d_run = params.get("dry_run")
+            shadow_guard.set_modes(shadow_mode=s_mode, dry_run=d_run)
+            return f"Shadow Guard updated: shadow_mode={shadow_guard.shadow_mode_enabled}, dry_run={shadow_guard.dry_run_mode}"
 
         if action == "wait":
             secs = float(params.get("seconds", 1.0))
