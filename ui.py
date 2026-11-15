@@ -2465,6 +2465,307 @@ class _HudOverlay(QWidget):
         super().closeEvent(e)
 
 
+_BTN_STYLE_PRI = f"""
+    QPushButton {{
+        background: #181d28; color: {C.PRI};
+        border: 1px solid {C.PRI_DIM}; border-radius: 6px;
+        text-align: left; padding: 0 10px;
+    }}
+    QPushButton:hover {{ background: {C.PRI_GHO}; border-color: {C.PRI}; }}
+"""
+_BTN_STYLE_DIM = f"""
+    QPushButton {{
+        background: transparent; color: {C.TEXT_MED};
+        border: 1px solid {C.BORDER}; border-radius: 6px;
+        text-align: left; padding: 0 10px;
+    }}
+    QPushButton:hover {{ color: {C.PRI}; border-color: {C.BORDER_B}; background: rgba(0, 229, 255, 0.05); }}
+"""
+
+
+class NeoKeyPoolOverlay(_HudOverlay):
+    """
+    Dedicated Multi-Key Pool Manager overlay for NEO.
+    Provides visual management of API keys across multiple Google AI Studio projects
+    with zero commas, active indicators, and 1-click addition/deletion.
+    """
+    _OW, _OH = 560, 520
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet(f"""
+            NeoKeyPoolOverlay {{
+                background: rgba(15, 20, 30, 250);
+                border: 1.5px solid {C.BORDER_B};
+                border-radius: 8px;
+            }}
+        """)
+        self.setFixedSize(self._OW, self._OH)
+        self._init_ui()
+
+    def _init_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(22, 16, 22, 16)
+        root.setSpacing(10)
+
+        # Header
+        hdr = QHBoxLayout()
+        hdr_icon = QLabel("🔑")
+        hdr_icon.setFont(QFont("Segoe UI", 14))
+        hdr.addWidget(hdr_icon)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(1)
+        title_lbl = QLabel("GEMINI API KEY POOL")
+        title_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        title_lbl.setStyleSheet(f"color: {C.PRI}; background: transparent; letter-spacing: 0.5px;")
+        title_col.addWidget(title_lbl)
+
+        sub_lbl = QLabel("Zero-downtime failover: auto-rotates across projects when 429 quota limit occurs.")
+        sub_lbl.setFont(QFont("Segoe UI", 8))
+        sub_lbl.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent;")
+        title_col.addWidget(sub_lbl)
+        hdr.addLayout(title_col)
+        hdr.addStretch(1)
+
+        close_btn = QPushButton("✕")
+        close_btn.setFixedSize(26, 26)
+        close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        close_btn.setStyleSheet(f"""
+            QPushButton {{ color: {C.TEXT_DIM}; background: rgba(255,255,255,0.05); border: 1px solid {C.BORDER}; border-radius: 4px; font-weight: bold; }}
+            QPushButton:hover {{ color: #ffffff; background: rgba(239, 68, 68, 0.3); border-color: #ef4444; }}
+        """)
+        close_btn.clicked.connect(self.hide)
+        hdr.addWidget(close_btn)
+        root.addLayout(hdr)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet(f"color: {C.BORDER}; margin: 2px 0;")
+        root.addWidget(sep)
+
+        # Metrics bar
+        self._metrics_bar = QHBoxLayout()
+        self._metrics_bar.setSpacing(8)
+        root.addLayout(self._metrics_bar)
+
+        # Scroll Area for Key Cards
+        self._scroll = QScrollArea()
+        self._scroll.setWidgetResizable(True)
+        self._scroll.setStyleSheet(f"""
+            QScrollArea {{ background: transparent; border: 1px solid {C.BORDER}; border-radius: 6px; }}
+            QScrollBar:vertical {{ background: #111726; width: 6px; }}
+            QScrollBar::handle:vertical {{ background: {C.PRI_DIM}; border-radius: 3px; }}
+        """)
+        self._cards_container = QWidget()
+        self._cards_container.setStyleSheet("background: transparent;")
+        self._cards_lay = QVBoxLayout(self._cards_container)
+        self._cards_lay.setContentsMargins(8, 8, 8, 8)
+        self._cards_lay.setSpacing(6)
+        self._scroll.setWidget(self._cards_container)
+        root.addWidget(self._scroll, stretch=1)
+
+        # Add New Key Card
+        add_box = QFrame()
+        add_box.setStyleSheet(f"""
+            QFrame {{
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px dashed rgba(91, 141, 239, 0.4);
+                border-radius: 6px;
+            }}
+        """)
+        add_lay = QVBoxLayout(add_box)
+        add_lay.setContentsMargins(10, 8, 10, 8)
+        add_lay.setSpacing(6)
+
+        add_hdr = QHBoxLayout()
+        add_lbl = QLabel("+ ADD BACKUP KEY (FROM SECONDARY PROJECT / ACCOUNT):")
+        add_lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        add_lbl.setStyleSheet(f"color: {C.PRI}; background: transparent;")
+        add_hdr.addWidget(add_lbl)
+        add_hdr.addStretch(1)
+
+        studio_btn = QPushButton("Get Key at Google AI Studio ↗")
+        studio_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+        studio_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        studio_btn.setStyleSheet(f"color: {C.PRI_DIM}; background: transparent; border: none; text-decoration: underline;")
+        import webbrowser
+        studio_btn.clicked.connect(lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
+        add_hdr.addWidget(studio_btn)
+        add_lay.addLayout(add_hdr)
+
+        input_row = QHBoxLayout()
+        input_row.setSpacing(6)
+        self._new_key_input = QLineEdit()
+        self._new_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._new_key_input.setPlaceholderText("Paste Gemini API Key from Project 2 or Secondary Account...")
+        self._new_key_input.setFont(QFont("Segoe UI", 9))
+        self._new_key_input.setFixedHeight(30)
+        self._new_key_input.setStyleSheet(f"""
+            QLineEdit {{ background: #0c121e; color: #ffffff; border: 1px solid {C.BORDER}; border-radius: 4px; padding: 2px 8px; }}
+            QLineEdit:focus {{ border: 1.5px solid {C.PRI}; }}
+        """)
+        input_row.addWidget(self._new_key_input, stretch=1)
+
+        self._eye_btn = QPushButton("👁")
+        self._eye_btn.setFixedSize(28, 28)
+        self._eye_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._eye_btn.setStyleSheet(f"background: rgba(255,255,255,0.05); color: {C.TEXT_MED}; border: 1px solid {C.BORDER}; border-radius: 4px;")
+        self._eye_btn.clicked.connect(self._toggle_new_key_vis)
+        input_row.addWidget(self._eye_btn)
+
+        add_btn = QPushButton("+ ADD TO POOL")
+        add_btn.setFixedHeight(30)
+        add_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        add_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_btn.setStyleSheet(_BTN_STYLE_PRI)
+        add_btn.clicked.connect(self._add_key_to_pool)
+        input_row.addWidget(add_btn)
+        add_lay.addLayout(input_row)
+
+        self._msg_lbl = QLabel("")
+        self._msg_lbl.setFont(QFont("Segoe UI", 8))
+        self._msg_lbl.setStyleSheet("color: #22c55e; background: transparent;")
+        add_lay.addWidget(self._msg_lbl)
+
+        root.addWidget(add_box)
+
+        # Done button
+        done_btn = QPushButton("DONE")
+        done_btn.setFixedHeight(32)
+        done_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        done_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        done_btn.setStyleSheet(_BTN_STYLE_DIM)
+        done_btn.clicked.connect(self.hide)
+        root.addWidget(done_btn)
+
+        self._refresh_list()
+
+    def _refresh_list(self):
+        while self._cards_lay.count():
+            item = self._cards_lay.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+        while self._metrics_bar.count():
+            item = self._metrics_bar.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+        from core.neo_key_rotator import key_rotator
+        status = key_rotator.get_status()
+
+        for text, color in [
+            (f"TOTAL: {status['total_keys']}", C.TEXT),
+            (f"AVAILABLE: {status['available_keys']}", "#22c55e"),
+            (f"COOLING: {status['cooling_keys']}", "#f59e0b" if status['cooling_keys'] else C.TEXT_DIM),
+        ]:
+            lbl = QLabel(f" {text} ")
+            lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+            lbl.setStyleSheet(f"background: rgba(255,255,255,0.05); color: {color}; border: 1px solid {C.BORDER}; border-radius: 4px; padding: 2px 6px;")
+            self._metrics_bar.addWidget(lbl)
+        self._metrics_bar.addStretch(1)
+
+        for item in status["keys"]:
+            idx = item["index"] - 1
+            card = QFrame()
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid {'#22c55e' if item['is_active'] else C.BORDER};
+                    border-radius: 6px;
+                }}
+            """)
+            c_lay = QHBoxLayout(card)
+            c_lay.setContentsMargins(10, 8, 10, 8)
+            c_lay.setSpacing(8)
+
+            badge = QLabel(f"#{item['index']}")
+            badge.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            badge.setStyleSheet(f"color: {C.PRI}; background: transparent;")
+            c_lay.addWidget(badge)
+
+            key_lbl = QLabel(item["masked"])
+            key_lbl.setFont(QFont("Consolas", 10, QFont.Weight.Bold))
+            key_lbl.setStyleSheet("color: #ffffff; background: transparent;")
+            c_lay.addWidget(key_lbl)
+
+            if item["is_active"]:
+                st_pill = QLabel("🟢 ACTIVE")
+                st_pill.setStyleSheet("color: #22c55e; font-size: 10px; font-weight: bold; background: rgba(34, 197, 94, 0.15); border-radius: 3px; padding: 2px 6px;")
+            elif item["is_cooling"]:
+                remain_m = max(1, item["cooldown_remaining_sec"] // 60)
+                st_pill = QLabel(f"⏳ COOLING ({remain_m}m)")
+                st_pill.setStyleSheet("color: #f59e0b; font-size: 10px; font-weight: bold; background: rgba(245, 158, 11, 0.15); border-radius: 3px; padding: 2px 6px;")
+            else:
+                st_pill = QLabel("⚪ READY")
+                st_pill.setStyleSheet("color: #94a3b8; font-size: 10px; background: rgba(255,255,255,0.05); border-radius: 3px; padding: 2px 6px;")
+            c_lay.addWidget(st_pill)
+            c_lay.addStretch(1)
+
+            if not item["is_active"]:
+                act_btn = QPushButton("Set Active")
+                act_btn.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+                act_btn.setFixedHeight(24)
+                act_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                act_btn.setStyleSheet(f"background: rgba(91, 141, 239, 0.15); color: {C.PRI}; border: 1px solid {C.BORDER}; border-radius: 3px; padding: 0 8px;")
+                act_btn.clicked.connect(lambda _, i=idx: self._set_active_key(i))
+                c_lay.addWidget(act_btn)
+
+            if status["total_keys"] > 1:
+                del_btn = QPushButton("🗑")
+                del_btn.setFixedSize(24, 24)
+                del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                del_btn.setStyleSheet("background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 3px;")
+                del_btn.clicked.connect(lambda _, i=idx: self._remove_key(i))
+                c_lay.addWidget(del_btn)
+
+            self._cards_lay.addWidget(card)
+
+        self._cards_lay.addStretch(1)
+
+    def _add_key_to_pool(self):
+        val = self._new_key_input.text().strip()
+        if not val or len(val) < 15:
+            self._msg_lbl.setStyleSheet("color: #ef4444; background: transparent;")
+            self._msg_lbl.setText("⚠️ Key must be at least 16 characters (starts with AIzaSy...).")
+            return
+        from core.neo_key_rotator import key_rotator
+        added, _ = key_rotator.add_keys([val])
+        if added > 0:
+            self._msg_lbl.setStyleSheet("color: #22c55e; background: transparent;")
+            self._msg_lbl.setText(f"✓ Added key to pool! Total: {len(key_rotator.get_keys())}")
+            self._new_key_input.clear()
+            self._refresh_list()
+        else:
+            self._msg_lbl.setStyleSheet("color: #f59e0b; background: transparent;")
+            self._msg_lbl.setText("Notice: Key is already in pool.")
+
+    def _set_active_key(self, index: int):
+        from core.neo_key_rotator import key_rotator
+        if key_rotator.set_active_index(index):
+            self._msg_lbl.setStyleSheet("color: #22c55e; background: transparent;")
+            self._msg_lbl.setText(f"✓ Switched active key to #{index + 1}")
+            self._refresh_list()
+
+    def _remove_key(self, index: int):
+        from core.neo_key_rotator import key_rotator
+        ok, msg = key_rotator.remove_key(index)
+        self._msg_lbl.setStyleSheet(f"color: {'#22c55e' if ok else '#ef4444'}; background: transparent;")
+        self._msg_lbl.setText(msg)
+        self._refresh_list()
+
+    def _toggle_new_key_vis(self):
+        if self._new_key_input.echoMode() == QLineEdit.EchoMode.Password:
+            self._new_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self._eye_btn.setText("🔒")
+        else:
+            self._new_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self._eye_btn.setText("👁")
+
+
 class ConfirmBanner(_HudOverlay):
     """The gate in front of an action that cannot be taken back.
 
@@ -4897,6 +5198,7 @@ class MainWindow(QMainWindow):
         self._current_file: str | None = None
         self._remote_overlay: RemoteKeyOverlay | None = None
         self._customize_overlay: CustomizeOverlay | None = None
+        self._key_pool_overlay: NeoKeyPoolOverlay | None = None
 
         central = QWidget()
         central.setObjectName("macOSRootCanvas")
@@ -6108,6 +6410,7 @@ class MainWindow(QMainWindow):
             ("_overlay", 740, 580),
             ("_remote_overlay", getattr(RemoteKeyOverlay, "_OW", 520), getattr(RemoteKeyOverlay, "_OH", 400)),
             ("_customize_overlay", getattr(CustomizeOverlay, "_OW", 640), getattr(CustomizeOverlay, "_OH", 500)),
+            ("_key_pool_overlay", getattr(NeoKeyPoolOverlay, "_OW", 560), getattr(NeoKeyPoolOverlay, "_OH", 520)),
         ]:
             ov = getattr(self, overlay_attr, None)
             if ov and ov.isVisible():
@@ -6769,23 +7072,6 @@ class MainWindow(QMainWindow):
 
     def _build_quick_drawer(self) -> QWidget:
         """Floating overlay panel shown when the ⚙ header button is toggled."""
-        _BTN_STYLE_PRI = f"""
-            QPushButton {{
-                background: #181d28; color: {C.PRI};
-                border: 1px solid {C.PRI_DIM}; border-radius: 6px;
-                text-align: left; padding: 0 10px;
-            }}
-            QPushButton:hover {{ background: {C.PRI_GHO}; border-color: {C.PRI}; }}
-        """
-        _BTN_STYLE_DIM = f"""
-            QPushButton {{
-                background: transparent; color: {C.TEXT_MED};
-                border: 1px solid {C.BORDER}; border-radius: 6px;
-                text-align: left; padding: 0 10px;
-            }}
-            QPushButton:hover {{ color: {C.PRI}; border-color: {C.BORDER_B}; background: rgba(0, 229, 255, 0.05); }}
-        """
-
         self._BTN_PRI, self._BTN_DIM = _BTN_STYLE_PRI, _BTN_STYLE_DIM
         w = QWidget(self.centralWidget())
         w.setObjectName("QuickDrawer")
@@ -6839,6 +7125,14 @@ class MainWindow(QMainWindow):
         cust_btn.setStyleSheet(_BTN_STYLE_DIM)
         cust_btn.clicked.connect(self._open_customize)
         lay.addWidget(cust_btn)
+
+        key_pool_btn = QPushButton("🔑  API KEY POOL")
+        key_pool_btn.setFixedHeight(26)
+        key_pool_btn.setFont(QFont("Segoe UI", 7))
+        key_pool_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        key_pool_btn.setStyleSheet(_BTN_STYLE_DIM)
+        key_pool_btn.clicked.connect(self._open_key_pool)
+        lay.addWidget(key_pool_btn)
 
         audio_btn = QPushButton("🎧  AUDIO DEVICES")
         audio_btn.setFixedHeight(26)
@@ -8170,6 +8464,22 @@ class MainWindow(QMainWindow):
         ov.saved.connect(self._apply_name_update)
         ov.show()
         self._customize_overlay = ov
+
+    def _open_key_pool(self):
+        if self._key_pool_overlay:
+            self._key_pool_overlay.hide()
+        cw = self.centralWidget()
+        ov = NeoKeyPoolOverlay(parent=cw)
+        ow, oh = NeoKeyPoolOverlay._OW, NeoKeyPoolOverlay._OH
+        oh = min(oh, cw.height() - 16)
+        ow = min(ow, cw.width() - 16)
+        ov.setGeometry(
+            (cw.width()  - ow) // 2,
+            (cw.height() - oh) // 2,
+            ow, oh,
+        )
+        ov.show()
+        self._key_pool_overlay = ov
 
     def _preview_ui_color(self, hex_color: str):
         """Live preview — paints the whole interface the new colour (does NOT write to config)."""

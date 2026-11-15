@@ -8443,6 +8443,30 @@ class NeoCalibrationOverlay(QFrame):
         key_row.addWidget(self.toggle_eye_btn)
         lay.addLayout(key_row)
 
+        self._keys_container = QVBoxLayout()
+        self._keys_container.setSpacing(6)
+        lay.addLayout(self._keys_container)
+
+        self._backup_key_inputs = []
+
+        add_key_row = QHBoxLayout()
+        add_key_row.setSpacing(6)
+        self.add_backup_btn = QPushButton("+ Add Backup Key (Failover Project 2)")
+        self.add_backup_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.add_backup_btn.setFixedHeight(26)
+        self.add_backup_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.add_backup_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(91, 141, 239, 0.12); color: #5B8DEF;
+                border: 1px dashed rgba(91, 141, 239, 0.4); border-radius: 4px; padding: 2px 10px;
+            }
+            QPushButton:hover { background: rgba(91, 141, 239, 0.25); color: #ffffff; border-style: solid; }
+        """)
+        self.add_backup_btn.clicked.connect(lambda: self._add_backup_key_row())
+        add_key_row.addWidget(self.add_backup_btn)
+        add_key_row.addStretch(1)
+        lay.addLayout(add_key_row)
+
         lay.addSpacing(6)
 
         # Q3: Host Operating System
@@ -8507,13 +8531,64 @@ class NeoCalibrationOverlay(QFrame):
 
         self.stack.addWidget(page)
 
+    def _add_backup_key_row(self, initial_value: str = ""):
+        idx = len(self._backup_key_inputs) + 2
+        row = QHBoxLayout()
+        row.setSpacing(8)
+
+        inp = QLineEdit()
+        inp.setEchoMode(QLineEdit.EchoMode.Password)
+        inp.setPlaceholderText(f"Backup Key #{idx} (Failover from Project {idx})")
+        inp.setFont(QFont("Segoe UI", 9))
+        inp.setFixedHeight(30)
+        inp.setStyleSheet("""
+            QLineEdit {
+                background: #0d1424; color: #ffffff;
+                border: 1px solid rgba(91, 141, 239, 0.35); border-radius: 6px; padding: 3px 8px;
+            }
+            QLineEdit:focus { border: 1.5px solid #5B8DEF; }
+        """)
+        if initial_value:
+            inp.setText(initial_value)
+
+        del_btn = QPushButton("✕")
+        del_btn.setFixedSize(28, 28)
+        del_btn.setToolTip("Remove this backup key")
+        del_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        del_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(239, 68, 68, 0.15); color: #f87171;
+                border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; font-weight: bold;
+            }
+            QPushButton:hover { background: rgba(239, 68, 68, 0.35); color: #ffffff; }
+        """)
+
+        def _remove():
+            if inp in self._backup_key_inputs:
+                self._backup_key_inputs.remove(inp)
+            for i in reversed(range(row.count())):
+                w = row.itemAt(i).widget()
+                if w:
+                    w.deleteLater()
+            self._keys_container.removeItem(row)
+
+        del_btn.clicked.connect(_remove)
+        row.addWidget(inp, stretch=1)
+        row.addWidget(del_btn)
+        self._keys_container.addLayout(row)
+        self._backup_key_inputs.append(inp)
+
     def _toggle_key_vis(self):
         if self.key_input.echoMode() == QLineEdit.EchoMode.Password:
             self.key_input.setEchoMode(QLineEdit.EchoMode.Normal)
             self.toggle_eye_btn.setText("🔒")
+            for bk in self._backup_key_inputs:
+                bk.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
             self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
             self.toggle_eye_btn.setText("👁")
+            for bk in self._backup_key_inputs:
+                bk.setEchoMode(QLineEdit.EchoMode.Password)
 
     def _load_existing_state(self):
         det = {"darwin": "mac", "windows": "windows"}.get(platform.system().lower(), "linux")
@@ -8534,8 +8609,16 @@ class NeoCalibrationOverlay(QFrame):
                     self.name_input.setText(d["user_name"])
                 else:
                     self.name_input.setText("Fayid")
-                if d.get("gemini_api_key"):
+                # Multi-key loading without commas
+                if d.get("gemini_api_keys") and isinstance(d["gemini_api_keys"], list):
+                    k_list = [str(k).strip() for k in d["gemini_api_keys"] if str(k).strip()]
+                    if k_list:
+                        self.key_input.setText(k_list[0])
+                        for extra_k in k_list[1:]:
+                            self._add_backup_key_row(extra_k)
+                elif d.get("gemini_api_key"):
                     self.key_input.setText(d["gemini_api_key"])
+
                 if d.get("personality"):
                     self.persona_group.set_selected_value(d["personality"])
                 if d.get("user_role"):
@@ -8559,8 +8642,15 @@ class NeoCalibrationOverlay(QFrame):
             self.error_lbl.setText("⚠️ Please enter a valid Gemini API Key to establish neural link.")
             return
 
+        all_keys = [key]
+        for inp in self._backup_key_inputs:
+            k = inp.text().strip()
+            if k and len(k) > 15 and k not in all_keys:
+                all_keys.append(k)
+
         payload = {
-            "gemini_api_key": key,
+            "gemini_api_key": all_keys[0],
+            "gemini_api_keys": all_keys,
             "os_system": self.os_pills.selected_value() or "windows",
             "user_name": self.name_input.text().strip() or "Boss",
             "role": self.role_pills.selected_value(),

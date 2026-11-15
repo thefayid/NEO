@@ -250,6 +250,42 @@ class GeminiKeyPool:
 
             return added, f"Added {added} new key(s). Total in pool: {len(self._keys)}."
 
+    def set_active_index(self, index: int) -> bool:
+        """Sets the active key index directly."""
+        with self._pool_lock:
+            if 0 <= index < len(self._keys):
+                self._active_index = index
+                self._save_primary_key(self._keys[index])
+                return True
+            return False
+
+    def remove_key(self, key_or_index: str | int) -> Tuple[bool, str]:
+        """Removes a key from the pool and updates config."""
+        with self._pool_lock:
+            if len(self._keys) <= 1:
+                return False, "Cannot remove the only remaining API key in the pool."
+
+            target_key = None
+            if isinstance(key_or_index, int):
+                if 0 <= key_or_index < len(self._keys):
+                    target_key = self._keys[key_or_index]
+            else:
+                target_key = key_or_index
+
+            if not target_key or target_key not in self._keys:
+                return False, "Key not found in pool."
+
+            masked = self.mask_key(target_key)
+            self._keys.remove(target_key)
+            self._cooldowns.pop(target_key, None)
+
+            if self._active_index >= len(self._keys):
+                self._active_index = 0
+
+            primary = self._keys[self._active_index]
+            self._save_primary_key(primary)
+            return True, f"Removed key {masked}. Total remaining: {len(self._keys)}."
+
     def get_status(self) -> Dict[str, Any]:
         """Returns comprehensive status of all keys in the pool."""
         with self._pool_lock:
