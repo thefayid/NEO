@@ -101,7 +101,7 @@ def _read_full_config() -> dict:
 
 # Single source of truth for the release name — the window title, the header
 # badge and the readme must never disagree again.
-APP_VERSION  = "NEO"
+APP_VERSION  = "v1.0"
 APP_PROTOCOL = "NEO"
 
 _DEFAULT_W, _DEFAULT_H = 980, 700

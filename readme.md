@@ -1,9 +1,25 @@
 # ⚙️ NEO: Autonomous Computer-Operator & Voice AI
 
+[![Version](https://img.shields.io/badge/version-v1.0%20Release-0A84FF?style=for-the-badge&logo=rocket)](https://github.com/thefayid/NEO)
+[![Open Source](https://img.shields.io/badge/Open%20Source-Contributions%20Welcome-30D158?style=for-the-badge&logo=github)](https://github.com/thefayid/NEO#-open-source--contributing)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-FF9F0A?style=for-the-badge)](https://github.com/thefayid/NEO#%EF%B8%8F-platform-support--roadmap)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+
 > **The Ultimate Real-Time Multimodal Voice & Desktop Operating Assistant**  
 > *Engineered by Rahman Fayid*  
 > 🪟 **Mainly optimized for Windows** *(Deep Win32, UI Automation, and hardware-level orchestrations)*  
 > 🐧 🍏 **Compatible with Linux and macOS** *(More updates and deeper native integrations on these platforms coming soon!)*
+
+---
+
+### 🚀 Public Release Announcement — NEO is in v1.0!
+
+> [!IMPORTANT]
+> **NEO is officially in v1.0!** 🎉  
+> This marks the first major public release of NEO. The project is under active, rapid development with **frequent updates coming soon** — including deep native Linux (Wayland/D-Bus) and macOS (Accessibility API/AppleScript) parity, next-generation agentic computer-use capabilities, and local-first SLM optimizations.
+>
+> 🌍 **NEO is an Open Source Project — Anyone Can Contribute!**  
+> We believe in the power of open collaboration. Whether you are adding new action plugins in `actions/`, porting OS-specific drivers, improving the holographic HUD UI/UX, refining speech/vision pipelines, or reporting bugs, **all contributions are welcome!** See our [Contributing Guide](#-open-source--contributing) below to get started.
 
 ---
 
@@ -52,6 +68,12 @@ While NEO is **mainly optimized for Windows** with deep OS-level accessibility a
 | **Windows 10 / 11** | 🟢 **Mainly Optimized (Tier 1)** | Complete deep integration: Win32 window snapping, Windows UI Automation (UIA) tree extraction, hardware power scheme management (`powercfg`), direct `ms-settings:` URIs, virtual desktops, audio loopback capture, and DPI scaling translation. |
 | **Linux (Ubuntu, Debian, Fedora, Arch)** | 🟡 **Compatible (Core Features)** | Full voice conversation, local pipelines (Whisper/Ollama/Piper), terminal/shell executions, CDP browser automation, and standard computer control. *Native D-Bus / Wayland screen integration updates coming soon.* |
 | **macOS (Apple Silicon & Intel)** | 🟡 **Compatible (Core Features)** | Full Gemini Live voice, audio I/O, terminal actions, and web automation. *Dedicated AppleScript & macOS Accessibility API enhancements coming soon.* |
+
+### 🗺️ v1.x Release Roadmap (Active Development)
+- 🚀 **v1.0 (Current Public Release)**: Windows Tier 1 deep integration, continuous real-time screen streaming, Set-of-Marks visual badges, Chrome DevTools Protocol DOM bridge, dual Gemini Live & Local pipelines, ambient stack-trace observer, meeting loopback recorder, and complete automated verification.
+- 🔄 **v1.1 (Coming Soon)**: Deep Linux native parity (Wayland / D-Bus screen capture & window management) and macOS Accessibility API driver integration.
+- 🔄 **v1.2 (Coming Soon)**: Multi-agent subagent swarms with autonomous sub-goal visual backtracking and task graph decomposition.
+- 🔄 **v1.3 (Coming Soon)**: 100% offline local Vision-Language-Model (VLM) grounding and zero-latency local voice loop.
 
 ---
 
@@ -238,6 +260,59 @@ NEO/
 
 ---
 
+## 🤝 Open Source & Contributing
+
+NEO is an open-source project created for the global developer and AI community. **Anyone and everyone is welcome to contribute!** Whether you're a seasoned systems engineer, frontend designer, AI researcher, or a newcomer making your very first pull request, your contributions help shape the future of autonomous computer interaction.
+
+### 🌟 High-Impact Areas to Contribute
+- **🛠️ Action Plugins (`actions/*.py`)**:
+  - Build custom actions in Python for tools and services you love: Spotify, Discord, Notion, Slack, Obsidian, Docker, GitHub, Linear, smart home IoT, or financial APIs.
+  - *Zero Boilerplate*: Any new Python script dropped into the `actions/` directory is automatically discovered and loaded dynamically on startup.
+- **🐧 🍏 Cross-Platform Drivers (`core/*.py`)**:
+  - Expand Linux (Wayland, D-Bus, X11) and macOS (Accessibility API, AppleScript, Quartz) OS-level automation to reach complete parity with Windows.
+- **🎨 UI / UX & Holographic HUD (`ui.py`, `core/neo_ui.py`)**:
+  - Design new themes, improve responsiveness and high-DPI scaling, create audio visualizers, or refine 3D avatar animations and accessibility.
+- **🧠 Local AI & Multimodal Pipelines (`core/stt.py`, `core/tts.py`, `core/gemini.py`)**:
+  - Integrate emerging local speech models (Whisper, Kokoro, Piper, Sherpa) and local LLMs/VLMs (Ollama, LM Studio, vLLM, llama.cpp).
+- **🧪 Test Coverage & Diagnostics (`tests/*.py`)**:
+  - Add regression tests, mock fixtures, and synthetic benchmark drills for edge-case automation scenarios.
+- **📖 Documentation, Guides & Localization**:
+  - Clarify instructions, write beginner tutorials, translate documentation into other languages, or record demo walkthroughs.
+
+### 🚀 Step-by-Step Contribution Workflow
+1. **Fork the Repository**:
+   Click the **Fork** button at the top right of this repository.
+2. **Clone Your Fork**:
+   ```bash
+   git clone https://github.com/<your-username>/NEO.git
+   cd NEO
+   ```
+3. **Create a Feature Branch**:
+   ```bash
+   git checkout -b feat/my-new-feature
+   ```
+4. **Make Your Changes**:
+   Implement your feature, new action module, or documentation improvement.
+5. **Verify Code & Run Tests**:
+   ```powershell
+   python -m unittest tests/test_key_rotator_suite.py tests/test_advanced_computer_control_suite.py tests/test_core_system_control_suite.py tests/test_ambient_and_meeting_copilot.py
+   ```
+6. **Commit with a Clean Message**:
+   ```bash
+   git commit -m "feat(actions): add new Spotify playlist manager action"
+   ```
+7. **Push & Open a Pull Request**:
+   ```bash
+   git push origin feat/my-new-feature
+   ```
+   Open a Pull Request on GitHub against `main`. We actively review and celebrate all community contributions!
+
+### 💬 Community & Questions
+- **Issue Tracker**: Found a bug or have a suggestion? [Open an issue on GitHub](https://github.com/thefayid/NEO/issues).
+- **Feature Requests**: Share what you'd like NEO to operate or automate next!
+
+---
+
 ## 🔒 Privacy & Security
 
 - **Local First**: All conversation memory, settings, and credentials remain on your local machine.
@@ -246,8 +321,9 @@ NEO/
 
 ---
 
-## 📄 License & Contact
+## 📄 License & Community
 
-- **License**: Personal and non-commercial use under [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+- **Open Source Community**: Contributions, pull requests, and feature suggestions are enthusiastically welcomed from developers worldwide!
+- **License**: Personal and non-commercial open source use under [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
 - **Author**: Rahman Fayid ([rahmanfayidpm@gmail.com](mailto:rahmanfayidpm@gmail.com))  
-- ⭐ **Star the repo on GitHub to support NEO development!**
+- ⭐ **Star the repo on GitHub to support ongoing NEO development!**
