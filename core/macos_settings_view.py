@@ -302,8 +302,9 @@ class MacOSKeyInputCard(QFrame):
         self.input_field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         inp_row.addWidget(self.input_field, stretch=1)
 
-        self.btn_eye = MacOSButton("👁", variant="secondary", parent=self)
+        self.btn_eye = MacOSButton("", variant="secondary", parent=self)
         self.btn_eye.setFixedSize(28, 28)
+        self.btn_eye.setIcon(QIcon(render_lucide_icon("eye", color=theme.colors.labelSecondary, size=14)))
         self.btn_eye.setToolTip("Show / Hide Key")
         def _toggle_eye():
             mode = self.input_field.echoMode()
@@ -748,14 +749,14 @@ class MacOSSettingsView(QWidget):
         lay.addWidget(self._create_section_title("Reasoning Pipeline & Personality", page))
         g_engine = MacOSSettingsGroup("Engine Configuration", page)
 
-        curr_model = cfg.get("chat_model_mode", "gemini-2.5-flash")
+        curr_model = cfg.get("chat_model_mode", "models/gemini-2.5-flash-native-audio-latest")
         model_idx = 1 if "3.1" in curr_model else 0
         seg_model = MacOSSegmentedControl(
             ["Gemini 2.5 Live", "Gemini 3.1 Live"],
             selected_index=model_idx,
         )
         def _on_model_changed(idx: int):
-            target = "gemini-3.1-flash-live-preview" if idx == 1 else "gemini-2.5-flash"
+            target = "models/gemini-3.1-flash-live-preview" if idx == 1 else "models/gemini-2.5-flash-native-audio-latest"
             _save_settings_config({"chat_model_mode": target})
             self._show_banner(f"✓ Reasoning pipeline set to: {'Gemini 3.1 Live' if idx == 1 else 'Gemini 2.5 Live (Recommended)'}")
         seg_model.selection_changed.connect(_on_model_changed)

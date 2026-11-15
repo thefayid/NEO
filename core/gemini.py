@@ -296,10 +296,26 @@ def is_gone_error(err: str) -> bool:
             or "permission" in low or "403" in err)
 
 
-def live_model() -> str:
-    """The Live model to open the conversation with: the first rung that is not
-    resting. If every one is resting the ladder is used from the top anyway —
-    refusing to connect at all is never the better answer."""
+def live_model(preferred: str = "") -> str:
+    """The Live model to open the conversation with: respects user preference if not cooling,
+    otherwise returns the first ladder rung that is not resting."""
+    target = preferred
+    if not target:
+        try:
+            cfg_p = Path(__file__).resolve().parent.parent / "config" / "api_keys.json"
+            if cfg_p.exists():
+                cfg_d = json.loads(cfg_p.read_text(encoding="utf-8"))
+                m = str(cfg_d.get("chat_model_mode") or "").strip()
+                if "3.1" in m:
+                    target = "models/gemini-3.1-flash-live-preview"
+                elif "2.5" in m or "native-audio" in m or "flash" in m:
+                    target = "models/gemini-2.5-flash-native-audio-latest"
+        except Exception:
+            pass
+
+    if target and not _cooling(target):
+        return target
+
     for m in LIVE_MODELS:
         if not _cooling(m):
             return m

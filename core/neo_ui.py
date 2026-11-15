@@ -8011,9 +8011,9 @@ class NeoCalibrationOverlay(QFrame):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
             QFrame#NeoCalibrationOverlay {
-                background: rgba(13, 17, 28, 0.96);
-                border: 1.5px solid rgba(91, 141, 239, 0.32);
-                border-radius: 8px;
+                background: #0B0F19;
+                border: 1.5px solid rgba(91, 141, 239, 0.45);
+                border-radius: 12px;
             }
         """)
 

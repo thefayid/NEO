@@ -1108,6 +1108,23 @@ class NeoLive:
             self.ui.stop_camera_stream()
             self.ui.write_log("SYS: Camera feed closed.")
             return
+
+        # ── Ultra-Fast Local Reflex (< 2ms) ──────────────────────────────────
+        try:
+            from core.neo_reflex_engine import reflex_engine
+            res = reflex_engine.try_execute(text)
+            if res is not None:
+                ok, msg = res
+                self.ui.write_log(f"NEO [Reflex]: ✓ {msg}")
+                try:
+                    from core.sfx import play_confirm
+                    play_confirm()
+                except Exception:
+                    pass
+                return
+        except Exception as _e:
+            print(f"[Reflex] Note: {_e}")
+
         if not self._loop or not self.session:
             return
         # Respect wake-word sleep: a typed command must not be answered while
@@ -1356,15 +1373,14 @@ class NeoLive:
             f"- Use exact tool names and parameter formats, with no improvised tools.\n"
             f"- You must NEVER invent: file paths, window names, button positions, app states, or tool outputs.\n"
             f"- If you don't know something, observe the screen or ask the user directly. Guessing is a failure; asking is not.\n"
+            f"[SPONTANEOUS REFLEX EXECUTION — ZERO PREAMBLE, ZERO DELAY]\n"
+            f"- INSTANT DIRECT TOOL INVOCATION: When given an operational command (opening apps, snapping windows, adjusting volume, playing media, taking screenshots, searching files, clicking, or typing):\n"
+            f"  CALL THE REQUIRED TOOL IMMEDIATELY IN YOUR VERY FIRST OUTPUT TOKEN!\n"
+            f"- ZERO PREAMBLE: NEVER output conversational filler before calling a tool. Never say 'I will now open...', 'Let me plan...', or restate the user's command. Execute first!\n"
+            f"- SPONTANEOUS CONFIRMATION: Once the tool returns its result, confirm the outcome in 1 to 4 crisp words (e.g., 'Done, Boss.', 'Chrome opened.', 'Volume at 50%.').\n"
             f"- PERCEPTION PROTOCOL:\n"
-            f"  • Before every action, read the latest screenshot and note: which application/window is in focus; what is visible (dialogs, pop-ups, menus, cursor position, loading signs); whether screen matches expected state.\n"
-            f"  • If the screenshot is unclear, small, or cropped, request another or zoom in. Never act on text or buttons you cannot clearly read. Never describe things on screen that you cannot see.\n"
-            f"- THE ACTION LOOP (LOOK -> PLAN -> ACT -> CHECK):\n"
-            f"  1. LOOK: study the newest screenshot.\n"
-            f"  2. PLAN: say in one sentence what the single next action is and why.\n"
-            f"  3. ACT: perform only that one action.\n"
-            f"  4. CHECK: examine the new screenshot and judge whether it worked (Critic mode).\n"
-            f"  Never chain blind actions. Never assume an action worked. If the screen did not change as expected, treat the action as failed.\n"
+            f"  • Before acting on visual UI targets, inspect the screen state to target the correct window.\n"
+            f"  • SPONTANEOUS ACTION LOOP: Call the action directly -> Verify outcome -> Report concisely. Never chain blind unverified actions.\n"
             f"- CRITIC MODE (Independent Step Verification):\n"
             f"  • Act as a skeptical reviewer who assumes the step FAILED.\n"
             f"  • Look for evidence it succeeded: a screenshot diff, window title change, file existence check, or clipboard content.\n"
@@ -1395,15 +1411,11 @@ class NeoLive:
             f"  • AMBIGUOUS (multiple valid interpretations like 'the file', 'close it', 'the first one'): ask exactly one targeted question, offering numbered options.\n"
             f"  • RISKY and AMBIGUOUS: always ask.\n"
             f"  Never fill gaps with your own assumptions. If the user said 'exactly', 'only', or 'don't', treat that as a hard constraint.\n"
-            f"- TASK PLANNING & EXECUTION PROTOCOL:\n"
-            f"  When given a task:\n"
-            f"  1. First restate it in one sentence and list every sub-step as a numbered plan.\n"
-            f"  2. Do exactly what the user asked: no extra steps, no skipped steps.\n"
-            f"  3. If instruction is ambiguous ('that file', 'the first one', 'do it again'), ask ONE short question with numbered options before acting.\n"
-            f"  4. If given a hard constraint ('only', 'don't', 'exactly'), treat it as a rule you may not break.\n"
-            f"  5. Execute step by step, reporting 'Step N: verified' only if screenshot proves it.\n"
-            f"  6. At the end, give a checklist: what was done, what was verified, and what failed.\n"
-            f"  Never silently change the plan. If it must change, tell the user why first.\n"
+            f"- TASK EXECUTION PROTOCOL:\n"
+            f"  • CLEAR INSTRUCTIONS: Call the required tool immediately without preamble.\n"
+            f"  • MULTI-STEP TASKS: Execute step-by-step swiftly, verifying outcomes directly.\n"
+            f"  • Do exactly what the user asked: no extra steps, no omitted steps.\n"
+            f"  • If given a hard constraint ('only', 'don't', 'exactly'), treat it as a rule you may not break.\n"
             f"- MULTI-STEP CHECKPOINTS & ROLLBACK (>5 Steps):\n"
             f"  • Split into checkpoints (CP1, CP2, ...). After each, save a snapshot: active window, files changed, and screen state.\n"
             f"  • Before any destructive or hard-to-undo step, create a backup (copy file, save draft, note original value).\n"
@@ -1475,7 +1487,7 @@ class NeoLive:
         persona_directives = {
             "Tactical NEO": "BEHAVIORAL DIRECTIVE: You are sharp, direct, concise (1-2 sentences per turn), and tactical. Zero fluff, zero preamble. Execute actions instantly.",
             "Brilliant Co-Pilot": "BEHAVIORAL DIRECTIVE: You are an intellectual partner and elite co-pilot. Offer deep architectural insights, strategic foresight, and smart code/system advice.",
-            "Chill Companion": "BEHAVIORAL DIRECTIVE: You are warm, witty, conversational, and supportive. A clever, tech-savvy companion with personality and charm.",
+            "Chill Companion": "BEHAVIORAL DIRECTIVE: You are warm, witty, and supportive. On operational commands, execute tools immediately without delay, keeping charm for conversation.",
             "Hyper-Focus Guardian": "BEHAVIORAL DIRECTIVE: You are a disciplined guardian of the user's focus and time. Keep them on track with their goals, minimize distractions, and push for results.",
         }
         _p_dir = persona_directives.get(_personality, persona_directives["Tactical NEO"])
@@ -2026,12 +2038,21 @@ class NeoLive:
                 if not (self.session and self._awake and getattr(self, "_live_screen_stream_enabled", True)):
                     continue
 
-                # Pause screen streaming during manual user vision processing or speaking
-                if getattr(self, "_vision_busy", False) or getattr(self, "_is_speaking", False):
+                # Pause screen streaming during manual user vision processing, NEO speaking, or active user vocalization
+                import time as _t_mod
+                now = _t_mod.monotonic()
+                if (
+                    getattr(self, "_vision_busy", False)
+                    or getattr(self, "_is_speaking", False)
+                    or getattr(self, "_active_speech_frames", 0) > 0
+                    or (now - getattr(self, "_last_user_speech", 0.0)) < 1.2
+                ):
                     continue
 
                 loop = asyncio.get_running_loop()
-                img_bytes, mime_type = await loop.run_in_executor(None, _capture_screen, "full")
+                img_bytes, mime_type = await loop.run_in_executor(
+                    None, lambda: _capture_screen("full", stream_mode=True)
+                )
                 if not img_bytes or len(img_bytes) < 100:
                     continue
 

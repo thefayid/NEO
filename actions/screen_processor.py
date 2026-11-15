@@ -115,7 +115,11 @@ def _get_active_window_rect() -> dict | None:
     return None
 
 
-def _capture_screen(target_mode: str = "full") -> tuple[bytes, str]:
+def _capture_screen(target_mode: str = "full", stream_mode: bool = False) -> tuple[bytes, str]:
+    max_w = 640 if stream_mode else _IMG_MAX_W
+    max_h = 360 if stream_mode else _IMG_MAX_H
+    q = 52 if stream_mode else _JPEG_Q
+
     # 1. High-speed MSS capture (direct raw RGB bytes -> PIL Image, eliminating PNG encode/decode roundtrip)
     if _MSS:
         try:
@@ -132,9 +136,9 @@ def _capture_screen(target_mode: str = "full") -> tuple[bytes, str]:
                 shot = sct.grab(target)
                 if _PIL:
                     img = PIL.Image.frombytes("RGB", shot.size, shot.rgb)
-                    img.thumbnail((_IMG_MAX_W, _IMG_MAX_H), PIL.Image.BILINEAR)
+                    img.thumbnail((max_w, max_h), PIL.Image.BILINEAR)
                     buf = io.BytesIO()
-                    img.save(buf, format="JPEG", quality=_JPEG_Q, optimize=False)
+                    img.save(buf, format="JPEG", quality=q, optimize=False)
                     return buf.getvalue(), "image/jpeg"
                 png = mss.tools.to_png(shot.rgb, shot.size)
                 return _compress(png, "PNG")
@@ -156,9 +160,9 @@ def _capture_screen(target_mode: str = "full") -> tuple[bytes, str]:
                     )
             img = PIL.ImageGrab.grab(bbox=bbox, all_screens=True)
             img = img.convert("RGB")
-            img.thumbnail((_IMG_MAX_W, _IMG_MAX_H), PIL.Image.BILINEAR)
+            img.thumbnail((max_w, max_h), PIL.Image.BILINEAR)
             buf = io.BytesIO()
-            img.save(buf, format="JPEG", quality=_JPEG_Q, optimize=False)
+            img.save(buf, format="JPEG", quality=q, optimize=False)
             return buf.getvalue(), "image/jpeg"
         except Exception as e:
             print(f"[Vision] ImageGrab note: {e}")

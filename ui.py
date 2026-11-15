@@ -6571,6 +6571,23 @@ class MainWindow(QMainWindow):
     def _on_chat_command(self, text: str):
         """Executed when user submits from NEO Chat bar — command is already added to chat UI, so do not duplicate."""
         try:
+            from core.neo_reflex_engine import reflex_engine
+            res = reflex_engine.try_execute(text)
+            if res is not None:
+                ok, msg = res
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"NEO [Reflex]: ✓ {msg}")
+                try:
+                    from core.sfx import play_confirm
+                    play_confirm()
+                except Exception:
+                    pass
+                if hasattr(self, "_on_proactive_toast"):
+                    self._on_proactive_toast("Spontaneous Reflex", msg, variant="primary")
+                return
+        except Exception:
+            pass
+        try:
             from core.neo_self_training import self_trainer
             self_trainer.record_user_input(text)
         except Exception:
@@ -6581,6 +6598,23 @@ class MainWindow(QMainWindow):
     def _on_hero_command(self, text: str):
         if hasattr(self, "_log") and self._log:
             self._log.append_log(f"USER: {text}")
+        try:
+            from core.neo_reflex_engine import reflex_engine
+            res = reflex_engine.try_execute(text)
+            if res is not None:
+                ok, msg = res
+                if hasattr(self, "_log") and self._log:
+                    self._log.append_log(f"NEO [Reflex]: ✓ {msg}")
+                try:
+                    from core.sfx import play_confirm
+                    play_confirm()
+                except Exception:
+                    pass
+                if hasattr(self, "_on_proactive_toast"):
+                    self._on_proactive_toast("Spontaneous Reflex", msg, variant="primary")
+                return
+        except Exception:
+            pass
         if self.on_text_command:
             threading.Thread(target=self.on_text_command, args=(text,), daemon=True).start()
 

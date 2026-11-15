@@ -222,6 +222,7 @@ class GeminiKeyPool:
 
             # If all are cooling, pick the one expiring soonest
             target_idx = best_idx if best_idx is not None else (earliest_idx or 0)
+            old_idx = self._active_index
             self._active_index = target_idx
             new_key = self._keys[self._active_index]
             masked_new = self.mask_key(new_key)
@@ -230,7 +231,7 @@ class GeminiKeyPool:
             self._save_primary_key(new_key)
 
             msg = (
-                f"Rotated key from #{self._active_index} ({masked_prev}) to "
+                f"Rotated key from #{old_idx + 1} ({masked_prev}) to "
                 f"#{target_idx + 1} ({masked_new}) [Reason: {reason}]."
             )
             return True, new_key, msg

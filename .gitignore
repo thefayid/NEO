@@ -51,3 +51,5 @@ scratch/
 memory/local_rag_index.json
 !config/*.png
 memory/exports/
+
+meetings/
