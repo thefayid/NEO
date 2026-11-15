@@ -64,14 +64,39 @@ _SCHEDULING = ("WHEN_IDLE", "SILENT", "INTERRUPT")
 META_KEYS = ("tier", "brief")
 
 
+def _sanitize_param_schema(schema: dict) -> dict:
+    if not isinstance(schema, dict):
+        return schema
+    cleaned = dict(schema)
+    props = cleaned.get("properties")
+    if isinstance(props, dict):
+        new_props = {}
+        for p_name, p_def in props.items():
+            if isinstance(p_def, dict):
+                p_copy = dict(p_def)
+                p_type = str(p_copy.get("type", "")).upper()
+                if p_type == "ARRAY" and "items" not in p_copy:
+                    p_copy["items"] = {"type": "OBJECT"}
+                if "properties" in p_copy and isinstance(p_copy["properties"], dict):
+                    p_copy["properties"] = _sanitize_param_schema(p_copy)["properties"]
+                new_props[p_name] = p_copy
+            else:
+                new_props[p_name] = p_def
+        cleaned["properties"] = new_props
+    return cleaned
+
+
 def strip_meta(decls):
-    """Declarations without META_KEYS. Non-dict entries pass through untouched;
-    a declaration carrying none is returned as the same object, so what an API
-    receives is byte-for-byte what it received before these keys existed."""
+    """Declarations without META_KEYS and with sanitized OpenAPI parameter schemas.
+    Guarantees every ARRAY parameter has an 'items' schema to prevent Gemini 1007 rejection.
+    Non-dict entries pass through untouched."""
     out = []
     for decl in decls:
-        if isinstance(decl, dict) and any(k in decl for k in META_KEYS):
-            out.append({k: v for k, v in decl.items() if k not in META_KEYS})
+        if isinstance(decl, dict):
+            cleaned = {k: v for k, v in decl.items() if k not in META_KEYS}
+            if "parameters" in cleaned and isinstance(cleaned["parameters"], dict):
+                cleaned["parameters"] = _sanitize_param_schema(cleaned["parameters"])
+            out.append(cleaned)
         else:
             out.append(decl)
     return out

@@ -65,6 +65,7 @@ TOOL = {
             },
             "steps": {
                 "type": "ARRAY",
+                "items": {"type": "OBJECT"},
                 "description": "Array of step dicts for multi-step background pipeline execution."
             }
         },
