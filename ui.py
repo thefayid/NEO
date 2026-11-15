@@ -8894,7 +8894,7 @@ class MainWindow(QMainWindow):
     def _check_config(self) -> bool:
         """
         Returns True if the assistant is already configured (old/existing user).
-        Only returns False for a brand-new installation with zero keys and zero local pipeline.
+        Only returns False for a brand-new installation with zero keys, zero history, and zero local pipeline.
         """
         # 1. Environment variables
         if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEYS"):
@@ -8908,11 +8908,22 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
 
-        # 3. Check config/api_keys.json
-        if not API_FILE.exists():
+        # 3. Check memory or existing user history files (indicates active existing installation)
+        base_dir = Path(__file__).resolve().parent
+        mem_dir = base_dir / "memory"
+        has_user_history = (
+            (mem_dir / "chat_sessions.json").exists()
+            or (mem_dir / "long_term.json").exists()
+            or (mem_dir / "neo_brain.db").exists()
+            or (mem_dir / "action_log.json").exists()
+        )
+
+        # 4. Check config/api_keys.json
+        if not API_FILE.exists() and not has_user_history:
             return False
+
         try:
-            d = json.loads(API_FILE.read_text(encoding="utf-8"))
+            d = json.loads(API_FILE.read_text(encoding="utf-8")) if API_FILE.exists() else {}
             single_key = str(d.get("gemini_api_key") or "").strip()
             pool_keys = d.get("gemini_api_keys")
             has_pool = isinstance(pool_keys, list) and any(bool(str(k).strip()) for k in pool_keys)
@@ -8922,18 +8933,27 @@ class MainWindow(QMainWindow):
             )
             already_configured = bool(d.get("onboarding_completed") or d.get("user_name") or d.get("personality"))
 
-            if single_key or has_pool or is_local or already_configured:
-                # Existing user! Ensure onboarding_completed flag is saved so it never prompts again
+            if single_key or has_pool or is_local or already_configured or has_user_history or API_FILE.exists():
+                # Existing user! Ensure onboarding_completed flag and user profile are saved so it never prompts again
+                updated = False
                 if not d.get("onboarding_completed"):
+                    d["onboarding_completed"] = True
+                    updated = True
+                if not d.get("user_name"):
+                    d["user_name"] = "Fayid"
+                    updated = True
+                if not d.get("assistant_name"):
+                    d["assistant_name"] = "NEO"
+                    updated = True
+                if updated:
                     try:
-                        d["onboarding_completed"] = True
                         API_FILE.write_text(json.dumps(d, indent=4), encoding="utf-8")
                     except Exception:
                         pass
                 return True
             return False
         except Exception:
-            return False
+            return bool(has_user_history or API_FILE.exists())
 
     def _center_overlay(self, ov):
         if not ov:

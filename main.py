@@ -3697,8 +3697,8 @@ class NeoLive:
                     )
                     continue
 
-                # Invalid API key — rotate key first from pool if available; only prompt if truly empty
-                if "API key not valid" in err_str or "API_KEY_INVALID" in err_str:
+                # Invalid / missing API key — rotate key first from pool if available
+                if any(k in err_str for k in ("API key not valid", "API_KEY_INVALID", "No API key was provided", "Missing API key")):
                     try:
                         from core.neo_key_rotator import key_rotator
                         rotated, new_k, r_msg = key_rotator.rotate_key(reason="api_key_invalid", cooldown_seconds=600.0)
@@ -3712,13 +3712,10 @@ class NeoLive:
 
                     from core.neo_key_rotator import key_rotator
                     if not key_rotator.get_keys():
-                        self.ui.write_log("ERR: No API key configured — please enter your key.")
+                        self.ui.write_log("ERR: No Gemini API key configured — please enter your key in Settings or config/api_keys.json.")
                         self.ui.set_state("SLEEPING")
-                        self.ui.prompt_reconfig()
-                        while not self.ui._win._ready:
-                            await asyncio.sleep(1)
-                        print("[NEO] New API key saved — reconnecting...")
-                        _conn_backoff = 3
+                        _conn_backoff = 5
+                        await asyncio.sleep(_conn_backoff)
                         continue
                     else:
                         self.ui.write_log("ERR: API key invalid and key pool exhausted. Retrying in 10s...")

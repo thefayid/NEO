@@ -18,7 +18,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from threading import Lock
+from threading import Lock, RLock
 from typing import Any, Dict, List, Optional, Tuple
 
 if getattr(sys, "frozen", False):
@@ -50,7 +50,7 @@ class GeminiKeyPool:
         self._keys: List[str] = []
         self._active_index: int = 0
         self._cooldowns: Dict[str, float] = {}  # key -> monotonic expiry time
-        self._pool_lock = Lock()
+        self._pool_lock = RLock()
         self._last_mtime: float = 0.0
         self.reload_keys()
         self._initialized = True
@@ -259,6 +259,7 @@ class GeminiKeyPool:
             data["gemini_api_keys"] = list(self._keys)
             _CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
             _CONFIG_PATH.write_text(json.dumps(data, indent=4), encoding="utf-8")
+            self._last_mtime = _CONFIG_PATH.stat().st_mtime
         except Exception:
             pass
 

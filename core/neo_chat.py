@@ -2367,19 +2367,87 @@ class NeoModernChatWidget(QWidget):
             last_seen_txt = txt
             filtered_msgs.append({"role": role, "content": txt, "timestamp": ts})
 
+        curr["messages"] = filtered_msgs
+        self._save_sessions_data()
+
+        # Render only recent messages (up to 40) for lightning-fast startup
+        self._full_session_msgs = filtered_msgs
+        self._rendered_count = min(40, len(filtered_msgs))
+        display_msgs = filtered_msgs[-self._rendered_count:] if self._rendered_count > 0 else []
+
+        if len(filtered_msgs) > len(display_msgs):
+            self._show_load_earlier_btn(len(filtered_msgs) - len(display_msgs))
+
+        for m in display_msgs:
             bubble = NeoChatMessageBubble(
-                role=role,
-                content=txt,
-                timestamp=ts,
+                role=m["role"],
+                content=m["content"],
+                timestamp=m["timestamp"],
                 on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
                 parent=self.messages_container,
             )
             bubble.canvas_requested.connect(self.open_artifact_canvas)
             count = self.msg_layout.count()
             self.msg_layout.insertWidget(max(0, count - 1), bubble)
-        curr["messages"] = filtered_msgs
-        self._save_sessions_data()
+
         QTimer.singleShot(60, self._scroll_to_bottom)
+
+    def _show_load_earlier_btn(self, remaining: int):
+        self._load_earlier_btn = QPushButton(f"▲ Load earlier messages ({remaining} hidden)")
+        self._load_earlier_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._load_earlier_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.05);
+                color: #8E8EA0;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                padding: 5px 14px;
+                font-size: 11px;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 0.12);
+                color: #FFFFFF;
+            }
+        """)
+        self._load_earlier_btn.clicked.connect(self._load_earlier_messages)
+        self.msg_layout.insertWidget(1, self._load_earlier_btn)
+
+    def _load_earlier_messages(self):
+        if not hasattr(self, "_full_session_msgs") or not self._full_session_msgs:
+            return
+        if hasattr(self, "_load_earlier_btn") and self._load_earlier_btn:
+            self._load_earlier_btn.deleteLater()
+            self._load_earlier_btn = None
+
+        total = len(self._full_session_msgs)
+        already = getattr(self, "_rendered_count", 40)
+        remaining = total - already
+        if remaining <= 0:
+            return
+
+        batch_size = min(60, remaining)
+        start_idx = remaining - batch_size
+        end_idx = remaining
+        batch = self._full_session_msgs[start_idx:end_idx]
+        self._rendered_count += batch_size
+
+        insert_pos = 1
+        for m in batch:
+            bubble = NeoChatMessageBubble(
+                role=m["role"],
+                content=m["content"],
+                timestamp=m["timestamp"],
+                on_speak_requested=self._on_speak_requested if not self.voice_muted else None,
+                parent=self.messages_container,
+            )
+            bubble.canvas_requested.connect(self.open_artifact_canvas)
+            self.msg_layout.insertWidget(insert_pos, bubble)
+            insert_pos += 1
+
+        new_remaining = total - self._rendered_count
+        if new_remaining > 0:
+            self._show_load_earlier_btn(new_remaining)
 
     def _create_new_session(self):
         self._active_stream_bubble = None
