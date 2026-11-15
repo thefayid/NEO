@@ -1909,7 +1909,7 @@ class SetupOverlay(QWidget):
                                align=Qt.AlignmentFlag.AlignLeft))
         self._key_input = QLineEdit()
         self._key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self._key_input.setPlaceholderText("AIza…")
+        self._key_input.setPlaceholderText("AIza… (paste multiple keys separated by comma)")
         self._key_input.setFont(QFont("Segoe UI", 10))
         self._key_input.setFixedHeight(32)
         self._key_input.setStyleSheet(f"""
@@ -8585,7 +8585,17 @@ class MainWindow(QMainWindow):
 
         os.makedirs(CONFIG_DIR, exist_ok=True)
         data = _read_full_config()
-        data["gemini_api_key"] = key
+        keys_list = [k.strip() for k in key.replace("\n", ",").split(",") if k.strip()]
+        data["gemini_api_key"] = keys_list[0] if keys_list else key
+        if len(keys_list) > 1:
+            data["gemini_api_keys"] = keys_list
+        elif "gemini_api_keys" in data and len(keys_list) == 1:
+            data["gemini_api_keys"] = keys_list
+        try:
+            from core.neo_key_rotator import key_rotator
+            key_rotator.reload_keys()
+        except Exception:
+            pass
         data["os_system"] = os_name
         data["user_name"] = user_name
         data["user_role"] = role

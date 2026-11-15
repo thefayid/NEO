@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 from pathlib import Path
 from threading import Lock
@@ -25,10 +24,26 @@ def _write_config(data: dict) -> None:
 def config_exists() -> bool:
     return CONFIG_FILE.exists()
 
-def save_api_keys(gemini_api_key: str) -> None:
+def save_api_keys(gemini_api_key: str | list[str]) -> None:
     data = load_api_keys()
-    data["gemini_api_key"] = gemini_api_key.strip()
+    if isinstance(gemini_api_key, list):
+        keys = [k.strip() for k in gemini_api_key if k and k.strip()]
+        data["gemini_api_key"] = keys[0] if keys else ""
+        data["gemini_api_keys"] = keys
+    else:
+        raw_str = gemini_api_key.strip()
+        keys = [k.strip() for k in raw_str.replace("\n", ",").split(",") if k.strip()]
+        data["gemini_api_key"] = keys[0] if keys else raw_str
+        if len(keys) > 1:
+            data["gemini_api_keys"] = keys
+        elif "gemini_api_keys" in data:
+            data["gemini_api_keys"] = keys
     _write_config(data)
+    try:
+        from core.neo_key_rotator import key_rotator
+        key_rotator.reload_keys()
+    except Exception:
+        pass
 
 def load_api_keys() -> dict:
     if not CONFIG_FILE.exists():
@@ -41,7 +56,29 @@ def load_api_keys() -> dict:
             return {}
 
 def get_gemini_key() -> str | None:
+    try:
+        from core.neo_key_rotator import key_rotator
+        k = key_rotator.get_active_key()
+        if k:
+            return k
+    except Exception:
+        pass
     return load_api_keys().get("gemini_api_key")
+
+def get_all_gemini_keys() -> list[str]:
+    try:
+        from core.neo_key_rotator import key_rotator
+        keys = key_rotator.get_keys()
+        if keys:
+            return keys
+    except Exception:
+        pass
+    data = load_api_keys()
+    k_list = data.get("gemini_api_keys")
+    if isinstance(k_list, list):
+        return k_list
+    k_single = data.get("gemini_api_key")
+    return [k_single] if k_single else []
 
 def is_configured() -> bool:
     key = get_gemini_key()

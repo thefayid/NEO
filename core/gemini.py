@@ -329,6 +329,20 @@ def note_live_failure(model: str, err: str) -> bool:
         telemetry = None
 
     if is_quota_error(err):
+        # 1. Multi-key pool rotation: switch to another fresh API key if available
+        try:
+            from core.neo_key_rotator import key_rotator
+            rotated, new_k, msg = key_rotator.rotate_key(f"Quota exhausted on {model.split('/')[-1]}")
+            if rotated:
+                print(f"[Gemini] 🔑 {msg}")
+                with _cool_lock:
+                    _cooldown.clear()
+                if telemetry:
+                    telemetry.record_engine_switch(live_model(), f"Rotated API key to {key_rotator.mask_key(new_k)}")
+                return True
+        except Exception as _e:
+            print(f"[Gemini] Key rotation check note: {_e}")
+
         _cool(model, _COOLDOWN_SECONDS)
         print(f"[Gemini] Live model {model} is out of quota — "
               f"switching for {_COOLDOWN_SECONDS // 60} minutes.")
@@ -355,9 +369,19 @@ def _cooling(model: str) -> bool:
 
 
 def api_key(refresh: bool = False) -> str:
-    """The Gemini key from config/api_keys.json. Cached; never raises."""
+    """The Gemini key from config/api_keys.json or multi-key pool. Cached; never raises."""
     global _cached_key
     with _key_lock:
+        try:
+            from core.neo_key_rotator import key_rotator
+            if refresh:
+                key_rotator.reload_keys()
+            k = key_rotator.get_active_key()
+            if k:
+                _cached_key = k
+                return k
+        except Exception:
+            pass
         if _cached_key is not None and not refresh:
             return _cached_key
         try:

@@ -361,8 +361,16 @@ def _render_prompt(template: str, values: dict) -> str:
 
 
 def _get_api_key() -> str:
+    try:
+        from core.neo_key_rotator import key_rotator
+        k = key_rotator.get_active_key()
+        if k:
+            return k
+    except Exception:
+        pass
     with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+        data = json.load(f)
+        return str(data.get("gemini_api_key") or "")
 
 
 def _load_system_prompt() -> str:

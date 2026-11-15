@@ -1,5 +1,6 @@
 {
     "gemini_api_key": "",
+    "gemini_api_keys": [],
     "os_system": "windows",
     "push_to_talk_enabled": false,
     "thinking_enabled": false,

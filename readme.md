@@ -83,13 +83,19 @@ python setup.py
 # or: pip install -r requirements.txt
 ```
 
-### 5. Configure Credentials
-Add your Gemini API key to `config/api_keys.json` (or enter it in the setup dialog on first launch):
+### 5. Configure Credentials & Multi-Key Pool (Zero Downtime)
+Add your Gemini API key(s) to `config/api_keys.json` (or paste comma-separated keys into the setup dialog):
 ```json
 {
-  "gemini_api_key": "YOUR_GEMINI_API_KEY_HERE"
+  "gemini_api_key": "YOUR_PRIMARY_KEY",
+  "gemini_api_keys": [
+    "AIzaSyKey_From_Project_1...",
+    "AIzaSyKey_From_Project_2...",
+    "AIzaSyKey_From_Secondary_Account..."
+  ]
 }
 ```
+> 💡 **Quota Tip (Zero Downtime)**: In Google AI Studio, free rate limits (RPM/RPD) are per Google Cloud Project. To eliminate quota interruptions, generate API keys across different projects or Google accounts. When Key 1 hits a 429 limit, NEO automatically marks it on cooldown and rotates to Key 2 with zero session interruption!
 *(If running fully offline with local Ollama + Whisper + Piper, no API key is required).*
 
 ### 6. Launch NEO
@@ -103,9 +109,9 @@ python main.py
 
 You can verify and test every component of NEO directly from your command line without starting the full GUI:
 
-### 1. Run Complete Automated Test Suite (37 Tests)
+### 1. Run Complete Automated Test Suite (43 Tests)
 ```powershell
-python -m unittest tests/test_advanced_computer_control_suite.py tests/test_core_system_control_suite.py tests/test_ambient_and_meeting_copilot.py
+python -m unittest tests/test_key_rotator_suite.py tests/test_advanced_computer_control_suite.py tests/test_core_system_control_suite.py tests/test_ambient_and_meeting_copilot.py
 ```
 
 ### 2. Set-of-Marks (SoM) Interactive Grid & Discrete Clicking
@@ -184,6 +190,7 @@ NEO/
 │   ├── meeting_copilot.py                       # Internal audio loopback & minute generator
 │   └── neo_memory.py                            # Lifelong Tri-Tier knowledge recall
 ├── core/                                        # Core intelligence, visual grounding & OS layer
+│   ├── neo_key_rotator.py                       # Multi-key pool & automatic 429 quota rotation engine
 │   ├── neo_cdp_bridge.py                        # CDP WebSocket controller & DOM evaluator
 │   ├── neo_dpi_ocr.py                           # DPI coordinate transformer & visual contour detector
 │   ├── neo_som_engine.py                        # Set-of-Marks high-contrast visual badge generator
@@ -195,6 +202,7 @@ NEO/
 ├── memory/                                      # Persistent local memory, databases & session history
 ├── config/                                      # API keys, routines, and user preferences
 └── tests/                                       # Comprehensive automated verification suites
+    ├── test_key_rotator_suite.py                # Tests for multi-key pool, rotation, and cooldowns
     ├── test_advanced_computer_control_suite.py  # Tests for SoM, CDP, DPI, Win Orchestrator, & Diff Oracle
     ├── test_core_system_control_suite.py        # Tests for OS automation, routines, and operator loop
     └── test_ambient_and_meeting_copilot.py      # Tests for ambient clipboard & audio loopback
