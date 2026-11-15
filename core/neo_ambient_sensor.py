@@ -24,7 +24,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from PyQt6.QtCore import QObject, pyqtSignal, QTimer
+from PyQt6.QtCore import QObject, pyqtSignal
 import psutil
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,6 +84,9 @@ class NEOAmbientSensor(QObject):
 
     def _run_sampling_loop(self) -> None:
         """Continuous background sampling loop using threading.Event."""
+        # Defer initial heavy sample by 4.0s so UI and desktop bootup load instantly without disk/CPU contention
+        if self._stop_event.wait(4.0):
+            return
         self._do_sample()
         while self._is_running and not self._stop_event.is_set():
             if self._stop_event.wait(self._sample_interval_ms / 1000.0):

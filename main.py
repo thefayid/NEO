@@ -70,12 +70,16 @@ os = _os
 sys = _sys
 Path = _Path
 
-import sounddevice as sd
 import numpy as np
+from core.lazyimport import LazyModule
+
+# Lazy-loaded audio & cloud dependencies: deferred off the critical boot path
+# to enable instantaneous sub-350ms UI window presentation on computer power-on.
+sd = LazyModule("sounddevice")
+genai = LazyModule("google.genai")
+types = LazyModule("google.genai.types")
 
 _audio_stream_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="neo-spk-out")
-from google import genai
-from google.genai import types
 from ui import NeoUI
 from memory.memory_manager import (
     load_memory, update_memory, format_memory_for_prompt,
@@ -3795,6 +3799,12 @@ def main():
     ui = NeoUI("face.png")
 
     def runner():
+        # Asynchronously warm up genai and sounddevice in background while UI is already active
+        threading.Thread(
+            target=lambda: [getattr(genai, "Client", None), getattr(sd, "query_devices", None)],
+            daemon=True,
+            name="SdkBackgroundWarmup"
+        ).start()
         ui.wait_for_api_key()
         neo = NeoLive(ui)
         try:

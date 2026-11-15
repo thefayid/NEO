@@ -82,9 +82,17 @@ def _is_autostart_active() -> bool:
             0,
             winreg.KEY_READ,
         )
-        val, _ = winreg.QueryValueEx(key, "NEO")
+        found = False
+        for k in ("NEO", "NEO_AI"):
+            try:
+                val, _ = winreg.QueryValueEx(key, k)
+                if val:
+                    found = True
+                    break
+            except FileNotFoundError:
+                pass
         winreg.CloseKey(key)
-        return bool(val)
+        return found
     except Exception:
         return False
 
@@ -100,15 +108,22 @@ def _set_autostart_active(enabled: bool) -> None:
             winreg.KEY_SET_VALUE,
         )
         if enabled:
-            exe = sys.executable
+            pythonw = Path(sys.executable).parent / "pythonw.exe"
+            exe = str(pythonw if pythonw.exists() else sys.executable)
             main_script = str(_BASE_DIR / "main.py")
             cmd = f'"{exe}" "{main_script}"'
             winreg.SetValueEx(key, "NEO", 0, winreg.REG_SZ, cmd)
+            for old in ("NEO_AI", "JARVIS_AI"):
+                try:
+                    winreg.DeleteValue(key, old)
+                except FileNotFoundError:
+                    pass
         else:
-            try:
-                winreg.DeleteValue(key, "NEO")
-            except FileNotFoundError:
-                pass
+            for k in ("NEO", "NEO_AI", "JARVIS_AI"):
+                try:
+                    winreg.DeleteValue(key, k)
+                except FileNotFoundError:
+                    pass
         winreg.CloseKey(key)
     except Exception as e:
         print(f"[Settings] Autostart error: {e}")

@@ -261,7 +261,9 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
     global _CURRENT_THEME_MODE
     mode_clean = str(mode or "dark").lower().strip()
     is_white = mode_clean in ("white", "light")
-    _CURRENT_THEME_MODE = "white" if is_white else "dark"
+    target_mode = "white" if is_white else "dark"
+    mode_changed = (target_mode != _CURRENT_THEME_MODE)
+    _CURRENT_THEME_MODE = target_mode
     target_palette = WHITE_MODE_PALETTE if is_white else DARK_MODE_PALETTE
 
     old_palette = current_full_palette()
@@ -280,8 +282,9 @@ def set_ui_theme_mode(mode: str, parent_win=None) -> None:
     except Exception as e:
         print(f"[Theme] update neo_ui tokens: {e}")
 
-    # Retheme all widgets dynamically across the entire app
-    retheme_all_widgets(old_palette, target_palette)
+    # Retheme all widgets dynamically only when mode actually changed
+    if mode_changed:
+        retheme_all_widgets(old_palette, target_palette)
 
     if parent_win is not None:
         try:
@@ -8003,7 +8006,7 @@ class MainWindow(QMainWindow):
                 key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_READ)
                 try:
-                    for k in ("NEO_AI", "JARVIS_AI"):
+                    for k in ("NEO", "NEO_AI", "JARVIS_AI"):
                         try:
                             winreg.QueryValueEx(key, k)
                             return True
@@ -8032,7 +8035,7 @@ class MainWindow(QMainWindow):
                 reg = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
                 if currently_on:
-                    for k in ("NEO_AI", "JARVIS_AI"):
+                    for k in ("NEO", "NEO_AI", "JARVIS_AI"):
                         try:
                             winreg.DeleteValue(reg, k)
                         except FileNotFoundError:
@@ -8045,8 +8048,13 @@ class MainWindow(QMainWindow):
                 else:
                     pythonw = Path(sys.executable).parent / "pythonw.exe"
                     exe = str(pythonw if pythonw.exists() else sys.executable)
-                    winreg.SetValueEx(reg, "NEO_AI", 0, winreg.REG_SZ,
+                    winreg.SetValueEx(reg, "NEO", 0, winreg.REG_SZ,
                                       f'"{exe}" "{script}"')
+                    for old in ("NEO_AI", "JARVIS_AI"):
+                        try:
+                            winreg.DeleteValue(reg, old)
+                        except FileNotFoundError:
+                            pass
                     # Clean up any duplicate Startup folder .lnk so only one single instance starts
                     if startup_lnk.exists():
                         try:
