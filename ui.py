@@ -5703,6 +5703,8 @@ class MainWindow(QMainWindow):
         if self.settings_view is None:
             from core.macos_settings_view import MacOSSettingsView
             self.settings_view = MacOSSettingsView()
+            if hasattr(self.settings_view, "recalibrate_requested"):
+                self.settings_view.recalibrate_requested.connect(self._show_setup)
             self._hud_cam_stack.addWidget(self.settings_view)
         return self.settings_view
 
@@ -6982,7 +6984,7 @@ class MainWindow(QMainWindow):
         self._sidebar_container = MacOSSizingSidebarContainer(self)
         self._nav_sidebar = NeoNavSidebar()
         self._nav_sidebar.tab_changed.connect(self._on_nav_tab_changed)
-        self._nav_sidebar.settings_requested.connect(self._show_setup)
+        self._nav_sidebar.settings_requested.connect(lambda: self._on_nav_tab_changed("Settings"))
         self._nav_sidebar.theme_toggled.connect(self._on_toggle_theme)
         if hasattr(self._nav_sidebar, "collapse_requested"):
             self._nav_sidebar.collapse_requested.connect(self._sidebar_container.toggle_collapse)

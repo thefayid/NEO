@@ -1,31 +1,57 @@
 """
 core/macos_settings_view.py — macOS Sequoia / Sonoma Style System Settings Window.
 
-Senior Design Engineering Specification (Phase 5):
-1. Architecture:
-   - macOS System Settings layout: Left Sidebar (210px) + Right Grouped Inset Content Area.
-   - Grouped Inset Cards: 10px continuous corner radius (theme.radii.md), controlBackground fill,
-     1px separator border, divided rows.
-2. Row Items:
-   - Left: Rounded icon badge + Title (Headline 13) + Subtitle (Caption 10).
-   - Right: Interactive controls (MacOSToggle, MacOSSegmentedControl, MacOSButton, or disclosure Chevron).
-3. Live Configurations:
-   - General (Startup, Active Profile, Sound effects).
-   - Intelligence & Models (Engine pipeline, temperature, context memory).
-   - Voice & Speech (Microphone device, ElevenLabs / Live stream, voice speed).
-   - Spatial Vision (Gesture sentry, MediaPipe optical tracking).
-   - Appearance & Motion (Dark/Light mode, Accent color palette, prefers-reduced-motion).
-   - Shortcuts & Spotlight (Global chord, push-to-talk trigger).
+Complete, fully wired native macOS Settings architecture:
+1. Left Navigation Sidebar (210px):
+   - Real-time search filter (MacOSSearchField).
+   - Apple HIG Category Badges (Intelligence & Models, Voice & Audio, General & Profile,
+     Spatial Vision, Appearance & Motion, Shortcuts & Hotkeys).
+2. Grouped Inset Lists & Dynamic Rows:
+   - 10px continuous corner radius (theme.radii.md), controlBackground fill, 1px separator border.
+   - Dynamic vertical resizing and responsive layout.
+3. Live Configurations & Real Backend Persistence:
+   - Intelligence & Models:
+     * Primary active Gemini API key (masked, eye toggle, instant save).
+     * Multi-API Key Failover Pool with live status cards (Active, Cooling, Ready), Set Active, and Remove.
+     * Add new project backup key with instant pool ingestion.
+     * Live Reasoning Engine selection (Gemini 2.5 Native Audio vs Gemini 3.1 Live Preview).
+     * Behavioral personality matrix (Chill Companion, Tactical Operator, Brilliant Co-Pilot, Hyper-Focus).
+     * Subagent swarm delegation toggle.
+   - Voice & Audio:
+     * Neural speech synthesis voice (Aoede, Puck, Charon, Fenrir).
+     * Proactive audio alerts toggle.
+     * Push-to-Talk hotkey toggle.
+     * Tactical acoustic SFX toggle.
+     * Hardware audio routing info (microphone & speakers).
+   - General & Profile:
+     * Operator user name & Assistant call-sign configuration with instant save.
+     * Launch at login (Windows Registry autostart).
+     * Morning tactical briefing toggle.
+     * Explicit "Re-calibrate Neural Profile" button (launches onboarding calibration wizard).
+   - Spatial Vision:
+     * MediaPipe hand gesture control toggle.
+     * Continuous optical screen sentinel toggle.
+     * Presence detection and workstation auto-lock toggles.
+   - Appearance & Motion:
+     * Dark / Light mode segmented control.
+     * Accent color palette selector (Blue, Purple, Pink, Red, Orange, Green, Graphite).
+     * prefers-reduced-motion spring toggle.
+   - Shortcuts & Hotkeys:
+     * Global keyboard shortcuts catalog.
 """
 from __future__ import annotations
 
-from typing import Optional, List, Callable, Union
+import json
+import sys
+import webbrowser
+from pathlib import Path
+from typing import Optional, List, Dict, Any
 
-from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal
-from PyQt6.QtGui import QFont, QColor, QPainter, QPen, QBrush, QIcon
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import (
     QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QSizePolicy, QScrollArea, QLineEdit
+    QPushButton, QSizePolicy, QLineEdit
 )
 
 from core.theme_provider import theme
@@ -38,13 +64,85 @@ from core.macos_components import (
     MacOSScrollArea,
     render_lucide_icon,
 )
-from core.macos_motion import motion, SpringPresets
+from core.macos_motion import motion
+from core.neo_key_rotator import key_rotator
+
+if getattr(sys, "frozen", False):
+    _BASE_DIR = Path(sys.executable).parent
+else:
+    _BASE_DIR = Path(__file__).resolve().parent.parent
+
+_CONFIG_PATH = _BASE_DIR / "config" / "api_keys.json"
+
+
+def _load_settings_config() -> Dict[str, Any]:
+    """Reads current config from config/api_keys.json."""
+    try:
+        if _CONFIG_PATH.exists():
+            return json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
+
+
+def _save_settings_config(patch: Dict[str, Any]) -> None:
+    """Updates config/api_keys.json with the given key/value pairs."""
+    try:
+        cfg = _load_settings_config()
+        cfg.update(patch)
+        _CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _CONFIG_PATH.write_text(json.dumps(cfg, indent=4), encoding="utf-8")
+    except Exception as e:
+        print(f"[Settings] Error saving config: {e}")
+
+
+def _is_autostart_active() -> bool:
+    """Checks if NEO autostart at login is enabled on Windows."""
+    try:
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Run",
+            0,
+            winreg.KEY_READ,
+        )
+        val, _ = winreg.QueryValueEx(key, "NEO")
+        winreg.CloseKey(key)
+        return bool(val)
+    except Exception:
+        return False
+
+
+def _set_autostart_active(enabled: bool) -> None:
+    """Enables or disables NEO autostart at login via Windows Registry."""
+    try:
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Run",
+            0,
+            winreg.KEY_SET_VALUE,
+        )
+        if enabled:
+            exe = sys.executable
+            main_script = str(_BASE_DIR / "main.py")
+            cmd = f'"{exe}" "{main_script}"'
+            winreg.SetValueEx(key, "NEO", 0, winreg.REG_SZ, cmd)
+        else:
+            try:
+                winreg.DeleteValue(key, "NEO")
+            except FileNotFoundError:
+                pass
+        winreg.CloseKey(key)
+    except Exception as e:
+        print(f"[Settings] Autostart error: {e}")
 
 
 class MacOSSettingsRow(QFrame):
     """
     Single row inside a macOS Grouped Inset List card.
     Contains icon badge, title, subtitle, and an interactive right-hand control.
+    Supports dynamic height expansion for multi-line content.
     """
     def __init__(
         self,
@@ -55,12 +153,14 @@ class MacOSSettingsRow(QFrame):
         control_widget: Optional[QWidget] = None,
         has_disclosure: bool = False,
         parent: Optional[QWidget] = None,
+        min_height: int = 48,
     ):
         super().__init__(parent)
-        self.setFixedHeight(50)
+        self.setMinimumHeight(min_height)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(14, 6, 14, 6)
+        lay.setContentsMargins(14, 8, 14, 8)
         lay.setSpacing(12)
 
         # Optional Icon Container
@@ -84,18 +184,20 @@ class MacOSSettingsRow(QFrame):
 
         # Title & Subtitle column
         v_box = QVBoxLayout()
-        v_box.setContentsMargins(0, 2, 0, 2)
-        v_box.setSpacing(1)
+        v_box.setContentsMargins(0, 1, 0, 1)
+        v_box.setSpacing(2)
 
         self.lbl_title = QLabel(title, self)
         self.lbl_title.setFont(theme.font(theme.typography.headline))
         self.lbl_title.setStyleSheet(f"color: {theme.colors.labelPrimary}; background: transparent; border: none;")
+        self.lbl_title.setWordWrap(True)
         v_box.addWidget(self.lbl_title)
 
         if subtitle:
             self.lbl_sub = QLabel(subtitle, self)
             self.lbl_sub.setFont(theme.font(theme.typography.caption_1))
             self.lbl_sub.setStyleSheet(f"color: {theme.colors.labelSecondary}; background: transparent; border: none;")
+            self.lbl_sub.setWordWrap(True)
             v_box.addWidget(self.lbl_sub)
 
         lay.addLayout(v_box, stretch=1)
@@ -120,8 +222,7 @@ class MacOSSettingsGroup(QFrame):
     def __init__(self, title: str = "", parent: Optional[QWidget] = None):
         super().__init__(parent)
         self._title = title
-
-        self._rows: List[MacOSSettingsRow] = []
+        self._rows: List[QWidget] = []
 
         self.lay = QVBoxLayout(self)
         self.lay.setContentsMargins(0, 0, 0, 0)
@@ -140,23 +241,103 @@ class MacOSSettingsGroup(QFrame):
             }}
         """)
 
-    def add_row(self, row: MacOSSettingsRow) -> None:
+    def add_row(self, row: QWidget) -> None:
         if self._rows:
-            # Add 1px divider between rows
             div = QFrame(self)
             div.setFixedHeight(1)
             div.setStyleSheet(f"background-color: {theme.colors.separator}; margin-left: 48px; border: none;")
             self.lay.addWidget(div)
-
         self.lay.addWidget(row)
         self._rows.append(row)
+
+
+class MacOSKeyCard(QFrame):
+    """Glassmorphic card representing one API key in the failover pool."""
+    set_active_requested = pyqtSignal(int)
+    remove_requested = pyqtSignal(int)
+
+    def __init__(
+        self,
+        index: int,
+        masked: str,
+        is_active: bool,
+        is_cooling: bool,
+        cooldown_remaining_sec: int,
+        can_remove: bool,
+        parent: Optional[QWidget] = None,
+    ):
+        super().__init__(parent)
+        self.index = index
+        self.setFixedHeight(46)
+        r = theme.radii.sm
+        active_border = "rgba(48, 209, 88, 0.45)" if is_active else theme.colors.separator
+        bg = "rgba(48, 209, 88, 0.08)" if is_active else "rgba(255, 255, 255, 0.03)"
+        self.setStyleSheet(f"""
+            QFrame {{
+                background-color: {bg};
+                border: 1px solid {active_border};
+                border-radius: {r}px;
+            }}
+        """)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(12, 4, 12, 4)
+        lay.setSpacing(10)
+
+        # Index badge
+        idx_lbl = QLabel(f"#{index}")
+        idx_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        idx_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary};")
+        lay.addWidget(idx_lbl)
+
+        # Masked key
+        key_lbl = QLabel(masked)
+        key_lbl.setFont(QFont("Consolas", 10, QFont.Weight.Medium))
+        key_lbl.setStyleSheet(f"color: {theme.colors.labelPrimary};")
+        lay.addWidget(key_lbl)
+
+        # Status indicator badge
+        if is_active:
+            st_lbl = QLabel("🟢 ACTIVE / PRIMARY")
+            st_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            st_lbl.setStyleSheet("color: #30D158;")
+        elif is_cooling:
+            mins = max(1, cooldown_remaining_sec // 60)
+            st_lbl = QLabel(f"⏳ COOLING ({mins}m remaining)")
+            st_lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            st_lbl.setStyleSheet("color: #FF9F0A;")
+        else:
+            st_lbl = QLabel("⚪ READY (STANDBY)")
+            st_lbl.setFont(QFont("Segoe UI", 9))
+            st_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary};")
+        lay.addWidget(st_lbl)
+
+        lay.addStretch(1)
+
+        # Set Active action button
+        if not is_active:
+            btn_act = MacOSButton("Set Active", variant="secondary")
+            btn_act.setFixedHeight(26)
+            btn_act.clicked.connect(lambda: self.set_active_requested.emit(self.index - 1))
+            lay.addWidget(btn_act)
+
+        # Remove action button
+        if can_remove:
+            btn_del = MacOSButton("✕", variant="destructive")
+            btn_del.setFixedSize(26, 26)
+            btn_del.setToolTip("Remove key from failover pool")
+            btn_del.clicked.connect(lambda: self.remove_requested.emit(self.index - 1))
+            lay.addWidget(btn_del)
 
 
 class MacOSSettingsView(QWidget):
     """
     Complete macOS Sequoia Style System Settings Window.
     Sidebar of categories + Grouped Inset Lists content area.
+    Fully connected to live configurations, key pools, and hardware states.
     """
+    recalibrate_requested = pyqtSignal()
+
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setObjectName("macOSSettingsView")
@@ -179,8 +360,10 @@ class MacOSSettingsView(QWidget):
         sb_lay.setContentsMargins(10, 14, 10, 14)
         sb_lay.setSpacing(8)
 
-        # Search field
+        # Search field with real-time category filtering
         self.search_field = MacOSSearchField("Search Settings", parent=self.sidebar_frame)
+        self.search_field.text_changed.connect(self._on_search_text_changed)
+        self.search_field.cleared.connect(self._on_search_cleared)
         sb_lay.addWidget(self.search_field)
 
         # Categories List
@@ -203,10 +386,60 @@ class MacOSSettingsView(QWidget):
         self.content_lay.setContentsMargins(28, 24, 28, 36)
         self.content_lay.setSpacing(20)
 
+        # Banner for status / feedback notifications
+        self._banner_lbl = QLabel(self.content_widget)
+        self._banner_lbl.setVisible(False)
+        self._banner_lbl.setWordWrap(True)
+        self.content_lay.addWidget(self._banner_lbl)
+
         # Initialize Categories & Views
         self._category_buttons: List[QPushButton] = []
-        self._active_category = "General"
+        self._categories_meta: List[Dict[str, Any]] = [
+            {
+                "name": "Intelligence & Models",
+                "icon": "cpu",
+                "color": "#BF5AF2",
+                "desc": "Autonomous reasoning engine models, Google AI Studio API keys, failover pool, and behavioral directives.",
+                "keywords": ["api", "key", "pool", "gemini", "model", "quota", "rotator", "personality", "intelligence", "swarm"],
+            },
+            {
+                "name": "Voice & Audio",
+                "icon": "message-square",
+                "color": "#30D158",
+                "desc": "Live speech synthesis voice, proactive audio alerts, push-to-talk mode, and audio device routing.",
+                "keywords": ["voice", "audio", "mic", "microphone", "speaker", "push to talk", "sound", "sfx", "aoede", "puck"],
+            },
+            {
+                "name": "General & Profile",
+                "icon": "sliders",
+                "color": "#0A84FF",
+                "desc": "Operator identity, assistant call-sign, autostart at login, morning briefing, and calibration wizard.",
+                "keywords": ["general", "profile", "name", "operator", "assistant", "autostart", "login", "briefing", "calibrate", "wizard"],
+            },
+            {
+                "name": "Spatial Vision",
+                "icon": "eye",
+                "color": "#FF9F0A",
+                "desc": "Realtime optical sentinel, MediaPipe gesture triggers, desktop screen sentinel, and presence lock.",
+                "keywords": ["vision", "camera", "gesture", "mediapipe", "screen", "sentinel", "presence", "lock"],
+            },
+            {
+                "name": "Appearance & Motion",
+                "icon": "sun",
+                "color": "#FFD60A",
+                "desc": "Interface theme appearance (Dark / Light), accent color palette, and CoreAnimation spring physics.",
+                "keywords": ["appearance", "theme", "dark", "light", "accent", "color", "motion", "spring", "animation"],
+            },
+            {
+                "name": "Shortcuts & Hotkeys",
+                "icon": "terminal",
+                "color": "#FF453A",
+                "desc": "Global keyboard summon chords, push-to-talk keys, instant mute hotkey, and shortcut listeners.",
+                "keywords": ["shortcuts", "hotkeys", "chord", "spotlight", "mute", "keyboard", "f4", "f7", "ctrl"],
+            },
+        ]
 
+        self._active_category = "General"
         self._build_sidebar_items()
         self._show_category("General")
 
@@ -221,17 +454,29 @@ class MacOSSettingsView(QWidget):
         """)
         self._highlight_active_button()
 
-    def _build_sidebar_items(self):
-        categories = [
-            ("General", "sliders", "#0A84FF"),
-            ("Intelligence & Models", "cpu", "#BF5AF2"),
-            ("Voice & Audio", "message-square", "#30D158"),
-            ("Spatial Vision", "eye", "#FF9F0A"),
-            ("Appearance & Motion", "sun", "#0A84FF"),
-            ("Shortcuts & Spotlight", "terminal", "#FF453A"),
-        ]
+    def _show_banner(self, message: str, is_error: bool = False):
+        """Displays a clean status banner that auto-hides after 4 seconds."""
+        color = "#EF4444" if is_error else "#30D158"
+        bg = "rgba(239, 68, 68, 0.12)" if is_error else "rgba(48, 209, 88, 0.12)"
+        border = "rgba(239, 68, 68, 0.35)" if is_error else "rgba(48, 209, 88, 0.35)"
+        self._banner_lbl.setText(message)
+        self._banner_lbl.setFont(theme.font(theme.typography.caption_1, weight_override=QFont.Weight.Bold))
+        self._banner_lbl.setStyleSheet(f"""
+            QLabel {{
+                background-color: {bg};
+                color: {color};
+                border: 1px solid {border};
+                border-radius: 6px;
+                padding: 8px 14px;
+            }}
+        """)
+        self._banner_lbl.setVisible(True)
+        QTimer.singleShot(4000, lambda: self._banner_lbl.setVisible(False))
 
-        for name, icon, col in categories:
+    def _build_sidebar_items(self):
+        for meta in self._categories_meta:
+            name = meta["name"]
+            icon = meta["icon"]
             btn = QPushButton(f"  {name}", self.sidebar_frame)
             btn.setFixedHeight(30)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -256,7 +501,13 @@ class MacOSSettingsView(QWidget):
 
     def _highlight_active_button(self):
         for btn in self._category_buttons:
-            if btn.text().strip() == self._active_category:
+            raw_title = btn.text().strip()
+            # Match directly or by prefix
+            if raw_title == self._active_category or (
+                self._active_category == "General" and "General" in raw_title
+            ) or (
+                self._active_category == "Intelligence & Models" and "Intelligence" in raw_title
+            ):
                 btn.setStyleSheet(f"""
                     QPushButton {{
                         text-align: left;
@@ -282,77 +533,590 @@ class MacOSSettingsView(QWidget):
                     }}
                 """)
 
+    def _on_search_text_changed(self, text: str):
+        query = text.strip().lower()
+        if not query:
+            for btn in self._category_buttons:
+                btn.setVisible(True)
+            return
+
+        matched_category = None
+        for i, meta in enumerate(self._categories_meta):
+            btn = self._category_buttons[i]
+            match = (
+                query in meta["name"].lower()
+                or query in meta["desc"].lower()
+                or any(query in kw for kw in meta["keywords"])
+            )
+            btn.setVisible(match)
+            if match and matched_category is None:
+                matched_category = meta["name"]
+
+        if matched_category and matched_category != self._active_category:
+            self._show_category(matched_category)
+
+    def _on_search_cleared(self):
+        for btn in self._category_buttons:
+            btn.setVisible(True)
+
     def _show_category(self, name: str):
-        self._active_category = name
+        # Normalize category aliases
+        canonical_name = name
+        for meta in self._categories_meta:
+            if name == meta["name"] or name in meta["name"]:
+                canonical_name = meta["name"]
+                break
+
+        self._active_category = canonical_name
         self._highlight_active_button()
 
-        # Clear existing content
-        while self.content_lay.count():
-            item = self.content_lay.takeAt(0)
+        # Clear existing dynamic content (preserve banner)
+        while self.content_lay.count() > 1:
+            item = self.content_lay.takeAt(1)
             if item.widget():
                 item.widget().setParent(None)
 
-        # Header Title
+        # Header Title & Description
+        meta_info = next((m for m in self._categories_meta if m["name"] == canonical_name), None)
+        desc = meta_info["desc"] if meta_info else ""
+
         hdr_box = QVBoxLayout()
         hdr_box.setSpacing(2)
 
-        t_lbl = QLabel(name, self.content_widget)
+        t_lbl = QLabel(canonical_name, self.content_widget)
         t_lbl.setFont(theme.font(theme.typography.title_1))
         t_lbl.setStyleSheet(f"color: {theme.colors.labelPrimary}; background: transparent; border: none;")
         hdr_box.addWidget(t_lbl)
 
-        sub_desc = {
-            "General": "System preferences, default runtime configurations, and startup behavior.",
-            "Intelligence & Models": "Autonomous reasoning engine models, temperature, and context length.",
-            "Voice & Audio": "Live speech synthesis, audio input sampling, and real-time streaming.",
-            "Spatial Vision": "Realtime optical sentinel, OpenCV tracking, and gesture recognition.",
-            "Appearance & Motion": "Interface theme mode, accent palette, and CoreAnimation spring physics.",
-            "Shortcuts & Spotlight": "Global keyboard summon chords, push-to-talk keys, and hotkey listeners.",
-        }
-
-        s_lbl = QLabel(sub_desc.get(name, ""), self.content_widget)
+        s_lbl = QLabel(desc, self.content_widget)
         s_lbl.setFont(theme.font(theme.typography.callout))
         s_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary}; background: transparent; border: none;")
+        s_lbl.setWordWrap(True)
         hdr_box.addWidget(s_lbl)
 
         self.content_lay.addLayout(hdr_box)
 
         # Render Grouped Inset Lists based on category
-        if name == "General":
+        if "General" in canonical_name:
             self._render_general_section()
-        elif name == "Appearance & Motion":
-            self._render_appearance_section()
-        elif name == "Intelligence & Models":
+        elif "Intelligence" in canonical_name or "Models" in canonical_name:
             self._render_models_section()
-        elif name == "Voice & Audio":
+        elif "Voice" in canonical_name or "Audio" in canonical_name:
             self._render_voice_section()
-        elif name == "Spatial Vision":
+        elif "Vision" in canonical_name:
             self._render_vision_section()
+        elif "Appearance" in canonical_name:
+            self._render_appearance_section()
         else:
             self._render_shortcuts_section()
 
         self.content_lay.addStretch()
 
-    # ── Grouped Inset Sections ───────────────────────────────────────────────
+    def _create_section_title(self, text: str) -> QLabel:
+        lbl = QLabel(text.upper(), self.content_widget)
+        lbl.setFont(theme.font(theme.typography.caption_1, weight_override=QFont.Weight.Bold))
+        lbl.setStyleSheet(f"color: {theme.colors.labelSecondary}; background: transparent; border: none; margin-top: 10px; margin-bottom: 2px;")
+        return lbl
+
+    # ── Category 1: Intelligence & Models ────────────────────────────────────
+
+    def _render_models_section(self):
+        cfg = _load_settings_config()
+
+        # Section 1A: Primary Active Key
+        self.content_lay.addWidget(self._create_section_title("Active Gemini Neural API Key"))
+        g_primary = MacOSSettingsGroup("Primary Active Key", self.content_widget)
+
+        primary_container = QWidget()
+        p_lay = QHBoxLayout(primary_container)
+        p_lay.setContentsMargins(0, 0, 0, 0)
+        p_lay.setSpacing(8)
+
+        active_key = key_rotator.get_active_key() or cfg.get("gemini_api_key", "")
+        self._primary_key_input = MacOSTextField(placeholder="Paste Gemini API Key (AIzaSy... / AQ.Ab8...)")
+        self._primary_key_input.setText(active_key)
+        self._primary_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._primary_key_input.setFixedWidth(280)
+        p_lay.addWidget(self._primary_key_input)
+
+        btn_eye = MacOSButton("👁", variant="secondary")
+        btn_eye.setFixedSize(28, 28)
+        btn_eye.setToolTip("Show / Hide Key")
+        def _toggle_primary_eye():
+            curr = self._primary_key_input.echoMode()
+            self._primary_key_input.setEchoMode(
+                QLineEdit.EchoMode.Normal if curr == QLineEdit.EchoMode.Password else QLineEdit.EchoMode.Password
+            )
+        btn_eye.clicked.connect(_toggle_primary_eye)
+        p_lay.addWidget(btn_eye)
+
+        btn_save_primary = MacOSButton("Save Active Key", variant="default")
+        btn_save_primary.clicked.connect(self._on_save_primary_key)
+        p_lay.addWidget(btn_save_primary)
+
+        r_primary = MacOSSettingsRow(
+            "Primary Project Key",
+            "Active neural link credentials for real-time speech, vision, and tool execution",
+            icon_name="cpu",
+            icon_bg="#BF5AF2",
+            control_widget=primary_container,
+            min_height=54,
+        )
+        g_primary.add_row(r_primary)
+
+        # AI Studio link row
+        link_container = QWidget()
+        l_lay = QHBoxLayout(link_container)
+        l_lay.setContentsMargins(0, 0, 0, 0)
+        btn_aistudio = MacOSButton("Get Free Project Keys at Google AI Studio ↗", variant="secondary")
+        btn_aistudio.clicked.connect(lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
+        l_lay.addWidget(btn_aistudio)
+
+        r_link = MacOSSettingsRow(
+            "Acquire Multiple API Keys",
+            "Create separate Google Cloud projects in AI Studio to get 1,500 req/day per project",
+            icon_name="search",
+            icon_bg="#0A84FF",
+            control_widget=link_container,
+        )
+        g_primary.add_row(r_link)
+        self.content_lay.addWidget(g_primary)
+
+        # Section 1B: Multi-Key Failover Pool
+        self.content_lay.addWidget(self._create_section_title("Multi-Project API Key Pool (Zero-Downtime Failover)"))
+        self._pool_group = MacOSSettingsGroup("Key Pool", self.content_widget)
+        self._refresh_pool_cards()
+        self.content_lay.addWidget(self._pool_group)
+
+        # Add Backup Key Card
+        g_add = MacOSSettingsGroup("Add Failover Key", self.content_widget)
+        add_container = QWidget()
+        a_lay = QHBoxLayout(add_container)
+        a_lay.setContentsMargins(0, 0, 0, 0)
+        a_lay.setSpacing(8)
+
+        self._new_key_input = MacOSTextField(placeholder="Paste backup Gemini Key from Project 2...")
+        self._new_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._new_key_input.setFixedWidth(280)
+        a_lay.addWidget(self._new_key_input)
+
+        btn_eye_new = MacOSButton("👁", variant="secondary")
+        btn_eye_new.setFixedSize(28, 28)
+        btn_eye_new.setToolTip("Show / Hide Key")
+        def _toggle_new_eye():
+            curr = self._new_key_input.echoMode()
+            self._new_key_input.setEchoMode(
+                QLineEdit.EchoMode.Normal if curr == QLineEdit.EchoMode.Password else QLineEdit.EchoMode.Password
+            )
+        btn_eye_new.clicked.connect(_toggle_new_eye)
+        a_lay.addWidget(btn_eye_new)
+
+        btn_add = MacOSButton("+ Add to Pool", variant="secondary")
+        btn_add.clicked.connect(self._on_add_backup_key)
+        a_lay.addWidget(btn_add)
+
+        r_add = MacOSSettingsRow(
+            "Add Backup Project Key",
+            "When the active key hits quota limits, NEO auto-rotates to standby keys in 0ms",
+            icon_name="sliders",
+            icon_bg="#30D158",
+            control_widget=add_container,
+            min_height=54,
+        )
+        g_add.add_row(r_add)
+        self.content_lay.addWidget(g_add)
+
+        # Section 1C: Reasoning Model & Personality Directives
+        self.content_lay.addWidget(self._create_section_title("Reasoning Engine & Behavioral Matrix"))
+        g_models = MacOSSettingsGroup("Engine Configuration", self.content_widget)
+
+        # Live Model Selection
+        curr_model = cfg.get("chat_model_mode", "gemini-2.5-flash")
+        model_idx = 1 if "3.1" in curr_model else 0
+        seg_model = MacOSSegmentedControl(
+            ["Gemini 2.5 Native Audio", "Gemini 3.1 Live Preview"],
+            selected_index=model_idx,
+        )
+        def _on_model_changed(idx: int):
+            target = "gemini-3.1-flash-live-preview" if idx == 1 else "gemini-2.5-flash"
+            _save_settings_config({"chat_model_mode": target})
+            self._show_banner(f"✓ Reasoning pipeline set to: {'Gemini 3.1 Live' if idx == 1 else 'Gemini 2.5 Native Audio (Recommended)'}")
+        seg_model.selection_changed.connect(_on_model_changed)
+        r_model = MacOSSettingsRow(
+            "Live Voice & Vision Model",
+            "Gemini 2.5 Native Audio offers ultra-low latency (<260ms) and highest daily quota",
+            icon_name="cpu",
+            icon_bg="#BF5AF2",
+            control_widget=seg_model,
+        )
+        g_models.add_row(r_model)
+
+        # Personality Directives
+        personalities = ["Chill Companion", "Tactical Operator", "Brilliant Co-Pilot", "Hyper-Focus"]
+        curr_persona = cfg.get("personality", "Chill Companion")
+        p_idx = personalities.index(curr_persona) if curr_persona in personalities else 0
+        seg_persona = MacOSSegmentedControl(personalities, selected_index=p_idx)
+        def _on_persona_changed(idx: int):
+            chosen = personalities[idx]
+            _save_settings_config({"personality": chosen})
+            self._show_banner(f"✓ Personality behavioral matrix tuned to: {chosen}")
+        seg_persona.selection_changed.connect(_on_persona_changed)
+        r_persona = MacOSSettingsRow(
+            "Behavioral Personality Matrix",
+            "Dynamic prompt framing, conversational tone, and proactive guidance level",
+            icon_name="message-square",
+            icon_bg="#0A84FF",
+            control_widget=seg_persona,
+        )
+        g_models.add_row(r_persona)
+
+        # Autonomous Swarm
+        t_swarm = MacOSToggle(checked=cfg.get("swarm_enabled", True))
+        t_swarm.toggled.connect(lambda ch: _save_settings_config({"swarm_enabled": ch}))
+        r_swarm = MacOSSettingsRow(
+            "Autonomous Subagent Swarm",
+            "Permit background multi-agent task execution, parallel code review, and self-healing",
+            icon_name="terminal",
+            icon_bg="#30D158",
+            control_widget=t_swarm,
+        )
+        g_models.add_row(r_swarm)
+
+        self.content_lay.addWidget(g_models)
+
+    def _refresh_pool_cards(self):
+        """Re-renders the list of keys in the failover pool."""
+        # Clear existing rows in pool group
+        while self._pool_group.lay.count():
+            item = self._pool_group.lay.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+        self._pool_group._rows.clear()
+
+        status = key_rotator.get_status()
+        keys_summary = status.get("keys", [])
+
+        if not keys_summary:
+            empty_lbl = QLabel("No backup keys in pool. Add an API key from a second Google Cloud project below.")
+            empty_lbl.setFont(theme.font(theme.typography.caption_1))
+            empty_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary}; padding: 14px;")
+            self._pool_group.add_row(empty_lbl)
+            return
+
+        can_remove = len(keys_summary) > 1
+        for item in keys_summary:
+            card = MacOSKeyCard(
+                index=item["index"],
+                masked=item["masked"],
+                is_active=item["is_active"],
+                is_cooling=item["is_cooling"],
+                cooldown_remaining_sec=item["cooldown_remaining_sec"],
+                can_remove=can_remove,
+                parent=self._pool_group,
+            )
+            card.set_active_requested.connect(self._on_set_active_key)
+            card.remove_requested.connect(self._on_remove_key)
+            self._pool_group.add_row(card)
+
+    def _on_save_primary_key(self):
+        key = self._primary_key_input.text().strip()
+        if not key or len(key) < 15:
+            self._show_banner("⚠️ Please enter a valid Gemini API Key (starts with AIzaSy... or AQ...)", is_error=True)
+            return
+
+        # Add to rotator pool and set active
+        key_rotator.add_keys([key])
+        keys = key_rotator.get_keys()
+        if key in keys:
+            key_rotator.set_active_index(keys.index(key))
+
+        _save_settings_config({
+            "gemini_api_key": key,
+            "gemini_api_keys": keys,
+        })
+        self._refresh_pool_cards()
+        self._show_banner("✓ Primary API key saved and activated in engine pool!")
+
+    def _on_add_backup_key(self):
+        key = self._new_key_input.text().strip()
+        if not key or len(key) < 15:
+            self._show_banner("⚠️ Please enter a valid backup Gemini API Key", is_error=True)
+            return
+
+        added, msg = key_rotator.add_keys([key])
+        if added > 0:
+            self._new_key_input.clear()
+            _save_settings_config({"gemini_api_keys": key_rotator.get_keys()})
+            self._refresh_pool_cards()
+            self._show_banner(f"✓ Added backup project key! Total in pool: {len(key_rotator.get_keys())}")
+        else:
+            self._show_banner("⚠️ Key already exists in the failover pool", is_error=True)
+
+    def _on_set_active_key(self, index: int):
+        ok = key_rotator.set_active_index(index)
+        if ok:
+            active_k = key_rotator.get_active_key()
+            self._primary_key_input.setText(active_k)
+            _save_settings_config({"gemini_api_key": active_k})
+            self._refresh_pool_cards()
+            self._show_banner(f"✓ Active engine key switched to key #{index + 1}")
+
+    def _on_remove_key(self, index: int):
+        ok, msg = key_rotator.remove_key(index)
+        if ok:
+            _save_settings_config({
+                "gemini_api_key": key_rotator.get_active_key(),
+                "gemini_api_keys": key_rotator.get_keys(),
+            })
+            self._primary_key_input.setText(key_rotator.get_active_key())
+            self._refresh_pool_cards()
+            self._show_banner(f"✓ Key #{index + 1} removed from pool")
+        else:
+            self._show_banner(f"⚠️ {msg}", is_error=True)
+
+    # ── Category 2: Voice & Audio ────────────────────────────────────────────
+
+    def _render_voice_section(self):
+        cfg = _load_settings_config()
+
+        self.content_lay.addWidget(self._create_section_title("Speech Synthesis & Neural Voice"))
+        g_voice = MacOSSettingsGroup("Speech Synthesis", self.content_widget)
+
+        # Voice Timbre
+        voices = ["Aoede", "Puck", "Charon", "Fenrir"]
+        curr_voice = cfg.get("voice_name", "Aoede")
+        v_idx = voices.index(curr_voice) if curr_voice in voices else 0
+        seg_voice = MacOSSegmentedControl(voices, selected_index=v_idx)
+        def _on_voice_changed(idx: int):
+            chosen = voices[idx]
+            _save_settings_config({"voice_name": chosen})
+            self._show_banner(f"✓ Neural voice persona set to: {chosen}")
+        seg_voice.selection_changed.connect(_on_voice_changed)
+        r_voice = MacOSSettingsRow(
+            "Live Voice Persona",
+            "Gemini Live natural speech synthesis timbre (Aoede: Expressive, Puck: Dynamic, Charon: Deep)",
+            icon_name="message-square",
+            icon_bg="#30D158",
+            control_widget=seg_voice,
+        )
+        g_voice.add_row(r_voice)
+
+        # Proactive Audio
+        t_proactive = MacOSToggle(checked=cfg.get("proactive_audio_enabled", True))
+        def _on_proactive_toggle(ch: bool):
+            _save_settings_config({"proactive_audio_enabled": ch, "proactive_audio": ch})
+            self._show_banner(f"✓ Proactive audio alerts {'enabled' if ch else 'disabled'}")
+        t_proactive.toggled.connect(_on_proactive_toggle)
+        r_proactive = MacOSSettingsRow(
+            "Proactive Audio Speech",
+            "NEO speaks autonomously upon detecting urgent notifications, deadline reminders, or anomalies",
+            icon_name="bell",
+            icon_bg="#0A84FF",
+            control_widget=t_proactive,
+        )
+        g_voice.add_row(r_proactive)
+
+        # Push-to-Talk
+        t_ptt = MacOSToggle(checked=cfg.get("push_to_talk_enabled", False))
+        def _on_ptt_toggle(ch: bool):
+            _save_settings_config({"push_to_talk_enabled": ch})
+            self._show_banner(f"✓ Push-to-Talk hotkey mode {'enabled (Hold Ctrl)' if ch else 'disabled (Continuous Stream)'}")
+        t_ptt.toggled.connect(_on_ptt_toggle)
+        r_ptt = MacOSSettingsRow(
+            "Push-to-Talk Mode",
+            "Hold Ctrl key to stream voice instead of continuous open microphone stream",
+            icon_name="sliders",
+            icon_bg="#FF9F0A",
+            control_widget=t_ptt,
+        )
+        g_voice.add_row(r_ptt)
+
+        # System SFX
+        t_sfx = MacOSToggle(checked=cfg.get("stark_sfx_enabled", False))
+        t_sfx.toggled.connect(lambda ch: _save_settings_config({"stark_sfx_enabled": ch}))
+        r_sfx = MacOSSettingsRow(
+            "Tactical Audio Effects",
+            "Play subtle acoustic feedback chimes for task transitions and sentry alerts",
+            icon_name="sliders",
+            icon_bg="#BF5AF2",
+            control_widget=t_sfx,
+        )
+        g_voice.add_row(r_sfx)
+        self.content_lay.addWidget(g_voice)
+
+        # Hardware Routing Section
+        self.content_lay.addWidget(self._create_section_title("Audio Hardware Routing"))
+        g_hw = MacOSSettingsGroup("Audio Devices", self.content_widget)
+
+        in_dev = cfg.get("input_device", "Default System Microphone")
+        lbl_in = QLabel(in_dev)
+        lbl_in.setFont(theme.font(theme.typography.caption_1, weight_override=QFont.Weight.Bold))
+        lbl_in.setStyleSheet(f"color: {theme.colors.labelSecondary};")
+        r_in = MacOSSettingsRow("Input Microphone", "Active capture hardware", icon_name="message-square", icon_bg="#30D158", control_widget=lbl_in)
+        g_hw.add_row(r_in)
+
+        out_dev = cfg.get("output_device", "Default System Output")
+        lbl_out = QLabel(out_dev)
+        lbl_out.setFont(theme.font(theme.typography.caption_1, weight_override=QFont.Weight.Bold))
+        lbl_out.setStyleSheet(f"color: {theme.colors.labelSecondary};")
+        r_out = MacOSSettingsRow("Output Speaker / Headphones", "Active playback hardware", icon_name="bell", icon_bg="#0A84FF", control_widget=lbl_out)
+        g_hw.add_row(r_out)
+
+        t_echo = MacOSToggle(checked=True)
+        r_echo = MacOSSettingsRow(
+            "Acoustic Echo Cancellation",
+            "Real-time speaker subtraction to prevent self-interruption during live responses",
+            icon_name="sliders",
+            icon_bg="#30D158",
+            control_widget=t_echo,
+        )
+        g_hw.add_row(r_echo)
+
+        t_stream = MacOSToggle(checked=True)
+        r_stream = MacOSSettingsRow(
+            "Low-Latency WebSocket Audio",
+            "16kHz bi-directional live audio stream with <260ms response",
+            icon_name="message-square",
+            icon_bg="#0A84FF",
+            control_widget=t_stream,
+        )
+        g_hw.add_row(r_stream)
+
+        self.content_lay.addWidget(g_hw)
+
+    # ── Category 3: General & Profile ────────────────────────────────────────
 
     def _render_general_section(self):
-        group = MacOSSettingsGroup("General Preferences", self.content_widget)
+        cfg = _load_settings_config()
 
-        t_startup = MacOSToggle(checked=True)
-        r1 = MacOSSettingsRow("Launch at Login", "Automatically start NEO assistant background engine on system boot", "sliders", "#0A84FF", t_startup)
-        group.add_row(r1)
+        self.content_lay.addWidget(self._create_section_title("Operator & Assistant Identity"))
+        g_profile = MacOSSettingsGroup("Identity", self.content_widget)
 
-        t_sounds = MacOSToggle(checked=True)
-        r2 = MacOSSettingsRow("System Sound Effects", "Play subtle tactile Apple audio cues for actions and alerts", "bell", "#FF9F0A", t_sounds)
-        group.add_row(r2)
+        # Operator Name
+        user_container = QWidget()
+        u_lay = QHBoxLayout(user_container)
+        u_lay.setContentsMargins(0, 0, 0, 0)
+        u_lay.setSpacing(8)
+        self._user_input = MacOSTextField(placeholder="Operator Name")
+        self._user_input.setText(cfg.get("user_name", "Boss"))
+        self._user_input.setFixedWidth(160)
+        u_lay.addWidget(self._user_input)
+        btn_save_u = MacOSButton("Save", variant="secondary")
+        def _save_user():
+            val = self._user_input.text().strip() or "Boss"
+            _save_settings_config({"user_name": val})
+            self._show_banner(f"✓ Operator name updated to: {val}")
+        btn_save_u.clicked.connect(_save_user)
+        u_lay.addWidget(btn_save_u)
+        r_user = MacOSSettingsRow("Operator Name", "How NEO addresses you during voice and chat interactions", icon_name="sliders", icon_bg="#0A84FF", control_widget=user_container)
+        g_profile.add_row(r_user)
+
+        # Assistant Name
+        asst_container = QWidget()
+        a_lay = QHBoxLayout(asst_container)
+        a_lay.setContentsMargins(0, 0, 0, 0)
+        a_lay.setSpacing(8)
+        self._asst_input = MacOSTextField(placeholder="Assistant Call-Sign")
+        self._asst_input.setText(cfg.get("assistant_name", "NEO"))
+        self._asst_input.setFixedWidth(160)
+        a_lay.addWidget(self._asst_input)
+        btn_save_a = MacOSButton("Save", variant="secondary")
+        def _save_asst():
+            val = self._asst_input.text().strip() or "NEO"
+            _save_settings_config({"assistant_name": val})
+            self._show_banner(f"✓ Assistant call-sign updated to: {val}")
+        btn_save_a.clicked.connect(_save_asst)
+        a_lay.addWidget(btn_save_a)
+        r_asst = MacOSSettingsRow("Assistant Call-Sign", "Display name in title bar, HUD, and live telemetry", icon_name="cpu", icon_bg="#BF5AF2", control_widget=asst_container)
+        g_profile.add_row(r_asst)
+        self.content_lay.addWidget(g_profile)
+
+        # System Automation Section
+        self.content_lay.addWidget(self._create_section_title("System Startup & Automation"))
+        g_auto = MacOSSettingsGroup("Automation", self.content_widget)
+
+        t_auto = MacOSToggle(checked=_is_autostart_active())
+        def _on_auto_toggled(ch: bool):
+            _set_autostart_active(ch)
+            self._show_banner(f"✓ Autostart at login {'enabled' if ch else 'disabled'}")
+        t_auto.toggled.connect(_on_auto_toggled)
+        r_auto = MacOSSettingsRow("Launch at Login", "Automatically start NEO assistant background engine on system boot", "sliders", "#0A84FF", t_auto)
+        g_auto.add_row(r_auto)
+
+        t_brief = MacOSToggle(checked=cfg.get("morning_brief_enabled", True))
+        def _on_brief_toggled(ch: bool):
+            _save_settings_config({"morning_brief_enabled": ch})
+            self._show_banner(f"✓ Morning intelligence briefing {'enabled' if ch else 'disabled'}")
+        t_brief.toggled.connect(_on_brief_toggled)
+        r_brief = MacOSSettingsRow("Morning Intelligence Briefing", "Deliver tactical daily agenda, weather, and priority briefing on first wake", "bell", "#FF9F0A", t_brief)
+        g_auto.add_row(r_brief)
 
         seg_mode = MacOSSegmentedControl(["Balanced", "Performance", "Stealth"])
-        r3 = MacOSSettingsRow("System Performance Profile", "Dynamically adjust background subagent thread limits", "cpu", "#30D158", seg_mode)
-        group.add_row(r3)
+        r_perf = MacOSSettingsRow("System Performance Profile", "Dynamically adjust background subagent thread limits", "cpu", "#30D158", seg_mode)
+        g_auto.add_row(r_perf)
+        self.content_lay.addWidget(g_auto)
 
-        self.content_lay.addWidget(group)
+        # Neural Calibration Wizard Launcher
+        self.content_lay.addWidget(self._create_section_title("Neural Calibration & Onboarding"))
+        g_wizard = MacOSSettingsGroup("Calibration Wizard", self.content_widget)
+        btn_wizard = MacOSButton("Re-calibrate Neural Profile...", variant="secondary")
+        btn_wizard.clicked.connect(self.recalibrate_requested.emit)
+        r_wiz = MacOSSettingsRow(
+            "Neural Onboarding Calibration Wizard",
+            "Re-run the initial 3-step setup to calibrate persona, goal, and system environment",
+            icon_name="sliders",
+            icon_bg="#BF5AF2",
+            control_widget=btn_wizard,
+        )
+        g_wizard.add_row(r_wiz)
+        self.content_lay.addWidget(g_wizard)
+
+    # ── Category 4: Spatial Vision ───────────────────────────────────────────
+
+    def _render_vision_section(self):
+        cfg = _load_settings_config()
+
+        self.content_lay.addWidget(self._create_section_title("Optical Sentry & Real-time Vision"))
+        g_vision = MacOSSettingsGroup("Vision Sentry", self.content_widget)
+
+        t_gesture = MacOSToggle(checked=cfg.get("gesture_control_enabled", False))
+        def _on_gesture_toggled(ch: bool):
+            _save_settings_config({"gesture_control_enabled": ch})
+            self._show_banner(f"✓ MediaPipe gesture recognition {'enabled' if ch else 'disabled'}")
+        t_gesture.toggled.connect(_on_gesture_toggled)
+        r_gest = MacOSSettingsRow("MediaPipe Hand Gestures", "Pinch, thumbs-up, wave, and optical tracking triggers", "eye", "#FF9F0A", t_gesture)
+        g_vision.add_row(r_gest)
+
+        t_presence = MacOSToggle(checked=cfg.get("presence_detection_enabled", False))
+        def _on_presence_toggled(ch: bool):
+            _save_settings_config({"presence_detection_enabled": ch})
+            self._show_banner(f"✓ Operator presence detection {'enabled' if ch else 'disabled'}")
+        t_presence.toggled.connect(_on_presence_toggled)
+        r_pres = MacOSSettingsRow("Operator Presence Detection", "Continuously scan camera feed for operator arrival", "eye", "#30D158", t_presence)
+        g_vision.add_row(r_pres)
+
+        t_lock = MacOSToggle(checked=cfg.get("presence_auto_lock", False))
+        def _on_lock_toggled(ch: bool):
+            _save_settings_config({"presence_auto_lock": ch})
+            self._show_banner(f"✓ Workstation auto-lock {'enabled' if ch else 'disabled'}")
+        t_lock.toggled.connect(_on_lock_toggled)
+        r_lock = MacOSSettingsRow("Presence Auto-Lock", "Automatically lock workstation or sleep HUD when operator steps away", "shield", "#FF453A", t_lock)
+        g_vision.add_row(r_lock)
+
+        t_screen = MacOSToggle(checked=cfg.get("screen_sentinel_enabled", False))
+        def _on_screen_toggled(ch: bool):
+            _save_settings_config({"screen_sentinel_enabled": ch})
+            self._show_banner(f"✓ Continuous screen sentinel {'enabled' if ch else 'disabled'}")
+        t_screen.toggled.connect(_on_screen_toggled)
+        r_scr = MacOSSettingsRow("Continuous Screen Sentinel", "Periodic visual desktop analysis for proactive assistance", "shield", "#0A84FF", t_screen)
+        g_vision.add_row(r_scr)
+
+        self.content_lay.addWidget(g_vision)
+
+    # ── Category 5: Appearance & Motion ──────────────────────────────────────
 
     def _render_appearance_section(self):
+        self.content_lay.addWidget(self._create_section_title("Interface Theme & Animations"))
         group = MacOSSettingsGroup("Appearance & Motion", self.content_widget)
 
         # Dark / Light Mode Segmented Control
@@ -367,10 +1131,10 @@ class MacOSSettingsView(QWidget):
         t_motion.toggled.connect(motion.set_reduced_motion)
         r2 = MacOSSettingsRow("Reduce Motion", "Swap Apple spring physics to simple 100ms fades", "sliders", "#BF5AF2", t_motion)
         group.add_row(r2)
-
         self.content_lay.addWidget(group)
 
         # Accent Palette Group
+        self.content_lay.addWidget(self._create_section_title("System Accent Palette"))
         acc_group = MacOSSettingsGroup("Accent Color Palette", self.content_widget)
         acc_row = QHBoxLayout()
         acc_row.setSpacing(8)
@@ -396,7 +1160,10 @@ class MacOSSettingsView(QWidget):
                 }}
                 QPushButton:hover {{ border: 2px solid #FFFFFF; }}
             """)
-            b.clicked.connect(lambda ch, k=key: theme.set_accent(k))
+            def _choose_accent(k=key, h=hex_v):
+                theme.set_accent(k)
+                _save_settings_config({"ui_color": h})
+            b.clicked.connect(_choose_accent)
             acc_row.addWidget(b)
         acc_row.addStretch()
 
@@ -406,46 +1173,10 @@ class MacOSSettingsView(QWidget):
         acc_group.add_row(r_acc)
         self.content_lay.addWidget(acc_group)
 
-    def _render_models_section(self):
-        group = MacOSSettingsGroup("Intelligence Pipeline", self.content_widget)
-
-        seg_engine = MacOSSegmentedControl(["Gemini 3.1 Live", "GPT-4o Pro", "Local Ollama"])
-        r1 = MacOSSettingsRow("Primary Engine", "Default multi-modal reasoning pipeline for live voice and vision", "cpu", "#BF5AF2", seg_engine)
-        group.add_row(r1)
-
-        t_swarm = MacOSToggle(checked=True)
-        r2 = MacOSSettingsRow("Autonomous Subagent Swarm", "Permit background multi-agent task execution and self-healing", "terminal", "#0A84FF", t_swarm)
-        group.add_row(r2)
-
-        self.content_lay.addWidget(group)
-
-    def _render_voice_section(self):
-        group = MacOSSettingsGroup("Audio Pipeline", self.content_widget)
-
-        t_echo = MacOSToggle(checked=True)
-        r1 = MacOSSettingsRow("Acoustic Echo Cancellation", "Filter speaker output from microphone input in real-time", "sliders", "#30D158", t_echo)
-        group.add_row(r1)
-
-        t_stream = MacOSToggle(checked=True)
-        r2 = MacOSSettingsRow("Low-Latency WebSocket Audio", "16kHz bi-directional live audio stream with <260ms response", "message-square", "#0A84FF", t_stream)
-        group.add_row(r2)
-
-        self.content_lay.addWidget(group)
-
-    def _render_vision_section(self):
-        group = MacOSSettingsGroup("Vision Watchdog", self.content_widget)
-
-        t_gesture = MacOSToggle(checked=True)
-        r1 = MacOSSettingsRow("MediaPipe Hand Gestures", "Pinch, thumbs-up, wave, and optical tracking triggers", "eye", "#FF9F0A", t_gesture)
-        group.add_row(r1)
-
-        t_screen = MacOSToggle(checked=False)
-        r2 = MacOSSettingsRow("Continuous Screen Sentinel", "Periodic visual desktop analysis for proactive assistance", "shield", "#FF453A", t_screen)
-        group.add_row(r2)
-
-        self.content_lay.addWidget(group)
+    # ── Category 6: Shortcuts & Hotkeys ──────────────────────────────────────
 
     def _render_shortcuts_section(self):
+        self.content_lay.addWidget(self._create_section_title("Global Keyboard Summon Chords"))
         group = MacOSSettingsGroup("Global Hotkeys", self.content_widget)
 
         btn_chord = MacOSButton("Ctrl + Space", variant="secondary")
@@ -455,5 +1186,21 @@ class MacOSSettingsView(QWidget):
         btn_ptt = MacOSButton("Hold Ctrl", variant="secondary")
         r2 = MacOSSettingsRow("Push-to-Talk Hotkey", "Hold key to stream voice without wake-word requirement", "message-square", "#30D158", btn_ptt)
         group.add_row(r2)
+
+        btn_mute = MacOSButton("F4", variant="secondary")
+        r3 = MacOSSettingsRow("Instant Voice Mute Toggle", "Instantly silence microphone capture and audio playback", "bell", "#FF453A", btn_mute)
+        group.add_row(r3)
+
+        btn_thm = MacOSButton("F7", variant="secondary")
+        r4 = MacOSSettingsRow("Toggle Light / Dark Appearance", "Instant theme toggle shortcut", "sun", "#FFD60A", btn_thm)
+        group.add_row(r4)
+
+        btn_side = MacOSButton("Ctrl + 1", variant="secondary")
+        r5 = MacOSSettingsRow("Toggle Collapsible Sidebar", "Expand or collapse navigation sidebar", "terminal", "#BF5AF2", btn_side)
+        group.add_row(r5)
+
+        btn_esc = MacOSButton("Escape", variant="secondary")
+        r6 = MacOSSettingsRow("Dismiss Active HUD / Dialog", "Close topmost overlay, Spotlight bar, or drawer", "sliders", "#8E8E93", btn_esc)
+        group.add_row(r6)
 
         self.content_lay.addWidget(group)
