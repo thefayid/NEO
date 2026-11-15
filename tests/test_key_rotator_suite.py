@@ -107,6 +107,24 @@ class TestGeminiKeyPool(unittest.TestCase):
             self.assertEqual(get_gemini_key(), "AIzaSyActiveKey11111")
             self.assertEqual(len(get_all_gemini_keys()), 2)
 
+    def test_on_setup_done_preserves_multiple_keys(self):
+        from unittest.mock import MagicMock
+        fake_self = MagicMock()
+        import ui
+        with patch("ui._read_full_config", return_value={}), \
+             patch.object(ui, "API_FILE", MagicMock()), \
+             patch("memory.config_manager.save_api_keys") as mock_save:
+            payload = {
+                "gemini_api_key": "AIzaSyKey1111111111111",
+                "gemini_api_keys": ["AIzaSyKey1111111111111", "AIzaSyKey2222222222222"],
+                "os_system": "windows",
+                "user_name": "Boss",
+            }
+            ui.MainWindow._on_setup_done(fake_self, payload)
+            self.assertTrue(mock_save.called)
+            saved_keys = mock_save.call_args[0][0]
+            self.assertEqual(saved_keys, ["AIzaSyKey1111111111111", "AIzaSyKey2222222222222"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2605,6 +2605,7 @@ class NeoKeyPoolOverlay(_HudOverlay):
             QLineEdit {{ background: #0c121e; color: #ffffff; border: 1px solid {C.BORDER}; border-radius: 4px; padding: 2px 8px; }}
             QLineEdit:focus {{ border: 1.5px solid {C.PRI}; }}
         """)
+        self._new_key_input.returnPressed.connect(self._add_key_to_pool)
         input_row.addWidget(self._new_key_input, stretch=1)
 
         self._eye_btn = QPushButton("👁")
@@ -8895,12 +8896,23 @@ class MainWindow(QMainWindow):
 
         os.makedirs(CONFIG_DIR, exist_ok=True)
         data = _read_full_config()
-        keys_list = [k.strip() for k in key.replace("\n", ",").split(",") if k.strip()]
-        data["gemini_api_key"] = keys_list[0] if keys_list else key
-        if len(keys_list) > 1:
-            data["gemini_api_keys"] = keys_list
-        elif "gemini_api_keys" in data and len(keys_list) == 1:
-            data["gemini_api_keys"] = keys_list
+
+        incoming_keys = config_data.get("gemini_api_keys")
+        if isinstance(incoming_keys, list) and incoming_keys:
+            clean_keys = [str(k).strip() for k in incoming_keys if str(k).strip()]
+            data["gemini_api_key"] = clean_keys[0] if clean_keys else key
+            data["gemini_api_keys"] = clean_keys
+        else:
+            keys_list = [k.strip() for k in key.replace("\n", ",").split(",") if k.strip()]
+            data["gemini_api_key"] = keys_list[0] if keys_list else key
+            if keys_list:
+                data["gemini_api_keys"] = keys_list
+
+        try:
+            from memory.config_manager import save_api_keys
+            save_api_keys(data.get("gemini_api_keys") or data["gemini_api_key"])
+        except Exception:
+            pass
         try:
             from core.neo_key_rotator import key_rotator
             key_rotator.reload_keys()

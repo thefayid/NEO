@@ -8093,7 +8093,19 @@ class NeoCalibrationOverlay(QFrame):
 
         # Load existing config if available
         self._load_existing_state()
-        self._go_step(0)
+        try:
+            cfg_path = os.path.join("config", "api_keys.json")
+            if os.path.exists(cfg_path):
+                with open(cfg_path, "r", encoding="utf-8") as f:
+                    _d = json.load(f)
+                if _d.get("onboarding_completed", False):
+                    self._go_step(2)
+                else:
+                    self._go_step(0)
+            else:
+                self._go_step(0)
+        except Exception:
+            self._go_step(0)
 
     def _go_step(self, idx: int):
         self.stack.setCurrentIndex(idx)
@@ -8428,6 +8440,7 @@ class NeoCalibrationOverlay(QFrame):
             QLineEdit:focus { border: 1.5px solid #5B8DEF; }
         """)
         key_row.addWidget(self.key_input, stretch=1)
+        self.key_input.returnPressed.connect(self._save_keys_only)
 
         self.toggle_eye_btn = QPushButton("👁")
         self.toggle_eye_btn.setFixedSize(34, 34)
@@ -8450,10 +8463,10 @@ class NeoCalibrationOverlay(QFrame):
         self._backup_key_inputs = []
 
         add_key_row = QHBoxLayout()
-        add_key_row.setSpacing(6)
+        add_key_row.setSpacing(8)
         self.add_backup_btn = QPushButton("+ Add Backup Key (Failover Project 2)")
         self.add_backup_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        self.add_backup_btn.setFixedHeight(26)
+        self.add_backup_btn.setFixedHeight(28)
         self.add_backup_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.add_backup_btn.setStyleSheet("""
             QPushButton {
@@ -8464,8 +8477,27 @@ class NeoCalibrationOverlay(QFrame):
         """)
         self.add_backup_btn.clicked.connect(lambda: self._add_backup_key_row())
         add_key_row.addWidget(self.add_backup_btn)
+
+        self.save_keys_quick_btn = QPushButton("💾  Save Keys to Pool")
+        self.save_keys_quick_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.save_keys_quick_btn.setFixedHeight(28)
+        self.save_keys_quick_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.save_keys_quick_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(34, 197, 94, 0.18); color: #22c55e;
+                border: 1px solid rgba(34, 197, 94, 0.45); border-radius: 4px; padding: 2px 14px;
+            }
+            QPushButton:hover { background: rgba(34, 197, 94, 0.35); color: #ffffff; }
+        """)
+        self.save_keys_quick_btn.clicked.connect(self._save_keys_only)
+        add_key_row.addWidget(self.save_keys_quick_btn)
         add_key_row.addStretch(1)
         lay.addLayout(add_key_row)
+
+        self.error_lbl = QLabel("")
+        self.error_lbl.setFont(QFont("Segoe UI", 9))
+        self.error_lbl.setStyleSheet("color: #D9534F; background: transparent;")
+        lay.addWidget(self.error_lbl)
 
         lay.addSpacing(6)
 
@@ -8483,11 +8515,6 @@ class NeoCalibrationOverlay(QFrame):
             os_row.addWidget(pill)
             self.os_pills.add(pill)
         lay.addLayout(os_row)
-
-        self.error_lbl = QLabel("")
-        self.error_lbl.setFont(QFont("Segoe UI", 9))
-        self.error_lbl.setStyleSheet("color: #D9534F; background: transparent;")
-        lay.addWidget(self.error_lbl)
 
         lay.addStretch(1)
 
@@ -8509,11 +8536,11 @@ class NeoCalibrationOverlay(QFrame):
 
         b_row.addStretch(1)
 
-        finish_b = QPushButton("⚡  ESTABLISH NEURAL LINK & INITIALIZE NEO")
-        finish_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        finish_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        finish_b.setFixedHeight(38)
-        finish_b.setStyleSheet("""
+        self.finish_b = QPushButton("💾  SUBMIT & SAVE ALL SETTINGS")
+        self.finish_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.finish_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.finish_b.setFixedHeight(38)
+        self.finish_b.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #5B8DEF, stop:0.5 #5B8DEF, stop:1 #2563eb);
@@ -8525,8 +8552,8 @@ class NeoCalibrationOverlay(QFrame):
                 color: #000000;
             }
         """)
-        finish_b.clicked.connect(self._submit)
-        b_row.addWidget(finish_b)
+        self.finish_b.clicked.connect(self._submit)
+        b_row.addWidget(self.finish_b)
         lay.addLayout(b_row)
 
         self.stack.addWidget(page)
@@ -8548,6 +8575,7 @@ class NeoCalibrationOverlay(QFrame):
             }
             QLineEdit:focus { border: 1.5px solid #5B8DEF; }
         """)
+        inp.returnPressed.connect(self._save_keys_only)
         if initial_value:
             inp.setText(initial_value)
 
@@ -8633,12 +8661,39 @@ class NeoCalibrationOverlay(QFrame):
                     self.goal_input.setText(d["current_goal"])
                 if d.get("os_system"):
                     self.os_pills.set_selected_value(d["os_system"])
+                if d.get("onboarding_completed") and hasattr(self, "finish_b"):
+                    self.finish_b.setText("💾  SUBMIT & SAVE SETTINGS")
         except Exception:
             self.name_input.setText("Fayid")
 
+    def _save_keys_only(self):
+        key = self.key_input.text().strip()
+        if not key or len(key) < 15:
+            self.error_lbl.setStyleSheet("color: #ef4444; background: transparent; font-weight: bold;")
+            self.error_lbl.setText("⚠️ Please enter a valid Gemini API Key (starts with AIzaSy... or AQ...).")
+            return
+
+        all_keys = [key]
+        for inp in self._backup_key_inputs:
+            k = inp.text().strip()
+            if k and len(k) > 15 and k not in all_keys:
+                all_keys.append(k)
+
+        try:
+            from memory.config_manager import save_api_keys
+            save_api_keys(all_keys)
+            from core.neo_key_rotator import key_rotator
+            key_rotator.reload_keys()
+            self.error_lbl.setStyleSheet("color: #22c55e; background: transparent; font-weight: bold;")
+            self.error_lbl.setText(f"✓ Saved {len(all_keys)} API key(s) to pool! Rotator is live and active.")
+        except Exception as e:
+            self.error_lbl.setStyleSheet("color: #ef4444; background: transparent; font-weight: bold;")
+            self.error_lbl.setText(f"⚠️ Error saving keys: {e}")
+
     def _submit(self):
         key = self.key_input.text().strip()
-        if not key:
+        if not key or len(key) < 15:
+            self.error_lbl.setStyleSheet("color: #ef4444; background: transparent; font-weight: bold;")
             self.error_lbl.setText("⚠️ Please enter a valid Gemini API Key to establish neural link.")
             return
 
@@ -8647,6 +8702,14 @@ class NeoCalibrationOverlay(QFrame):
             k = inp.text().strip()
             if k and len(k) > 15 and k not in all_keys:
                 all_keys.append(k)
+
+        try:
+            from memory.config_manager import save_api_keys
+            save_api_keys(all_keys)
+            from core.neo_key_rotator import key_rotator
+            key_rotator.reload_keys()
+        except Exception:
+            pass
 
         payload = {
             "gemini_api_key": all_keys[0],
@@ -8662,3 +8725,4 @@ class NeoCalibrationOverlay(QFrame):
             "onboarding_completed": True,
         }
         self.done.emit(payload)
+        self.hide()
