@@ -264,7 +264,16 @@ def _cool(model: str, seconds: float = _COOLDOWN_SECONDS) -> None:
 
 
 def is_quota_error(err: str) -> bool:
-    return "429" in err or "RESOURCE_EXHAUSTED" in err
+    low = str(err).lower()
+    return (
+        "429" in err
+        or "resource_exhausted" in low
+        or "quota" in low
+        or "rate limit" in low
+        or "ratelimit" in low
+        or "exceeded your current quota" in low
+        or ("1011" in err and "quota" in low)
+    )
 
 
 def is_unavailable_error(err: str) -> bool:
@@ -316,6 +325,9 @@ def get_live_ladder_status() -> list[dict]:
         ]
 
 
+_last_key_rotated = False
+
+
 def note_live_failure(model: str, err: str) -> bool:
     """Record why a Live model failed. True when it is worth trying the next.
 
@@ -323,6 +335,9 @@ def note_live_failure(model: str, err: str) -> bool:
     dropped network is not the model's fault, and stepping down the ladder for
     those would work through every model and reach the same wall four times.
     """
+    global _last_key_rotated
+    _last_key_rotated = False
+
     try:
         from core.audio_telemetry import telemetry
     except Exception:
@@ -334,6 +349,7 @@ def note_live_failure(model: str, err: str) -> bool:
             from core.neo_key_rotator import key_rotator
             rotated, new_k, msg = key_rotator.rotate_key(f"Quota exhausted on {model.split('/')[-1]}")
             if rotated:
+                _last_key_rotated = True
                 print(f"[Gemini] 🔑 {msg}")
                 with _cool_lock:
                     _cooldown.clear()

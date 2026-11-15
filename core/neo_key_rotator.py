@@ -50,8 +50,19 @@ class GeminiKeyPool:
         self._active_index: int = 0
         self._cooldowns: Dict[str, float] = {}  # key -> monotonic expiry time
         self._pool_lock = Lock()
+        self._last_mtime: float = 0.0
         self.reload_keys()
         self._initialized = True
+
+    def _check_disk_sync(self) -> None:
+        """Auto-reloads keys from disk if api_keys.json was updated externally."""
+        try:
+            if _CONFIG_PATH.exists():
+                mt = _CONFIG_PATH.stat().st_mtime
+                if mt != self._last_mtime:
+                    self.reload_keys()
+        except Exception:
+            pass
 
     def _parse_keys_from_config(self, data: Dict[str, Any]) -> List[str]:
         """Extracts and deduplicates all valid API keys from config data."""
@@ -92,11 +103,15 @@ class GeminiKeyPool:
         with self._pool_lock:
             try:
                 if _CONFIG_PATH.exists():
+                    self._last_mtime = _CONFIG_PATH.stat().st_mtime
                     data = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
                     keys = self._parse_keys_from_config(data)
                     if keys:
+                        old_active = self._keys[self._active_index] if self._keys and 0 <= self._active_index < len(self._keys) else None
                         self._keys = keys
-                        if self._active_index >= len(self._keys):
+                        if old_active and old_active in keys:
+                            self._active_index = keys.index(old_active)
+                        elif self._active_index >= len(self._keys):
                             self._active_index = 0
             except Exception as e:
                 print(f"[KeyPool] ⚠️ Failed loading {_CONFIG_PATH}: {e}")
@@ -113,6 +128,7 @@ class GeminiKeyPool:
     def get_keys(self) -> List[str]:
         """Returns list of all configured keys."""
         with self._pool_lock:
+            self._check_disk_sync()
             return list(self._keys)
 
     def is_cooling(self, key: str) -> bool:
@@ -130,11 +146,15 @@ class GeminiKeyPool:
         auto_advance is True, advances to the first available non-cooling key.
         """
         with self._pool_lock:
+            self._check_disk_sync()
             if not self._keys:
                 self.reload_keys()
 
             if not self._keys:
                 return ""
+
+            if self._active_index >= len(self._keys):
+                self._active_index = 0
 
             # Check if active key is cooling
             active = self._keys[self._active_index]
@@ -149,6 +169,7 @@ class GeminiKeyPool:
                     if not cand_until or now >= cand_until:
                         self._active_index = idx
                         self._cooldowns.pop(cand, None)
+                        self._save_primary_key(cand)
                         return cand
 
             return active
@@ -163,6 +184,7 @@ class GeminiKeyPool:
         Returns: (success: bool, new_key: str, message: str)
         """
         with self._pool_lock:
+            self._check_disk_sync()
             if not self._keys:
                 self.reload_keys()
 

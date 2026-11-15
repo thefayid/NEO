@@ -3538,6 +3538,11 @@ class NeoLive:
                 # not start today": one model means one daily limit, and the
                 # limit always arrives mid-conversation.
                 if _gemini.note_live_failure(live_model, err_str):
+                    if getattr(_gemini, "_last_key_rotated", False):
+                        _gemini._last_key_rotated = False
+                        self._conn_backoff = 0
+                        self.ui.write_log("SYS: 🔑 Quota limit on active key — failover rotated to backup project key. Reconnecting...")
+                        continue
                     nxt = _gemini.live_model()
                     if nxt != live_model:
                         self.ui.write_log(
