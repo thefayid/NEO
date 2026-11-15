@@ -266,7 +266,7 @@ class VoiceEngineTelemetry:
             else:
                 model_name = model_disp
 
-            # Speed tier: Fast (<450ms), Nominal (450-900ms), Heavy (>900ms)
+            # Speed tier: Ultra (<450ms), Fast (450-900ms), Nominal (900-3000ms), Syncing (>3000ms)
             eff_ttfa = self.last_ttfa_ms or avg_ttfa or 280.0
             if eff_ttfa < 450:
                 tier = "ultra"
@@ -274,9 +274,18 @@ class VoiceEngineTelemetry:
             elif eff_ttfa < 900:
                 tier = "fast"
                 color = "#38bdf8"  # sky blue
-            else:
-                tier = "heavy"
+            elif eff_ttfa < 3000:
+                tier = "nominal"
                 color = "#fbbf24"  # amber
+            else:
+                tier = "syncing"
+                color = "#38bdf8"  # calming sky blue during initial handshake / reconnect
+
+            # Format badge text elegantly (cap runaway reconnection latencies)
+            if eff_ttfa >= 3500:
+                badge_str = f"⚡ LIVE · {model_name.upper()}"
+            else:
+                badge_str = f"⚡ {int(eff_ttfa)}ms · {model_name.upper()}"
 
             return {
                 "engine_mode": self.engine_mode,
@@ -298,7 +307,7 @@ class VoiceEngineTelemetry:
                 "overruns": self.buffer_overruns,
                 "tier": tier,
                 "color": color,
-                "badge_text": f"⚡ {int(eff_ttfa)}ms · {model_name.upper()}",
+                "badge_text": badge_str,
             }
 
     def get_badge_text(self) -> str:

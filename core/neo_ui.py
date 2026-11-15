@@ -848,14 +848,16 @@ class VoiceTelemetryWidget(QFrame):
 
         # Metric 1: Active Model & Engine Mode
         m_row = QHBoxLayout()
-        m_row.setSpacing(6)
+        m_row.setSpacing(8)
         m_lbl = QLabel("Engine")
         m_lbl.setFont(font_text(11, QFont.Weight.Normal))
+        m_lbl.setFixedWidth(48)
         m_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         m_row.addWidget(m_lbl)
-        m_row.addStretch()
+        m_row.addStretch(1)
         self.engine_badge = QLabel("GEMINI 3.1 LIVE")
         self.engine_badge.setFont(font_text(10, QFont.Weight.Bold))
+        self.engine_badge.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.engine_badge.setStyleSheet(f"color: {ACCENT_PRIMARY}; background: rgba(91, 141, 239, 0.12); border-radius: 4px; padding: 2px 7px;")
         m_row.addWidget(self.engine_badge)
         lay.addLayout(m_row)
@@ -2010,35 +2012,39 @@ class NeoNavSidebar(QWidget):
 #  4. LIVE SPEECH TRANSCRIPT WIDGET (YOU IN GREEN, NEO IN WHITE)
 # ─────────────────────────────────────────────────────────────────────────────
 class NeoLiveTranscriptWidget(QFrame):
-    """Clean, organic floating pill live speech subtitle with green user text and crisp assistant text."""
+    """Clean, adaptive floating glassmorphic live speech subtitle widget with multi-line support."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(34)
-        self.setMaximumWidth(580)
-        self.setMinimumWidth(300)
-        self.setStyleSheet(f"""
-            QFrame {{
-                background: rgba(27, 31, 38, 0.85);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 17px;
-            }}
+        self.setMinimumHeight(38)
+        self.setMaximumHeight(82)
+        self.setMinimumWidth(520)
+        self.setMaximumWidth(760)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(18, 23, 33, 0.88);
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 19px;
+            }
         """)
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(14, 0, 14, 0)
-        lay.setSpacing(8)
+        lay.setContentsMargins(14, 6, 14, 6)
+        lay.setSpacing(10)
 
-        self.dot = QLabel("●")
-        self.dot.setFont(font_text(10, QFont.Weight.Bold))
-        self.dot.setStyleSheet("color: #4CAF7D; border: none; background: transparent;")
-        lay.addWidget(self.dot)
+        # Pulse / speaker indicator badge
+        self.badge_lbl = QLabel("IDLE")
+        self.badge_lbl.setFont(font_text(9, QFont.Weight.Bold))
+        self.badge_lbl.setStyleSheet("color: #64748b; background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 2px 7px;")
+        lay.addWidget(self.badge_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        self.text_lbl = QLabel('<span style="color: #5F6672;">Live Transcript Active · Speak to NEO</span>')
+        self.text_lbl = QLabel('<span style="color: #64748b;">Live Speech Link Active · Speak to NEO or type below</span>')
         self.text_lbl.setFont(font_text(11, QFont.Weight.Normal))
-        self.text_lbl.setStyleSheet("border: none; background: transparent;")
+        self.text_lbl.setWordWrap(True)
+        self.text_lbl.setStyleSheet("border: none; background: transparent; line-height: 1.35;")
         lay.addWidget(self.text_lbl, stretch=1)
 
         self._decay_tmr = QTimer(self)
-        self._decay_tmr.setInterval(12000)
+        self._decay_tmr.setInterval(14000)
         self._decay_tmr.timeout.connect(self._on_decay)
 
     def set_speech(self, speaker: str, text: str):
@@ -2047,23 +2053,26 @@ class NeoLiveTranscriptWidget(QFrame):
             return
         self._decay_tmr.stop()
         if speaker.lower() in ("user", "you", "fayid"):
-            self.dot.setStyleSheet("color: #4CAF7D; border: none; background: transparent;")
+            self.badge_lbl.setText("YOU")
+            self.badge_lbl.setStyleSheet("color: #34d399; background: rgba(52, 211, 153, 0.16); border-radius: 8px; padding: 2px 7px;")
             self.text_lbl.setText(
-                f'<span style="color: #4CAF7D; font-weight: 600;">You:</span> '
-                f'<span style="color: #4CAF7D;">"{t}"</span>'
+                f'<span style="color: #34d399; font-weight: 600;">You:</span> '
+                f'<span style="color: #e2e8f0;">"{t}"</span>'
             )
         else:
-            self.dot.setStyleSheet("color: #5B8DEF; border: none; background: transparent;")
+            self.badge_lbl.setText("NEO")
+            self.badge_lbl.setStyleSheet("color: #38bdf8; background: rgba(56, 189, 248, 0.16); border-radius: 8px; padding: 2px 7px;")
             self.text_lbl.setText(
-                f'<span style="color: #9AA1AD; font-weight: 600;">NEO:</span> '
-                f'<span style="color: #E6E8EC;">"{t}"</span>'
+                f'<span style="color: #93c5fd; font-weight: 600;">NEO:</span> '
+                f'<span style="color: #ffffff;">"{t}"</span>'
             )
         self._decay_tmr.start()
 
     def _on_decay(self):
         self._decay_tmr.stop()
-        self.dot.setStyleSheet("color: #5F6672; border: none; background: transparent;")
-        self.text_lbl.setText('<span style="color: #5F6672;">Live Transcript Active · Speak to NEO</span>')
+        self.badge_lbl.setText("IDLE")
+        self.badge_lbl.setStyleSheet("color: #64748b; background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 2px 7px;")
+        self.text_lbl.setText('<span style="color: #64748b;">Live Speech Link Active · Speak to NEO or type below</span>')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2163,6 +2172,179 @@ class NeoSmartChipBar(QFrame):
     def _on_dismiss(self):
         self.dismissed.emit()
         self.hide()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  4.8 QUICK ACTION CARDS & REFLEX HUB (macOS Sequoia Dark Glass Aesthetic)
+# ─────────────────────────────────────────────────────────────────────────────
+class NeoQuickActionCard(QFrame):
+    """macOS Sequoia dark glass interactive action card with glow hover and click trigger."""
+    clicked = pyqtSignal(str)  # command payload
+
+    def __init__(self, icon: str, title: str, subtitle: str, command: str, tag: str = "", theme_color: str = "#38bdf8", parent=None):
+        super().__init__(parent)
+        self.command = command
+        self.theme_color = theme_color
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setFixedHeight(62)
+        self.setMinimumWidth(260)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: rgba(22, 27, 36, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 12px;
+            }}
+            QFrame:hover {{
+                background: rgba(30, 38, 52, 0.90);
+                border: 1px solid {theme_color}66;
+            }}
+        """)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(12, 8, 14, 8)
+        lay.setSpacing(12)
+
+        # Icon pill box
+        icn_box = QLabel(icon)
+        icn_box.setFixedSize(36, 36)
+        icn_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icn_box.setFont(QFont("Segoe UI", 13))
+        icn_box.setStyleSheet(f"""
+            QLabel {{
+                background: {theme_color}1a;
+                border: 1px solid {theme_color}33;
+                border-radius: 9px;
+            }}
+        """)
+        lay.addWidget(icn_box)
+
+        # Text stack
+        v = QVBoxLayout()
+        v.setSpacing(2)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.addStretch()
+
+        h_title = QHBoxLayout()
+        h_title.setSpacing(6)
+        lbl_title = QLabel(title)
+        lbl_title.setFont(font_text(11, QFont.Weight.DemiBold))
+        lbl_title.setStyleSheet("color: #f1f5f9; border: none; background: transparent;")
+        h_title.addWidget(lbl_title)
+
+        if tag:
+            lbl_tag = QLabel(tag)
+            lbl_tag.setFont(font_text(8, QFont.Weight.Bold))
+            lbl_tag.setStyleSheet(f"""
+                color: {theme_color}; background: {theme_color}1f;
+                border-radius: 4px; padding: 1px 5px; border: none;
+            """)
+            h_title.addWidget(lbl_tag)
+        h_title.addStretch()
+        v.addLayout(h_title)
+
+        lbl_sub = QLabel(subtitle)
+        lbl_sub.setFont(font_text(10, QFont.Weight.Normal))
+        lbl_sub.setStyleSheet("color: #8e9eb5; border: none; background: transparent;")
+        v.addWidget(lbl_sub)
+        v.addStretch()
+        lay.addLayout(v, stretch=1)
+
+        # Subtle chevron
+        chevron = QLabel("›")
+        chevron.setFont(font_display(14, QFont.Weight.Bold))
+        chevron.setStyleSheet("color: #64748b; border: none; background: transparent;")
+        lay.addWidget(chevron)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self.command)
+        super().mousePressEvent(event)
+
+
+class NeoQuickActionsGrid(QWidget):
+    """Grid of spontaneous actions and reflex capabilities for NEO."""
+    action_triggered = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumWidth(560)
+        self.setMaximumWidth(760)
+
+        main_lay = QVBoxLayout(self)
+        main_lay.setContentsMargins(0, 0, 0, 0)
+        main_lay.setSpacing(10)
+
+        # Section Header
+        hdr_row = QHBoxLayout()
+        hdr_row.setContentsMargins(4, 0, 4, 0)
+        hdr_lbl = QLabel("✦ QUICK CAPABILITIES & REFLEXES")
+        hdr_lbl.setFont(font_text(10, QFont.Weight.Bold))
+        hdr_lbl.setStyleSheet("color: #64748b; letter-spacing: 0.8px; border: none; background: transparent;")
+        hdr_row.addWidget(hdr_lbl)
+
+        hdr_row.addStretch()
+        badge_lbl = QLabel("⚡ SPONTANEOUS <15ms")
+        badge_lbl.setFont(font_text(8, QFont.Weight.Bold))
+        badge_lbl.setStyleSheet("color: #38bdf8; background: rgba(56, 189, 248, 0.12); border-radius: 4px; padding: 2px 6px;")
+        hdr_row.addWidget(badge_lbl)
+        main_lay.addLayout(hdr_row)
+
+        # 2x2 Action Cards Grid
+        grid = QGridLayout()
+        grid.setSpacing(10)
+
+        cards_data = [
+            ("⚡", "Purge Memory & Vitals", "Instant RAM flush & thread optimization", "purge ram", "Reflex", "#38bdf8", 0, 0),
+            ("🖥️", "Analyze Screen Context", "Vision OCR & active workspace digest", "analyze active screen", "Vision", "#a78bfa", 0, 1),
+            ("📋", "Clipboard Deep Dive", "Summarize, translate or format buffer", "summarize clipboard", "Context", "#34d399", 1, 0),
+            ("🎙️", "Executive Briefing", "Audio rundown of schedule & priorities", "deliver morning briefing", "Briefing", "#fbbf24", 1, 1),
+        ]
+
+        for icon, title, sub, cmd, tag, color, r, c in cards_data:
+            card = NeoQuickActionCard(icon, title, sub, cmd, tag, color, self)
+            card.clicked.connect(self.action_triggered.emit)
+            grid.addWidget(card, r, c)
+
+        main_lay.addLayout(grid)
+
+        # Secondary Quick Pill Reflex Strip
+        chips_row = QHBoxLayout()
+        chips_row.setSpacing(8)
+        chips_row.setContentsMargins(2, 2, 2, 0)
+
+        quick_reflexes = [
+            ("🧹 Clean Temp Cache", "clean temp files"),
+            ("🛡️ Security Audit", "check security threats"),
+            ("🚀 System Benchmark", "run quick benchmark"),
+            ("📸 Capture Screenshot", "take screenshot"),
+        ]
+
+        for lbl, cmd in quick_reflexes:
+            btn = QPushButton(lbl)
+            btn.setFixedHeight(26)
+            btn.setFont(font_text(10, QFont.Weight.Medium))
+            btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.04);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.07);
+                    border-radius: 13px;
+                    padding: 0 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.09);
+                    border-color: rgba(91, 141, 239, 0.35);
+                    color: #ffffff;
+                }
+            """)
+            btn.clicked.connect(lambda _, c=cmd: self.action_triggered.emit(c))
+            chips_row.addWidget(btn)
+
+        chips_row.addStretch()
+        main_lay.addLayout(chips_row)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2313,24 +2495,24 @@ class NeoHeroStage(QWidget):
         self._chips_box.addStretch()
         vbox.addLayout(self._chips_box)
 
-        # 3. Omni Prompt Capsule Bar (Linear Command Bar 48px, 8px radius)
-        vbox.addSpacing(10)
+        # 3. Omni Prompt Capsule Bar (Linear Command Bar 50px, macOS Sequoia Dark Glass)
+        vbox.addSpacing(12)
         bar_container = QHBoxLayout()
-        bar_container.addStretch()
+        bar_container.addStretch(1)
 
         self.input_frame = QFrame()
-        self.input_frame.setFixedHeight(48)
-        self.input_frame.setMinimumWidth(280)
-        self.input_frame.setMaximumWidth(780)
-        self.input_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.input_frame.setFixedHeight(50)
+        self.input_frame.setMinimumWidth(560)
+        self.input_frame.setMaximumWidth(760)
+        self.input_frame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.input_frame.setStyleSheet(f"""
             QFrame {{
-                background: {CARD_BG};
-                border: 1px solid {CARD_BORDER};
-                border-radius: 8px;
+                background: rgba(22, 27, 36, 0.90);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 12px;
             }}
             QFrame:hover {{
-                border-color: {ACCENT_PRIMARY};
+                border-color: rgba(91, 141, 239, 0.45);
             }}
         """)
         bar_lay = QHBoxLayout(self.input_frame)
@@ -2341,6 +2523,7 @@ class NeoHeroStage(QWidget):
         plus_btn.setFixedSize(28, 28)
         plus_btn.setFont(QFont("Segoe UI", 14))
         plus_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        plus_btn.setToolTip("Attach File, Image, or Directory Context")
         plus_btn.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
@@ -2357,8 +2540,8 @@ class NeoHeroStage(QWidget):
         bar_lay.addWidget(plus_btn)
 
         self.input_edit = QLineEdit()
-        self.input_edit.setPlaceholderText("Ask NEO anything...")
-        self.input_edit.setFont(font_text(13, QFont.Weight.Normal))
+        self.input_edit.setPlaceholderText("Ask NEO anything, type an OS command, or press Space to speak...")
+        self.input_edit.setFont(font_text(12, QFont.Weight.Normal))
         self.input_edit.setStyleSheet(f"""
             QLineEdit {{
                 background: transparent;
@@ -2367,7 +2550,7 @@ class NeoHeroStage(QWidget):
                 padding: 0 6px;
             }}
             QLineEdit::placeholder {{
-                color: {TEXT_DIM};
+                color: #8492a6;
             }}
         """)
         self.input_edit.returnPressed.connect(self._submit)
@@ -2387,6 +2570,7 @@ class NeoHeroStage(QWidget):
         self.mic_btn.setFixedSize(28, 28)
         self.mic_btn.setFont(QFont("Segoe UI", 11))
         self.mic_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.mic_btn.setToolTip("Microphone [F4 / Space]")
         self.mic_btn.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
@@ -2406,12 +2590,13 @@ class NeoHeroStage(QWidget):
         send_btn.setFixedSize(32, 32)
         send_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         send_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        send_btn.setToolTip("Send Command (Return)")
         send_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {SEND_BTN_BG};
                 color: #ffffff;
                 border: none;
-                border-radius: 6px;
+                border-radius: 7px;
             }}
             QPushButton:hover {{
                 background: {ACCENT_HOVER};
@@ -2420,12 +2605,21 @@ class NeoHeroStage(QWidget):
         send_btn.clicked.connect(self._submit)
         bar_lay.addWidget(send_btn)
 
-        bar_container.addWidget(self.input_frame)
-        bar_container.addStretch()
+        bar_container.addWidget(self.input_frame, stretch=0)
+        bar_container.addStretch(1)
         vbox.addLayout(bar_container)
 
-        # Bottom area is kept clean and breathable (eliminated boxy cards row)
-        self.cards_widget = None
+        # 4. Interactive Quick Actions Grid & Reflex Hub
+        vbox.addSpacing(18)
+        quick_box = QHBoxLayout()
+        quick_box.addStretch(1)
+        self.quick_actions = NeoQuickActionsGrid()
+        self.quick_actions.action_triggered.connect(self.command_submitted.emit)
+        quick_box.addWidget(self.quick_actions, stretch=0)
+        quick_box.addStretch(1)
+        vbox.addLayout(quick_box)
+
+        self.cards_widget = self.quick_actions
         vbox.addStretch()
 
     def show_camera_stream(self, active: bool):
