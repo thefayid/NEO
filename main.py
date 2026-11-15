@@ -2212,11 +2212,25 @@ class NeoLive:
                 raw = indata.astype(np.float32)
                 raw -= np.mean(raw)
 
-                # Acoustic gate: measure RMS level to distinguish speech from laptop fan / ambient room hiss
-                rms = float(np.sqrt(np.mean(raw * raw))) if raw.size > 0 else 0.0
+                # Soft Automatic Gain Control (AGC) & Voice Preamp:
+                # Gently boosts quiet microphones / distant speech up to 3.0x while limiting peaks
+                peak = float(np.max(np.abs(raw))) if raw.size > 0 else 0.0
+                gain = getattr(self, "_mic_soft_gain", 1.0)
+                if peak > 0:
+                    if peak * gain > 28000:
+                        gain = max(1.0, 26000.0 / peak)
+                    elif peak > 150 and peak * gain < 8500:
+                        gain = min(3.0, gain * 1.04)
+                    elif peak * gain > 20000:
+                        gain = max(1.0, gain * 0.98)
+                self._mic_soft_gain = gain
+                processed = raw * gain
 
-                # Adaptive speech activity threshold (RMS > 45.0 indicates intentional vocalization)
-                is_talking = rms > 45.0
+                # Acoustic gate: measure RMS level to distinguish speech from room hiss
+                rms = float(np.sqrt(np.mean(processed * processed))) if processed.size > 0 else 0.0
+
+                # Adaptive speech activity threshold (RMS > 25.0 ensures soft/natural conversational tone is captured)
+                is_talking = rms > 25.0
                 if is_talking:
                     self._last_user_speech = time.monotonic()
                     prev_f = getattr(self, "_active_speech_frames", 0)
@@ -2235,7 +2249,7 @@ class NeoLive:
                         except Exception:
                             pass
 
-                raw_int16 = np.clip(raw, -32768, 32767).astype(np.int16)
+                raw_int16 = np.clip(processed, -32768, 32767).astype(np.int16)
                 data = raw_int16.tobytes()
                 loop.call_soon_threadsafe(
                     self._enqueue_audio_out,
@@ -2264,8 +2278,12 @@ class NeoLive:
             # instead of raising on startup and taking the session with it.
             _mic_name = get_input_device()
             _mic_dev  = audio_devices.resolve(_mic_name, "input")
-            if _mic_dev is not None:
-                print(f"[NEO] 🎤 Input device: {_mic_name}")
+            try:
+                _def_name = sd.query_devices(kind='input').get('name', 'Default')
+            except Exception:
+                _def_name = 'Default'
+            _dev_title = _mic_name if _mic_dev is not None else f"System default ({_def_name})"
+            print(f"[NEO] 🎤 Input device: {_dev_title}")
             try:
                 _mic_stream = _open_mic(_mic_dev)
             except Exception as _e:

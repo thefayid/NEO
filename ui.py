@@ -5803,6 +5803,10 @@ class MainWindow(QMainWindow):
 
     def showEvent(self, event):
         super().showEvent(event)
+        for overlay_attr in ("_overlay", "_remote_overlay", "_customize_overlay", "_key_pool_overlay"):
+            ov = getattr(self, overlay_attr, None)
+            if ov and ov.isVisible():
+                self._center_overlay(ov)
         try:
             from core.theme_provider import theme
             apply_macos_vibrancy(int(self.winId()), is_dark=theme.is_dark)
@@ -6412,19 +6416,10 @@ class MainWindow(QMainWindow):
         win_h = cw.height()
 
         # ── 1. Dynamic Overlays Clamping (Prevents off-screen overflow on compact windows) ──
-        for overlay_attr, def_w, def_h in [
-            ("_overlay", 740, 580),
-            ("_remote_overlay", getattr(RemoteKeyOverlay, "_OW", 520), getattr(RemoteKeyOverlay, "_OH", 400)),
-            ("_customize_overlay", getattr(CustomizeOverlay, "_OW", 640), getattr(CustomizeOverlay, "_OH", 500)),
-            ("_key_pool_overlay", getattr(NeoKeyPoolOverlay, "_OW", 560), getattr(NeoKeyPoolOverlay, "_OH", 520)),
-        ]:
+        for overlay_attr in ("_overlay", "_remote_overlay", "_customize_overlay", "_key_pool_overlay"):
             ov = getattr(self, overlay_attr, None)
             if ov and ov.isVisible():
-                max_w = getattr(ov, "_OW", def_w)
-                max_h = getattr(ov, "_OH", def_h)
-                fit_w = min(max_w, max(280, win_w - 32))
-                fit_h = min(max_h, max(240, win_h - 40))
-                ov.setGeometry((win_w - fit_w) // 2, (win_h - fit_h) // 2, fit_w, fit_h)
+                self._center_overlay(ov)
 
         # ── 2. Responsive Multi-Column Adaptive Breakpoints ─────────────────────
         # If user snaps or resizes the window below 940px, auto-collapse right inspector
@@ -8904,20 +8899,40 @@ class MainWindow(QMainWindow):
         except Exception:
             return False
 
+    def _center_overlay(self, ov):
+        if not ov:
+            return
+        cw = self.centralWidget()
+        if not cw:
+            return
+        win_w = cw.width()
+        win_h = cw.height()
+        max_w = getattr(ov, "_OW", 740)
+        max_h = getattr(ov, "_OH", 580)
+        fit_w = min(max_w, max(280, win_w - 32))
+        fit_h = min(max_h, max(240, win_h - 40))
+        x = max(16, (win_w - fit_w) // 2)
+        y = max(16, (win_h - fit_h) // 2)
+        ov.setGeometry(x, y, fit_w, fit_h)
+
     def _show_setup(self):
         ov = NeoCalibrationOverlay(self.centralWidget())
-        cw = self.centralWidget()
-        ow = getattr(ov, "_OW", 740)
-        oh = getattr(ov, "_OH", 580)
-        ov.setGeometry(
-            (cw.width()  - ow) // 2,
-            (cw.height() - oh) // 2,
-            ow, oh,
-        )
+        self._overlay = ov
+        self._center_overlay(ov)
         ov.done.connect(self._on_setup_done)
+        if hasattr(ov, "close_btn"):
+            ov.close_btn.clicked.connect(self._on_setup_cancelled)
         ov.show()
         ov.raise_()
-        self._overlay = ov
+        # Schedule deferred recentering after layout finishes
+        QTimer.singleShot(0, lambda: self._center_overlay(ov))
+        QTimer.singleShot(100, lambda: self._center_overlay(ov))
+
+    def _on_setup_cancelled(self):
+        self._ready = True
+        if self._overlay:
+            self._overlay.hide()
+            self._overlay = None
 
     def _on_setup_done(self, config_data, os_name: str = None):
         if not isinstance(config_data, dict):

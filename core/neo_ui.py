@@ -851,7 +851,7 @@ class VoiceTelemetryWidget(QFrame):
         m_row.setSpacing(8)
         m_lbl = QLabel("Engine")
         m_lbl.setFont(font_text(11, QFont.Weight.Normal))
-        m_lbl.setFixedWidth(48)
+        m_lbl.setMinimumWidth(50)
         m_lbl.setStyleSheet(f"color: {TEXT_MUTED}; border: none; background: transparent;")
         m_row.addWidget(m_lbl)
         m_row.addStretch(1)
@@ -2315,10 +2315,10 @@ class NeoQuickActionsGrid(QWidget):
         chips_row.setContentsMargins(2, 2, 2, 0)
 
         quick_reflexes = [
-            ("🧹 Clean Temp Cache", "clean temp files"),
+            ("🧹 Clean Cache", "clean temp files"),
             ("🛡️ Security Audit", "check security threats"),
-            ("🚀 System Benchmark", "run quick benchmark"),
-            ("📸 Capture Screenshot", "take screenshot"),
+            ("🚀 Benchmark", "run quick benchmark"),
+            ("📸 Screenshot", "take screenshot"),
         ]
 
         for lbl, cmd in quick_reflexes:
@@ -8240,26 +8240,26 @@ class NeoCalibrationOverlay(QFrame):
 
         top_bar.addStretch(1)
 
-        close_btn = QPushButton("✕")
-        close_btn.setFont(QFont("Segoe UI", 11))
-        close_btn.setFixedSize(28, 28)
-        close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        close_btn.setStyleSheet("""
+        self.close_btn = QPushButton("✕")
+        self.close_btn.setFont(QFont("Segoe UI", 11))
+        self.close_btn.setFixedSize(28, 28)
+        self.close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.close_btn.setStyleSheet("""
             QPushButton {
                 color: #64748b; background: rgba(255,255,255,0.05);
                 border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
             }
             QPushButton:hover { color: #ffffff; background: rgba(239, 68, 68, 0.25); border-color: #D9534F; }
         """)
-        close_btn.clicked.connect(self.hide)
-        top_bar.addWidget(close_btn)
+        self.close_btn.clicked.connect(self.hide)
+        top_bar.addWidget(self.close_btn)
         root_lay.addLayout(top_bar)
 
         # 2. Step Progress Tabs Bar
         step_bar = QHBoxLayout()
         step_bar.setSpacing(8)
         self.step_btns: list[QPushButton] = []
-        for i, (num, label) in enumerate([("1", "Operator Profile"), ("2", "Behavioral Matrix"), ("3", "Core & Mission")]):
+        for i, (num, label) in enumerate([("1", "Operator Profile"), ("2", "Behavioral Matrix"), ("3", "Core && Mission")]):
             s_btn = QPushButton(f"  {num}  {label}  ")
             s_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
             s_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -8410,10 +8410,10 @@ class NeoCalibrationOverlay(QFrame):
         flow_grid.setSpacing(8)
         self.rhythm_pills = _PillGroup()
         rhythms = [
-            ("🌙 Night Owl", "Midnight code, deep work & coffee"),
+            ("🌙 Night Owl", "Midnight code, deep work && coffee"),
             ("🌅 Dawn Raider", "Early morning clarity before the world wakes"),
             ("⚡ Hyper-Burst", "Sporadic strikes of intense genius"),
-            ("☕ Steady Flow", "Continuous all-day focus & automation"),
+            ("☕ Steady Flow", "Continuous all-day focus && automation"),
         ]
         for idx, (title, sub) in enumerate(rhythms):
             pill = _PillOption(f"{title}  —  {sub}", value=title)
@@ -8538,7 +8538,7 @@ class NeoCalibrationOverlay(QFrame):
 
         b_row.addStretch(1)
 
-        next_b = QPushButton("Next: Core & Mission  →")
+        next_b = QPushButton("Next: Core && Mission  →")
         next_b.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         next_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         next_b.setFixedHeight(36)

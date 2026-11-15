@@ -1027,10 +1027,11 @@ def dispatch_morning_briefing(
 
     # Record dispatch date to prevent duplicate firing today
     today_iso = datetime.now().strftime("%Y-%m-%d")
-    cfg["last_morning_dispatch_date"] = today_iso
     try:
-        with open(_CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(cfg, f, indent=4)
+        from memory.config_manager import load_api_keys, _write_config
+        full_cfg = load_api_keys()
+        full_cfg["last_morning_dispatch_date"] = today_iso
+        _write_config(full_cfg)
     except Exception:
         pass
 

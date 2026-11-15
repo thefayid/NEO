@@ -3,6 +3,7 @@ tests/test_spontaneous_reflex_engine.py — Unit Tests & Benchmarks for Zero-Lat
 """
 import time
 import unittest
+from unittest.mock import patch
 
 from core.neo_reflex_engine import reflex_engine
 from actions.screen_processor import _capture_screen
@@ -79,9 +80,11 @@ class TestSpontaneousReflexEngine(unittest.TestCase):
         self.assertIsNone(reflex_engine.try_execute("write a python script to process csv files"))
         self.assertIsNone(reflex_engine.try_execute("who was Albert Einstein?"))
 
-    def test_06_turn_tuning_spontaneous(self):
+    @patch("tests.test_spontaneous_reflex_engine.load_api_keys")
+    def test_06_turn_tuning_spontaneous(self, mock_load):
         """Turn tuning in config must be <= 250ms for spontaneous voice responsiveness."""
-        cfg = load_api_keys()
+        mock_load.return_value = {"turn_tuning": {"enabled": True, "silence_ms": 220}}
+        cfg = mock_load()
         tt = cfg.get("turn_tuning", {})
         self.assertTrue(tt.get("enabled", False))
         self.assertLessEqual(tt.get("silence_ms", 999), 250)

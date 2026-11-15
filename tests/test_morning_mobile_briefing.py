@@ -45,16 +45,18 @@ class TestMorningMobileBriefing(unittest.TestCase):
         self.assertIn("GITHUB & REPOSITORY HEALTH", card)
         self.assertIn("SYSTEM HARDWARE & TELEMETRY", card)
 
+    @patch("memory.config_manager._write_config")
     @patch("actions.telegram_remote.send_remote_alert")
-    def test_dispatch_telegram(self, mock_alert):
+    def test_dispatch_telegram(self, mock_alert, mock_write):
         mock_alert.return_value = True
         res = dispatch_morning_briefing(platform="telegram", card_text="Test Card")
         self.assertTrue(res["success"])
         self.assertIn("Telegram", res["delivered_channels"])
         mock_alert.assert_called_once_with("Test Card")
 
+    @patch("memory.config_manager._write_config")
     @patch("actions.send_message.send_message")
-    def test_dispatch_whatsapp(self, mock_send):
+    def test_dispatch_whatsapp(self, mock_send, mock_write):
         mock_send.return_value = "status=done action=send_message verified=true"
         res = dispatch_morning_briefing(platform="whatsapp", receiver="Fayid", card_text="Test Card")
         self.assertTrue(res["success"])
