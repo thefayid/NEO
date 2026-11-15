@@ -110,3 +110,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         )
 
     return outcome.failed("computer_operator", f"Unknown action '{act}'.")
+
+
+TOOL["handler"] = run

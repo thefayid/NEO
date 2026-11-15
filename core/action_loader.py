@@ -201,7 +201,7 @@ def _validate(module, filename: str) -> ActionRecord:
         return ActionRecord(name=name, file=filename,
                             error="TOOL['parameters'] must be a dict with \"type\": \"OBJECT\".")
 
-    handler = tool.get("handler")
+    handler = tool.get("handler") or getattr(module, "run", None)
     if not callable(handler):
         return ActionRecord(name=name, file=filename,
                             error="TOOL['handler'] missing or not callable.")

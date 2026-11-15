@@ -93,3 +93,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         return outcome.done("ambient_copilot", message="Cleared recent error log buffer.")
 
     return outcome.failed("ambient_copilot", f"Unknown action '{action}'")
+
+
+TOOL["handler"] = run

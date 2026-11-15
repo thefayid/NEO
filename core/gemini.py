@@ -189,15 +189,15 @@ _LADDERS = {
 # Prioritizing Gemini 3.1 Flash Live (fastest, lowest TTFT) with seamless fallback
 # to battle-tested 2.5 Flash Native Audio.
 LIVE_MODELS = (
-    "models/gemini-3.1-flash-live-preview",
     "models/gemini-2.5-flash-native-audio-latest",
+    "models/gemini-3.1-flash-live-preview",
     "models/gemini-2.5-flash-native-audio-preview-12-2025",
     "models/gemini-2.0-flash-exp",
 )
 
 # The Live model to use for one-shot calls. main.py owns the real one; this is
 # only the fallback for when this module is imported without it (tests).
-_LIVE_FALLBACK = "models/gemini-3.1-flash-live-preview"
+_LIVE_FALLBACK = "models/gemini-2.5-flash-native-audio-latest"
 
 # How many one-shot Live sessions may exist at once.
 #

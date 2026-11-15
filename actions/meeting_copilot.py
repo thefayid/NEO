@@ -165,3 +165,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         return outcome.done("meeting_copilot", action_item=item_text, owner=owner)
 
     return outcome.failed("meeting_copilot", f"Unknown action '{action}'")
+
+
+TOOL["handler"] = run

@@ -3212,9 +3212,12 @@ class NeoLive:
                 http_options={"api_version":
                               "v1alpha" if self._enhanced_live else "v1beta"},
             )
-            async with client.aio.live.connect(model=live_model,
-                                               config=config) as session:
+            cm = client.aio.live.connect(model=live_model, config=config)
+            session = await asyncio.wait_for(cm.__aenter__(), timeout=12.0)
+            try:
                 yield session
+            finally:
+                await cm.__aexit__(None, None, None)
             return
 
         from providers.engine_pipeline import PipelineEngine

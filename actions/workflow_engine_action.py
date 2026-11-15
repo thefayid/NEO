@@ -84,3 +84,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         return outcome.failed("workflow_engine", f"Failed registering routine '{r_name}'.")
 
     return outcome.failed("workflow_engine", f"Unknown action '{action}'.")
+
+
+TOOL["handler"] = run

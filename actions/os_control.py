@@ -210,3 +210,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         return outcome.done("os_control", count=len(endpoints), devices=summary)
 
     return outcome.failed("os_control", f"Unknown action '{action}'.")
+
+
+TOOL["handler"] = run

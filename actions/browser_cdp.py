@@ -119,3 +119,6 @@ def run(params: Dict[str, Any], player=None) -> str:
         return outcome.done("browser_cdp", selector=sel, rows=len(data), data=str(data)[:600])
 
     return outcome.failed("browser_cdp", f"Unknown action '{action}'.")
+
+
+TOOL["handler"] = run
