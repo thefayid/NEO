@@ -123,7 +123,8 @@ def _capture_screen(target_mode: str = "full", stream_mode: bool = False) -> tup
     # 1. High-speed MSS capture (direct raw RGB bytes -> PIL Image, eliminating PNG encode/decode roundtrip)
     if _MSS:
         try:
-            with mss.mss() as sct:
+            mss_factory = getattr(mss, "MSS", getattr(mss, "mss", None))
+            with mss_factory() as sct:
                 target = None
                 if target_mode in ("active", "window", "focused"):
                     win_rect = _get_active_window_rect()
