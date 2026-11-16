@@ -1025,23 +1025,24 @@ class NeoChatMessageBubble(QFrame):
         outer.setSpacing(4)
 
         card = QFrame()
+        card.setObjectName("MsgCard")
         card.setMaximumWidth(820)
         r = theme.radii.md
         if self.is_user:
             # User Bubble: subtle secondary control card with gentle border
             card.setStyleSheet(f"""
-                QFrame {{
-                    background-color: {theme.colors.controlBackgroundSecondary};
-                    border: 1px solid {theme.colors.separator};
+                QFrame#MsgCard {{
+                    background-color: rgba(30, 41, 59, 0.85);
+                    border: 1px solid rgba(91, 141, 239, 0.32);
                     border-radius: {r}px;
                 }}
             """)
         else:
             # Assistant Bubble: clean elevated card
             card.setStyleSheet(f"""
-                QFrame {{
-                    background-color: {theme.colors.controlBackground};
-                    border: 1px solid {theme.colors.separator};
+                QFrame#MsgCard {{
+                    background-color: rgba(18, 24, 38, 0.82);
+                    border: 1px solid rgba(255, 255, 255, 0.07);
                     border-radius: {r}px;
                 }}
             """)
@@ -1056,23 +1057,23 @@ class NeoChatMessageBubble(QFrame):
         if self.is_user:
             hdr.addStretch()
             ts_lbl = QLabel(ts)
-            ts_lbl.setFont(theme.font(theme.typography.caption_2))
-            ts_lbl.setStyleSheet(f"color: {theme.colors.labelTertiary}; border: none; background: transparent;")
+            ts_lbl.setFont(QFont("Segoe UI", 8))
+            ts_lbl.setStyleSheet("color: #64748b; border: none; background: transparent;")
             hdr.addWidget(ts_lbl)
 
             name_lbl = QLabel("You")
-            name_lbl.setFont(theme.font(theme.typography.caption_1, QFont.Weight.DemiBold))
-            name_lbl.setStyleSheet(f"color: {theme.colors.labelSecondary}; border: none; background: transparent;")
+            name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
+            name_lbl.setStyleSheet("color: #cbd5e1; border: none; background: transparent;")
             hdr.addWidget(name_lbl)
         else:
-            name_lbl = QLabel("NEO")
-            name_lbl.setFont(theme.font(theme.typography.caption_1, QFont.Weight.DemiBold))
+            name_lbl = QLabel("● NEO")
+            name_lbl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
             name_lbl.setStyleSheet(f"color: {theme.accent_color}; border: none; background: transparent; letter-spacing: 0.5px;")
             hdr.addWidget(name_lbl)
 
             ts_lbl = QLabel(ts)
-            ts_lbl.setFont(theme.font(theme.typography.caption_2))
-            ts_lbl.setStyleSheet(f"color: {theme.colors.labelTertiary}; border: none; background: transparent; padding-left: 2px;")
+            ts_lbl.setFont(QFont("Segoe UI", 8))
+            ts_lbl.setStyleSheet("color: #64748b; border: none; background: transparent; padding-left: 2px;")
             hdr.addWidget(ts_lbl)
             hdr.addStretch()
 
@@ -1091,46 +1092,48 @@ class NeoChatMessageBubble(QFrame):
         # Action Footer for NEO response
         if not self.is_user:
             footer = QHBoxLayout()
-            footer.setContentsMargins(0, 4, 0, 0)
-            footer.setSpacing(6)
+            footer.setContentsMargins(0, 6, 0, 0)
+            footer.setSpacing(4)
 
-            def _btn(lbl_text: str, cb):
+            def _btn(lbl_text: str, cb, tooltip: str = ""):
                 b = QPushButton(lbl_text)
-                b.setFont(QFont("Segoe UI", 7))
+                b.setFont(QFont("Segoe UI", 8))
                 b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-                b.setFixedHeight(22)
+                b.setFixedHeight(24)
+                if tooltip:
+                    b.setToolTip(tooltip)
                 b.setStyleSheet("""
                     QPushButton {
-                        background: rgba(255, 255, 255, 0.04);
+                        background: rgba(255, 255, 255, 0.03);
                         color: #94a3b8;
-                        border: 1px solid rgba(255, 255, 255, 0.07);
-                        border-radius: 5px;
-                        padding: 1px 8px;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 6px;
+                        padding: 0 9px;
                     }
                     QPushButton:hover {
-                        background: rgba(91, 141, 239, 0.15);
+                        background: rgba(255, 255, 255, 0.08);
                         border-color: rgba(91, 141, 239, 0.35);
-                        color: #ffffff;
+                        color: #f1f5f9;
                     }
                 """)
                 b.clicked.connect(cb)
                 return b
 
-            self.copy_btn = _btn("📋 Copy", self._copy_msg)
+            self.copy_btn = _btn("⎘ Copy", self._copy_msg, "Copy message text")
             footer.addWidget(self.copy_btn)
 
-            self.notes_btn = _btn("📌 Save to Notes", self._save_to_notes)
+            if self.on_speak:
+                speak_b = _btn("🔊 Listen", lambda: self.on_speak(self.raw_content), "Read aloud with voice")
+                footer.addWidget(speak_b)
+
+            self.notes_btn = _btn("📌 Note", self._save_to_notes, "Save note to executive scratchpad")
             footer.addWidget(self.notes_btn)
 
-            self.brain_btn = _btn("🧠 Pin to Brain", self._pin_to_brain)
+            self.brain_btn = _btn("🧠 Brain", self._pin_to_brain, "Pin to long-term memory")
             footer.addWidget(self.brain_btn)
 
-            self.star_btn = _btn("⭐ Pin", self._toggle_star)
+            self.star_btn = _btn("★ Star", self._toggle_star, "Bookmark this response")
             footer.addWidget(self.star_btn)
-
-            if self.on_speak:
-                speak_b = _btn("🔊 Speak", lambda: self.on_speak(self.raw_content))
-                footer.addWidget(speak_b)
 
             footer.addStretch()
             self.card_lay.addLayout(footer)
@@ -1247,16 +1250,33 @@ class NeoChatMessageBubble(QFrame):
         try:
             from memory.memory_manager import update_memory
             update_memory(self.raw_content[:280])
-            self.brain_btn.setText("✓ Pinned!")
+            self.brain_btn.setText("✓ Pinned")
             self.brain_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(34, 197, 94, 0.22);
+                    background: rgba(34, 197, 94, 0.18);
                     color: #4CAF7D;
-                    border: 1px solid rgba(34, 197, 94, 0.5);
-                    border-radius: 5px;
-                    padding: 1px 8px;
+                    border: 1px solid rgba(34, 197, 94, 0.4);
+                    border-radius: 6px;
+                    padding: 0 9px;
                 }
             """)
+            QTimer.singleShot(2200, lambda: [
+                self.brain_btn.setText("🧠 Brain"),
+                self.brain_btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.03);
+                        color: #94a3b8;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 6px;
+                        padding: 0 9px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(255, 255, 255, 0.08);
+                        border-color: rgba(91, 141, 239, 0.35);
+                        color: #f1f5f9;
+                    }
+                """)
+            ])
         except Exception as e:
             print(f"[NeoChat] Pin to brain error: {e}")
 
@@ -1264,8 +1284,33 @@ class NeoChatMessageBubble(QFrame):
         cb = QGuiApplication.clipboard()
         if cb:
             cb.setText(self.raw_content)
-        self.copy_btn.setText("✓ Copied!")
-        QTimer.singleShot(1800, lambda: self.copy_btn.setText("📋 Copy"))
+        self.copy_btn.setText("✓ Copied")
+        self.copy_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(34, 197, 94, 0.18);
+                color: #4CAF7D;
+                border: 1px solid rgba(34, 197, 94, 0.4);
+                border-radius: 6px;
+                padding: 0 9px;
+            }
+        """)
+        QTimer.singleShot(1800, lambda: [
+            self.copy_btn.setText("⎘ Copy"),
+            self.copy_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.03);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 6px;
+                    padding: 0 9px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.08);
+                    border-color: rgba(91, 141, 239, 0.35);
+                    color: #f1f5f9;
+                }
+            """)
+        ])
 
     def _save_to_notes(self):
         try:
@@ -1283,42 +1328,63 @@ class NeoChatMessageBubble(QFrame):
             except Exception:
                 pass
 
-            self.notes_btn.setText("✓ Saved to Notes!")
+            self.notes_btn.setText("✓ Saved")
             self.notes_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(34, 197, 94, 0.2);
+                    background: rgba(34, 197, 94, 0.18);
                     color: #4CAF7D;
-                    border: 1px solid #22c55e;
-                    border-radius: 3px;
-                    padding: 1px 7px;
+                    border: 1px solid rgba(34, 197, 94, 0.4);
+                    border-radius: 6px;
+                    padding: 0 9px;
                 }
             """)
-            QTimer.singleShot(2500, lambda: self.notes_btn.setText("📌 Save to Notes"))
+            QTimer.singleShot(2200, lambda: [
+                self.notes_btn.setText("📌 Note"),
+                self.notes_btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.03);
+                        color: #94a3b8;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 6px;
+                        padding: 0 9px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(255, 255, 255, 0.08);
+                        border-color: rgba(91, 141, 239, 0.35);
+                        color: #f1f5f9;
+                    }
+                """)
+            ])
         except Exception as e:
             self.notes_btn.setText("⚠️ Failed")
 
     def _toggle_star(self):
         self.is_starred = not self.is_starred
         if self.is_starred:
-            self.star_btn.setText("★ Pinned")
+            self.star_btn.setText("★ Starred")
             self.star_btn.setStyleSheet("""
                 QPushButton {
-                    background: rgba(251, 191, 36, 0.2);
-                    color: #D9A441;
-                    border: 1px solid #D9A441;
-                    border-radius: 3px;
-                    padding: 1px 7px;
+                    background: rgba(251, 191, 36, 0.18);
+                    color: #fbbf24;
+                    border: 1px solid rgba(251, 191, 36, 0.4);
+                    border-radius: 6px;
+                    padding: 0 9px;
                 }
             """)
         else:
-            self.star_btn.setText("⭐ Pin")
+            self.star_btn.setText("★ Star")
             self.star_btn.setStyleSheet("""
                 QPushButton {
-                    background: transparent;
-                    color: #8e9eb5;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 3px;
-                    padding: 1px 7px;
+                    background: rgba(255, 255, 255, 0.03);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 6px;
+                    padding: 0 9px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.08);
+                    border-color: rgba(91, 141, 239, 0.35);
+                    color: #f1f5f9;
                 }
             """)
 
@@ -1589,22 +1655,35 @@ class NeoModernChatWidget(QWidget):
         chat_v.setContentsMargins(18, 12, 18, 14)
         chat_v.setSpacing(8)
 
-        # Modern Executive Header Bar
-        hdr = QHBoxLayout()
-        hdr.setContentsMargins(4, 2, 4, 6)
-        hdr.setSpacing(10)
+        # Modern Executive Chat Top Bar (Clean Frosted Glass Card)
+        self.top_bar = QFrame()
+        self.top_bar.setObjectName("ChatTopBar")
+        self.top_bar.setFixedHeight(44)
+        self.top_bar.setStyleSheet("""
+            QFrame#ChatTopBar {
+                background: rgba(15, 23, 42, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 10px;
+            }
+        """)
+        top_lay = QHBoxLayout(self.top_bar)
+        top_lay.setContentsMargins(10, 4, 10, 4)
+        top_lay.setSpacing(6)
 
-        self.drawer_btn = QPushButton("☰  Sessions")
+        # ── Left Group: Sessions Drawer + New Chat + Status Indicator ──
+        self.drawer_btn = QPushButton("💬  Sessions")
         self.drawer_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         self.drawer_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.drawer_btn.setFixedHeight(28)
+        self.drawer_btn.setToolTip("Toggle Chat History & Sessions (Ctrl+H)")
         self.drawer_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.05);
+                background: rgba(255, 255, 255, 0.04);
                 color: #cbd5e1;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 7px;
-                padding: 2px 12px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                padding: 0 10px;
+                font-size: 11px;
             }
             QPushButton:hover {
                 background: rgba(91, 141, 239, 0.2);
@@ -1613,26 +1692,50 @@ class NeoModernChatWidget(QWidget):
             }
         """)
         self.drawer_btn.clicked.connect(self._toggle_drawer)
-        hdr.addWidget(self.drawer_btn)
+        top_lay.addWidget(self.drawer_btn)
+
+        self.new_chat_btn = QPushButton("＋ New")
+        self.new_chat_btn.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.new_chat_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.new_chat_btn.setFixedHeight(28)
+        self.new_chat_btn.setToolTip("Start a new conversation session")
+        self.new_chat_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(91, 141, 239, 0.15);
+                color: #5B8DEF;
+                border: 1px solid rgba(91, 141, 239, 0.35);
+                border-radius: 6px;
+                padding: 0 10px;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background: rgba(91, 141, 239, 0.30);
+                color: #ffffff;
+            }
+        """)
+        self.new_chat_btn.clicked.connect(self._create_new_session)
+        top_lay.addWidget(self.new_chat_btn)
+
+        sep1 = QFrame()
+        sep1.setFrameShape(QFrame.Shape.VLine)
+        sep1.setFixedWidth(1)
+        sep1.setFixedHeight(18)
+        sep1.setStyleSheet("background: rgba(255, 255, 255, 0.10); border: none;")
+        top_lay.addWidget(sep1)
 
         dot = QLabel("●")
         dot.setFont(QFont("Segoe UI", 8))
         dot.setStyleSheet("color: #10b981; border: none; background: transparent;")
-        hdr.addWidget(dot)
+        top_lay.addWidget(dot)
 
         self.hdr_title = QLabel("NEO Stream")
         self.hdr_title.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
         self.hdr_title.setStyleSheet("color: #f8fafc; border: none; background: transparent;")
-        hdr.addWidget(self.hdr_title)
+        top_lay.addWidget(self.hdr_title)
 
-        tag = QLabel("NEURAL ASSISTANT")
-        tag.setFont(QFont("Segoe UI", 7, QFont.Weight.Medium))
-        tag.setStyleSheet("color: #64748b; background: rgba(255, 255, 255, 0.04); border-radius: 4px; padding: 2px 6px;")
-        hdr.addWidget(tag)
+        top_lay.addStretch()
 
-        hdr.addStretch()
-
-        # Specialized Persona Mode Switcher Pill
+        # ── Right Group: Persona + Model + Canvas + Icon Actions ───────
         self.persona_combo = QComboBox()
         self.persona_combo.addItems([
             "🛡️ CyberSec",
@@ -1642,18 +1745,20 @@ class NeoModernChatWidget(QWidget):
         ])
         self.persona_combo.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
         self.persona_combo.setFixedHeight(28)
+        self.persona_combo.setFixedWidth(112)
         self.persona_combo.setToolTip("Specialized Reasoning Persona Mode")
         self.persona_combo.setStyleSheet("""
             QComboBox {
                 background: rgba(16, 24, 40, 0.90);
                 color: #34d399;
                 border: 1px solid rgba(52, 211, 153, 0.35);
-                border-radius: 7px;
-                padding: 1px 10px;
+                border-radius: 6px;
+                padding: 1px 8px;
+                font-size: 11px;
             }
             QComboBox::drop-down {
                 border: none;
-                width: 16px;
+                width: 14px;
             }
             QComboBox QAbstractItemView {
                 background: #0d1624;
@@ -1664,24 +1769,26 @@ class NeoModernChatWidget(QWidget):
             }
         """)
         self.persona_combo.currentIndexChanged.connect(self._on_persona_changed)
-        hdr.addWidget(self.persona_combo)
+        top_lay.addWidget(self.persona_combo)
 
-        # Model Mode Switcher Pill
         self.model_combo = QComboBox()
-        self.model_combo.addItems(["✦ High-IQ (Gemini 2.5 Pro)", "⚡ Realtime (Gemini 2.5 Flash)", "💻 Local (Ollama)"])
-        self.model_combo.setFont(QFont("Segoe UI", 8))
+        self.model_combo.addItems(["✦ Pro 2.5", "⚡ Flash Live", "💻 Local"])
+        self.model_combo.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
         self.model_combo.setFixedHeight(28)
+        self.model_combo.setFixedWidth(102)
+        self.model_combo.setToolTip("Reasoning Model Engine: Gemini 2.5 Pro / Flash Live / Ollama")
         self.model_combo.setStyleSheet("""
             QComboBox {
                 background: rgba(15, 23, 42, 0.85);
                 color: #5B8DEF;
                 border: 1px solid rgba(91, 141, 239, 0.28);
-                border-radius: 7px;
-                padding: 1px 10px;
+                border-radius: 6px;
+                padding: 1px 8px;
+                font-size: 11px;
             }
             QComboBox::drop-down {
                 border: none;
-                width: 16px;
+                width: 14px;
             }
             QComboBox QAbstractItemView {
                 background: #0d1322;
@@ -1692,97 +1799,86 @@ class NeoModernChatWidget(QWidget):
             }
         """)
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
-        hdr.addWidget(self.model_combo)
+        top_lay.addWidget(self.model_combo)
 
-        # Voice auto-speak toggle button
-        self.voice_btn = QPushButton("🔇 Silent" if self.voice_muted else "🔊 Voice: ON")
-        self.voice_btn.setFont(QFont("Segoe UI", 8))
-        self.voice_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.voice_btn.setFixedHeight(28)
-        self.voice_btn.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.04);
-                color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 7px;
-                padding: 1px 10px;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 0.08);
-                color: #ffffff;
-            }
-        """)
-        self.voice_btn.clicked.connect(self._toggle_voice)
-        hdr.addWidget(self.voice_btn)
-
-        # Interactive Canvas Toggle
-        canvas_tgl = QPushButton("✦ Canvas")
-        canvas_tgl.setToolTip("Toggle Interactive Artifact Canvas Sandbox")
-        canvas_tgl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-        canvas_tgl.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        canvas_tgl.setFixedHeight(28)
-        canvas_tgl.setStyleSheet("""
+        self.canvas_tgl = QPushButton("✦ Canvas")
+        self.canvas_tgl.setToolTip("Toggle Interactive Artifact Canvas Sandbox")
+        self.canvas_tgl.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self.canvas_tgl.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.canvas_tgl.setFixedHeight(28)
+        self.canvas_tgl.setFixedWidth(76)
+        self.canvas_tgl.setStyleSheet("""
             QPushButton {
                 background: rgba(91, 141, 239, 0.12);
                 color: #5B8DEF;
                 border: 1px solid rgba(91, 141, 239, 0.35);
-                border-radius: 7px;
-                padding: 1px 10px;
+                border-radius: 6px;
+                padding: 0 8px;
+                font-size: 11px;
             }
             QPushButton:hover {
                 background: rgba(91, 141, 239, 0.25);
                 color: #ffffff;
             }
         """)
-        canvas_tgl.clicked.connect(lambda: self.artifact_canvas.setVisible(not self.artifact_canvas.isVisible()))
-        hdr.addWidget(canvas_tgl)
+        self.canvas_tgl.clicked.connect(self._toggle_canvas)
+        top_lay.addWidget(self.canvas_tgl)
 
-        # Export .md report button
-        export_b = QPushButton("📋 Export")
-        export_b.setToolTip("Export conversation as Markdown")
-        export_b.setFont(QFont("Segoe UI", 8))
-        export_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        export_b.setFixedHeight(28)
-        export_b.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.04);
-                color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 7px;
-                padding: 1px 10px;
-            }
-            QPushButton:hover {
-                background: rgba(91, 141, 239, 0.2);
-                border-color: #60a5fa;
-                color: #ffffff;
-            }
-        """)
-        export_b.clicked.connect(self._export_conversation)
-        hdr.addWidget(export_b)
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.Shape.VLine)
+        sep2.setFixedWidth(1)
+        sep2.setFixedHeight(18)
+        sep2.setStyleSheet("background: rgba(255, 255, 255, 0.10); border: none;")
+        top_lay.addWidget(sep2)
 
-        # Clear stream button
-        clear_b = QPushButton("🗑 Clear")
-        clear_b.setFont(QFont("Segoe UI", 8))
-        clear_b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        clear_b.setFixedHeight(28)
-        clear_b.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.04);
-                color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 7px;
-                padding: 1px 10px;
-            }
-            QPushButton:hover {
-                background: rgba(244, 63, 94, 0.18);
-                border-color: #D9534F;
-                color: #ffffff;
-            }
-        """)
-        clear_b.clicked.connect(self.clear_stream)
-        hdr.addWidget(clear_b)
+        def _action_btn(icon_text: str, tooltip: str, cb, hover_bg=None, hover_color=None):
+            b = QPushButton(icon_text)
+            b.setFixedSize(28, 28)
+            b.setFont(QFont("Segoe UI", 9))
+            b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            b.setToolTip(tooltip)
+            h_bg = hover_bg or "rgba(91, 141, 239, 0.2)"
+            h_col = hover_color or "#ffffff"
+            b.setStyleSheet(f"""
+                QPushButton {{
+                    background: rgba(255, 255, 255, 0.04);
+                    color: #94a3b8;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 6px;
+                }}
+                QPushButton:hover {{
+                    background: {h_bg};
+                    border-color: rgba(91, 141, 239, 0.4);
+                    color: {h_col};
+                }}
+            """)
+            b.clicked.connect(cb)
+            return b
 
-        chat_v.addLayout(hdr)
+        self.voice_btn = _action_btn(
+            "🔇" if self.voice_muted else "🔊",
+            "Voice Speech Output: Active (Click to mute)" if not self.voice_muted else "Voice Speech Output: Muted (Click to unmute)",
+            self._toggle_voice
+        )
+        top_lay.addWidget(self.voice_btn)
+
+        self.export_b = _action_btn(
+            "⤓",
+            "Export Conversation Stream (.md / report)",
+            self._export_conversation
+        )
+        top_lay.addWidget(self.export_b)
+
+        self.clear_b = _action_btn(
+            "🗑",
+            "Clear Dialogue Stream",
+            self.clear_stream,
+            hover_bg="rgba(244, 63, 94, 0.2)",
+            hover_color="#f43f5e"
+        )
+        top_lay.addWidget(self.clear_b)
+
+        chat_v.addWidget(self.top_bar)
 
         # Scrollable Messages Area
         self.scroll_area = QScrollArea()
@@ -1859,67 +1955,68 @@ class NeoModernChatWidget(QWidget):
         # Quick Action Prompt Pills
         pills_row = QHBoxLayout()
         pills_row.setContentsMargins(4, 0, 4, 0)
-        pills_row.setSpacing(8)
+        pills_row.setSpacing(6)
 
         def _pill(text: str, prompt: str):
             b = QPushButton(text)
-            b.setFont(QFont("Segoe UI", 7, QFont.Weight.Medium))
+            b.setFont(QFont("Segoe UI", 8, QFont.Weight.Medium))
             b.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            b.setFixedHeight(24)
+            b.setFixedHeight(26)
             b.setStyleSheet("""
                 QPushButton {
                     background: rgba(255, 255, 255, 0.04);
                     color: #94a3b8;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 6px;
-                    padding: 2px 11px;
+                    border: 1px solid rgba(255, 255, 255, 0.07);
+                    border-radius: 13px;
+                    padding: 0 11px;
                 }
                 QPushButton:hover {
-                    background: rgba(91, 141, 239, 0.18);
-                    border-color: #5B8DEF;
-                    color: #ffffff;
+                    background: rgba(91, 141, 239, 0.16);
+                    border-color: rgba(91, 141, 239, 0.5);
+                    color: #f1f5f9;
                 }
             """)
             b.clicked.connect(lambda: self._apply_quick_pill(prompt))
             return b
 
-        pills_row.addWidget(_pill("✦ Explain Code", "/code "))
-        pills_row.addWidget(_pill("✦ Web Research", "/research "))
-        pills_row.addWidget(_pill("✦ Spotify", "/spotify "))
-        pills_row.addWidget(_pill("✦ Agenda Brief", "/brief"))
-        pills_row.addWidget(_pill("✦ Quick Note", "/notes "))
+        pills_row.addWidget(_pill("⚡ Explain Code", "/code "))
+        pills_row.addWidget(_pill("🌐 Web Research", "/research "))
+        pills_row.addWidget(_pill("🎵 Spotify", "/spotify "))
+        pills_row.addWidget(_pill("📋 Agenda Brief", "/brief"))
+        pills_row.addWidget(_pill("📝 Quick Note", "/notes "))
         pills_row.addStretch()
 
         chat_v.addLayout(pills_row)
 
         # Bottom Input Capsule Frame
         self.bar_frame = QFrame()
-        self.bar_frame.setFixedHeight(52)
+        self.bar_frame.setFixedHeight(50)
+        self.bar_frame.setObjectName("InputBarFrame")
         self.bar_frame.setStyleSheet("""
             QFrame#InputBarFrame {
-                background: rgba(13, 19, 33, 0.96);
-                border: 1.5px solid rgba(91, 141, 239, 0.28);
-                border-radius: 8px;
+                background: rgba(15, 23, 42, 0.88);
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 12px;
             }
             QFrame#InputBarFrame:hover {
                 border-color: rgba(91, 141, 239, 0.45);
+                background: rgba(15, 23, 42, 0.96);
             }
         """)
-        self.bar_frame.setObjectName("InputBarFrame")
         bar_lay = QHBoxLayout(self.bar_frame)
-        bar_lay.setContentsMargins(14, 0, 10, 0)
-        bar_lay.setSpacing(10)
+        bar_lay.setContentsMargins(10, 0, 8, 0)
+        bar_lay.setSpacing(8)
 
         attach_btn = QPushButton("📎")
-        attach_btn.setToolTip("Attach file or image")
+        attach_btn.setToolTip("Attach file or image (Ctrl+O)")
         attach_btn.setFixedSize(30, 30)
-        attach_btn.setFont(QFont("Segoe UI", 12))
+        attach_btn.setFont(QFont("Segoe UI", 11))
         attach_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         attach_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.05);
+                background: rgba(255, 255, 255, 0.04);
                 color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.06);
                 border-radius: 8px;
             }
             QPushButton:hover {
@@ -1956,9 +2053,9 @@ class NeoModernChatWidget(QWidget):
         self.mic_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.mic_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.05);
+                background: rgba(255, 255, 255, 0.04);
                 color: #94a3b8;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.06);
                 border-radius: 8px;
             }
             QPushButton:hover {
@@ -1977,13 +2074,16 @@ class NeoModernChatWidget(QWidget):
         send_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         send_btn.setStyleSheet("""
             QPushButton {
-                background: #5B8DEF;
-                color: #070b14;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #5B8DEF, stop:1 #3B72DE);
+                color: #ffffff;
                 border: none;
                 border-radius: 8px;
             }
             QPushButton:hover {
-                background: #5B8DEF;
+                background: #6E9EFC;
+            }
+            QPushButton:pressed {
+                background: #3B72DE;
             }
         """)
         send_btn.clicked.connect(self._submit)
@@ -2553,7 +2653,37 @@ class NeoModernChatWidget(QWidget):
 
     def _toggle_voice(self):
         self.voice_muted = not self.voice_muted
-        self.voice_btn.setText("🔇 Silent" if self.voice_muted else "🔊 Voice: ON")
+        if hasattr(self, "voice_btn"):
+            self.voice_btn.setText("🔇" if self.voice_muted else "🔊")
+            self.voice_btn.setToolTip("Voice Output: Muted (Click to unmute)" if self.voice_muted else "Voice Output: Active (Click to mute)")
+            if self.voice_muted:
+                self.voice_btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(244, 63, 94, 0.15);
+                        color: #f43f5e;
+                        border: 1px solid rgba(244, 63, 94, 0.35);
+                        border-radius: 6px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(244, 63, 94, 0.28);
+                        border-color: #f43f5e;
+                        color: #ffffff;
+                    }
+                """)
+            else:
+                self.voice_btn.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.04);
+                        color: #94a3b8;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-radius: 6px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(91, 141, 239, 0.2);
+                        border-color: rgba(91, 141, 239, 0.4);
+                        color: #ffffff;
+                    }
+                """)
         try:
             cfg_p = _BASE_DIR / "config" / "api_keys.json"
             if cfg_p.exists():
@@ -2564,6 +2694,53 @@ class NeoModernChatWidget(QWidget):
                     json.dump(cfg, f, indent=4)
         except Exception:
             pass
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Canvas Workspace Toggle & Artifact Rendering
+    # ─────────────────────────────────────────────────────────────────────────
+    def _toggle_canvas(self):
+        if not hasattr(self, "artifact_canvas"):
+            return
+        vis = not self.artifact_canvas.isVisible()
+        self.artifact_canvas.setVisible(vis)
+        self._update_canvas_btn_state(vis)
+
+    def _update_canvas_btn_state(self, visible: bool):
+        if not hasattr(self, "canvas_tgl"):
+            return
+        if visible:
+            self.canvas_tgl.setStyleSheet("""
+                QPushButton {
+                    background: rgba(91, 141, 239, 0.28);
+                    color: #ffffff;
+                    border: 1px solid #5B8DEF;
+                    border-radius: 6px;
+                    padding: 0 8px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+            """)
+        else:
+            self.canvas_tgl.setStyleSheet("""
+                QPushButton {
+                    background: rgba(91, 141, 239, 0.12);
+                    color: #5B8DEF;
+                    border: 1px solid rgba(91, 141, 239, 0.35);
+                    border-radius: 6px;
+                    padding: 0 8px;
+                    font-size: 11px;
+                }
+                QPushButton:hover {
+                    background: rgba(91, 141, 239, 0.25);
+                    color: #ffffff;
+                }
+            """)
+
+    def open_artifact_canvas(self, code: str, language: str = "python"):
+        if hasattr(self, "artifact_canvas"):
+            self.artifact_canvas.display_artifact(code, language, title=f"NEO Artifact // {language.upper()}")
+            self.artifact_canvas.setVisible(True)
+            self._update_canvas_btn_state(True)
 
     # ─────────────────────────────────────────────────────────────────────────
     # Multi-Format Export Studio Dispatch
@@ -2597,10 +2774,6 @@ class NeoModernChatWidget(QWidget):
     def _apply_quick_pill(self, prompt: str):
         self.input_edit.setText(prompt)
         self.input_edit.setFocus()
-
-    def open_artifact_canvas(self, code: str, language: str = "python"):
-        if hasattr(self, "artifact_canvas"):
-            self.artifact_canvas.display_artifact(code, language, title=f"NEO Artifact // {language.upper()}")
 
     def _submit(self):
         self._active_stream_bubble = None

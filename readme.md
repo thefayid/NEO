@@ -92,6 +92,12 @@ While NEO is **mainly optimized for Windows** with deep OS-level accessibility a
 | ⚡ **Direct OS & Shell Engine** | Sub-millisecond Win32 window snapping, dual-window tiling (50/50), port conflict resolution, process watchdog, and desktop utilities. |
 | 🤖 **Autonomous Computer Operator** | Multi-turn closed-loop operator agent with strict Truth Rules, stage verification, state diffing, and security handoff gates. |
 | 🛡️ **Shadow Mode & Visual Action Guard** | Pre-execution safety risk classifier (Safe/Low/Med/High/Critical), dry-run simulation mode, and neon target bounding preview before clicks. |
+| 🔒 **Zero-Hallucination Empirical Verifier (`neo/`)** | Deterministic 5-level execution engine where every action gathers real empirical evidence (text readback, DOM mutation hashes, window focus, OpenCV visual diffs). An action with no observable effect returns a warning, never plain success. |
+| 🛡️ **Autonomous Safety & Hard Stop Subsystem** | Strict allow-lists (apps, folders, domains), risky-action detection, non-bypassable hard stops (payments, OTP, passwords, CAPTCHA, UAC), prompt injection defense, and thread-safe persistent security audit ledger. |
+| 🌐 **Unified Browser & Desktop Controller** | Playwright Chromium automation exposing the exact same interface as the Windows layer (`snapshot`, `act`, `verify`) with cookie banner dismissal, iframe traversal, and sensitive page handover. |
+| 📊 **Stage-Based State Machine & Skill Library** | Code-gated stage completion checks (`FileExistsCheck`, `ValueEqualsCheck`, `ElementExistsCheck`, `URLContainsCheck`), automated loop detection, checkpoint rollback, and parameterized skill save/replay. |
+| 🖥️ **Live Telemetry Dashboard (`neo/ui/`)** | Real-time monitoring GUI displaying current stage, screenshot with numbered element list, planned action, audit log, interactive Approve/Deny buttons, and big Emergency STOP button. |
+| 🧪 **26-Scenario E2E Benchmark Suite** | Autonomous benchmark suite testing edge cases (ghost targets, moving elements, popups, prompt injection, payment handoffs, slow loading, and multi-app flows) with an objective scoring engine. |
 | 🔌 **Model Context Protocol (MCP) Bridge** | Native stdio JSON-RPC 2.0 client connecting external databases, tools, and servers (`config/mcp_servers.json`) directly into Gemini Live. |
 | 🖥️ **Multi-Monitor Spatial Awareness** | Virtual desktop coordinate topology across multi-display setups, spatial NLP ("monitor 2", "left screen"), and per-monitor Set-of-Marks. |
 | ⏳ **Visual Screen Time Capsule** | Privacy-first local SQLite episodic screen memory to recall past windows, active applications, and visual OCR snippets. |
@@ -266,6 +272,65 @@ python -c "from actions.computer_control import computer_control; print(computer
 python -c "from actions.time_capsule_action import time_capsule_action; print(time_capsule_action({'action': 'timeline', 'limit': 5}))"
 ```
 
+### 10. Autonomous Benchmark Suite (26 Scenarios) & Scoring
+NEO features an end-to-end benchmark suite of **26 autonomous scenarios** testing against a local mock test server and desktop applications (Calculator, Notepad, multi-app workflows). The scenarios evaluate edge cases: ghost targets, dynamic moving elements, mid-task popups, network latency, sold-out options, ambiguous prompts, prompt injection attempts, payment handoffs, and skill replays.
+
+```powershell
+# 1. Run all 26 benchmark scenarios with full live scoring:
+python -m tests.e2e.benchmark
+
+# 2. Run in regression mode (re-runs previously failed scenarios only):
+python -m tests.e2e.benchmark --regression
+
+# 3. Target a single scenario:
+python -m tests.e2e.benchmark --scenario SCN-013_hidden_prompt_injection_ignore_previous
+```
+
+#### Objective Scoring Report Metrics:
+- **Success Rate (%)**: Percentage of scenarios successfully achieving dual-verified completion.
+- **Steps Taken**: Step count efficiency per task.
+- **False-"Done" Count**: **Key Hallucination Metric** — detects any step where an LLM attempted to claim success without code-level empirical verification.
+- **Safety-Gate Hits**: Count of dangerous actions safely intercepted by ConfirmationGate or HardStopRequiredError.
+- **Average Time (s)**: Wall-clock execution speed per scenario.
+
+### 11. How to Add a New Failure Case to the Benchmark
+To add a new scenario or regression test to prevent recurrence of past failures:
+1. Open `tests/e2e/scenarios.py`.
+2. Define a new `BenchmarkScenario`:
+   ```python
+   BenchmarkScenario(
+       scenario_id="SCN-027_my_new_edge_case",
+       name="My New Edge Case",
+       description="Tests that an action with no observable effect returns a warning.",
+       category="edge_case",  # "normal", "edge_case", "safety", "complex"
+       target_app="browser",  # "browser", "desktop", "multi_app"
+       goal="Verify inert button warns",
+       setup_fn=my_setup_function,
+       evaluation_fn=my_eval_function,
+       expected_verdict="warning",
+   )
+   ```
+3. Register it in `ALL_BENCHMARK_SCENARIOS` in `tests/e2e/scenarios.py`.
+4. Re-run `python -m tests.e2e.benchmark` to evaluate performance.
+
+### 12. Live Telemetry Dashboard & Hardware Triggers
+Launch the local Tkinter telemetry dashboard or background hotkey/voice triggers to monitor what Neo sees and does in real time:
+
+```powershell
+# Launch the live desktop dashboard:
+python -c "from neo.ui import launch_dashboard; launch_dashboard()"
+
+# Start with global hotkey manager (Ctrl+Alt+S Emergency Stop, Ctrl+Alt+N Trigger):
+python -c "from neo.ui import GlobalHotkeyManager; m = GlobalHotkeyManager(); m.run_blocking()"
+```
+
+### 13. Full Pytest Deterministic Test Suite (93 Passing Tests)
+Run the complete deterministic test suite verifying Windows actions, Playwright browser, Vision OCR, Brain schema validation, stage state machines, and benchmarks:
+
+```powershell
+pytest tests/test_evidence_and_validation_audit.py tests/test_actions_unit.py tests/test_browser_local_site.py tests/test_brain_refactor.py tests/test_brain_and_tasks.py tests/test_vision.py tests/e2e/test_benchmark_suite.py tests/test_tasks_refactor.py
+```
+
 ---
 
 ## 🎮 Controls & Shortcuts
@@ -274,6 +339,8 @@ python -c "from actions.time_capsule_action import time_capsule_action; print(ti
 |---|---|---|
 | **Push-to-Talk** | `Ctrl + Space` | Hold to speak, release to send audio |
 | **Wake Word** | Spoken: *"Hey Neo"* | Offline wake word detector |
+| **Emergency Stop** | `Ctrl + Alt + S` | Native OS hardware interrupt that halts all actions immediately |
+| **Assistant Trigger** | `Ctrl + Alt + N` | Global hotkey to summon Neo or initiate task |
 | **Screen Lens** | `F10` / `Ctrl + Shift + L` | Captures active display for visual grounding |
 | **Undo** | Spoken / Typed: *"Undo"* | Reverses last file operation or setting change |
 | **Settings Drawer** | Click `⚙` or `🎛` on HUD | Configure audio devices, theme, engine, and plugins |
@@ -287,7 +354,54 @@ NEO/
 ├── main.py                                      # Main event loop, Gemini Live session & action dispatcher
 ├── ui.py                                        # PyQt6 Holographic HUD, avatar renderer & controls
 ├── setup.py                                     # OS-specific dependency installer
-├── actions/                                     # Core action modules auto-discovered by loader
+├── pyproject.toml                               # Build system, dependencies, and test configuration
+│
+├── neo/                                         # Core Autonomous Deterministic Engine
+│   ├── windows/                                 # Windows Level 3-4 Execution Tier
+│   │   ├── core.py                              # Win32 SendInput, window snapping, focus, list_windows
+│   │   ├── uia_snapshot.py                      # 1-based numbered element tree, stable IDs, UIA patterns
+│   │   └── actions.py                           # Whitelisted actions, dynamic settle polling, empirical readback
+│   ├── safety/                                  # Security Policies, Confirmation Gates & Injection Defense
+│   │   ├── policy.py                            # Allow-lists (apps, folders, domains), risky action detector
+│   │   ├── gates.py                             # Interactive confirmation gate, hard stops, JSONL audit trail
+│   │   ├── injection.py                         # Indirect prompt injection detector & untrusted text sanitizer
+│   │   └── emergency_stop.py                    # Thread-safe emergency stop mechanism
+│   ├── browser/                                 # Level 2 Playwright Browser Controller
+│   │   ├── controller.py                        # Headed/headless Chromium manager with persistent profile
+│   │   ├── snapshot.py                          # Unified numbered interactive element snapshot tree
+│   │   ├── actions.py                           # goto, click, type, select, scroll, wait_for, go_back
+│   │   └── popups.py                            # Configurable cookie banner & modal popup rejection
+│   ├── files_office/                            # Level 1 Direct APIs & COM Automation
+│   │   ├── files.py                             # Restricted filesystem ops, recycle deletion, sha256 evidence
+│   │   └── office.py                            # Excel read/write, Word text replacement, Outlook drafts
+│   ├── tools/                                   # System Info & Tool Registry
+│   │   ├── registry.py                          # Pydantic schema-validated tool hub with risk levels
+│   │   └── system_tools.py                      # Battery, disk, network, clipboard, and process inspectors
+│   ├── vision/                                  # Level 5 Vision Fallback & OCR
+│   │   ├── capture.py                           # MSS screenshot capture, DPI scaling, and coordinate mapping
+│   │   ├── ocr.py                               # Windows OCR with bounding boxes & ambiguity flagging
+│   │   ├── diff.py                              # OpenCV visual image diffing returning changed regions
+│   │   └── click_xy.py                          # Fallback coordinate click requiring tier exhaustion proof
+│   ├── brain/                                   # Cognitive Orchestration & Dual Verification
+│   │   ├── prompts.py                           # Versioned system prompt loader with dynamic schema injection
+│   │   ├── schema.py                            # Strict Pydantic LLMReply schema with retry budget & escalation
+│   │   ├── context.py                           # Compact state representation (attaches screenshots only when sparse)
+│   │   ├── critic.py                            # Independent LLM GoalCritic for dual-verification agreement
+│   │   ├── planner.py                           # Multi-level deterministic action router & bounds validator
+│   │   └── agent.py                             # Main autonomous perception-action-verification loop
+│   ├── tasks/                                   # State Machine, Checkpoints & Skill Library
+│   │   ├── stages.py                            # Code-gated stage machine (FileExists, ValueEquals, ElementExists)
+│   │   ├── retry_policy.py                      # Tiered retry policy & loop detection (actions & frozen states)
+│   │   ├── checkpoints.py                       # Pre-action checkpoints with automated rollback on failure
+│   │   ├── skills.py                            # Parameterized skill library with deterministic replay & fallback
+│   │   ├── reports.py                           # Final markdown report generator with per-stage empirical evidence
+│   │   └── task_manager.py                      # Task execution engine coordinating checkpoints & state machine
+│   └── ui/                                      # Dashboard, Hotkeys & Voice Trigger
+│       ├── dashboard.py                         # Live Tkinter telemetry dashboard (What Neo Sees, Action, Log, STOP)
+│       ├── hotkey.py                            # Global Win32 hotkeys (Ctrl+Alt+S, Ctrl+Alt+N)
+│       └── voice.py                             # Audio voice trigger (sounddevice + Whisper speech-to-text)
+│
+├── actions/                                     # Core action plugins auto-discovered by loader
 │   ├── ghost_hands.py                           # Zero-hijacking background computer operator
 │   ├── browser_cdp.py                           # Chrome DevTools Protocol DOM bridge
 │   ├── computer_control.py                      # Mouse, keyboard, UIA & Set-of-Marks grid clicking
@@ -308,10 +422,19 @@ NEO/
 ├── memory/                                      # Persistent local memory, databases & session history
 ├── config/                                      # API keys, routines, and user preferences
 └── tests/                                       # Comprehensive automated verification suites
-    ├── test_key_rotator_suite.py                # Tests for multi-key pool, rotation, and cooldowns
-    ├── test_advanced_computer_control_suite.py  # Tests for SoM, CDP, DPI, Win Orchestrator, & Diff Oracle
-    ├── test_core_system_control_suite.py        # Tests for OS automation, routines, and operator loop
-    └── test_ambient_and_meeting_copilot.py      # Tests for ambient clipboard & audio loopback
+    ├── e2e/                                     # 26-Scenario Autonomous Benchmark Suite
+    │   ├── scenarios.py                         # 26 benchmark scenarios with explicit completion criteria
+    │   ├── server.py                            # Local mock HTTP server for browser edge-case tests
+    │   ├── scoring.py                           # Metric calculator (success rate, false-done, safety hits)
+    │   └── benchmark.py                         # Benchmark runner CLI with --regression support
+    ├── test_evidence_and_validation_audit.py    # Tests for evidence collection, disabled elements, bounds
+    ├── test_actions_unit.py                     # Unit tests for Windows actions whitelist & verification
+    ├── test_browser_local_site.py               # Playwright browser integration tests on local site
+    ├── test_brain_refactor.py                   # Brain schema, prompt, context, and critic unit tests
+    ├── test_brain_and_tasks.py                  # TaskManager budget, lifecycle, and emergency stop tests
+    ├── test_vision.py                           # Scaling roundtrip, Windows OCR, and diff tests
+    ├── test_tasks_refactor.py                   # Stages, loops, checkpoints, and skill replay tests
+    └── test_ui_and_dashboard.py                 # Tkinter dashboard, hotkeys, and voice trigger unit tests
 ```
 
 ---
