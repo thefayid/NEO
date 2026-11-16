@@ -1,3 +1,12 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": "note_1794843837667",
+      "title": "\ud83c\udf19 Night Owl Dev Log \u2014 Nov 16, 2026",
+      "content": "### Nocturnal Session Debrief (09:13 PM)\n- **Active Project**: `AeroGuard WIDS` on branch `main`\n- **Files Modified**: 0 file(s) (none)\n- **Untracked**: 0 file(s)\n- **Top Carry-Over Priorities Tomorrow**:\n  1. Start Sem Exam Preparation",
+      "category": "Dev Log",
+      "created_at": "2026-11-16 21:13",
+      "pinned": true
+    }
+  ]
 }

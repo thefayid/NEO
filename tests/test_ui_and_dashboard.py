@@ -72,3 +72,71 @@ def test_dashboard_approval_delegation():
     dashboard._process_queue()
 
     assert dashboard._pending_approval_cb == mock_approval_callback
+
+
+def test_macos_confirmation_dialog_data_contract():
+    from neo.safety.policy import RiskAssessment
+    from neo.ui.confirmation_dialog import MacOSConfirmationDialog
+
+    assessment = RiskAssessment(
+        is_risky=True,
+        requires_hard_stop=True,
+        risk_categories=["delete", "filesystem"],
+        matched_patterns=["format C:"],
+        summary="High-risk destructive filesystem action",
+    )
+    dialog_ctrl = MacOSConfirmationDialog(
+        action_name="shell_execute",
+        assessment=assessment,
+        timeout_sec=10.0,
+    )
+    assert dialog_ctrl.action_name == "shell_execute"
+    assert dialog_ctrl.timeout_sec == 10.0
+    assert dialog_ctrl.approved is False
+    assert "DENY" in dialog_ctrl.reason
+    assert dialog_ctrl.assessment.requires_hard_stop is True
+
+
+def test_macos_dashboard_window_and_widgets():
+    from PyQt6.QtWidgets import QApplication
+    from neo.ui.dashboard import MacOSDashboardWindow
+
+    app = QApplication.instance() or QApplication([])
+
+    dashboard = NeoDashboard(title="NEO Autonomous Controller (macOS Test)", enable_hotkeys=False)
+    win = MacOSDashboardWindow(dashboard)
+
+    assert win.window.windowTitle() == "NEO Autonomous Controller (macOS Test)"
+    assert win.traffic_lights is not None
+    assert win.screenshot_canvas is not None
+    assert win.element_tree is not None
+    assert win.btn_approve is not None
+    assert win.btn_deny is not None
+    assert win.btn_stop is not None
+
+    # Test status pill states
+    win._update_status_pill("RUNNING")
+    assert "RUNNING" in win.lbl_status.text()
+
+    win._update_status_pill("AWAITING APPROVAL")
+    assert "APPROVAL" in win.lbl_status.text()
+
+    win._update_status_pill("STOPPED")
+    assert "STOPPED" in win.lbl_status.text()
+
+    # Test updating vision in window
+    dashboard._window = win
+    sample_elements = [
+        {"id": 1, "role": "button", "name": "Submit", "automation_id": "btnSubmit", "enabled": True},
+        {"id": 2, "role": "input", "name": "Email", "automation_id": "txtEmail", "enabled": True},
+    ]
+    dashboard.update_vision(elements=sample_elements)
+    dashboard._process_queue()
+    assert win.element_tree.topLevelItemCount() == 2
+
+    # Test emergency stop button click
+    dashboard._on_emergency_stop()
+    assert dashboard.status == "STOPPED"
+    assert "STOPPED" in win.lbl_status.text()
+    emergency_stop.reset()
+
